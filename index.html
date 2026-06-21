@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Racine V1.0</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="apple-touch-icon-precomposed" sizes="180x180" href="./apple-touch-icon-precomposed.png">
+  <link rel="icon" type="image/png" sizes="180x180" href="./icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+  <meta name="theme-color" content="#04060f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css?v=1.0"/>
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══ -->
+<div id="racineSplash" class="racine-splash" aria-hidden="true">
+  <img src="assets/splash-racine.png" alt="" class="racine-splash-icon"/>
+</div>
+
+<!-- ═══ TOPNAV ═══ -->
+<nav class="topnav">
+  <span class="topnav-brand"><span class="topnav-mark">R</span><span class="topnav-v">V1.0</span></span><button type="button" id="syncStatusDot" class="sync-dot profile-dot" title="Profil actif" aria-label="Profil actif">?</button>
+  <div class="topnav-tabs" id="mainTabs">
+    <button id="trainingTab"    class="tab active">WOD</button>
+    <button id="profileTab"     class="tab">PR</button>
+    <button id="referencesTab"  class="tab">Réfs</button>
+    <button id="cycleTab"       class="tab">Cycle</button>
+    <button id="historyTab"     class="tab">Historique</button>
+    <button id="phoneTab"       class="tab tab-pc-discreet">PC</button>
+    <button id="settingsTab"    class="tab">⚙</button>
+  </div>
+</nav>
+
+<div class="app">
+
+<!-- ═══ VUE : WOD ═══ -->
+<main id="trainingView" class="view-active">
+  <div class="view-header wodplus-main-header">
+    <div>
+      <h2 id="workoutTitle" class="view-title"></h2>
+      <p id="workoutFocus" class="view-sub"></p>
+    </div>
+    <div class="wodplus-header-tools">
+      <button type="button" id="wodPlusTmsBtn" class="btn-ghost wodplus-tool-btn">TMS</button>
+      <button type="button" id="wodPlusWakeBtn" class="btn-ghost wodplus-tool-btn">Écran</button>
+      <button id="phoneViewBtn" class="btn-ghost wodplus-legacy-btn">PC →</button>
+    </div>
+  </div>
+
+  <div class="week-day-nav">
+    <div class="nav-row">
+      <button class="arrow-btn" id="weekPrev">&#8249;</button>
+      <div id="weekButtons" class="pill-row"></div>
+      <button class="arrow-btn" id="weekNext">&#8250;</button>
+    </div>
+    <div class="week-progress-wrap">
+      <div class="week-progress-track"><div class="week-progress-bar" id="weekProgressBar"></div></div>
+      <div class="week-progress-meta">
+        <span id="weekProgressLabel" class="nav-goal"></span>
+        <div class="day-pips" id="daysCompleted"></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="arrow-btn" id="dayPrev">&#8249;</button>
+      <div id="dayButtons" class="pill-row"></div>
+      <button class="arrow-btn" id="dayNext">&#8250;</button>
+    </div>
+    <p id="weekGoal" class="nav-goal"></p>
+  </div>
+
+  <div id="focusImpact" class="notice"></div>
+  <div id="blocks" class="blocks"></div>
+  <p id="progressionAdvice" class="advice"></p>
+</main>
+
+<!-- ═══ VUE : PC / INSPECTION PROGRAMME ═══ -->
+<main id="phoneView">
+
+
+  <!-- Toolbar PC -->
+  <div class="phone-toolbar pc-toolbar">
+    <button class="tb-btn" id="backTrainingBtn">← WOD</button>
+    <div class="phone-day-nav">
+      <button class="arrow-btn sm" id="phoneDayPrev">&#8249;</button>
+      <span id="phoneDayLabel" class="phone-day-label"></span>
+      <button class="arrow-btn sm" id="phoneDayNext">&#8250;</button>
+    </div>
+    <button class="tb-btn tb-primary" id="sessionModeBtn">▶ Séance</button>
+    <button class="tb-btn" id="tmsSessionBtn">TMS</button>
+    <button class="tb-btn" id="wakeLockBtn">💤 Écran</button>
+    <button class="tb-btn" id="copyPhoneBtn">⎘</button>
+    <button class="tb-btn" id="fullscreenBtn">⛶</button>
+  </div>
+
+  <div id="phoneWod" class="phone-wod"></div>
+
+  <!-- ═══ MODE SÉANCE GUIDÉ — optionnel, ne remplace pas la vue PC ═══ -->
+  <div id="guidedSession" class="guided-session hidden"></div>
+</main>
+
+<!-- ═══ VUE : RÉSULTATS FIN DE SÉANCE ═══ -->
+<main id="resultsView" class="results-view">
+  <div class="results-topbar">
+    <button class="tb-btn" id="resultsBackPcTopBtn" type="button">← Retour WOD</button>
+    <span class="results-topbar-title">Résultats de la séance</span>
+  </div>
+  <div class="session-entry" id="sessionEntry">
+    <div class="session-header">
+      <h2 class="session-title">📝 Résultats de la séance</h2>
+      <p class="session-sub">Remplis ce que tu as fait · laisse vide le reste</p>
+    </div>
+    <div id="sessionFields" class="session-fields"></div>
+    <div class="session-footer">
+      <button class="btn-save" id="saveSessionBtn">💾 Sauvegarder &amp; envoyer sur GitHub</button>
+      <button class="btn-ghost session-return-btn" id="sessionBackPcBtn" type="button">← Retour WOD</button>
+      <p class="session-note" id="saveStatus"></p>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ VUE : CYCLE ═══ -->
+<main id="cycleView">
+  <div class="panel">
+    <h2>Programme actif</h2>
+    <p class="muted">Sauvegardé localement sur cet appareil.</p>
+    <label>Focus</label>
+    <select id="cycleGoal" class="select-field"></select>
+
+    <div class="cycle-start-card">
+      <label>Date de départ du cycle</label>
+      <input id="cycleStartDateInput" type="date" class="input-field"/>
+      <p class="field-hint">Cette date sert seulement à recaler semaine/jour du calendrier. Les charges restent basées sur l’historique réel.</p>
+      <div class="btn-row">
+        <button id="cycleStartTodayBtn" type="button" class="btn-ghost">Aujourd’hui</button>
+        <button id="cycleStartMondayBtn" type="button" class="btn-ghost">Lundi cette semaine</button>
+        <button id="applyCycleStartDateBtn" type="button" class="btn-accent">Appliquer date</button>
+      </div>
+    </div>
+
+    <div id="focusDetails" class="focus-details"></div>
+    <div class="btn-row">
+      <button id="saveCycleBtn" class="btn-accent">Démarrer ce programme</button>
+      <button id="newCycleBtn"  class="btn-ghost">Archiver cycle actif</button>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ VUE : HISTORIQUE ═══ -->
+<main id="historyView">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Historique</h2>
+      <div class="btn-row">
+        <button id="exportHistoryBtn" class="btn-ghost">Exporter</button>
+        <button id="resetHistoryBtn"  class="btn-danger">Effacer</button>
+      </div>
+    </div>
+    <div id="progressCharts" class="progress-charts"></div>
+    <div id="history" class="history-list"></div>
+  </div>
+</main>
+
+<!-- ═══ VUE : PARAMÈTRES ═══ -->
+<main id="settingsView">
+  <div class="panel settings-priority-panel">
+    <div class="system-tag" style="margin-bottom:12px">Réglages · priorité</div>
+    <h2>Actions principales</h2>
+    <p class="muted">Les actions utiles au quotidien passent en premier. Les sauvegardes locales restent plus bas.</p>
+    <div class="settings-action-grid">
+      <button id="exportWeekBtnSettings" class="btn-ghost">Exporter la semaine en texte</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Diagnostic charges</h2>
+    <p class="muted">Lecture seule. Analyse la séance affichée avec l’historique enregistré, ajoute des commentaires de cycle et repère les aberrations possibles.</p>
+    <div class="btn-row">
+      <button id="refreshChargeDiagnosticBtn" class="btn-ghost">Analyser séance actuelle</button>
+      <button id="copyChargeDiagnosticDayBtn" class="btn-ghost">Copier JSON séance</button>
+      <button id="exportChargeDiagnosticDayBtn" class="btn-ghost">Exporter JSON séance</button>
+      <button id="exportChargeDiagnosticWeekBtn" class="btn-ghost">Exporter JSON semaine</button>
+    </div>
+    <div id="chargeDiagnosticOutput" class="notice" style="margin-top:12px"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Diagnostic app</h2>
+    <p class="muted">Journal local des erreurs runtime. Utile quand quelque chose plante sur iPhone : copie le rapport et envoie-le dans le chat de dev.</p>
+    <div class="btn-row">
+      <button id="copyErrorLogBtn" class="btn-ghost" type="button">Copier rapport erreurs</button>
+      <button id="clearErrorLogBtn" class="btn-danger" type="button">Effacer erreurs</button>
+    </div>
+    <p id="errorLogStatus" class="status-msg"></p>
+  </div>
+
+  <div class="panel" id="profileSettingsPanel">
+    <h2>Profil</h2>
+    <p class="muted">Tout reste local sur cet appareil. Aucune donnée n’est envoyée nulle part.</p>
+    <div id="profileSettingsBody">Chargement…</div>
+  </div>
+
+  <div class="panel">
+    <h2>Charges ajustables</h2>
+    <p class="muted">Laisse vide pour utiliser la base stable de <code>charges.js</code>.</p>
+    <button id="resetCustomChargesBtn" class="btn-danger">Réinitialiser charges locales</button>
+    <div id="chargeSettingsList" class="charge-grid"></div>
+  </div>
+
+  <div class="panel settings-backup-panel">
+    <h2>Sauvegarde locale</h2>
+    <p class="muted">À utiliser au besoin seulement : avant un gros test, pour transférer tes données ou pour restaurer une sauvegarde locale.</p>
+    <div class="settings-action-grid settings-action-grid-secondary">
+      <button id="exportBackupBtnSettings" class="btn-ghost">Sauvegarder mes données</button>
+      <label class="btn-ghost file-label settings-file-label">Restaurer mes données<input id="importBackupFileSettings" type="file" accept="application/json"/></label>
+    </div>
+    <p class="field-hint">Format : JSON</p>
+  </div>
+
+</main>
+
+
+<!-- ═══ VUE : PROFIL / PR ═══ -->
+<main id="profileView">
+  <div class="panel">
+    <div class="system-tag" style="margin-bottom:12px">PR · Records personnels</div>
+    <h2>Profil / PR</h2>
+    <p style="font-size:11px;color:var(--muted);font-family:var(--font-hud);letter-spacing:.04em;margin-bottom:16px">// INSCRIS TES PR · SAUVEGARDE AVEC DATE DANS L’HISTORIQUE</p>
+
+    <!-- Force principale -->
+    <div class="pr-section">
+      <div class="pr-section-title">
+        <div class="block-rank rank-A" style="width:24px;height:24px;font-size:9px">A</div>
+        Force principale
+      </div>
+      <div class="pr-row-grid">
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">BENCH PRESS 1RM</div>
+          <div class="pr-stat-input"><input id="prBench" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Objectif Phase 3 : 300 lb</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">FRONT SQUAT 1RM</div>
+          <div class="pr-stat-input"><input id="prFrontSquat" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Réf compétition</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">STRICT PRESS 1RM</div>
+          <div class="pr-stat-input"><input id="prStrictPress" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Base épaules 3D</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">POWER CLEAN 1RM</div>
+          <div class="pr-stat-input"><input id="prPowerClean" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Haltéro peak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bas du corps -->
+    <div class="pr-section">
+      <div class="pr-section-title">
+        <div class="block-rank rank-B" style="width:24px;height:24px;font-size:9px">B</div>
+        Bas du corps
+      </div>
+      <div class="pr-row-grid">
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">BACK SQUAT 5RM</div>
+          <div class="pr-stat-input"><input id="prBackSquat5RM" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Objectif Phase 3 : 260 lb</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">HIP THRUST 8RM</div>
+          <div class="pr-stat-input"><input id="prHipThrust8RM" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Chaîne postérieure</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">DB BULGARIAN / MAIN</div>
+          <div class="pr-stat-input"><input id="prBulgarianDB" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Unilatéral</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">DB RDL / MAIN</div>
+          <div class="pr-stat-input"><input id="prDbRdl" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Ischio-jambiers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tirage -->
+    <div class="pr-section">
+      <div class="pr-section-title">
+        <div class="block-rank rank-B" style="width:24px;height:24px;font-size:9px">B</div>
+        Tirage / haut du dos
+      </div>
+      <div class="pr-row-grid">
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">BARBELL ROW 8RM</div>
+          <div class="pr-stat-input"><input id="prRow8RM" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Dos épais</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">CHEST ROW 8RM</div>
+          <div class="pr-stat-input"><input id="prChestRow8RM" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Posture</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">WEIGHTED PULL-UP 10RM</div>
+          <div class="pr-stat-input"><input id="prLatPulldown10RM" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">→ Muscle-up</div>
+        </div>
+        <div class="pr-stat-card">
+          <div class="pr-stat-label">DB INCLINE 10RM</div>
+          <div class="pr-stat-input"><input id="prInclineDb10RM" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
+          <div class="pr-stat-target">Pectoraux haut</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pr-save-panel">
+      <label>Date du PR</label>
+      <input id="prDate" type="date" class="input-field"/>
+      <div class="btn-row">
+        <button id="savePrBtn" class="btn-accent">Sauvegarder les PR</button>
+      </div>
+      <p id="prStatus" class="status-msg"></p>
+    </div>
+    <p style="font-size:10px;color:var(--muted);margin-top:14px;font-family:var(--font-hud);letter-spacing:.04em">// LES PR SONT ÉDITABLES · LES CHANGEMENTS SONT INSCRITS DANS L’HISTORIQUE AVEC UNE DATE</p>
+  </div>
+</main>
+
+<!-- ═══ VUE : RÉFÉRENCES ═══ -->
+<main id="referencesView">
+  <div class="panel">
+    <div class="system-tag" style="margin-bottom:12px">Références · Base de calcul</div>
+    <h2>Références par mouvement</h2>
+    <p style="font-size:11px;color:var(--muted);font-family:var(--font-hud);letter-spacing:.04em;margin-bottom:14px">// CHARGES DE BASE · LES PR/UPGRADES VIENNENT DE L’HISTORIQUE</p>
+    <div id="referencesList" class="ref-grid"></div>
+  </div>
+</main>
+
+
+<!-- ═══ VUE : BACKUP ═══ -->
+<main id="backupView">
+  <div class="panel">
+    <h2>Backup</h2>
+    <div class="btn-row">
+      <button id="exportBackupBtn" class="btn-accent">Exporter JSON</button>
+      <label class="btn-ghost file-label">Importer JSON<input id="importBackupFile" type="file" accept="application/json"/></label>
+      <button id="exportWeekBtn" class="btn-ghost">Semaine texte</button>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">V1.0 · Racine · multi-utilisateur · WOD+ mobile-first · Vue PC · Roadmap · 100% local</footer>
+</div>
+
+<script src="scripts/core/logger.js?v=1.0"></script>
+<script src="scripts/profiles/storage.js?v=1.0"></script>
+<script src="scripts/profiles/onboarding.js?v=1.0"></script>
+<script src="scripts/profiles/ui.js?v=1.0"></script>
+<script src="programs/index.js?v=1.0"></script>
+<script src="programs/epaules_3d.js?v=1.0"></script>
+<script src="programs/epaules_3d_v2.js?v=1.0"></script>
+<script src="programs/hypertrophy_base.js?v=1.0"></script>
+<script src="programs/force_performance.js?v=1.0"></script>
+<script src="programs/competition_peak.js?v=1.0"></script>
+<script src="programs/hypertrophie_fesse.js?v=1.0"></script>
+<script src="programs/posture_cyphose.js?v=1.0"></script>
+<script src="programs/force.js?v=1.0"></script>
+<script src="programs/heritage_225.js?v=1.0"></script>
+<script src="programs/arnold_split_beurt.js?v=1.0"></script>
+<script src="programs/config.js?v=1.0"></script>
+<script src="programs/workouts.js?v=1.0"></script>
+<script src="programs/tutorials.js?v=1.0"></script>
+<script src="data/charges.js?v=1.0"></script>
+<script src="programs/hypertrophie_fesse_stephanie.js?v=1.0"></script>
+<script src="programs/arnold_split_2026_adapte.js?v=1.0"></script>
+<script src="scripts/app_helpers.js?v=1.0"></script>
+<script src="scripts/state/storage.js?v=1.0"></script>
+<script src="scripts/state/index.js?v=1.0"></script>
+<script src="scripts/sync/storage.js?v=1.0"></script>
+<script src="scripts/sync/index.js?v=1.0"></script>
+<script src="scripts/charge/equipement.js?v=1.0"></script>
+<script src="scripts/charge/utilitaires.js?v=1.0"></script>
+<script src="scripts/charge/mouvements.js?v=1.0"></script>
+<script src="scripts/charge/historique.js?v=1.0"></script>
+<script src="scripts/charge/rpe.js?v=1.0"></script>
+<script src="scripts/charge/scaling.js?v=1.0"></script>
+<script src="scripts/charge/suggestion.js?v=1.0"></script>
+<script src="scripts/history/index.js?v=1.0"></script>
+  <script src="scripts/progression/index.js?v=1.0"></script>
+  <script src="scripts/summary/index.js?v=1.0"></script>
+<script src="scripts/charge/index.js?v=1.0"></script>
+<script src="scripts/view_pc.js?v=1.0"></script>
+<script src="scripts/charge_diagnostic_ui.js?v=1.0"></script>
+<script src="scripts/ui_modals.js?v=1.0"></script>
+<script src="scripts/ui/index.js?v=1.0"></script>
+<script src="scripts/app_navigation.js?v=1.0"></script>
+<script src="scripts/view_wodplus.js?v=1.0"></script>
+<script src="scripts/session/view.js?v=1.0"></script>
+<script src="scripts/session/timer.js?v=1.0"></script>
+<script src="scripts/session/results.js?v=1.0"></script>
+<script src="scripts/session/save.js?v=1.0"></script>
+<script src="scripts/session/index.js?v=1.0"></script>
+<script src="app.js?v=1.0"></script>
+<script src="scripts/tms_session.js?v=1.0"></script>
+<script>
+  setTimeout(function(){
+    var splash = document.getElementById("racineSplash");
+    if(splash) splash.remove();
+  }, 2500);
+</script>
+<script>
+  setTimeout(function(){
+    if (!window.APP_VERSION) {
+      var box = document.createElement("div");
+      box.style.cssText = "position:fixed;inset:16px;z-index:99999;background:#160b0b;color:#fff;border:1px solid #ff6b6b;border-radius:14px;padding:16px;font-family:system-ui;line-height:1.35";
+      box.innerHTML = "<strong>Erreur de chargement Racine</strong><br>app.js n’a pas démarré. Recharge la page ou efface le cache Safari.";
+      document.body.appendChild(box);
+    }
+  }, 1200);
+</script>
+</body>
+</html>

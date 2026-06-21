@@ -1,0 +1,416 @@
+// Racine — interface du système multi-profil (assistant d'intégration,
+// sélecteur de profil, panneau "Profil" des réglages).
+// Charge AVANT app.js (comme onboarding.js) : ne référence les fonctions
+// d'app.js (PR_FIELD_MAP, state, save, defaultProfile, load, render...) que
+// depuis des gestionnaires d'événements, jamais au chargement du script.
+(function(){
+  var api = window.CoachOnboarding = window.CoachOnboarding || {};
+
+  var wiz = null; // état courant de l'assistant (null = fermé)
+
+  function el(html){
+    var d = document.createElement("div");
+    d.innerHTML = html.trim();
+    return d.firstElementChild;
+  }
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function ensureGateEl(){
+    var g = document.getElementById("racineGate");
+    if(!g){
+      g = document.createElement("div");
+      g.id = "racineGate";
+      g.className = "racine-gate";
+      document.body.appendChild(g);
+    }
+    return g;
+  }
+  function closeGate(){
+    var g = document.getElementById("racineGate");
+    if(g) g.remove();
+  }
+
+  function stepDots(total, current){
+    var html = '<div class="racine-gate-steps">';
+    for(var i=0;i<total;i++){
+      var cls = i<current ? "done" : (i===current ? "current" : "");
+      html += '<span class="racine-gate-step-dot '+cls+'"></span>';
+    }
+    return html + '</div>';
+  }
+
+  function canCancel(){
+    return (window.CoachProfiles ? CoachProfiles.list() : []).some(function(p){ return p.onboarded; });
+  }
+  function addCancelAffordance(card){
+    if(!canCancel()) return;
+    var btn = el('<button type="button" class="btn-ghost" style="position:absolute;top:14px;right:14px;padding:4px 9px;font-size:10px">Annuler</button>');
+    card.style.position = "relative";
+    card.appendChild(btn);
+    btn.onclick = function(){
+      if(wiz && wiz.mode==="create" && wiz.profileCreated && window.CoachProfiles){
+        CoachProfiles.remove(CoachProfiles.getActiveId());
+      }
+      wiz = null;
+      render();
+    };
+  }
+
+  // ── Écran : sélecteur de profil ─────────────────────────────────────────
+  function renderPicker(){
+    var list = (window.CoachProfiles ? CoachProfiles.list() : []).filter(function(p){ return p.onboarded; });
+    var rows = list.map(function(p){
+      var sub = (api.EXPERIENCE_LEVELS[p.experienceLevel]||{}).label || "";
+      return '<div class="racine-profile-pick">'+
+        '<div><strong>'+esc(p.name)+'</strong><small>'+esc(sub)+(p.bodyweightLb?(' · '+esc(p.bodyweightLb)+' lb'):'')+'</small></div>'+
+        '<button class="btn-accent" data-pick="'+esc(p.id)+'">Continuer</button>'+
+      '</div>';
+    }).join("");
+    var card = el(
+      '<div class="racine-gate-card">'+
+        '<div class="racine-gate-eyebrow">Racine · multi-utilisateur</div>'+
+        '<div class="racine-gate-title">Qui s\'entraîne aujourd\'hui ?</div>'+
+        '<div class="racine-gate-sub">Chaque profil a ses propres charges, son propre historique et son propre rythme de progression. Tout reste sur cet appareil.</div>'+
+        rows+
+        '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
+        '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
+      '</div>'
+    );
+    Array.prototype.forEach.call(card.querySelectorAll("[data-pick]"), function(btn){
+      btn.onclick = function(){
+        CoachProfiles.setActive(btn.getAttribute("data-pick"));
+        closeGate();
+        window.coachFullBoot();
+      };
+    });
+    card.querySelector("#racineNewProfileBtn").onclick = function(){
+      wiz = { mode:"create", step:"welcome", answers:{}, testIndex:0 };
+      render();
+    };
+    var closeBtn = card.querySelector("#racineCloseGateBtn");
+    if(closeBtn){
+      if(CoachProfiles.hasActiveOnboardedProfile()){
+        closeBtn.onclick = function(){ closeGate(); };
+      } else {
+        closeBtn.remove();
+      }
+    }
+    return card;
+  }
+
+  // ── Écran : bienvenue / infos de base ───────────────────────────────────
+  function renderWelcome(){
+    var levels = api.EXPERIENCE_LEVELS;
+    var card = el(
+      '<div class="racine-gate-card">'+
+        '<div class="racine-gate-eyebrow">Nouveau profil</div>'+
+        '<div class="racine-gate-title">On commence par te connaître</div>'+
+        '<div class="racine-gate-sub">Ça prend 2 minutes. On va ensuite tester rapidement 5 mouvements clés pour partir avec des poids qui te ressemblent — pas les miens.</div>'+
+        '<label>Prénom ou surnom</label>'+
+        '<input id="rwName" type="text" class="input-field" placeholder="Ex. Charles"/>'+
+        '<label>Poids de corps (optionnel)</label>'+
+        '<input id="rwBw" type="number" class="input-field" placeholder="lb"/>'+
+        '<label>Niveau d\'expérience</label>'+
+        '<div class="btn-row" id="rwLevelRow">'+
+          Object.keys(levels).map(function(k){
+            return '<button type="button" class="btn-ghost" data-level="'+k+'">'+esc(levels[k].label)+'</button>';
+          }).join("")+
+        '</div>'+
+        '<p class="field-hint" id="rwLevelHint">&nbsp;</p>'+
+        '<div class="btn-row">'+
+          '<button class="btn-accent" id="rwNext">Suivant</button>'+
+        '</div>'+
+        '<p id="rwError" class="status-msg err"></p>'+
+      '</div>'
+    );
+    var selectedLevel = "intermediaire";
+    var levelBtns = card.querySelectorAll("[data-level]");
+    function markLevel(){
+      Array.prototype.forEach.call(levelBtns, function(b){
+        b.className = (b.getAttribute("data-level")===selectedLevel) ? "btn-accent" : "btn-ghost";
+      });
+      card.querySelector("#rwLevelHint").textContent = (levels[selectedLevel]||{}).hint || "";
+    }
+    Array.prototype.forEach.call(levelBtns, function(b){
+      b.onclick = function(){ selectedLevel = b.getAttribute("data-level"); markLevel(); };
+    });
+    markLevel();
+    card.querySelector("#rwNext").onclick = function(){
+      var name = card.querySelector("#rwName").value.trim();
+      if(!name){ card.querySelector("#rwError").textContent = "Donne au moins un prénom ou un surnom."; return; }
+      var bw = Number(card.querySelector("#rwBw").value)||null;
+      var meta = { name:name, bodyweightLb:bw, experienceLevel:selectedLevel,
+        aggressiveness:(levels[selectedLevel]||levels.intermediaire).defaultAggressiveness };
+      if(wiz.mode === "create" && !wiz.profileCreated){
+        // Nettoie les brouillons abandonnés d'une création précédente non terminée.
+        if(window.CoachProfiles){
+          CoachProfiles.list().filter(function(p){ return !p.onboarded; }).forEach(function(p){ CoachProfiles.remove(p.id); });
+          CoachProfiles.create(meta);
+        }
+        wiz.profileCreated = true;
+      }
+      wiz.meta = meta;
+      wiz.step = "test";
+      wiz.testIndex = 0;
+      render();
+    };
+    addCancelAffordance(card);
+    return card;
+  }
+
+  // ── Écrans : mini-test guidé (5 mouvements) ─────────────────────────────
+  function renderTest(){
+    var plan = api.TEST_PLAN;
+    var test = plan[wiz.testIndex];
+    var card = el(
+      '<div class="racine-gate-card">'+
+        '<div class="racine-gate-eyebrow">Mini-test · '+(wiz.testIndex+1)+' / '+plan.length+'</div>'+
+        stepDots(plan.length, wiz.testIndex)+
+        '<div class="racine-gate-title">'+esc(test.title)+'</div>'+
+        '<div class="racine-gate-sub"><strong>'+esc(test.subtitle)+'</strong><br>'+esc(test.guidance)+'</div>'+
+        '<div class="racine-test-row">'+
+          '<div style="flex:1"><label>Charge (lb)</label><input id="rtWeight" type="number" class="input-field" placeholder="ex. 135"/></div>'+
+          '<div style="flex:1"><label>Reps faites</label><input id="rtReps" type="number" class="input-field" placeholder="ex. 8"/></div>'+
+          '<div style="flex:1"><label>RPE ressenti</label><input id="rtRpe" type="number" class="input-field" placeholder="7-8" step="0.5"/></div>'+
+        '</div>'+
+        '<div class="btn-row">'+
+          '<button class="btn-accent" id="rtNext">'+(wiz.testIndex<plan.length-1?"Suivant":"Voir mon estimation")+'</button>'+
+        '</div>'+
+        '<button class="btn-ghost racine-test-skip" id="rtSkip" style="width:100%">Je ne peux pas tester ce mouvement — estime pour moi</button>'+
+      '</div>'
+    );
+    function goNext(answer){
+      wiz.answers[test.id] = answer;
+      if(wiz.testIndex < plan.length-1){
+        wiz.testIndex++;
+      } else {
+        wiz.step = "review";
+      }
+      render();
+    }
+    card.querySelector("#rtNext").onclick = function(){
+      var w = Number(card.querySelector("#rtWeight").value)||0;
+      var r = Number(card.querySelector("#rtReps").value)||0;
+      var rpe = Number(card.querySelector("#rtRpe").value)||0;
+      goNext((w>0&&r>0) ? {weight:w, reps:r, rpe:rpe} : null);
+    };
+    card.querySelector("#rtSkip").onclick = function(){ goNext(null); };
+    addCancelAffordance(card);
+    return card;
+  }
+
+  // ── Écran : revue / confirmation ────────────────────────────────────────
+  function aggressivenessLabel(v){
+    if(v < 0.8) return "Conservateur";
+    if(v < 1.1) return "Modéré";
+    if(v < 1.35) return "Agressif";
+    return "Très agressif";
+  }
+  function renderReview(){
+    var computed = api.computeFromAnswers(wiz.answers, wiz.meta.experienceLevel);
+    wiz.computed = computed;
+    var fieldMapPreview = (typeof PR_FIELD_MAP==="object") ? PR_FIELD_MAP : null;
+    var rows = "";
+    if(fieldMapPreview){
+      Object.keys(fieldMapPreview).forEach(function(id){
+        var cfg = fieldMapPreview[id];
+        var val = computed.values[cfg.profile];
+        if(val===undefined) return;
+        rows += '<div class="racine-review-item"><label>'+esc(cfg.label)+'</label>'+
+          '<input type="number" data-profile-key="'+esc(cfg.profile)+'" value="'+esc(val)+'"/></div>';
+      });
+    }
+    var agg = wiz.meta.aggressiveness;
+    var card = el(
+      '<div class="racine-gate-card">'+
+        '<div class="racine-gate-eyebrow">Dernière étape</div>'+
+        '<div class="racine-gate-title">Tes poids de départ estimés</div>'+
+        '<div class="racine-gate-sub">Calculés à partir de ce que tu as testé. Tu peux ajuster chaque valeur avant de confirmer — le moteur de charge prendra ensuite le relais à chaque séance.</div>'+
+        '<div class="racine-review-grid">'+rows+'</div>'+
+        '<label style="margin-top:16px">Agressivité de la progression</label>'+
+        '<div class="racine-agg-row">'+
+          '<input id="rrAgg" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
+          '<span class="racine-agg-label" id="rrAggLabel">'+aggressivenessLabel(agg)+'</span>'+
+        '</div>'+
+        '<p class="field-hint">Plus bas = montées de charge plus prudentes. Plus haut = le moteur propose des hausses plus rapidement quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</p>'+
+        '<label>Date de compétition (optionnel)</label>'+
+        '<input id="rrCompDate" type="date" class="input-field"/>'+
+        '<div class="btn-row">'+
+          '<button class="btn-accent" id="rrConfirm">Confirmer et commencer</button>'+
+        '</div>'+
+      '</div>'
+    );
+    var aggInput = card.querySelector("#rrAgg");
+    aggInput.oninput = function(){
+      card.querySelector("#rrAggLabel").textContent = aggressivenessLabel(Number(aggInput.value));
+    };
+    card.querySelector("#rrConfirm").onclick = function(){
+      Array.prototype.forEach.call(card.querySelectorAll("[data-profile-key]"), function(inp){
+        var key = inp.getAttribute("data-profile-key");
+        var v = Number(inp.value);
+        if(!isNaN(v)) computed.values[key] = v;
+      });
+      if(typeof api.ratiosFromValues==="function"){
+        computed.ratios = api.ratiosFromValues(computed.values, wiz.meta.experienceLevel);
+      }
+      wiz.meta.aggressiveness = Number(aggInput.value)||1;
+      var compDate = card.querySelector("#rrCompDate").value;
+      wiz.meta.competitionDateIso = compDate || null;
+      api.applyToActiveProfile(wiz.meta, computed);
+      wiz = null;
+      closeGate();
+      window.coachFullBoot();
+    };
+    addCancelAffordance(card);
+    return card;
+  }
+
+  function render(){
+    var gate = ensureGateEl();
+    gate.innerHTML = "";
+    var card;
+    if(!wiz){
+      card = renderPicker();
+    } else if(wiz.step === "welcome"){
+      card = renderWelcome();
+    } else if(wiz.step === "test"){
+      card = renderTest();
+    } else {
+      card = renderReview();
+    }
+    gate.appendChild(card);
+  }
+
+  // ── Entrée principale appelée par app.js au boot si aucun profil actif/onboardé.
+  api.start = function(){
+    var hasOnboarded = (window.CoachProfiles ? CoachProfiles.list() : []).some(function(p){ return p.onboarded; });
+    if(hasOnboarded){
+      wiz = null; // écran sélecteur
+    } else {
+      wiz = { mode:"create", step:"welcome", answers:{}, testIndex:0 };
+    }
+    render();
+  };
+
+  // Ouvre directement le sélecteur de profil (depuis les réglages, "Changer de profil").
+  api.openPicker = function(){ wiz = null; render(); };
+
+  // Ouvre directement la création d'un nouveau profil (depuis les réglages).
+  api.openCreate = function(){ wiz = { mode:"create", step:"welcome", answers:{}, testIndex:0 }; render(); };
+
+  // Relance le mini-test pour le profil ACTUELLEMENT actif (recalibrage).
+  api.openRecalibrate = function(){
+    var p = window.CoachProfiles ? CoachProfiles.getActive() : null;
+    wiz = { mode:"recalibrate", step:"welcome", answers:{}, testIndex:0 };
+    render();
+    if(p){
+      var nameInput = document.getElementById("rwName");
+      var bwInput = document.getElementById("rwBw");
+      if(nameInput) nameInput.value = p.name||"";
+      if(bwInput && p.bodyweightLb) bwInput.value = p.bodyweightLb;
+      var btn = document.querySelector('[data-level="'+(p.experienceLevel||"intermediaire")+'"]');
+      if(btn) btn.click();
+    }
+  };
+
+  // ── Panneau "Profil" des réglages (vue Réglages, #profileSettingsBody) ─
+  api.renderSettingsPanel = function(){
+    var host = document.getElementById("profileSettingsBody");
+    if(!host) return;
+    var profiles = window.CoachProfiles ? CoachProfiles.list() : [];
+    var active = window.CoachProfiles ? CoachProfiles.getActive() : null;
+    var lvl = active ? (api.EXPERIENCE_LEVELS[active.experienceLevel]||{}).label : "";
+    var agg = (active && Number(active.aggressiveness)) || 1;
+    var others = profiles.filter(function(p){ return !active || p.id!==active.id; });
+    host.innerHTML =
+      '<p><strong>'+esc(active?active.name:"—")+'</strong>'+(lvl?(' · '+esc(lvl)):'')+(active&&active.bodyweightLb?(' · '+esc(active.bodyweightLb)+' lb'):'')+'</p>'+
+      '<label>Agressivité de la progression</label>'+
+      '<div class="racine-agg-row">'+
+        '<input id="settingsAggSlider" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
+        '<span class="racine-agg-label" id="settingsAggLabel">'+aggressivenessLabel(agg)+'</span>'+
+      '</div>'+
+      '<div class="btn-row">'+
+        '<button id="recalibrateBtn" class="btn-ghost">Recalibrer mes poids</button>'+
+        '<button id="switchProfileBtn" class="btn-ghost">Changer de profil'+(others.length?(' ('+others.length+')'):'')+'</button>'+
+        '<button id="newProfileSettingsBtn" class="btn-ghost">Nouveau profil</button>'+
+      '</div>'+
+      '<div class="btn-row">'+
+        '<button id="exportProfileBtn" class="btn-ghost">Exporter ce profil (JSON)</button>'+
+        '<label class="btn-ghost file-label">Importer un profil<input id="importProfileFile" type="file" accept="application/json"/></label>'+
+      '</div>'+
+      '<div class="btn-row">'+
+        '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
+      '</div>'+
+      '<p id="profileSettingsStatus" class="status-msg"></p>';
+    api.bindSettingsPanel();
+  };
+  api.bindSettingsPanel = function(){
+    var slider = document.getElementById("settingsAggSlider");
+    if(slider){
+      slider.oninput = function(){
+        document.getElementById("settingsAggLabel").textContent = aggressivenessLabel(Number(slider.value));
+      };
+      slider.onchange = function(){
+        var v = Number(slider.value)||1;
+        if(typeof state!=="object"||!state.profile) return;
+        state.profile.aggressiveness = v;
+        if(typeof save==="function") save();
+        var id = window.CoachProfiles && CoachProfiles.getActiveId();
+        if(id) CoachProfiles.update(id, {aggressiveness:v});
+        var s=document.getElementById("profileSettingsStatus");
+        if(s){s.textContent="✅ Agressivité mise à jour.";s.className="status-msg ok";}
+      };
+    }
+    var recal = document.getElementById("recalibrateBtn");
+    if(recal) recal.onclick = function(){ api.openRecalibrate(); };
+    var switchBtn = document.getElementById("switchProfileBtn");
+    if(switchBtn) switchBtn.onclick = function(){ api.openPicker(); };
+    var newBtn = document.getElementById("newProfileSettingsBtn");
+    if(newBtn) newBtn.onclick = function(){ api.openCreate(); };
+    var exportBtn = document.getElementById("exportProfileBtn");
+    if(exportBtn) exportBtn.onclick = function(){
+      var id = CoachProfiles.getActiveId();
+      var blob = CoachProfiles.exportProfileBlob(id);
+      if(!blob) return;
+      var text = JSON.stringify(blob, null, 2);
+      var name = "racine-profil-"+(blob.profile.name||"profil").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".json";
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([text],{type:"application/json"}));
+      a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+    var importFile = document.getElementById("importProfileFile");
+    if(importFile) importFile.onchange = function(e){
+      var file = e.target.files[0]; if(!file) return;
+      var r = new FileReader();
+      r.onload = function(ev){
+        try{
+          var blob = JSON.parse(ev.target.result);
+          var id = CoachProfiles.importProfileBlob(blob);
+          if(id){ closeGate(); window.coachFullBoot(); }
+        }catch(err){
+          var s=document.getElementById("profileSettingsStatus");
+          if(s){s.textContent="Fichier de profil invalide.";s.className="status-msg err";}
+        }
+      };
+      r.readAsText(file);
+    };
+    var delBtn = document.getElementById("deleteProfileBtn");
+    if(delBtn) delBtn.onclick = function(){
+      var active = CoachProfiles.getActive();
+      if(!active) return;
+      if(!confirm("Supprimer définitivement le profil \""+active.name+"\" et toutes ses données locales ?")) return;
+      CoachProfiles.remove(active.id);
+      closeGate();
+      if(CoachProfiles.hasActiveOnboardedProfile()){
+        window.coachFullBoot();
+      } else {
+        api.start();
+      }
+    };
+  };
+})();
