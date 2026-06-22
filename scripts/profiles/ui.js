@@ -331,6 +331,58 @@
     }
   };
 
+  // ── Écran : tableau de bord clients (aperçu de tous les profils locaux) ──
+  function formatLastSession(st){
+    var hist = (st && Array.isArray(st.history)) ? st.history : [];
+    var dates = hist.map(function(s){ return s && s.date; }).filter(Boolean).sort();
+    var last = dates[dates.length-1];
+    return last ? ("Dernière séance : "+last) : "Aucune séance enregistrée";
+  }
+  function renderClientDashboard(){
+    var profiles = (window.CoachProfiles ? CoachProfiles.list() : []).filter(function(p){ return p.onboarded; });
+    var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
+    var rows = profiles.map(function(p){
+      var blob = CoachProfiles.exportProfileBlob(p.id) || {};
+      var st = blob.state || {};
+      var lvl = (api.EXPERIENCE_LEVELS[p.experienceLevel]||{}).label || "";
+      var programId = st.cycle && st.cycle.goal;
+      var programLabel = (window.focusConfigs && programId && window.focusConfigs[programId]) ? window.focusConfigs[programId].label : "Aucun programme actif";
+      var weekLabel = st.week ? ("Semaine "+st.week) : "";
+      var isActive = p.id === activeId;
+      return '<div class="racine-profile-pick">'+
+        '<div><strong>'+esc(p.name)+(isActive?' (actif)':'')+'</strong><small>'+esc(lvl)+'</small>'+
+        '<br><small>'+esc(programLabel)+(weekLabel?(' · '+esc(weekLabel)):'')+'</small>'+
+        '<br><small>'+esc(formatLastSession(st))+'</small></div>'+
+        '<button class="btn-ghost" data-dashpick="'+esc(p.id)+'">Voir</button>'+
+      '</div>';
+    }).join("") || '<p class="racine-gate-sub">Aucun profil pour l\'instant.</p>';
+    var card = el(
+      '<div class="racine-gate-card">'+
+        '<div class="racine-gate-eyebrow">Racine · suivi</div>'+
+        '<div class="racine-gate-title">Tableau de bord clients</div>'+
+        '<div class="racine-gate-sub">Aperçu de tous les profils présents sur cet appareil (le tien, et ceux importés via un fichier reçu d\'un client). "Voir" bascule dans ce profil pour le consulter en détail.</div>'+
+        rows+
+        '<button class="btn-ghost" id="racineDashCloseBtn" style="width:100%;margin-top:10px">Fermer</button>'+
+      '</div>'
+    );
+    Array.prototype.forEach.call(card.querySelectorAll("[data-dashpick]"), function(btn){
+      btn.onclick = function(){
+        CoachProfiles.setActive(btn.getAttribute("data-dashpick"));
+        closeGate();
+        window.coachFullBoot();
+      };
+    });
+    card.querySelector("#racineDashCloseBtn").onclick = function(){ closeGate(); };
+    return card;
+  }
+  // Ouvre le tableau de bord sans toucher au profil actif (lecture seule tant
+  // qu'on ne clique pas "Voir"). Indépendant de l'assistant d'intégration.
+  api.openClientDashboard = function(){
+    var gate = ensureGateEl();
+    gate.innerHTML = "";
+    gate.appendChild(renderClientDashboard());
+  };
+
   // ── Panneau "Profil" des réglages (vue Réglages, #profileSettingsBody) ─
   api.renderSettingsPanel = function(){
     var host = document.getElementById("profileSettingsBody");
@@ -351,6 +403,9 @@
         '<button id="recalibrateBtn" class="btn-ghost">Recalibrer mes poids</button>'+
         '<button id="switchProfileBtn" class="btn-ghost">Changer de profil'+(others.length?(' ('+others.length+')'):'')+'</button>'+
         '<button id="newProfileSettingsBtn" class="btn-ghost">Nouveau profil</button>'+
+      '</div>'+
+      '<div class="btn-row">'+
+        '<button id="clientDashboardBtn" class="btn-ghost">Tableau de bord clients'+(profiles.length>1?(' ('+profiles.length+')'):'')+'</button>'+
       '</div>'+
       '<div class="btn-row">'+
         '<button id="exportProfileBtn" class="btn-ghost">Exporter ce profil (JSON)</button>'+
@@ -385,6 +440,8 @@
     if(switchBtn) switchBtn.onclick = function(){ api.openPicker(); };
     var newBtn = document.getElementById("newProfileSettingsBtn");
     if(newBtn) newBtn.onclick = function(){ api.openCreate(); };
+    var dashBtn = document.getElementById("clientDashboardBtn");
+    if(dashBtn) dashBtn.onclick = function(){ api.openClientDashboard(); };
     var exportBtn = document.getElementById("exportProfileBtn");
     if(exportBtn) exportBtn.onclick = function(){
       var id = CoachProfiles.getActiveId();
