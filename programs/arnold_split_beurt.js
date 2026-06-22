@@ -1,4 +1,4 @@
-// Coach Bertin — Arnold Split Beurt
+// Coach Bertin — Arnold Split
 // Objectif : bloc hors-saison hypertrophie, rotation continue Pecs+Dos / Épaules+Bras / Jambes
 // sur 4 jours d'entraînement (lundi, mardi, jeudi, vendredi), durée ouverte.
 // Programme réel connecté au moteur de charge (CoachCharge), pas un mode local isolé.
@@ -7,7 +7,7 @@
 window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
 window.COACH_BERTIN_PROGRAMS.arnold_split_beurt = {
   id: "arnold_split_beurt",
-  label: "Arnold Split Beurt",
+  label: "Arnold Split",
   phase: 0,
   phaseName: "Hors-saison hypertrophie",
   phaseEnd: "Durée ouverte — retour CrossFit quand prêt.",

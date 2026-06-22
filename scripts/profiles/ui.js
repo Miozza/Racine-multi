@@ -237,8 +237,15 @@
           '<span class="racine-agg-label" id="rrAggLabel">'+aggressivenessLabel(agg)+'</span>'+
         '</div>'+
         '<p class="field-hint">Plus bas = montées de charge plus prudentes. Plus haut = le moteur propose des hausses plus rapidement quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</p>'+
-        '<label>Date de compétition (optionnel)</label>'+
-        '<input id="rrCompDate" type="date" class="input-field"/>'+
+        '<label style="margin-top:16px">As-tu un objectif de compétition à long terme à suivre ?</label>'+
+        '<div class="racine-toggle-row">'+
+          '<label><input type="radio" name="rrHasGoal" id="rrHasGoalNo" value="no" checked/> Non, je fais des cycles sans objectif daté</label>'+
+          '<label><input type="radio" name="rrHasGoal" id="rrHasGoalYes" value="yes"/> Oui, j\'ai une date à viser</label>'+
+        '</div>'+
+        '<div id="rrCompDateWrap" style="display:none">'+
+          '<label>Date de compétition</label>'+
+          '<input id="rrCompDate" type="date" class="input-field"/>'+
+        '</div>'+
         '<div class="btn-row">'+
           '<button class="btn-accent" id="rrConfirm">Confirmer et commencer</button>'+
         '</div>'+
@@ -248,6 +255,12 @@
     aggInput.oninput = function(){
       card.querySelector("#rrAggLabel").textContent = aggressivenessLabel(Number(aggInput.value));
     };
+    var compDateWrap = card.querySelector("#rrCompDateWrap");
+    Array.prototype.forEach.call(card.querySelectorAll("[name='rrHasGoal']"), function(radio){
+      radio.onchange = function(){
+        compDateWrap.style.display = card.querySelector("#rrHasGoalYes").checked ? "" : "none";
+      };
+    });
     card.querySelector("#rrConfirm").onclick = function(){
       Array.prototype.forEach.call(card.querySelectorAll("[data-profile-key]"), function(inp){
         var key = inp.getAttribute("data-profile-key");
@@ -258,7 +271,8 @@
         computed.ratios = api.ratiosFromValues(computed.values, wiz.meta.experienceLevel);
       }
       wiz.meta.aggressiveness = Number(aggInput.value)||1;
-      var compDate = card.querySelector("#rrCompDate").value;
+      var hasGoal = card.querySelector("#rrHasGoalYes").checked;
+      var compDate = hasGoal ? card.querySelector("#rrCompDate").value : "";
       wiz.meta.competitionDateIso = compDate || null;
       api.applyToActiveProfile(wiz.meta, computed);
       wiz = null;

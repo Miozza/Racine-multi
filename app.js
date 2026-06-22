@@ -10,13 +10,15 @@ var APP_VERSION = "V1.0-multi";
 // Objectif compétition : optionnel, propre à chaque profil (state.profile.competitionDateIso).
 // Repli neutre si rien n'est défini, pour ne jamais casser la Route PC.
 var COMPETITION_DATE = new Date(Date.now() + 180*24*60*60*1000);
+var HAS_COMPETITION_GOAL = false;
 function recomputeCompetitionDate(){
   var iso = state.profile && state.profile.competitionDateIso;
   if(iso){
     var d = new Date(iso);
-    if(!isNaN(d.getTime())){ COMPETITION_DATE = d; return; }
+    if(!isNaN(d.getTime())){ COMPETITION_DATE = d; HAS_COMPETITION_GOAL = true; return; }
   }
   COMPETITION_DATE = new Date(Date.now() + 180*24*60*60*1000);
+  HAS_COMPETITION_GOAL = false;
 }
 var PHASE_TARGETS = {
   1: { bench:null, backSquat:null, note:"Épaules saines, posture améliorée, récupération post-compétition." },
@@ -337,10 +339,6 @@ function loadCustomCharges(){
 }
 function saveCustomCharges(){try{CoachState.writeCustomCharges(customCharges);}catch(e){}}
 
-function getToken(){return CoachSync.getToken();}
-function setToken(t){return CoachSync.setToken(t);}
-function clearToken(){return CoachSync.clearToken();}
-
 function buildCycleStatePayload(){
   return {
     version:APP_VERSION,
@@ -419,14 +417,14 @@ function progressionPct(index){return profileMultiplier(index);}
 function targetReps(index,kind){
   var goal=state.cycle.goal,week=weekIdx();
   if(kind==="main")return focus().targetReps[week]||5;
-  if(kind==="accessory"){if(goal==="shoulders3d")return 15;if(goal==="strength")return 8;if(goal==="weightlifting")return 3;if(goal==="posture")return 12;return 10;}
+  if(kind==="accessory"){if(goal==="shoulders3d")return 15;if(goal==="strength")return 8;if(goal==="weightlifting")return 3;return 10;}
   if(kind==="wod")return goal==="shoulders3d"?12:8;
   return focus().targetReps[week]||5;
 }
 function setScheme(kind,index){
   var goal=state.cycle.goal,week=weekIdx();
   if(kind==="main")return focus().sets[week];
-  if(kind==="accessory"){if(goal==="shoulders3d")return"3-4 x 15";if(goal==="strength")return"3 x 8";if(goal==="weightlifting")return"5 x 3 technique";if(goal==="posture")return"3 x 12";if(goal==="engine")return"2 x 10";return"3 x 10";}
+  if(kind==="accessory"){if(goal==="shoulders3d")return"3-4 x 15";if(goal==="strength")return"3 x 8";if(goal==="weightlifting")return"5 x 3 technique";if(goal==="engine")return"2 x 10";return"3 x 10";}
   return"—";
 }
 function restFor(kind){
@@ -927,8 +925,7 @@ function markDayMissed(day, reason){
   state.cycleState=buildCycleStatePayload();
   save();
   render();
-  if(getToken())savePersistentStateToGitHub(getToken());
-  return true;
+    return true;
 }
 
 function canAdvanceWeek(){
@@ -947,8 +944,7 @@ function advanceWeek(reason){
     state.completedDays = [];
     state.cycleState=buildCycleStatePayload();
     save();
-    if(getToken())savePersistentStateToGitHub(getToken());
-    render();
+        render();
     renderWeekProgress();
   }
 }
@@ -1073,17 +1069,6 @@ function renderSyncStatusIndicator(){
 }
 function openSyncSettings(){
   switchView("settings");
-}
-
-// ─── Sauvegarde locale (ancien emplacement des helpers GitHub) ─────────────
-// V1 multi-utilisateur : toutes les données vivent en local (CoachState),
-// par profil. Ces fonctions restent comme stubs inertes pour ne pas casser
-// d'anciens appels conditionnels (if(getToken())...) ailleurs dans le fichier.
-async function savePersistentStateToGitHub(token){
-  return {ok:false,msg:"Synchronisation désactivée : Racine fonctionne en local uniquement."};
-}
-async function saveToGitHub(payload){
-  return {ok:false,msg:"Synchronisation désactivée : Racine fonctionne en local uniquement."};
 }
 
 
@@ -1222,7 +1207,7 @@ function renderWeeks(){
   var daysLeft=daysToCompetition();
   if(wg)wg.innerHTML=wi.goal+
     (phaseInfo?"<br><small style='color:var(--accent2)'>"+phaseInfo+"</small>":"")+
-    "<br><small style='color:var(--muted)'>⏱ "+daysLeft+" jours avant la compétition</small>";
+    (HAS_COMPETITION_GOAL?"<br><small style='color:var(--muted)'>⏱ "+daysLeft+" jours avant la compétition</small>":"");
   renderWeekProgress();
 }
 function renderDays(){
@@ -1440,9 +1425,10 @@ function renderSavedCyclesHtml(){
 }
 
 function renderRoadmapCycleHtml(){
+  if(!HAS_COMPETITION_GOAL) return '';
   var r=roadmapSummary();
   var cls=r.status==="OK"?"ok":(r.status==="serré"?"warn":"danger");
-  var html='<div class="roadmap-card"><div><strong>Route vers janvier 2027</strong><br><small>Calcul dynamique : durée des phases restantes, pas les vieux phaseEnd statiques.</small></div>'+
+  var html='<div class="roadmap-card"><div><strong>Route compétition</strong><br><small>Calcul dynamique : durée des phases restantes, pas les vieux phaseEnd statiques.</small></div>'+
     '<div class="roadmap-status '+cls+'">'+CoachUI.escapeHtml(r.status.toUpperCase())+' · marge '+CoachUI.escapeHtml(String(r.margin))+' sem.</div>'+
     '<div class="roadmap-list">';
   r.rows.forEach(function(row){html+='<div class="roadmap-row"><span>'+(row.current?'▶ ':'')+CoachUI.escapeHtml(row.label)+'</span><b>'+CoachUI.escapeHtml(String(row.remainingWeeks))+' sem.</b><small>'+formatRoadDate(row.start)+' → '+formatRoadDate(row.end)+'</small></div>';});
@@ -1481,34 +1467,29 @@ function saveCycle(){
   state.cycle.goal=selected;previewCycleGoal=selected;state.week=1;state.day=(focusConfigs[selected].days||DEFAULT_PROGRAM_DAYS)[0]||"lundi";state.completedDays=[];state.missedDays=[];state.deloadAlert=false;state.activeCycleStartDate=startDate;
   applyCycleStartDate(startDate,{setDayFromToday:true,resetWeekTracking:true});
   resetPreviewPosition(selected);
-  save();render();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  save();render();renderCycle();}
 function newCycle(){ archiveActiveCycle(); }
 function archiveActiveCycle(){
   if(!confirm("Archiver le cycle actif actuel?"))return;
   state.archivedCycles=state.archivedCycles||[];
   state.archivedCycles.push(Object.assign(snapshotCurrentCycle("Archivé"),{archivedAt:nowIso(),status:"archived"}));
-  state.completedDays=[];state.missedDays=[];state.cycleState=buildCycleStatePayload();save();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  state.completedDays=[];state.missedDays=[];state.cycleState=buildCycleStatePayload();save();renderCycle();}
 function resumeSavedCycle(idx){
   var saved=state.savedCycles||[], c=saved[idx];
   if(!c){alert("Cycle introuvable.");return;}
   if(!focusConfigs[c.id]){alert("Programme introuvable : "+c.id+". Restaure le fichier avant de reprendre ce cycle.");return;}
   if(!confirm("Reprendre “"+(c.label||c.id)+"” S"+c.week+" "+dayLabel(c.day)+"? Le cycle actuel sera mis en pause."))return;
   pauseCurrentCycle("Mis en pause par reprise d’un autre cycle");
-  saved.splice(idx,1);state.savedCycles=saved;state.cycle.goal=c.id;previewCycleGoal=c.id;state.week=Number(c.week)||1;state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();ensureCurrentDay();state.cycleState=buildCycleStatePayload();resetPreviewPosition(c.id);save();render();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  saved.splice(idx,1);state.savedCycles=saved;state.cycle.goal=c.id;previewCycleGoal=c.id;state.week=Number(c.week)||1;state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();ensureCurrentDay();state.cycleState=buildCycleStatePayload();resetPreviewPosition(c.id);save();render();renderCycle();}
 function archiveSavedCycle(idx){
   var saved=state.savedCycles||[], c=saved[idx];if(!c)return;
   if(!confirm("Archiver ce cycle en pause?"))return;
-  state.archivedCycles=state.archivedCycles||[];state.archivedCycles.push(Object.assign({},c,{archivedAt:nowIso(),status:"archived"}));saved.splice(idx,1);state.savedCycles=saved;state.cycleState=buildCycleStatePayload();save();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  state.archivedCycles=state.archivedCycles||[];state.archivedCycles.push(Object.assign({},c,{archivedAt:nowIso(),status:"archived"}));saved.splice(idx,1);state.savedCycles=saved;state.cycleState=buildCycleStatePayload();save();renderCycle();}
 function abandonSavedCycle(idx){
   var saved=state.savedCycles||[], c=saved[idx];if(!c)return;
   if(!confirm("Abandonner ce cycle en pause? Il disparaîtra de la liste des cycles récupérables."))return;
   state.archivedCycles=state.archivedCycles||[];state.archivedCycles.push(Object.assign({},c,{archivedAt:nowIso(),status:"abandoned",reason:"Abandonné"}));
-  saved.splice(idx,1);state.savedCycles=saved;state.cycleState=buildCycleStatePayload();save();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  saved.splice(idx,1);state.savedCycles=saved;state.cycleState=buildCycleStatePayload();save();renderCycle();}
 
 function resumeArchivedCycle(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
@@ -1522,8 +1503,7 @@ function resumeArchivedCycle(idx){
   state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];
   state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();
   ensureCurrentDay();state.cycleState=buildCycleStatePayload();resetPreviewPosition(c.id);
-  save();render();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  save();render();renderCycle();}
 function restoreArchivedCycleToPaused(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
   if(!c)return;
@@ -1531,8 +1511,7 @@ function restoreArchivedCycleToPaused(idx){
   state.savedCycles=state.savedCycles||[];
   state.savedCycles.push(Object.assign({},c,{restoredAt:nowIso(),status:"paused",reason:"Restauré depuis archives"}));
   archived.splice(idx,1);state.archivedCycles=archived;
-  state.cycleState=buildCycleStatePayload();save();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  state.cycleState=buildCycleStatePayload();save();renderCycle();}
 function toggleArchivedCycleStatus(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
   if(!c)return;
@@ -1541,14 +1520,12 @@ function toggleArchivedCycleStatus(idx){
   if(!confirm("Marquer ce cycle comme "+label+"?"))return;
   c.status=next;c.statusChangedAt=nowIso();
   if(next==="abandoned")c.reason="Abandonné";
-  archived[idx]=c;state.archivedCycles=archived;state.cycleState=buildCycleStatePayload();save();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  archived[idx]=c;state.archivedCycles=archived;state.cycleState=buildCycleStatePayload();save();renderCycle();}
 function deleteArchivedCycle(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
   if(!c)return;
   if(!confirm("Supprimer définitivement ce cycle archivé/abandonné? Cette action ne supprimera pas les séances de l’historique, seulement la fiche du cycle."))return;
-  archived.splice(idx,1);state.archivedCycles=archived;state.cycleState=buildCycleStatePayload();save();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());
-}
+  archived.splice(idx,1);state.archivedCycles=archived;state.cycleState=buildCycleStatePayload();save();renderCycle();}
 
 // ─── Historique ──────────────────────────────────────────────────────────────
 
@@ -1970,7 +1947,7 @@ function bind(){
   var cg=$("cycleGoal");if(cg)cg.onchange=function(){resetPreviewPosition(cg.value);var csi=$("cycleStartDateInput");if(csi)csi.value=todayIsoDate();renderCycle();};
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};
-  var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();if(getToken())savePersistentStateToGitHub(getToken());}};
+  var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();}};
   var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){download("coach-bertin-historique.txt","Historique "+APP_VERSION+"\n\n"+JSON.stringify(state.history,null,2));};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique?")){state.history=[];save();renderHistory();}};
   var rcb=$("resetCustomChargesBtn");if(rcb)rcb.onclick=resetCustomCharges;
