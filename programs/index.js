@@ -18,7 +18,9 @@
     { id: "strength",           file: "programs/force.js",               name: "Force classique",                          phase: 0, macroRole: "buffer",      macroStatus: "tampon force", durationWeeks: 4, minWeeks: 3, maxWeeks: 5, fillsGap: ["force", "technique"] },
     { id: "heritage225",        file: "programs/heritage_225.js",        name: "Force longue durée — 12 semaines",          phase: 0, macroRole: "branch",      macroStatus: "branche après phase 3", durationWeeks: 12, minWeeks: 10, maxWeeks: 14, branchFrom: "force_performance" },
     { id: "arnold_split_beurt", file: "programs/arnold_split_beurt.js",  name: "Arnold Split — Hors-saison hypertrophie", phase: 0, macroRole: "buffer", macroStatus: "bloc hors-saison, durée ouverte", durationWeeks: 8, minWeeks: 4, maxWeeks: 16, fillsGap: ["hors-saison", "hypertrophie", "bodybuilding", "pause crossfit"] },
-    { id: "general_strength_3d", file: "programs/general_strength_3d.js", name: "Force / Hypertrophie générale — 3 jours/semaine", phase: 0, macroRole: "alternative", macroStatus: "disponible pour 3 jours/semaine", durationWeeks: 6, minWeeks: 5, maxWeeks: 7, fillsGap: ["3 jours", "temps limité", "full body"] }
+    { id: "general_strength_3d", file: "programs/general_strength_3d.js", name: "Force générale — 3 jours/semaine", phase: 0, macroRole: "alternative", macroStatus: "disponible pour 3 jours/semaine", durationWeeks: 6, minWeeks: 5, maxWeeks: 7, fillsGap: ["3 jours", "temps limité", "full body"] },
+    { id: "general_hypertrophy_2d", file: "programs/general_hypertrophy_2d.js", name: "Hypertrophie générale — 2 jours/semaine", phase: 0, macroRole: "alternative", macroStatus: "disponible pour 2 jours/semaine", durationWeeks: 6, minWeeks: 5, maxWeeks: 7, fillsGap: ["2 jours", "temps très limité", "full body"] },
+    { id: "general_hypertrophy_3d", file: "programs/general_hypertrophy_3d.js", name: "Hypertrophie générale — 3 jours/semaine", phase: 0, macroRole: "alternative", macroStatus: "disponible pour 3 jours/semaine", durationWeeks: 6, minWeeks: 5, maxWeeks: 7, fillsGap: ["3 jours", "temps limité", "full body", "hypertrophie"] }
   ];
 
   window.COACH_BERTIN_MACROCYCLE = {
@@ -26,7 +28,7 @@
     mainRoute: ["shoulders3d_v2", "hypertrophy_base", "force_performance", "competition_peak"],
     phase1Alternates: ["shoulders3d"],
     branchRoutes: { heritage225: ["shoulders3d_v2", "hypertrophy_base", "force_performance", "heritage225"] },
-    gapFillers: ["hypertrophie_fesse", "strength", "general_strength_3d"],
+    gapFillers: ["hypertrophie_fesse", "strength", "general_strength_3d", "general_hypertrophy_2d", "general_hypertrophy_3d"],
     branchAfterPhase3: ["competition_peak", "heritage225"]
   };
 })();
