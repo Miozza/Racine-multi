@@ -20,5 +20,13 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if(event.request.method !== "GET") return;
+  // L'image de splash ne change quasi jamais : la laisser passer par le cache
+  // HTTP normal du navigateur évite un re-téléchargement réseau à chaque
+  // ouverture (lent sur mobile) sans affecter le reste de l'app, qui doit
+  // rester toujours à jour.
+  if(event.request.url.indexOf("splash-racine") !== -1){
+    event.respondWith(fetch(event.request));
+    return;
+  }
   event.respondWith(fetch(event.request, { cache: "reload" }));
 });

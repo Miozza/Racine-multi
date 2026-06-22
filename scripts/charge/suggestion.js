@@ -220,6 +220,23 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     }
   }
 
+  // Plancher historique : un dernier set reellement reussi (reps cibles atteintes,
+  // pas un echec/recalibrage) ne doit jamais etre sous-suggere, meme apres les
+  // freins RPE generiques ci-dessus (qui ne plafonnent qu'une hausse). Place en
+  // dernier pour avoir le dernier mot : un frein peut traiter un poids plus
+  // lourd reussi au meme RPE comme "non resolu" et faire retomber suggested
+  // sous ce plancher, ce qui doit etre corrige ici.
+  if(!contextLimited&&!isDeload&&!isTechnicalMovement(label)&&last&&lastHasValidLoad){
+    var floorReps=coachHistoryRepsNumber(last);
+    var floorRepsReached=!target||!floorReps||floorReps>=target;
+    var floorBadStatuses=['recalibrating','watch','failed','major_fail','context_logged'];
+    var floorStatusOk=!last.status||floorBadStatuses.indexOf(last.status)===-1;
+    if(floorRepsReached&&floorStatusOk&&suggested<lastLoad){
+      suggested=lastLoad;mode="nearest";severity=severity==="ok"?"watch":severity;
+      reason="Plancher historique : dernier "+lastLoad+" lb x "+(floorReps||target)+" reellement reussi (reps atteintes, pas un echec). La suggestion ne redescend pas sous cette reference.";
+    }
+  }
+
   if(cap&&(cap.status==="recalibrating"||cap.status==="watch"||Number(cap.confidence||1)<0.55)){
     var capLoadRaw=(cap.currentLoad!==undefined&&cap.currentLoad!==null)?cap.currentLoad:cap.actualLoad;
     var capLoad=parseLoad(capLoadRaw);

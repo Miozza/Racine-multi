@@ -17,12 +17,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css?v=1.0"/>
+  <link rel="preload" as="image" href="assets/splash-racine.webp"/>
 </head>
 <body>
 
 <!-- ═══ SPLASH ═══ -->
 <div id="racineSplash" class="racine-splash" aria-hidden="true">
-  <img src="assets/splash-racine.png" alt="" class="racine-splash-icon"/>
+  <img src="assets/splash-racine.webp" alt="" class="racine-splash-icon"/>
 </div>
 
 <!-- ═══ TOPNAV ═══ -->
@@ -409,10 +410,32 @@
 <script src="app.js?v=1.0"></script>
 <script src="scripts/tms_session.js?v=1.0"></script>
 <script>
-  setTimeout(function(){
-    var splash = document.getElementById("racineSplash");
-    if(splash) splash.remove();
-  }, 2500);
+(function(){
+  var splash = document.getElementById("racineSplash");
+  if(!splash) return;
+  var img = splash.querySelector("img");
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hold = reduced ? 0 : 1250;
+  var done = false;
+  function hide(){
+    if(done) return;
+    done = true;
+    splash.classList.add("racine-splash-hide");
+    setTimeout(function(){ if(splash.parentNode) splash.remove(); }, reduced ? 50 : 650);
+  }
+  function afterLoad(){ setTimeout(hide, hold); }
+  if(img && !img.complete){
+    img.addEventListener("load", afterLoad);
+    img.addEventListener("error", hide);
+  } else {
+    afterLoad();
+  }
+  // Filet de sécurité dernier recours : ne pas laisser le splash bloqué à
+  // l'écran si l'image (ou son évènement load/error) n'arrive jamais. Seuil
+  // volontairement large (image ~168 Ko) pour ne pas couper le chargement
+  // avant son terme sur un réseau mobile lent.
+  setTimeout(hide, 8000);
+})();
 </script>
 <script>
   setTimeout(function(){

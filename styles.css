@@ -5947,8 +5947,9 @@ body.arnold-mode{
   background:#04060f;
   display:flex;align-items:center;justify-content:center;
   pointer-events:none;
+}
+.racine-splash.racine-splash-hide{
   animation:racineSplashOut .6s ease forwards;
-  animation-delay:1.8s;
 }
 .racine-splash-icon{
   width:100vw;height:100dvh;
@@ -5963,6 +5964,6 @@ body.arnold-mode{
   to{ opacity:0; visibility:hidden; }
 }
 @media (prefers-reduced-motion: reduce){
-  .racine-splash{ animation-duration:.01s; animation-delay:.9s; }
+  .racine-splash.racine-splash-hide{ animation-duration:.01s; }
   .racine-splash-icon{ animation:none; }
 }
