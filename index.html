@@ -170,6 +170,12 @@
 
 <!-- ═══ VUE : PARAMÈTRES ═══ -->
 <main id="settingsView">
+  <div class="panel" id="profileSettingsPanel">
+    <h2>Profil</h2>
+    <p class="muted">Tout reste local sur cet appareil. Aucune donnée n’est envoyée nulle part.</p>
+    <div id="profileSettingsBody">Chargement…</div>
+  </div>
+
   <div class="panel settings-priority-panel">
     <div class="system-tag" style="margin-bottom:12px">Réglages · priorité</div>
     <h2>Actions principales</h2>
@@ -199,12 +205,6 @@
       <button id="clearErrorLogBtn" class="btn-danger" type="button">Effacer erreurs</button>
     </div>
     <p id="errorLogStatus" class="status-msg"></p>
-  </div>
-
-  <div class="panel" id="profileSettingsPanel">
-    <h2>Profil</h2>
-    <p class="muted">Tout reste local sur cet appareil. Aucune donnée n’est envoyée nulle part.</p>
-    <div id="profileSettingsBody">Chargement…</div>
   </div>
 
   <div class="panel">
