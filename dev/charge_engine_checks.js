@@ -282,6 +282,21 @@ try {
   assert(frontSquatDecision.loadNum === 60, 'Plancher historique : Front Squat ne redescend pas sous le dernier 60 lb x8 RPE9 reellement reussi.');
   assert(/Plancher historique/.test(frontSquatDecision.reason), 'Plancher historique explique pourquoi la suggestion ne descend pas sous 60 lb.');
 
+  // 8d. Ecart de reps : un 1RM ou singulier recent ne se traduit pas directement
+  // en charge pour un format a plusieurs reps (ex: 210 lb x1 ne suggere pas
+  // 210+ lb pour un 5x5). La projection Epley doit ramener la suggestion vers
+  // une charge realiste pour la cible reelle.
+  resetState();
+  ctx.state.day = 'mardi';
+  const frontSquatMaxCtx = ctx.coachBuildMovementContext('Front Squat', { kind:'main', blockTitle:'Force principale', format:'1RM', day:'mardi', week:3 });
+  ctx.updateAthleteStateFromResults({
+    'Front Squat': { load:'210 lb', reps:1, rpe:8, planned:{ name:'Front Squat', reps:1, targetMin:1, kind:'main', format:'1RM', context:frontSquatMaxCtx } }
+  }, '2026-06-22');
+  const frontSquatTopSetCtx = ctx.coachBuildMovementContext('Front Squat', { kind:'main', blockTitle:'Force principale', format:'5x5', day:'mardi', week:3 });
+  const frontSquatRepGapDecision = ctx.guardedSuggestedLoadDecision('Front Squat', '195 lb', 5, frontSquatTopSetCtx);
+  assert(frontSquatRepGapDecision.loadNum === 185, 'Ecart de reps : un 210 lb x1 recent ne suggere pas la meme charge pour un 5x5 ; capacite projetee ramenee a 185 lb.');
+  assert(/Ecart de reps/.test(frontSquatRepGapDecision.reason), 'Ecart de reps explique la projection Epley utilisee pour limiter la suggestion.');
+
   // 9. Deload : la semaine 6 reduit la suggestion finale apres apprentissage historique.
   resetState();
   ctx.state.week = 6;

@@ -43,6 +43,11 @@
     return html + '</div>';
   }
 
+  // Étapes principales de l'assistant (hors écran "welcome", qui n'affiche pas
+  // les points). Utilisé pour le fil d'avancement affiché sur chaque page.
+  var WIZARD_STEPS = ["welcome", "keyMovements", "calculated", "aggressiveness"];
+  function wizStepIndex(){ return WIZARD_STEPS.indexOf(wiz && wiz.step); }
+
   function canCancel(){
     return (window.CoachProfiles ? CoachProfiles.list() : []).some(function(p){ return p.onboarded; });
   }
@@ -88,7 +93,7 @@
       };
     });
     card.querySelector("#racineNewProfileBtn").onclick = function(){
-      wiz = { mode:"create", step:"welcome", answers:{}, testIndex:0 };
+      wiz = { mode:"create", step:"welcome", answers:{} };
       render();
     };
     var closeBtn = card.querySelector("#racineCloseGateBtn");
@@ -154,64 +159,94 @@
         wiz.profileCreated = true;
       }
       wiz.meta = meta;
-      wiz.step = "test";
-      wiz.testIndex = 0;
+      wiz.step = "keyMovements";
       render();
     };
     addCancelAffordance(card);
     return card;
   }
 
-  // ── Écrans : mini-test guidé (5 mouvements) ─────────────────────────────
-  function renderTest(){
+  // ── Écran : mouvements clés (les 5 mini-tests sur une seule page) ───────
+  function renderKeyMovements(){
     var plan = api.TEST_PLAN;
-    var test = plan[wiz.testIndex];
+    var rows = plan.map(function(test, i){
+      return '<div style="margin-top:'+(i===0?"4":"18")+'px;padding-top:'+(i===0?"0":"14")+'px;'+(i===0?"":"border-top:1px solid var(--border);")+'">'+
+        '<strong>'+esc(test.title)+'</strong>'+
+        '<div class="field-hint">'+esc(test.subtitle)+' — '+esc(test.guidance)+'</div>'+
+        '<div class="racine-test-row">'+
+          '<div style="flex:1"><label>Charge (lb)</label><input id="rk_w_'+test.id+'" type="number" class="input-field" placeholder="ex. 135"/></div>'+
+          '<div style="flex:1"><label>Reps faites</label><input id="rk_r_'+test.id+'" type="number" class="input-field" placeholder="ex. 8"/></div>'+
+          '<div style="flex:1"><label>RPE ressenti</label><input id="rk_p_'+test.id+'" type="number" class="input-field" placeholder="7-8" step="0.5"/></div>'+
+        '</div>'+
+      '</div>';
+    }).join("");
     var card = el(
       '<div class="racine-gate-card">'+
-        '<div class="racine-gate-eyebrow">Mini-test · '+(wiz.testIndex+1)+' / '+plan.length+'</div>'+
-        stepDots(plan.length, wiz.testIndex)+
-        '<div class="racine-gate-title">'+esc(test.title)+'</div>'+
-        '<div class="racine-gate-sub"><strong>'+esc(test.subtitle)+'</strong><br>'+esc(test.guidance)+'</div>'+
-        '<div class="racine-test-row">'+
-          '<div style="flex:1"><label>Charge (lb)</label><input id="rtWeight" type="number" class="input-field" placeholder="ex. 135"/></div>'+
-          '<div style="flex:1"><label>Reps faites</label><input id="rtReps" type="number" class="input-field" placeholder="ex. 8"/></div>'+
-          '<div style="flex:1"><label>RPE ressenti</label><input id="rtRpe" type="number" class="input-field" placeholder="7-8" step="0.5"/></div>'+
-        '</div>'+
+        '<div class="racine-gate-eyebrow">Mouvements clés</div>'+
+        stepDots(WIZARD_STEPS.length, wizStepIndex())+
+        '<div class="racine-gate-title">Tes poids actuels sur 5 mouvements clés</div>'+
+        '<div class="racine-gate-sub">Pour chaque mouvement que tu connais : une série de travail propre, 5 à 10 répétitions, RPE 7-8 (pas un essai maximal). Laisse un mouvement vide si tu ne peux pas le tester — on estime pour toi à partir de ton niveau.</div>'+
+        rows+
         '<div class="btn-row">'+
-          '<button class="btn-accent" id="rtNext">'+(wiz.testIndex<plan.length-1?"Suivant":"Voir mon estimation")+'</button>'+
+          '<button class="btn-accent" id="rkNext">Voir mon estimation</button>'+
         '</div>'+
-        '<button class="btn-ghost racine-test-skip" id="rtSkip" style="width:100%">Je ne peux pas tester ce mouvement — estime pour moi</button>'+
       '</div>'
     );
-    function goNext(answer){
-      wiz.answers[test.id] = answer;
-      if(wiz.testIndex < plan.length-1){
-        wiz.testIndex++;
-      } else {
-        wiz.step = "review";
-      }
+    card.querySelector("#rkNext").onclick = function(){
+      plan.forEach(function(test){
+        var w = Number(card.querySelector("#rk_w_"+test.id).value)||0;
+        var r = Number(card.querySelector("#rk_r_"+test.id).value)||0;
+        var rpe = Number(card.querySelector("#rk_p_"+test.id).value)||0;
+        wiz.answers[test.id] = (w>0&&r>0) ? {weight:w, reps:r, rpe:rpe} : null;
+      });
+      wiz.step = "calculated";
       render();
-    }
-    card.querySelector("#rtNext").onclick = function(){
-      var w = Number(card.querySelector("#rtWeight").value)||0;
-      var r = Number(card.querySelector("#rtReps").value)||0;
-      var rpe = Number(card.querySelector("#rtRpe").value)||0;
-      goNext((w>0&&r>0) ? {weight:w, reps:r, rpe:rpe} : null);
     };
-    card.querySelector("#rtSkip").onclick = function(){ goNext(null); };
     addCancelAffordance(card);
     return card;
   }
 
-  // ── Écran : revue / confirmation ────────────────────────────────────────
+  // ── Écran : mouvements calculés (estimation dérivée, ajustable) ─────────
   function aggressivenessLabel(v){
     if(v < 0.8) return "Conservateur";
     if(v < 1.1) return "Modéré";
     if(v < 1.35) return "Agressif";
     return "Très agressif";
   }
-  function renderReview(){
-    var computed = api.computeFromAnswers(wiz.answers, wiz.meta.experienceLevel);
+
+  // Saut de charge type (lb) pour un mouvement principal à la barre, pour le
+  // réglage d'agressivité v — même formule que coachMaxJumpForExercise (base
+  // 10 lb, pas 5 lb) mais calculée localement pour refléter la valeur du
+  // curseur EN DIRECT, avant qu'elle soit écrite dans state.profile.
+  function mainLiftJumpForAggressiveness(v){
+    var step = 5, base = 10;
+    return Math.max(step, Math.round((base*(Number(v)||1))/step)*step);
+  }
+  function projectWeeks(startLoad, jump, weeks){
+    var out = [], load = Number(startLoad)||0;
+    for(var i=0;i<weeks;i++){ load += jump; out.push(load); }
+    return out;
+  }
+  // Exemple concret de vitesse de progression pour 1-2 mouvements déjà
+  // calculés à l'écran précédent, pour rendre le curseur d'agressivité
+  // interprétable (et plus seulement une étiquette abstraite).
+  function aggressivenessExampleHtml(v){
+    var jump = mainLiftJumpForAggressiveness(v);
+    var vals = (wiz.computed && wiz.computed.values) || {};
+    var candidates = [
+      {key:"bench", label:"Bench press"},
+      {key:"frontSquat", label:"Front squat"}
+    ].filter(function(c){ return vals[c.key] || vals[c.key]===0; });
+    if(!candidates.length) candidates = [{key:null, label:"Mouvement principal", start:200}];
+    return candidates.map(function(c){
+      var start = c.start!==undefined ? c.start : vals[c.key];
+      var weeks = projectWeeks(start, jump, 3);
+      return esc(c.label)+" : "+start+" lb → "+weeks.join(" → ")+" lb sur 3 semaines de séances faciles (RPE ≤ 7)";
+    }).join("<br>");
+  }
+
+  function renderCalculated(){
+    var computed = wiz.computed || api.computeFromAnswers(wiz.answers, wiz.meta.experienceLevel);
     wiz.computed = computed;
     var fieldMapPreview = (typeof PR_FIELD_MAP==="object") ? PR_FIELD_MAP : null;
     var rows = "";
@@ -224,19 +259,50 @@
           '<input type="number" data-profile-key="'+esc(cfg.profile)+'" value="'+esc(val)+'"/></div>';
       });
     }
+    var card = el(
+      '<div class="racine-gate-card">'+
+        '<div class="racine-gate-eyebrow">Mouvements calculés</div>'+
+        stepDots(WIZARD_STEPS.length, wizStepIndex())+
+        '<div class="racine-gate-title">Tes poids de départ estimés</div>'+
+        '<div class="racine-gate-sub">Calculés à partir de ce que tu as testé. Tu peux ajuster chaque valeur avant de continuer — le moteur de charge prendra ensuite le relais à chaque séance.</div>'+
+        '<div class="racine-review-grid">'+rows+'</div>'+
+        '<div class="btn-row">'+
+          '<button class="btn-accent" id="rcNext">Suivant</button>'+
+        '</div>'+
+      '</div>'
+    );
+    card.querySelector("#rcNext").onclick = function(){
+      Array.prototype.forEach.call(card.querySelectorAll("[data-profile-key]"), function(inp){
+        var key = inp.getAttribute("data-profile-key");
+        var v = Number(inp.value);
+        if(!isNaN(v)) computed.values[key] = v;
+      });
+      if(typeof api.ratiosFromValues==="function"){
+        computed.ratios = api.ratiosFromValues(computed.values, wiz.meta.experienceLevel);
+      }
+      wiz.computed = computed;
+      wiz.step = "aggressiveness";
+      render();
+    };
+    addCancelAffordance(card);
+    return card;
+  }
+
+  // ── Écran : agressivité de la progression + objectif long terme ─────────
+  function renderAggressiveness(){
     var agg = wiz.meta.aggressiveness;
     var card = el(
       '<div class="racine-gate-card">'+
         '<div class="racine-gate-eyebrow">Dernière étape</div>'+
-        '<div class="racine-gate-title">Tes poids de départ estimés</div>'+
-        '<div class="racine-gate-sub">Calculés à partir de ce que tu as testé. Tu peux ajuster chaque valeur avant de confirmer — le moteur de charge prendra ensuite le relais à chaque séance.</div>'+
-        '<div class="racine-review-grid">'+rows+'</div>'+
-        '<label style="margin-top:16px">Agressivité de la progression</label>'+
+        stepDots(WIZARD_STEPS.length, wizStepIndex())+
+        '<div class="racine-gate-title">Vitesse de progression</div>'+
+        '<div class="racine-gate-sub">Ce réglage contrôle la taille des sauts de charge proposés quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</div>'+
+        '<label>Agressivité de la progression</label>'+
         '<div class="racine-agg-row">'+
           '<input id="rrAgg" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
           '<span class="racine-agg-label" id="rrAggLabel">'+aggressivenessLabel(agg)+'</span>'+
         '</div>'+
-        '<p class="field-hint">Plus bas = montées de charge plus prudentes. Plus haut = le moteur propose des hausses plus rapidement quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</p>'+
+        '<p class="field-hint" id="rrAggExample">'+aggressivenessExampleHtml(agg)+'</p>'+
         '<label style="margin-top:16px">As-tu un objectif de compétition à long terme à suivre ?</label>'+
         '<div class="racine-toggle-row">'+
           '<label><input type="radio" name="rrHasGoal" id="rrHasGoalNo" value="no" checked/> Non, je fais des cycles sans objectif daté</label>'+
@@ -253,7 +319,9 @@
     );
     var aggInput = card.querySelector("#rrAgg");
     aggInput.oninput = function(){
-      card.querySelector("#rrAggLabel").textContent = aggressivenessLabel(Number(aggInput.value));
+      var v = Number(aggInput.value);
+      card.querySelector("#rrAggLabel").textContent = aggressivenessLabel(v);
+      card.querySelector("#rrAggExample").innerHTML = aggressivenessExampleHtml(v);
     };
     var compDateWrap = card.querySelector("#rrCompDateWrap");
     Array.prototype.forEach.call(card.querySelectorAll("[name='rrHasGoal']"), function(radio){
@@ -262,19 +330,11 @@
       };
     });
     card.querySelector("#rrConfirm").onclick = function(){
-      Array.prototype.forEach.call(card.querySelectorAll("[data-profile-key]"), function(inp){
-        var key = inp.getAttribute("data-profile-key");
-        var v = Number(inp.value);
-        if(!isNaN(v)) computed.values[key] = v;
-      });
-      if(typeof api.ratiosFromValues==="function"){
-        computed.ratios = api.ratiosFromValues(computed.values, wiz.meta.experienceLevel);
-      }
       wiz.meta.aggressiveness = Number(aggInput.value)||1;
       var hasGoal = card.querySelector("#rrHasGoalYes").checked;
       var compDate = hasGoal ? card.querySelector("#rrCompDate").value : "";
       wiz.meta.competitionDateIso = compDate || null;
-      api.applyToActiveProfile(wiz.meta, computed);
+      api.applyToActiveProfile(wiz.meta, wiz.computed);
       wiz = null;
       closeGate();
       window.coachFullBoot();
@@ -291,10 +351,12 @@
       card = renderPicker();
     } else if(wiz.step === "welcome"){
       card = renderWelcome();
-    } else if(wiz.step === "test"){
-      card = renderTest();
+    } else if(wiz.step === "keyMovements"){
+      card = renderKeyMovements();
+    } else if(wiz.step === "calculated"){
+      card = renderCalculated();
     } else {
-      card = renderReview();
+      card = renderAggressiveness();
     }
     gate.appendChild(card);
   }
@@ -305,7 +367,7 @@
     if(hasOnboarded){
       wiz = null; // écran sélecteur
     } else {
-      wiz = { mode:"create", step:"welcome", answers:{}, testIndex:0 };
+      wiz = { mode:"create", step:"welcome", answers:{} };
     }
     render();
   };
@@ -314,12 +376,12 @@
   api.openPicker = function(){ wiz = null; render(); };
 
   // Ouvre directement la création d'un nouveau profil (depuis les réglages).
-  api.openCreate = function(){ wiz = { mode:"create", step:"welcome", answers:{}, testIndex:0 }; render(); };
+  api.openCreate = function(){ wiz = { mode:"create", step:"welcome", answers:{} }; render(); };
 
   // Relance le mini-test pour le profil ACTUELLEMENT actif (recalibrage).
   api.openRecalibrate = function(){
     var p = window.CoachProfiles ? CoachProfiles.getActive() : null;
-    wiz = { mode:"recalibrate", step:"welcome", answers:{}, testIndex:0 };
+    wiz = { mode:"recalibrate", step:"welcome", answers:{} };
     render();
     if(p){
       var nameInput = document.getElementById("rwName");

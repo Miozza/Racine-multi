@@ -209,6 +209,22 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
       suggested=lastRpe>=9.5?Math.max(0,lastLoad-coachLoadStepForExercise(label,currentLoad)):lastLoad;mode="down";severity="warning";
       reason="Frein RPE : dernier RPE "+lastRpe+" sur une cible similaire ou plus dure. Maintenir ou reduire, pas augmenter.";
     }
+    // Ecart de reps important entre la derniere reference et la cible (ex : 1RM ou
+    // singulier récent utilisé tel quel pour suggérer un format type 5x5) : le poids
+    // ne se transpose pas directement d'un nombre de reps a un autre. On ne plafonne
+    // (jamais on ne remonte) la suggestion via une projection Epley que pour un ecart
+    // suffisant, pour ne pas perturber les freins existants sur un ecart d'1 rep normal.
+    if(lastHasValidLoad&&lastReps>0&&target&&!contextLimited&&!isTechnicalMovementInContext(label,moveContext)){
+      var repGap=target-lastReps;
+      if(repGap>=3||target>=lastReps*2){
+        var projOneRM=epley1RM(lastLoad,lastReps);
+        var projCapacity=projOneRM?estimateLoadForRepsFrom1RM(projOneRM,target):0;
+        if(projCapacity>0&&suggested>projCapacity){
+          suggested=projCapacity;mode="down";severity=severity==="ok"?"watch":severity;
+          reason="Ecart de reps : dernier "+lastLoad+" lb x "+lastReps+" ne se traduit pas directement en "+target+" reps. Capacite estimee ~"+Math.round(projCapacity)+" lb (projection Epley).";
+        }
+      }
+    }
   }
 
   if(!contextLimited&&!isDeload){
