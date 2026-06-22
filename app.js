@@ -1874,34 +1874,47 @@ async function savePrProfile(){
 // mais une vraie séance reste nécessaire pour progresser plus haut. Si le
 // mouvement n'a pas encore d'historique, rien à corriger : le seed du
 // programme est déjà la valeur utilisée par le moteur.
-function applyChargeOverrideToAthleteState(label,loadNum,dateStr){
-  if(!label||!(loadNum||loadNum===0))return;
+//
+// Deux gardes :
+// - on ne touche que le range le plus récemment actif, pas tous les ranges du
+//   mouvement d'un coup (ex. capacité "strength" et "hypertrophy" distinctes
+//   pour un même mouvement : ce ne sont pas la même charge) ;
+// - on n'applique rien si canonicalMovementLabel() fait correspondre la clé
+//   "charges ajustables" à un AUTRE mouvement (ex. "Hang Power Clean" se
+//   résout en "Power Clean", le lift principal) : on écraserait sinon la
+//   capacité d'un mouvement différent avec la charge d'une variante.
+function applyChargeOverrideToAthleteState(key,loadNum,dateStr){
+  if(!key||!(loadNum||loadNum===0))return;
+  var label=canonicalMovementLabel(key);
+  if(coachNormalizeMoveText(label)!==coachNormalizeMoveText(chargeKeyFromName(key)))return;
   var ast=ensureAthleteState();
   var mv=ast.movements[label];
   if(!mv||!mv.ranges)return;
-  var changed=false;
-  Object.keys(mv.ranges).forEach(function(range){
-    var prev=mv.ranges[range]||{};
-    if(Number(prev.currentLoad||0)===loadNum)return;
-    changed=true;
-    var reps=Number(prev.currentReps||prev.actualReps)||8;
-    mv.ranges[range]={
-      currentLoad:loadNum,
-      currentReps:reps,
-      actualLoad:loadNum,
-      actualReps:reps,
-      rpe:8,
-      confidence:0.65,
-      status:"success",
-      estimated1RM:Math.round(epley1RM(loadNum,reps)),
-      lastUpdated:dateStr,
-      planned:{source:"manual_charge_override"}
-    };
-    mv.history=mv.history||[];
-    mv.history.push({date:dateStr,load:loadNum,reps:reps,rpe:8,range:range,status:"success",capacityLoad:loadNum,planned:{source:"manual_charge_override"}});
-    if(mv.history.length>12)mv.history=mv.history.slice(-12);
+  var ranges=Object.keys(mv.ranges);
+  if(!ranges.length)return;
+  var range=ranges[0];
+  ranges.forEach(function(r){
+    var a=(mv.ranges[r]||{}).lastUpdated, b=(mv.ranges[range]||{}).lastUpdated;
+    if(a&&(!b||a>b))range=r;
   });
-  if(!changed)return;
+  var prev=mv.ranges[range]||{};
+  if(Number(prev.currentLoad||0)===loadNum)return;
+  var reps=Number(prev.currentReps||prev.actualReps)||8;
+  mv.ranges[range]={
+    currentLoad:loadNum,
+    currentReps:reps,
+    actualLoad:loadNum,
+    actualReps:reps,
+    rpe:8,
+    confidence:0.65,
+    status:"success",
+    estimated1RM:Math.round(epley1RM(loadNum,reps)),
+    lastUpdated:dateStr,
+    planned:{source:"manual_charge_override"}
+  };
+  mv.history=mv.history||[];
+  mv.history.push({date:dateStr,load:loadNum,reps:reps,rpe:8,range:range,status:"success",capacityLoad:loadNum,planned:{source:"manual_charge_override"}});
+  if(mv.history.length>12)mv.history=mv.history.slice(-12);
   mv.status="success";
   mv.lastUpdated=dateStr;
   ast.updatedAt=nowIso();ast.version=APP_VERSION;
@@ -1922,7 +1935,7 @@ function renderChargeSettings(){
       if(val){
         customCharges[key]=val;
         var loadNum=parseLoad(val);
-        if(loadNum||loadNum===0)applyChargeOverrideToAthleteState(canonicalMovementLabel(key),loadNum,todayDateString());
+        if(loadNum||loadNum===0)applyChargeOverrideToAthleteState(key,loadNum,todayDateString());
       }else{
         delete customCharges[key];
       }
