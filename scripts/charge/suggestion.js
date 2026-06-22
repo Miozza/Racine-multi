@@ -149,7 +149,10 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   }
 
   // Si le programme est clairement sous l'historique reel controle, remonter vers la reference reelle.
-  if(!contextLimited && !isDeload && bestControlled&&bestControlled.load>suggested){
+  // Exige au moins 2 entrees d'historique : un point unique (ex. le seed de calibrage/onboarding)
+  // n'est pas encore une "reference prouvee" — il ne doit pas a lui seul justifier de suggerer
+  // plus que ce que l'utilisateur vient juste d'etablir comme sa propre charge de depart.
+  if(!contextLimited && !isDeload && bestControlled&&bestControlled.load>suggested&&hist.length>=2){
     var gap=bestControlled.load-suggested;
     var n=coachNormalizeMoveText(label);
     var allowLiftFromHistory=false;
@@ -163,7 +166,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     }
   }
 
-  if(!contextLimited && !isDeload && bestControlled&&bestControlled.load>suggested&&bestControlled.rpe<=8){
+  if(!contextLimited && !isDeload && bestControlled&&bestControlled.load>suggested&&bestControlled.rpe<=8&&hist.length>=2){
     var bestReps=Number(bestControlled.reps)||0;
     if(!target||!bestReps||bestReps>=target||repRange(bestReps)===repRange(target)){
       suggested=bestControlled.load;
@@ -189,7 +192,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
       suggested=lastLoad+maxJump;mode="down";severity=severity==="ok"?"watch":severity;
       reason="Progression limitee : derniere reference "+lastLoad+" lb @RPE "+lastRpe+". Saut maximal prudent +"+maxJump+" lb.";
     }
-    if(lastHasValidLoad&&lastRpe>0&&lastRpe<=7&&repsReached&&!contextLimited&&!isTechnicalMovementInContext(label,moveContext)&&!isDeload){
+    if(lastHasValidLoad&&lastRpe>0&&lastRpe<=7&&repsReached&&!contextLimited&&!isTechnicalMovementInContext(label,moveContext)&&!isDeload&&hist.length>=2){
       var next=nextLoadForExercise(label,lastLoad,1,currentLoad);
       var maxAllowed=lastLoad+maxJump;
       if(next&&next>lastLoad&&next<=maxAllowed){
