@@ -203,7 +203,7 @@ function coachExtractMovementIntent(parts){
   var intents=[];
   function add(x){if(x&&intents.indexOf(x)===-1)intents.push(x);}
   if(/amrap|emom|for time|wod|cap|time cap/.test(n))add('wod');
-  if(/technique|qualite|quality|drill|skill|vitesse|speed|primer|transition|ramp up|rampup/.test(n))add('technique');
+  if(/technique|qualite|quality|drill|skill|vitesse|speed|primer|ramp up|rampup/.test(n))add('technique');
   if(/rappel|recall/.test(n))add('recall');
   if(/progression|regression|scale|scaling/.test(n))add('progression');
   if(/leger|legere|light|facile|easy|warm up|warmup|activation|mobilite|mobility/.test(n))add('light');

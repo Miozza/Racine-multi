@@ -265,6 +265,23 @@ try {
   const bulgarianHintKey = ctx.coachNormalizeMoveText('Bulgarian Split Squat');
   assert(ctx.__coachLoadHints[bulgarianHintKey] && ctx.__coachLoadHints[bulgarianHintKey].load === '45 lb ⚠', 'La modale ! lit la charge finale gardee 45 lb, pas la charge brute 50 lb.');
 
+  // 8c. Plancher historique : un dernier set reussi a RPE eleve (reps atteintes,
+  // pas un echec) ne doit pas etre sous-suggere par le programme, meme avec un
+  // frein RPE recent non resolu sur un poids plus leger plus tot dans l historique.
+  resetState();
+  ctx.state.day = 'mardi';
+  const frontSquatCtx = ctx.coachBuildMovementContext('Front Squat', { kind:'main', blockTitle:'Force principale', format:'3x8', day:'mardi', week:3 });
+  ctx.state.athleteState.movements['Front Squat'] = {
+    ranges: { hypertrophy: { currentLoad:60, actualLoad:60, currentReps:8, actualReps:8, rpe:9, confidence:0.8, status:'hard' } },
+    history: [
+      { date:'2026-06-01', load:50, reps:8, rpe:7, range:'hypertrophy', status:'easy_success', context:frontSquatCtx },
+      { date:'2026-06-15', load:60, reps:8, rpe:9, range:'hypertrophy', status:'hard_success', context:frontSquatCtx }
+    ]
+  };
+  const frontSquatDecision = ctx.guardedSuggestedLoadDecision('Front Squat', '55 lb', 8, frontSquatCtx);
+  assert(frontSquatDecision.loadNum === 60, 'Plancher historique : Front Squat ne redescend pas sous le dernier 60 lb x8 RPE9 reellement reussi.');
+  assert(/Plancher historique/.test(frontSquatDecision.reason), 'Plancher historique explique pourquoi la suggestion ne descend pas sous 60 lb.');
+
   // 9. Deload : la semaine 6 reduit la suggestion finale apres apprentissage historique.
   resetState();
   ctx.state.week = 6;
