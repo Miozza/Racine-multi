@@ -108,15 +108,14 @@ Le script `dev/structure_checks.js` vérifie que les fichiers servent à quelque
 - `scripts/state/storage.js` isole la lecture/ecriture locale du state et des charges personnalisees.
 - `scripts/state/index.js` expose `window.CoachState` comme API publique.
 - `app.js` reste responsable de fusionner les valeurs chargees avec les valeurs par defaut runtime.
-- Le token GitHub reste hors de ce domaine jusqu a l extraction `CoachSync`.
 
+## Domaine profiles (multi-utilisateur)
 
-## Domaine sync
-
-- `scripts/sync/storage.js` isole le token GitHub et le statut local de synchronisation.
-- `scripts/sync/index.js` expose `window.CoachSync` comme API publique.
-- `app.js` garde pour l instant l orchestration des appels GitHub, mais ne possede plus les cles localStorage sync.
-- Les donnees durables restent ecrites seulement par les fonctions GitHub existantes.
+- `scripts/profiles/storage.js` expose `window.CoachProfiles` comme API publique : registre des profils locaux et stockage namespacé par profil (pas de compte, pas de serveur).
+- `scripts/profiles/onboarding.js` porte l'évaluation initiale en 5 mouvements qui calibre `profile.scaleRatios` (ratios de charge par famille de mouvement) et `profile.aggressiveness` (facteur de progression, borné 0.4–1.8).
+- `scripts/profiles/ui.js` rend la sélection/gestion de profil ; il ne possède aucune logique de charge.
+- Le profil actif (`state.profile`) est lu par `scripts/charge/scaling.js` (`coachUserLoadRatio`, `coachApplyUserLoadScale`, `coachAggressivenessFactor`), branché dans `scripts/charge/suggestion.js` et `scripts/charge/historique.js` — jamais dans `app.js` ni dans `programs/`.
+- La synchronisation distante (GitHub) a été retirée : Racine fonctionne en local uniquement, un profil ne voyage pas (encore) entre appareils.
 
 
 ## Domaine UI

@@ -123,7 +123,7 @@ const ctx = {
 ctx.window = ctx;
 ctx.globalThis = ctx;
 
-['scripts/app_helpers.js','scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/rpe.js','scripts/charge/historique.js','scripts/charge/suggestion.js'].forEach(file => {
+['scripts/app_helpers.js','scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/rpe.js','scripts/charge/historique.js','scripts/charge/scaling.js','scripts/charge/suggestion.js'].forEach(file => {
   try { vm.runInNewContext(read(file), ctx, { filename: file }); }
   catch(err){ fail('Chargement impossible de ' + file + ' : ' + err.message); }
 });

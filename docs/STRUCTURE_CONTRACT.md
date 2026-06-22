@@ -91,20 +91,20 @@ Il ne devrait plus recevoir de nouvelle logique métier profonde si un domaine c
 Règle : un problème doit être corrigé dans son domaine.
 
 ```txt
-charge / progression     scripts/charge/equipement.js, scripts/charge/mouvements.js, scripts/charge/historique.js, scripts/charge/rpe.js, scripts/charge/suggestion.js
+charge / progression     scripts/charge/equipement.js, scripts/charge/mouvements.js, scripts/charge/historique.js, scripts/charge/rpe.js, scripts/charge/suggestion.js, scripts/charge/scaling.js
 session terrain         scripts/session/view.js, scripts/session/timer.js, scripts/session/results.js, scripts/session/save.js, scripts/session/index.js
+profils multi-utilisateur  scripts/profiles/storage.js, scripts/profiles/onboarding.js, scripts/profiles/ui.js
 core runtime            scripts/core/logger.js
 WOD mobile               scripts/view_wodplus.js
 PC / inspection          scripts/view_pc.js
 navigation               scripts/app_navigation.js
 modales                  scripts/ui_modals.js
 TMS                      scripts/tms_session.js
-Stéphanie                scripts/stephanie_mode.js
 diagnostic UI charges    scripts/charge_diagnostic_ui.js
 helpers communs          scripts/app_helpers.js
 ```
 
-Les domaines `scripts/charge/`, `scripts/session/` et `scripts/core/` sont maintenant présents. Les futurs regroupements (`scripts/ui/`, `scripts/sync/`) doivent rester des versions dédiées et testées.
+Les domaines `scripts/charge/`, `scripts/session/`, `scripts/core/` et `scripts/profiles/` sont maintenant présents. Le domaine `scripts/sync/` (token GitHub) a été retiré : Racine fonctionne en local uniquement.
 
 ## Rôle de `programs/`
 

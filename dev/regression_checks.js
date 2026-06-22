@@ -121,7 +121,6 @@ if(version){
   assert(contract.includes('Fichiers qui ne doivent pas porter la version courante'), 'Le contrat doit lister les fichiers déversionnés.');
   assert(!/V\d+\.\d+/.test(manifest), 'manifest.json ne doit pas porter la version affichée.');
   assert(!/V\d+\.\d+|v\d+-\d+|\b\d+\.\d+\b/.test(serviceWorker), 'service-worker.js doit rester déversionné en mode no-cache.');
-  assert(!read('scripts/sync/index.js').includes('api.version'), 'CoachSync ne doit pas exposer une deuxième source de version.');
 }
 
 // 4b. Navigation semaine : completedDays/missedDays doivent être reconstruits par semaine.
@@ -163,9 +162,10 @@ const html = read('index.html');
   'scripts/app_helpers.js',
   'scripts/state/storage.js',
   'scripts/state/index.js',
-  'scripts/sync/storage.js',
-  'scripts/sync/index.js',
   'scripts/charge/index.js',
+  'scripts/profiles/storage.js',
+  'scripts/profiles/onboarding.js',
+  'scripts/profiles/ui.js',
   'scripts/view_pc.js',
   'scripts/app_navigation.js',
   'scripts/view_wodplus.js',
@@ -210,14 +210,18 @@ const chargeRuntime = [
   'scripts/charge/historique.js',
   'scripts/charge/rpe.js',
   'scripts/charge/suggestion.js',
+  'scripts/charge/scaling.js',
   'scripts/charge/index.js'
 ].filter(exists).map(read).join('\n');
 assert(read('scripts/charge/index.js').includes('window.CoachCharge'), 'CoachCharge doit rester l’API publique du moteur.');
 assert(read('scripts/history/index.js').includes('window.CoachHistory'), 'CoachHistory doit rester l’API publique historique.');
 assert(read('scripts/progression/index.js').includes('window.CoachProgress'), 'CoachProgress doit rester l’API publique progression.');
 assert(read('scripts/summary/index.js').includes('window.CoachSummary'), 'CoachSummary doit rester l’API publique résumé.');
+assert(read('scripts/profiles/storage.js').includes('window.CoachProfiles'), 'CoachProfiles doit rester l’API publique des profils.');
 assert(chargeRuntime.includes('coachBuildMovementContext'), 'Le moteur doit garder le contexte mouvement.');
 assert(chargeRuntime.includes('coachFilterHistoryForProgression'), 'Le moteur doit garder le filtre historique par contexte.');
+assert(chargeRuntime.includes('coachApplyUserLoadScale'), 'Le moteur doit garder le scaling de charge par profil.');
+assert(chargeRuntime.includes('coachAggressivenessFactor'), 'Le moteur doit garder le facteur d’agressivité de progression par profil.');
 assert(read('docs/DATA_FLOW_CONTRACT.md').includes('resultats = journal brut reconstructible'), 'DATA_FLOW_CONTRACT doit fixer resultats comme journal brut.');
 assert(read('docs/DATA_FLOW_CONTRACT.md').includes('athlete_state = etat derive pour le moteur'), 'DATA_FLOW_CONTRACT doit fixer athlete_state comme état dérivé.');
 

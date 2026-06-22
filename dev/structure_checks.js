@@ -129,7 +129,6 @@ if(versionMatch){
   assert(read('CHANGELOG.md').includes('## ' + version), 'CHANGELOG.md contient une entrée pour la version courante.');
   assert(!/V\d+\.\d+/.test(read('manifest.json')), 'manifest.json ne doit pas porter la version affichée.');
   assert(!/V\d+\.\d+|v\d+-\d+|\b\d+\.\d+\b/.test(read('service-worker.js')), 'service-worker.js reste déversionné en mode no-cache.');
-  assert(!read('scripts/sync/index.js').includes('api.version'), 'CoachSync ne doit pas exposer une source de version concurrente.');
 }
 
 // 6. Frontières programs.
@@ -148,24 +147,26 @@ const domains = [
   ['scripts/charge/index.js', 'window.CoachCharge'],
   ['scripts/session/index.js', 'window.CoachSession'],
   ['scripts/state/index.js', 'window.CoachState'],
-  ['scripts/sync/index.js', 'window.CoachSync'],
   ['scripts/ui/index.js', 'window.CoachUI'],
   ['scripts/history/index.js', 'window.CoachHistory'],
   ['scripts/progression/index.js', 'window.CoachProgress'],
-  ['scripts/summary/index.js', 'window.CoachSummary']
+  ['scripts/summary/index.js', 'window.CoachSummary'],
+  ['scripts/profiles/storage.js', 'window.CoachProfiles']
 ];
 domains.forEach(([file, marker]) => {
   assert(exists(file), 'Module présent : ' + file);
   assert(read(file).includes(marker), file + ' doit exposer ' + marker + '.');
 });
-['scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/historique.js','scripts/charge/rpe.js','scripts/charge/suggestion.js','scripts/charge/index.js'].forEach(f => assert(exists(f), 'Module charge présent : ' + f));
+['scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/historique.js','scripts/charge/rpe.js','scripts/charge/suggestion.js','scripts/charge/scaling.js','scripts/charge/index.js'].forEach(f => assert(exists(f), 'Module charge présent : ' + f));
 ['scripts/equipement.js','scripts/utilitaires_charges.js','scripts/mouvement.js','scripts/charge_gestion.js','scripts/progression_rpe.js','scripts/moteur_charges.js'].forEach(f => assert(!exists(f), 'Ancien emplacement charge supprimé : ' + f));
 ['scripts/session/view.js','scripts/session/timer.js','scripts/session/results.js','scripts/session/save.js','scripts/session/index.js'].forEach(f => assert(exists(f), 'Module session présent : ' + f));
 assert(!exists('scripts/view_session.js'), 'Ancien emplacement session supprimé : scripts/view_session.js');
+['scripts/profiles/storage.js','scripts/profiles/onboarding.js','scripts/profiles/ui.js'].forEach(f => assert(exists(f), 'Module profils présent : ' + f));
+assert(read('scripts/charge/suggestion.js').includes('coachApplyUserLoadScale'), 'Le scaling de charge par profil doit être branché dans le moteur de suggestion.');
+assert(read('scripts/charge/historique.js').includes('coachAggressivenessFactor'), 'L’agressivité de progression par profil doit être branchée dans le signal historique.');
 
 // 8. Ordre et orchestration.
 assert(index.indexOf('scripts/state/storage.js') < index.indexOf('app.js?v='), 'CoachState doit être chargé avant app.js.');
-assert(index.indexOf('scripts/sync/storage.js') < index.indexOf('app.js?v='), 'CoachSync doit être chargé avant app.js.');
 assert(index.indexOf('scripts/ui_modals.js') < index.indexOf('scripts/ui/index.js'), 'CoachUI doit être chargé après ui_modals.js.');
 assert(index.indexOf('scripts/history/index.js') < index.indexOf('scripts/charge/index.js'), 'CoachHistory doit être chargé avant CoachCharge index.');
 assert(index.indexOf('scripts/progression/index.js') < index.indexOf('scripts/summary/index.js'), 'CoachSummary doit être chargé après CoachProgress.');
@@ -174,7 +175,6 @@ assert(index.indexOf('scripts/session/index.js') < index.indexOf('app.js?v='), '
 assert(app.includes('CoachCharge.'), 'app.js doit utiliser CoachCharge.');
 assert(app.includes('CoachSession.'), 'app.js doit utiliser CoachSession.');
 assert(app.includes('CoachState.readState') && app.includes('CoachState.writeState'), 'app.js doit utiliser CoachState pour state.');
-assert(app.includes('CoachSync.getToken') && app.includes('CoachSync.setToken') && app.includes('CoachSync.clearToken'), 'app.js doit utiliser CoachSync pour le token.');
 assert(app.includes('CoachUI.escapeHtml'), 'app.js doit utiliser CoachUI.escapeHtml.');
 assert(!/localStorage\.(getItem|setItem|removeItem)\s*\(/.test(app), 'app.js ne doit plus accéder directement à localStorage.');
 

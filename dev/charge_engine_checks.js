@@ -84,6 +84,7 @@ const loadOrder = [
   'scripts/charge/mouvements.js',
   'scripts/charge/rpe.js',
   'scripts/charge/historique.js',
+  'scripts/charge/scaling.js',
   'scripts/charge/suggestion.js',
   'scripts/charge_diagnostic_ui.js'
 ];
@@ -323,6 +324,28 @@ try {
   }, '2026-06-08');
   const learnedRdlDecision = ctx.guardedSuggestedLoadDecision('DB RDL', '60 lb', 10, rdlLearnCtx);
   assert(learnedRdlDecision.loadNum === 70, 'DB RDL reel 70x10 RPE 8 devient la prochaine suggestion, pas 60 lb.');
+
+  // 13b. Scaling par profil : sans profil, ratio neutre.
+  resetState();
+  ctx.state.profile = null;
+  assert(ctx.coachUserLoadRatio('Back Squat') === 1, 'Sans profil actif, le ratio de charge reste neutre (1).');
+  assert(ctx.coachApplyUserLoadScale('Back Squat', 100) === 100, 'Sans profil actif, la charge generique n est pas transformee.');
+  assert(ctx.coachAggressivenessFactor() === 1, 'Sans profil actif, l agressivite de progression reste 1.');
+
+  // 13c. Scaling par profil : ratio par famille de mouvement applique et arrondi.
+  resetState();
+  ctx.state.profile = { scaleRatios: { _lowerBody: 0.8, _overall: 0.9 } };
+  assert(ctx.coachUserLoadRatio('Back Squat') === 0.8, 'Back Squat utilise le ratio de famille lowerBody.');
+  assert(ctx.coachUserLoadRatio('Cable Row') === 0.9, 'Un mouvement hors famille connue retombe sur le ratio overall.');
+  const scaledSquat = ctx.coachApplyUserLoadScale('Back Squat', 100);
+  assert(scaledSquat < 100 && scaledSquat > 0, 'Back Squat scale a la baisse avec un ratio de 0.8.');
+
+  // 13d. Agressivite de progression : bornee entre 0.4 et 1.8.
+  ctx.state.profile = { aggressiveness: 5 };
+  assert(ctx.coachAggressivenessFactor() === 1.8, 'L agressivite de progression est plafonnee a 1.8.');
+  ctx.state.profile = { aggressiveness: 0.01 };
+  assert(ctx.coachAggressivenessFactor() === 0.4, 'L agressivite de progression est plancher a 0.4.');
+  ctx.state.profile = null;
 
   // 13. Alertes : mouvements sans charge utile ne doivent pas crier donnees faibles.
   resetState();
