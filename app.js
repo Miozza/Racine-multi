@@ -1690,8 +1690,17 @@ function renderProfile(){
   var st=$("prStatus");if(st){st.textContent="";st.className="status-msg";}
 }
 
-function updateMovementRefFromPR(cfg,load,dateStr){
+// rpe par défaut à 10 (vrai PR/maximum déclaré). Un appel avec un rpe < 9
+// (ex. recalibrage à partir d'un test sous-maximal RPE 7-8) ne doit jamais
+// se faire passer pour un essai proche de l'échec : ça déclencherait le
+// frein "RPE >= 9 = aucune hausse automatique", ni pour "watch"/"recalibrating"
+// (statuts lus par le cap defensif de scripts/charge/suggestion.js comme "sous
+// surveillance, ne pas depasser sans confirmation") — un test controle reussi
+// est un succes normal ("success"), pas un echec a surveiller.
+function updateMovementRefFromPR(cfg,load,dateStr,rpe){
   if(!cfg||!cfg.mvKey||!load)return;
+  rpe=(rpe===undefined||rpe===null)?10:Number(rpe);
+  var isPr=rpe>=9;
   var refK=cfg.mvKey+"__"+(cfg.range||repRange(cfg.reps));
   state.movementRefs[refK]={
     movement:cfg.mvKey,
@@ -1700,15 +1709,19 @@ function updateMovementRefFromPR(cfg,load,dateStr){
     reps:cfg.reps,
     date:dateStr,
     lastActual:load,
-    status:"pr",
+    status:isPr?"pr":"success",
     quality:"clean",
-    rpe:10,
-    note:"PR saisi manuellement"
+    rpe:rpe,
+    note:isPr?"PR saisi manuellement":"Recalibrage saisi manuellement"
   };
 }
 
-function updateAthleteStateFromPR(cfg,load,dateStr){
+function updateAthleteStateFromPR(cfg,load,dateStr,rpe){
   if(!cfg||!load)return;
+  rpe=(rpe===undefined||rpe===null)?10:Number(rpe);
+  var isPr=rpe>=9;
+  var status=isPr?"pr":"success";
+  var source=isPr?"manual_pr":"manual_recalibration";
   var ast=ensureAthleteState();
   var label=cfg.label;
   var range=cfg.range||repRange(cfg.reps);
@@ -1723,17 +1736,17 @@ function updateAthleteStateFromPR(cfg,load,dateStr){
     currentReps:cfg.reps,
     actualLoad:load,
     actualReps:cfg.reps,
-    rpe:10,
-    confidence:0.90,
-    status:"pr",
+    rpe:rpe,
+    confidence:isPr?0.90:0.65,
+    status:status,
     estimated1RM:Math.round(oneRM),
     lastUpdated:dateStr,
-    planned:{source:"manual_pr"}
+    planned:{source:source}
   };
-  mv.status="pr";
+  mv.status=status;
   mv.upgradedAt=dateStr;
   mv.lastUpdated=dateStr;
-  mv.history.push({date:dateStr,load:load,reps:cfg.reps,rpe:10,range:range,status:"pr",capacityLoad:load,planned:{source:"manual_pr"}});
+  mv.history.push({date:dateStr,load:load,reps:cfg.reps,rpe:rpe,range:range,status:status,capacityLoad:load,planned:{source:source}});
   if(mv.history.length>12)mv.history=mv.history.slice(-12);
   ast.updatedAt=nowIso();ast.version=APP_VERSION;
 }
@@ -1852,6 +1865,48 @@ async function savePrProfile(){
 
 // ─── Charges ─────────────────────────────────────────────────────────────────
 
+// "Charges ajustables" peut rester sans effet une fois qu'un mouvement a un
+// historique réel : les vraies séances ont priorité sur le seed du programme,
+// par design (voir scripts/charge/suggestion.js). Pour corriger un poids de
+// départ sous-estimé, on insère donc ici une entrée "success" à RPE 8 dans
+// athlete_state — même mécanisme que le recalibrage de profil (rpe<9, statut
+// non bloquant) : le moteur l'utilise tout de suite comme nouvelle référence,
+// mais une vraie séance reste nécessaire pour progresser plus haut. Si le
+// mouvement n'a pas encore d'historique, rien à corriger : le seed du
+// programme est déjà la valeur utilisée par le moteur.
+function applyChargeOverrideToAthleteState(label,loadNum,dateStr){
+  if(!label||!(loadNum||loadNum===0))return;
+  var ast=ensureAthleteState();
+  var mv=ast.movements[label];
+  if(!mv||!mv.ranges)return;
+  var changed=false;
+  Object.keys(mv.ranges).forEach(function(range){
+    var prev=mv.ranges[range]||{};
+    if(Number(prev.currentLoad||0)===loadNum)return;
+    changed=true;
+    var reps=Number(prev.currentReps||prev.actualReps)||8;
+    mv.ranges[range]={
+      currentLoad:loadNum,
+      currentReps:reps,
+      actualLoad:loadNum,
+      actualReps:reps,
+      rpe:8,
+      confidence:0.65,
+      status:"success",
+      estimated1RM:Math.round(epley1RM(loadNum,reps)),
+      lastUpdated:dateStr,
+      planned:{source:"manual_charge_override"}
+    };
+    mv.history=mv.history||[];
+    mv.history.push({date:dateStr,load:loadNum,reps:reps,rpe:8,range:range,status:"success",capacityLoad:loadNum,planned:{source:"manual_charge_override"}});
+    if(mv.history.length>12)mv.history=mv.history.slice(-12);
+  });
+  if(!changed)return;
+  mv.status="success";
+  mv.lastUpdated=dateStr;
+  ast.updatedAt=nowIso();ast.version=APP_VERSION;
+}
+
 function renderChargeSettings(){
   var c=$("chargeSettingsList");if(!c)return;c.innerHTML="";
   chargeList().forEach(function(key){
@@ -1864,8 +1919,14 @@ function renderChargeSettings(){
   Array.prototype.forEach.call(c.querySelectorAll("input[data-charge-key]"),function(inp){
     inp.addEventListener("change",function(){
       var key=inp.getAttribute("data-charge-key"),val=inp.value.trim();
-      if(val)customCharges[key]=val;else delete customCharges[key];
-      saveCustomCharges();renderWorkout();
+      if(val){
+        customCharges[key]=val;
+        var loadNum=parseLoad(val);
+        if(loadNum||loadNum===0)applyChargeOverrideToAthleteState(canonicalMovementLabel(key),loadNum,todayDateString());
+      }else{
+        delete customCharges[key];
+      }
+      saveCustomCharges();save();renderWorkout();
       if($("phoneView")&&$("phoneView").classList.contains("view-active"))renderPhoneWod();
     });
   });

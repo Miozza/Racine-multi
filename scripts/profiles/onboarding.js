@@ -213,14 +213,17 @@ window.CoachOnboarding = window.CoachOnboarding || {};
 
     // Ensemence aussi athleteState/movementRefs via le mécanisme PR déjà
     // existant dans app.js (onglet Profil/PR), pour démarrer cohérent partout.
+    // RPE 8 (pas 10) : le mini-test est un set sous-maximal contrôlé, pas un
+    // essai proche de l'échec — sinon le frein RPE>=9 bloquerait toute hausse
+    // dès la séance suivant un recalibrage.
     if(typeof PR_FIELD_MAP === "object" && typeof updateAthleteStateFromPR === "function" && typeof updateMovementRefFromPR === "function"){
       var dateStr = (typeof todayDateString === "function") ? todayDateString() : new Date().toLocaleDateString("fr-CA");
       Object.keys(PR_FIELD_MAP).forEach(function(id){
         var cfg = PR_FIELD_MAP[id];
         var val = computed.values[cfg.profile];
         if(val || val === 0){
-          updateMovementRefFromPR(cfg, val, dateStr);
-          updateAthleteStateFromPR(cfg, val, dateStr);
+          updateMovementRefFromPR(cfg, val, dateStr, 8);
+          updateAthleteStateFromPR(cfg, val, dateStr, 8);
         }
       });
     }
