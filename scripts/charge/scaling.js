@@ -4,7 +4,7 @@
 // uniquement le nombre brut déclaré par un programme (ex. "235 lb") avant que
 // guardedSuggestedLoadDecision() ne s'en empare. Tout l'historique réel d'un
 // utilisateur (ses propres séries loggées) n'est jamais re-multiplié : c'est
-// déjà sa réalité, pas une référence générique calibrée sur Bertin.
+// déjà sa réalité, pas une référence générique de programme.
 
 // Trouve le ratio personnel pour un mouvement donné. Retourne 1 si aucun
 // profil calibré n'est actif (ex. migration d'un ancien historique brut).
@@ -52,7 +52,7 @@ function coachApplyUserLoadScale(label, value){
 }
 
 // Facteur d'agressivité de progression du profil actif (0.4–1.8, 1 = comportement
-// historique de l'app, calibré sur Bertin). N'affecte JAMAIS les freins de
+// historique de l'app). N'affecte JAMAIS les freins de
 // sécurité RPE >= 9 : seulement la taille des sauts de charge proposés.
 function coachAggressivenessFactor(){
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;

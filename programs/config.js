@@ -1,7 +1,10 @@
-// Coach Bertin configuration programme extraite de app.js
-// Ne contient pas de données personnelles vivantes comme resultats.json.
+// Racine — configuration statique des programmes.
+// defaultProfile est une ancre de calibration mathématique, pas un profil utilisateur.
+// Les profils réels vivent dans scripts/profiles/ et dans le stockage local namespacé.
 
-var defaultProfile = {bench:300,frontSquat:215,strictPress:185,powerClean:225,backSquat5RM:235,hipThrust8RM:315,bulgarianDb:50,dbRdl:70,row8RM:185,chestRow8RM:160,latPulldown10RM:140,inclineDb10RM:55};
+var defaultProfile = (window.RacineProfileReference && RacineProfileReference.profile)
+  ? RacineProfileReference.profile()
+  : {bench:300,frontSquat:215,strictPress:185,powerClean:225,backSquat5RM:235,hipThrust8RM:315,bulgarianDb:50,dbRdl:70,row8RM:185,chestRow8RM:160,latPulldown10RM:140,inclineDb10RM:55};
 
 var movements = {
   bench:        {name:"Bench Press",           profile:"bench"},

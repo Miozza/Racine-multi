@@ -1,4 +1,4 @@
-// Coach Bertin 2026-06-09 — Héritage 225 v2 (16 semaines)
+// Racine 2026-06-09 — Héritage 225 v2 (16 semaines)
 // Statut : PROJET FUTUR — parcours majeur après Phase 3 si la route Héritage est choisie.
 // Mission : vieillir fort, mobile, explosif et capable.
 // Objectifs marqueurs : Push Press 225 lb + Bench Press 315 lb, seulement si le corps est prêt.

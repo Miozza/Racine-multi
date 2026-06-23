@@ -1,4 +1,4 @@
-// Coach Bertin — Bibliothèque technique mouvements
+// Racine — Bibliothèque technique mouvements
 // Fiches utilisées par la vue WOD et le mode séance via bouton "?" à côté du nom.
 
 window.COACH_BERTIN_TUTORIALS = {

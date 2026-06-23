@@ -1,5 +1,5 @@
-// Racine V1 — fork multi-utilisateur
-var APP_VERSION = "V1.0-multi";
+// Racine V1.6-multi — prototype multi-utilisateur viable + catalogue client sportif + cycle strict muscle-up
+var APP_VERSION = "V1.6-multi";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -92,10 +92,6 @@ registerProgramsFromIndex();
 
 // Données de profil, mouvements et banques WOD chargées depuis programs/config.js
 
-var KEY       = "coachBertinState";       // clé stable : ne change plus avec les versions
-var LEGACY_KEYS = ["coachBertinV46", "coachBertinV43", "coachBertinV41"];
-var CHARGE_KEY= "coachBertinCustomCharges";
-var LEGACY_CHARGE_KEYS = ["coachBertinCustomChargesV46"];
 var ALL_DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
 var DEFAULT_PROGRAM_DAYS = ["lundi","mardi","jeudi","vendredi"];
 var DAYS_ORDER = DEFAULT_PROGRAM_DAYS; // compatibilité ancienne logique; utiliser currentDayOrder() pour l’affichage.
@@ -246,30 +242,29 @@ function cycleDateSummaryHtml(){
     '<small style="color:var(--muted)">Aujourd’hui = S'+wk+' · '+CoachUI.escapeHtml(dayTxt)+'. Cette date ne modifie pas les charges ni l’historique.</small></div>';
 }
 
-// ─── Références pré-chargées ─────────────────────────────────────────────────
+// ─── Références de calibration ──────────────────────────────────────────────
 
-var PRELOADED_REFS = {
-  "bench__strength":        {movement:"bench",      range:"strength",   load:265,reps:5, date:"préchargé",lastActual:265,status:"preloaded",quality:"clean",rpe:8},
-  "bench__hypertrophy":     {movement:"bench",      range:"hypertrophy",load:215,reps:8, date:"préchargé",lastActual:215,status:"preloaded",quality:"clean",rpe:8},
-  "bench__endurance":       {movement:"bench",      range:"endurance",  load:185,reps:15,date:"préchargé",lastActual:185,status:"preloaded",quality:"clean",rpe:8},
-  "inclineDb__strength":    {movement:"inclineDb",  range:"strength",   load:85, reps:5, date:"préchargé",lastActual:85, status:"preloaded",quality:"clean",rpe:8},
-  "inclineDb__hypertrophy": {movement:"inclineDb",  range:"hypertrophy",load:60, reps:8, date:"préchargé",lastActual:60, status:"preloaded",quality:"clean",rpe:8},
-  "strictPress__strength":  {movement:"strictPress",range:"strength",   load:155,reps:5, date:"préchargé",lastActual:155,status:"preloaded",quality:"clean",rpe:8},
-  "strictPress__hypertrophy":{movement:"strictPress",range:"hypertrophy",load:135,reps:8,date:"préchargé",lastActual:135,status:"preloaded",quality:"clean",rpe:8},
-  "chestRow__strength":     {movement:"chestRow",   range:"strength",   load:155,reps:5, date:"préchargé",lastActual:155,status:"preloaded",quality:"clean",rpe:8},
-  "chestRow__hypertrophy":  {movement:"chestRow",   range:"hypertrophy",load:115,reps:8, date:"préchargé",lastActual:115,status:"preloaded",quality:"clean",rpe:8},
-  "latPulldown__hypertrophy":{movement:"latPulldown",range:"hypertrophy",load:20,reps:8, date:"préchargé",lastActual:20, status:"preloaded",quality:"clean",rpe:8},
-  "frontSquat__strength":   {movement:"frontSquat", range:"strength",   load:224,reps:5, date:"préchargé",lastActual:224,status:"preloaded",quality:"acceptable",rpe:8},
-  "frontSquat__hypertrophy":{movement:"frontSquat", range:"hypertrophy",load:185,reps:8, date:"préchargé",lastActual:185,status:"preloaded",quality:"acceptable",rpe:8},
-  "hipThrust__strength":    {movement:"hipThrust",  range:"strength",   load:315,reps:5, date:"préchargé",lastActual:315,status:"preloaded",quality:"clean",rpe:8},
-  "hipThrust__hypertrophy": {movement:"hipThrust",  range:"hypertrophy",load:315,reps:8, date:"préchargé",lastActual:315,status:"preloaded",quality:"clean",rpe:8},
-  "bulgarian__strength":    {movement:"bulgarian",  range:"strength",   load:60, reps:5, date:"préchargé",lastActual:60, status:"preloaded",quality:"clean",rpe:8},
-  "bulgarian__hypertrophy": {movement:"bulgarian",  range:"hypertrophy",load:40, reps:8, date:"préchargé",lastActual:40, status:"preloaded",quality:"clean",rpe:8},
-  "powerClean__strength":   {movement:"powerClean", range:"strength",   load:215,reps:5, date:"préchargé",lastActual:215,status:"preloaded",quality:"clean",rpe:8},
-  "powerClean__hypertrophy":{movement:"powerClean", range:"hypertrophy",load:185,reps:8, date:"préchargé",lastActual:185,status:"preloaded",quality:"clean",rpe:8},
-  "dbSnatch__hypertrophy":  {movement:"dbSnatch",   range:"hypertrophy",load:50, reps:8, date:"préchargé",lastActual:50, status:"preloaded",quality:"clean",rpe:8},
-  "farmerCarry__hypertrophy":{movement:"farmerCarry",range:"hypertrophy",load:28,reps:8, date:"préchargé",lastActual:28, status:"preloaded",quality:"clean",rpe:8}
-};
+// Ancienne banque de références : conservée comme ancre de migration/calibration,
+// mais elle n'est plus injectée automatiquement dans un nouveau profil.
+// Un profil neuf démarre avec ses propres tests d'intégration + son historique réel.
+var PRELOADED_REFS = (window.RacineProfileReference && RacineProfileReference.refs)
+  ? RacineProfileReference.refs()
+  : {};
+
+function blankProfile(){
+  if(window.RacineProfileReference && RacineProfileReference.blankProfile){
+    return RacineProfileReference.blankProfile();
+  }
+  var ref=(typeof defaultProfile === "object" && defaultProfile) ? defaultProfile : {};
+  var out={};
+  Object.keys(ref).forEach(function(k){ out[k]=null; });
+  out.name="";out.experienceLevel=null;out.bodyweightLb=null;out.aggressiveness=1;out.competitionDateIso=null;out.scaleRatios=null;
+  return out;
+}
+
+function liveMovementRefsFromPayload(payload){
+  return payload && payload.movementRefs ? copy(payload.movementRefs) : {};
+}
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -278,10 +273,10 @@ function freshState(){
     week: 1,
     day: "lundi",
     history: [],
-    profile: copy(defaultProfile),
+    profile: blankProfile(),
     trainingMaxPct: 0.925,
     cycle: { goal:"shoulders3d" },
-    movementRefs: copy(PRELOADED_REFS),
+    movementRefs: {},
     // Suivi RPE par mouvement pour progression automatique
     rpeHistory: {},        // { "mvKey__range": [rpe1, rpe2, rpe3] } — 3 dernières séances
     sessionCount: {},      // { "lundi": 2, "mardi": 1, ... } — séances complétées par jour cette semaine
@@ -308,9 +303,9 @@ function load(){
     var p = found && found.data;
     if(p){
       state = Object.assign(state, p);
-      state.profile      = Object.assign(copy(defaultProfile), p.profile||{});
+      state.profile      = Object.assign(blankProfile(), p.profile||{});
       state.cycle        = Object.assign({goal:"shoulders3d"}, p.cycle||{});
-      state.movementRefs = Object.assign(copy(PRELOADED_REFS), p.movementRefs||{});
+      state.movementRefs = liveMovementRefsFromPayload(p);
       state.history      = p.history || [];
       state.rpeHistory   = p.rpeHistory || {};
       state.completedDays= p.completedDays || [];
@@ -638,7 +633,7 @@ function setupRestBar(){
 
 }
 
-// ─── Saisie résultats & GitHub sync ──────────────────────────────────────────
+// ─── Saisie résultats locale ────────────────────────────────────────────────
 
 // Extrait la plage de reps cible depuis le format (ex: "4 x 15-20" → {min:15,max:20})
 // ou depuis un nombre simple (ex: "5 x 8" → {min:8,max:8})
@@ -884,7 +879,7 @@ function mergeHistory(localHistory,remoteData){
   return merged;
 }
 function rebuildRefsFromHistory(){
-  state.movementRefs=copy(PRELOADED_REFS);
+  state.movementRefs={};
   state.rpeHistory={};
   state.athleteState={movements:{},updatedAt:null,version:APP_VERSION};
   (state.history||[]).forEach(function(s){
@@ -1053,12 +1048,12 @@ document.addEventListener("visibilitychange",function(){
 // charges.js est la seule configuration de charges. Les upgrades viennent des PR/historique.
 function buildChargesJsContent(){ return ""; }
 async function saveChargesToGitHub(token){
-  return {ok:false,msg:"Désactivé : les charges stables ne sont pas modifiées automatiquement."};
+  return {ok:false,msg:"Désactivé : Racine fonctionne en local. Utilise Exporter JSON pour sauvegarder un profil."};
 }
 
 
 
-// ─── Indicateur profil actif (ancien indicateur de sync GitHub) ────────────
+// ─── Indicateur profil actif ────────────────────────────────────────────────
 function renderSyncStatusIndicator(){
   var el=$("syncStatusDot"); if(!el)return;
   var p = window.CoachProfiles && CoachProfiles.getActive ? CoachProfiles.getActive() : null;
@@ -1946,7 +1941,7 @@ function renderChargeSettings(){
 }
 function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalisées?")){customCharges={};saveCustomCharges();renderChargeSettings();renderWorkout();}}
 
-// ─── Paramètres / GitHub token ────────────────────────────────────────────────
+// ─── Paramètres locaux ──────────────────────────────────────────────────────
 
 function renderSettings(){
   if(window.CoachOnboarding && CoachOnboarding.renderSettingsPanel)CoachOnboarding.renderSettingsPanel();
@@ -1982,7 +1977,7 @@ function download(name,text){
 }
 function exportBackup(){
   var v=String(APP_VERSION||"backup").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
-  download("coach-bertin-"+v+"-backup.json",JSON.stringify({version:APP_VERSION,exportedAt:new Date().toISOString(),state:state},null,2));
+  download("racine-"+v+"-profil.json",JSON.stringify({version:APP_VERSION,exportedAt:new Date().toISOString(),state:state},null,2));
 }
 function importBackup(file){
   if(!file)return;
@@ -2022,15 +2017,15 @@ function bind(){
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};
   var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();}};
-  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){download("coach-bertin-historique.txt","Historique "+APP_VERSION+"\n\n"+JSON.stringify(state.history,null,2));};
+  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){download("racine-historique.txt","Historique "+APP_VERSION+"\n\n"+JSON.stringify(state.history,null,2));};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique ? Le moteur de charge oubliera aussi les references apprises (athleteState, RPE) pour repartir a zero.")){state.history=[];rebuildRefsFromHistory();save();renderHistory();renderWorkout();renderReferences();renderWeekProgress();}};
   var rcb=$("resetCustomChargesBtn");if(rcb)rcb.onclick=resetCustomCharges;
   var ebb=$("exportBackupBtn");if(ebb)ebb.onclick=exportBackup;
   var ibf=$("importBackupFile");if(ibf)ibf.onchange=function(e){importBackup(e.target.files[0]);};
-  var ewb=$("exportWeekBtn");if(ewb)ewb.onclick=function(){download("coach-bertin-semaine.txt",weekText());};
+  var ewb=$("exportWeekBtn");if(ewb)ewb.onclick=function(){download("racine-semaine.txt",weekText());};
   var ebb2=$("exportBackupBtnSettings");if(ebb2)ebb2.onclick=exportBackup;
   var ibf2=$("importBackupFileSettings");if(ibf2)ibf2.onchange=function(e){importBackup(e.target.files[0]);};
-  var ewb2=$("exportWeekBtnSettings");if(ewb2)ewb2.onclick=function(){download("coach-bertin-semaine.txt",weekText());};
+  var ewb2=$("exportWeekBtnSettings");if(ewb2)ewb2.onclick=function(){download("racine-semaine.txt",weekText());};
   var cel=$("copyErrorLogBtn");
   if(cel)cel.onclick=function(){
     var status=$("errorLogStatus");
@@ -2038,7 +2033,7 @@ function bind(){
     CoachLog.copyReport().then(function(){
       if(status)status.textContent="Rapport erreurs copié ("+CoachLog.count()+" entrée(s)).";
     }).catch(function(){
-      try{download("coach-bertin-erreurs.txt",CoachLog.getReport()); if(status)status.textContent="Copie bloquée · fichier rapport téléchargé.";}
+      try{download("racine-erreurs.txt",CoachLog.getReport()); if(status)status.textContent="Copie bloquée · fichier rapport téléchargé.";}
       catch(e){if(status)status.textContent="Impossible de copier/exporter le rapport.";}
     });
   };

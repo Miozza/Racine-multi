@@ -1,4 +1,4 @@
-// Coach Bertin 2026-06-09 — Phase 2 : Hypertrophie / Force Base (6 semaines)
+// Racine 2026-06-09 — Phase 2 : Hypertrophie / Force Base (6 semaines)
 // Objectif : monter d'un niveau l'effort musculaire général, force de base, masse, chaîne postérieure.
 // Structure : PPL strict + vendredi power/bras/grip. Aucun Chest Supported Row, aucun Reverse Sled Drag, aucun deadlift lourd en Phase 2.
 

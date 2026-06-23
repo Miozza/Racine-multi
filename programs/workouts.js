@@ -1,7 +1,7 @@
-// Coach Bertin séances détaillées extraites de app.js
+// Racine séances détaillées extraites de app.js
 // app.js doit rester le moteur; ce fichier contient la construction des workouts.
 
-// Coach Bertin moteur générique de construction des workouts
+// Racine moteur générique de construction des workouts
 // Les programmes autonomes peuvent exposer cfg.getBlocks(day, week).
 
 function ex(name,format,load,rest,note){return{name:name,format:format,load:charge(name,load||"—"),rest:rest||"—",note:note||""};}
@@ -39,7 +39,7 @@ function buildWorkout(day,week){
       title:"Programme incomplet ou non chargé",
       tag:"Erreur",
       kind:"error",
-      text:"Le cycle actif ne fournit pas de getBlocks(day, week). L'app refuse maintenant le fallback Push/Pull/Legs pour éviter de te faire suivre le mauvais entraînement. Vérifie que le fichier du programme est bien chargé dans GitHub et que le cache iPhone est à jour."
+      text:"Le cycle actif ne fournit pas de getBlocks(day, week). L'app refuse maintenant le fallback Push/Pull/Legs pour éviter de te faire suivre le mauvais entraînement. Vérifie que le fichier du programme est bien chargé et que le cache iPhone est à jour."
     }],
     progress:[]
   };

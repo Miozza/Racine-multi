@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Racine V1.0</title>
+  <title>Racine V1.6-multi</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   <link rel="apple-touch-icon-precomposed" sizes="180x180" href="./apple-touch-icon-precomposed.png">
@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css?v=1.0"/>
+  <link rel="stylesheet" href="styles.css?v=1.6-multi"/>
   <link rel="preload" as="image" href="assets/splash-racine.webp"/>
 </head>
 <body>
@@ -28,7 +28,7 @@
 
 <!-- ═══ TOPNAV ═══ -->
 <nav class="topnav">
-  <span class="topnav-brand"><span class="topnav-mark">R</span><span class="topnav-v">V1.0</span></span><button type="button" id="syncStatusDot" class="sync-dot profile-dot" title="Profil actif" aria-label="Profil actif">?</button>
+  <span class="topnav-brand"><span class="topnav-mark">R</span><span class="topnav-v">V1.6-multi</span></span><button type="button" id="syncStatusDot" class="sync-dot profile-dot" title="Profil actif" aria-label="Profil actif">?</button>
   <div class="topnav-tabs" id="mainTabs">
     <button id="trainingTab"    class="tab active">WOD</button>
     <button id="profileTab"     class="tab">PR</button>
@@ -120,7 +120,7 @@
     </div>
     <div id="sessionFields" class="session-fields"></div>
     <div class="session-footer">
-      <button class="btn-save" id="saveSessionBtn">💾 Sauvegarder &amp; envoyer sur GitHub</button>
+      <button class="btn-save" id="saveSessionBtn">💾 Sauvegarder la séance</button>
       <button class="btn-ghost session-return-btn" id="sessionBackPcBtn" type="button">← Retour WOD</button>
       <p class="session-note" id="saveStatus"></p>
     </div>
@@ -360,55 +360,59 @@
   </div>
 </main>
 
-<footer class="footer">V1.0 · Racine · multi-utilisateur · WOD+ mobile-first · Vue PC · Roadmap · 100% local</footer>
+<footer class="footer">V1.6-multi · Racine · multi-utilisateur local · onboarding · charge scaling · WOD+ mobile-first</footer>
 </div>
 
-<script src="scripts/core/logger.js?v=1.0"></script>
-<script src="scripts/profiles/storage.js?v=1.0"></script>
-<script src="scripts/profiles/onboarding.js?v=1.0"></script>
-<script src="scripts/profiles/ui.js?v=1.0"></script>
-<script src="programs/index.js?v=1.0"></script>
-<script src="programs/epaules_3d.js?v=1.0"></script>
-<script src="programs/epaules_3d_v2.js?v=1.0"></script>
-<script src="programs/hypertrophy_base.js?v=1.0"></script>
-<script src="programs/force_performance.js?v=1.0"></script>
-<script src="programs/competition_peak.js?v=1.0"></script>
-<script src="programs/hypertrophie_fesse.js?v=1.0"></script><script src="programs/force.js?v=1.0"></script>
-<script src="programs/heritage_225.js?v=1.0"></script>
-<script src="programs/arnold_split_beurt.js?v=1.0"></script>
-<script src="programs/general_strength_3d.js?v=1.0"></script>
-<script src="programs/general_hypertrophy_2d.js?v=1.0"></script>
-<script src="programs/general_hypertrophy_3d.js?v=1.0"></script>
-<script src="programs/config.js?v=1.0"></script>
-<script src="programs/workouts.js?v=1.0"></script>
-<script src="programs/tutorials.js?v=1.0"></script>
-<script src="data/charges.js?v=1.0"></script><script src="scripts/app_helpers.js?v=1.0"></script>
-<script src="scripts/state/storage.js?v=1.0"></script>
-<script src="scripts/state/index.js?v=1.0"></script>
-<script src="scripts/charge/equipement.js?v=1.0"></script>
-<script src="scripts/charge/utilitaires.js?v=1.0"></script>
-<script src="scripts/charge/mouvements.js?v=1.0"></script>
-<script src="scripts/charge/historique.js?v=1.0"></script>
-<script src="scripts/charge/rpe.js?v=1.0"></script>
-<script src="scripts/charge/scaling.js?v=1.0"></script>
-<script src="scripts/charge/suggestion.js?v=1.0"></script>
-<script src="scripts/history/index.js?v=1.0"></script>
-  <script src="scripts/progression/index.js?v=1.0"></script>
-  <script src="scripts/summary/index.js?v=1.0"></script>
-<script src="scripts/charge/index.js?v=1.0"></script>
-<script src="scripts/view_pc.js?v=1.0"></script>
-<script src="scripts/charge_diagnostic_ui.js?v=1.0"></script>
-<script src="scripts/ui_modals.js?v=1.0"></script>
-<script src="scripts/ui/index.js?v=1.0"></script>
-<script src="scripts/app_navigation.js?v=1.0"></script>
-<script src="scripts/view_wodplus.js?v=1.0"></script>
-<script src="scripts/session/view.js?v=1.0"></script>
-<script src="scripts/session/timer.js?v=1.0"></script>
-<script src="scripts/session/results.js?v=1.0"></script>
-<script src="scripts/session/save.js?v=1.0"></script>
-<script src="scripts/session/index.js?v=1.0"></script>
-<script src="app.js?v=1.0"></script>
-<script src="scripts/tms_session.js?v=1.0"></script>
+<script src="scripts/core/logger.js?v=1.6-multi"></script>
+<script src="scripts/profiles/storage.js?v=1.6-multi"></script>
+<script src="scripts/profiles/reference.js?v=1.6-multi"></script>
+<script src="scripts/profiles/onboarding.js?v=1.6-multi"></script>
+<script src="scripts/profiles/ui.js?v=1.6-multi"></script>
+<script src="programs/index.js?v=1.6-multi"></script>
+<script src="programs/epaules_3d.js?v=1.6-multi"></script>
+<script src="programs/epaules_3d_v2.js?v=1.6-multi"></script>
+<script src="programs/hypertrophy_base.js?v=1.6-multi"></script>
+<script src="programs/force_performance.js?v=1.6-multi"></script>
+<script src="programs/competition_peak.js?v=1.6-multi"></script>
+<script src="programs/hypertrophie_fesse.js?v=1.6-multi"></script><script src="programs/force.js?v=1.6-multi"></script>
+<script src="programs/heritage_225.js?v=1.6-multi"></script>
+<script src="programs/arnold_split_beurt.js?v=1.6-multi"></script>
+<script src="programs/general_strength_3d.js?v=1.6-multi"></script>
+<script src="programs/general_hypertrophy_2d.js?v=1.6-multi"></script>
+<script src="programs/general_hypertrophy_3d.js?v=1.6-multi"></script>
+<script src="programs/racine_client_programs.js?v=1.6-multi"></script>
+<script src="programs/racine_crossfit_programs.js?v=1.6-multi"></script>
+<script src="programs/strict_muscle_up_cycle.js?v=1.6-multi"></script>
+<script src="programs/config.js?v=1.6-multi"></script>
+<script src="programs/workouts.js?v=1.6-multi"></script>
+<script src="programs/tutorials.js?v=1.6-multi"></script>
+<script src="data/charges.js?v=1.6-multi"></script><script src="scripts/app_helpers.js?v=1.6-multi"></script>
+<script src="scripts/state/storage.js?v=1.6-multi"></script>
+<script src="scripts/state/index.js?v=1.6-multi"></script>
+<script src="scripts/charge/equipement.js?v=1.6-multi"></script>
+<script src="scripts/charge/utilitaires.js?v=1.6-multi"></script>
+<script src="scripts/charge/mouvements.js?v=1.6-multi"></script>
+<script src="scripts/charge/historique.js?v=1.6-multi"></script>
+<script src="scripts/charge/rpe.js?v=1.6-multi"></script>
+<script src="scripts/charge/scaling.js?v=1.6-multi"></script>
+<script src="scripts/charge/suggestion.js?v=1.6-multi"></script>
+<script src="scripts/history/index.js?v=1.6-multi"></script>
+  <script src="scripts/progression/index.js?v=1.6-multi"></script>
+  <script src="scripts/summary/index.js?v=1.6-multi"></script>
+<script src="scripts/charge/index.js?v=1.6-multi"></script>
+<script src="scripts/view_pc.js?v=1.6-multi"></script>
+<script src="scripts/charge_diagnostic_ui.js?v=1.6-multi"></script>
+<script src="scripts/ui_modals.js?v=1.6-multi"></script>
+<script src="scripts/ui/index.js?v=1.6-multi"></script>
+<script src="scripts/app_navigation.js?v=1.6-multi"></script>
+<script src="scripts/view_wodplus.js?v=1.6-multi"></script>
+<script src="scripts/session/view.js?v=1.6-multi"></script>
+<script src="scripts/session/timer.js?v=1.6-multi"></script>
+<script src="scripts/session/results.js?v=1.6-multi"></script>
+<script src="scripts/session/save.js?v=1.6-multi"></script>
+<script src="scripts/session/index.js?v=1.6-multi"></script>
+<script src="app.js?v=1.6-multi"></script>
+<script src="scripts/tms_session.js?v=1.6-multi"></script>
 <script>
 (function(){
   var splash = document.getElementById("racineSplash");

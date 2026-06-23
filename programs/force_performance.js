@@ -1,4 +1,4 @@
-// Coach Bertin 2026-06-09 — Phase 3 : Force + Résistance musculaire (6 semaines)
+// Racine 2026-06-09 — Phase 3 : Force + Résistance musculaire (6 semaines)
 // Objectif : force réelle + transfert CrossFit. Sortie du PPL strict.
 // Architecture : lundi bench force, mardi squat + deadlift contrôlé, jeudi clean + press + skill, vendredi force-résistance.
 // Note : cette phase prépare soit Compétition CrossFit Peak — Phase 4, soit un futur bloc Héritage 225 selon l'objectif choisi.

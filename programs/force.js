@@ -1,4 +1,4 @@
-// Coach Bertin Programme autonome : Force classique
+// Racine Programme autonome : Force classique
 // Objectif : force pure, repos longs, très peu de conditioning, aucun WOD destructeur.
 // ne dépend plus de la structure PPL générique.
 

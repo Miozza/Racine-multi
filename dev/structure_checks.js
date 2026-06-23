@@ -50,7 +50,7 @@ const allowedRootFiles = new Set([
   'README.md','CHANGELOG.md','ETAT_ACTUEL.md','RELEASE_CHECKLIST.md',
   'apple-touch-icon.png','apple-touch-icon-precomposed.png','icon-180.png','icon-192.png','icon-512.png'
 ]);
-const allowedDirs = new Set(['programs','scripts','data','dev','docs','.github']);
+const allowedDirs = new Set(['programs','scripts','data','dev','docs','.github','.claude','assets']);
 
 // 1. Structure racine.
 allFiles.forEach(f => {
@@ -66,7 +66,7 @@ assert(!exists('diagnostics'), 'Le dossier diagnostics/ ne doit pas revenir.');
 assert(!exists('programs/test.js'), 'programs/test.js ne doit pas revenir.');
 allFiles.forEach(f => {
   const base = path.basename(f);
-  if(/^RELEASE_NOTES_V\d+\.\d+/.test(base) || /^AUDIT_V\d+\.\d+/.test(base) || /^REPORT_V\d+\.\d+/.test(base) || /^CHECKLIST_V\d+\.\d+/.test(base)){
+  if(/^RELEASE_NOTES_V\d+\.\d+(?:-multi)?/.test(base) || /^AUDIT_V\d+\.\d+(?:-multi)?/.test(base) || /^REPORT_V\d+\.\d+(?:-multi)?/.test(base) || /^CHECKLIST_V\d+\.\d+(?:-multi)?/.test(base)){
     fail('Fichier temporaire/versionné interdit : ' + f);
   }
 });
@@ -102,7 +102,7 @@ const readme = exists('README.md') ? read('README.md') : '';
 const etat = exists('ETAT_ACTUEL.md') ? read('ETAT_ACTUEL.md') : '';
 const docRefText = readme + '\n' + etat + '\n' + checklist;
 walk('docs').filter(f => f.endsWith('.md')).forEach(f => {
-  assert(!/V\d+\.\d+/.test(path.basename(f)), 'Document sans version dans le nom : ' + f);
+  assert(!/V\d+\.\d+(?:-multi)?/.test(path.basename(f)), 'Document sans version dans le nom : ' + f);
   assert(docRefText.includes(f) || f === 'docs/STRUCTURE_CONTRACT.md', 'Document stable référencé : ' + f);
 });
 assert(exists('docs/STRUCTURE_CONTRACT.md'), 'docs/STRUCTURE_CONTRACT.md doit exister.');
@@ -110,12 +110,12 @@ assert(read('docs/STRUCTURE_CONTRACT.md').includes('## Contrat de version'), 'Le
 
 // 5. Contrat de version.
 const app = exists('app.js') ? read('app.js') : '';
-const versionMatch = app.match(/APP_VERSION\s*=\s*"(V\d+\.\d+)"/);
+const versionMatch = app.match(/APP_VERSION\s*=\s*"(V\d+\.\d+(?:-multi)?)"/);
 assert(!!versionMatch, 'app.js conserve APP_VERSION.');
 if(versionMatch){
   const version = versionMatch[1];
   const cache = version.replace(/^V/, '');
-  const headerMatch = app.match(/^\/\/\s*Racine\s+(V\d+\.\d+)/m);
+  const headerMatch = app.match(/^\/\/\s*Racine\s+(V\d+\.\d+(?:-multi)?)/m);
   assert(!!headerMatch, 'app.js doit garder un commentaire d’en-tête Racine Vx.xx.');
   assert(headerMatch && headerMatch[1] === version, 'En-tête app.js cohérent avec APP_VERSION : ' + version);
   assert(index.includes('<title>Racine ' + version + '</title>'), 'index.html affiche la version dans le titre.');
@@ -123,12 +123,12 @@ if(versionMatch){
   assert(index.includes('<footer class="footer">' + version), 'index.html affiche la version dans le footer.');
   assert(index.includes('?v=' + cache), 'index.html utilise le cache-bust courant.');
   assert(readme.includes('- Version : `' + version + '`'), 'README.md affiche la version courante.');
-  assert((readme.match(/V\d+\.\d+/g) || []).length === 1, 'README.md ne doit contenir que la version courante.');
+  assert((readme.match(/V\d+\.\d+(?:-multi)?/g) || []).length === 1, 'README.md ne doit contenir que la version courante.');
   assert(etat.includes('Version actuelle : ' + version), 'ETAT_ACTUEL.md affiche la version courante.');
-  assert((etat.match(/V\d+\.\d+/g) || []).every(v => v === version), 'ETAT_ACTUEL.md ne doit pas citer d’anciennes versions.');
+  assert((etat.match(/V\d+\.\d+(?:-multi)?/g) || []).every(v => v === version), 'ETAT_ACTUEL.md ne doit pas citer d’anciennes versions.');
   assert(read('CHANGELOG.md').includes('## ' + version), 'CHANGELOG.md contient une entrée pour la version courante.');
-  assert(!/V\d+\.\d+/.test(read('manifest.json')), 'manifest.json ne doit pas porter la version affichée.');
-  assert(!/V\d+\.\d+|v\d+-\d+|\b\d+\.\d+\b/.test(read('service-worker.js')), 'service-worker.js reste déversionné en mode no-cache.');
+  assert(!/V\d+\.\d+(?:-multi)?/.test(read('manifest.json')), 'manifest.json ne doit pas porter la version affichée.');
+  assert(!/V\d+\.\d+(?:-multi)?|v\d+-\d+|\b\d+\.\d+\b/.test(read('service-worker.js')), 'service-worker.js reste déversionné en mode no-cache.');
 }
 
 // 6. Frontières programs.
@@ -161,9 +161,11 @@ domains.forEach(([file, marker]) => {
 ['scripts/equipement.js','scripts/utilitaires_charges.js','scripts/mouvement.js','scripts/charge_gestion.js','scripts/progression_rpe.js','scripts/moteur_charges.js'].forEach(f => assert(!exists(f), 'Ancien emplacement charge supprimé : ' + f));
 ['scripts/session/view.js','scripts/session/timer.js','scripts/session/results.js','scripts/session/save.js','scripts/session/index.js'].forEach(f => assert(exists(f), 'Module session présent : ' + f));
 assert(!exists('scripts/view_session.js'), 'Ancien emplacement session supprimé : scripts/view_session.js');
-['scripts/profiles/storage.js','scripts/profiles/onboarding.js','scripts/profiles/ui.js'].forEach(f => assert(exists(f), 'Module profils présent : ' + f));
+['scripts/profiles/storage.js','scripts/profiles/reference.js','scripts/profiles/onboarding.js','scripts/profiles/ui.js'].forEach(f => assert(exists(f), 'Module profils présent : ' + f));
 assert(read('scripts/charge/suggestion.js').includes('coachApplyUserLoadScale'), 'Le scaling de charge par profil doit être branché dans le moteur de suggestion.');
 assert(read('scripts/charge/historique.js').includes('coachAggressivenessFactor'), 'L’agressivité de progression par profil doit être branchée dans le signal historique.');
+assert(read('scripts/profiles/reference.js').includes('window.RACINE_REFERENCE_PROFILE'), 'Le référentiel de calibration profil doit exposer RACINE_REFERENCE_PROFILE.');
+assert(read('app.js').includes('profile: blankProfile()') && read('app.js').includes('movementRefs: {}'), 'Un profil neuf démarre sans références vivantes préchargées.');
 
 // 8. Ordre et orchestration.
 assert(index.indexOf('scripts/state/storage.js') < index.indexOf('app.js?v='), 'CoachState doit être chargé avant app.js.');

@@ -1,7 +1,7 @@
 // Coach Beurt V51.63 — WOD+ render helpers
 // Extraction prudente depuis app.js.
 // But: alléger app.js sans changer le comportement visible de WOD+.
-// Ne contient pas le moteur de charges, l'historique, le RPE storage ou la sync GitHub.
+// Ne contient pas le moteur de charges, l'historique, le RPE storage ou la sauvegarde profil.
 
 function kindRank(kind){
   if(kind==="wod")         return{rank:"WOD", cls:"rank-S",tag:"Conditioning",tagCls:"wod-tag"};

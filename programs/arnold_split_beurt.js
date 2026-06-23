@@ -1,4 +1,4 @@
-// Coach Bertin — Arnold Split
+// Racine — Arnold Split
 // Objectif : bloc hors-saison hypertrophie, rotation continue Pecs+Dos / Épaules+Bras / Jambes
 // sur 4 jours d'entraînement (lundi, mardi, jeudi, vendredi), durée ouverte.
 // Programme réel connecté au moteur de charge (CoachCharge), pas un mode local isolé.

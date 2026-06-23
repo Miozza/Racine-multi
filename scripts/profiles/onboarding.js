@@ -1,7 +1,7 @@
 // Racine — logique d'intégration (onboarding) d'un nouvel utilisateur.
 // Pur calcul, sans DOM. L'interface (assistant visuel) vit dans scripts/profiles/ui.js.
 // Ce fichier charge AVANT app.js : il ne doit donc jamais appeler une fonction
-// d'app.js (epley1RM, defaultProfile, PR_FIELD_MAP, state, save()...) au
+// d'app.js (epley1RM, PR_FIELD_MAP, state, save()...) au
 // chargement du script — seulement depuis des fonctions invoquées plus tard,
 // après un clic utilisateur (à ce moment app.js est forcément déjà chargé).
 window.CoachOnboarding = window.CoachOnboarding || {};
@@ -109,7 +109,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
   api.computeFromAnswers = function(answers, experienceLevel){
     answers = answers || {};
     var lvl = api.EXPERIENCE_LEVELS[experienceLevel] || api.EXPERIENCE_LEVELS.intermediaire;
-    var ref = (typeof defaultProfile === "object" && defaultProfile) ? defaultProfile : {};
+    var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : ((typeof defaultProfile === "object" && defaultProfile) ? defaultProfile : {});
     var values = {};
     var testRatio = {};
 
@@ -176,7 +176,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
   // (state.profile.scaleRatios) reflète bien ses corrections.
   api.ratiosFromValues = function(values, experienceLevel){
     var lvl = api.EXPERIENCE_LEVELS[experienceLevel] || api.EXPERIENCE_LEVELS.intermediaire;
-    var ref = (typeof defaultProfile === "object" && defaultProfile) ? defaultProfile : {};
+    var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : ((typeof defaultProfile === "object" && defaultProfile) ? defaultProfile : {});
     var ratios = {};
     Object.keys(ref).forEach(function(key){
       var v = values[key], d = ref[key];
@@ -202,7 +202,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
   // d'événement (jamais au chargement du script) car elle dépend d'app.js.
   api.applyToActiveProfile = function(meta, computed){
     if(typeof load === "function") load(); // s'assure que `state` correspond bien au profil actif
-    if(!state.profile) state.profile = (typeof copy === "function" && typeof defaultProfile==="object") ? copy(defaultProfile) : {};
+    if(!state.profile) state.profile = (typeof blankProfile === "function") ? blankProfile() : {};
     Object.keys(computed.values).forEach(function(key){ state.profile[key] = computed.values[key]; });
     state.profile.name = meta.name;
     state.profile.experienceLevel = meta.experienceLevel;
@@ -234,7 +234,9 @@ window.CoachOnboarding = window.CoachOnboarding || {};
         name: meta.name,
         experienceLevel: meta.experienceLevel,
         bodyweightLb: meta.bodyweightLb || null,
-        aggressiveness: meta.aggressiveness
+        aggressiveness: meta.aggressiveness,
+        scaleRatios: computed.ratios,
+        referenceVersion: "racine-reference-v1"
       });
     }
   };

@@ -246,7 +246,7 @@ function renderLoadInfoModalBody(msg){
       return "<li><strong>"+escapeHtml(r.date||"?")+"</strong> — "+
         escapeHtml(loadText(r.load))+" × "+escapeHtml(r.reps||"?")+
         " — RPE "+escapeHtml(r.rpe||"?")+(r.status?" <small>"+escapeHtml(r.status)+"</small>":"")+"</li>";
-    }).join("") : "<li>Aucun historique retrouvé pour ce mouvement. Lance une sync GitHub si tu sais l’avoir déjà fait.</li>";
+    }).join("") : "<li>Aucun historique retrouvé pour ce mouvement. Vérifie que tu es dans le bon profil ou importe une sauvegarde JSON si l’historique existe ailleurs.</li>";
     return '<div class="tuto-topline">HISTORIQUE DE CHARGE</div>'+
       '<div class="tuto-title">'+escapeHtml(hint.name||"Mouvement")+'</div>'+
       '<div class="tuto-goal"><strong>Charge suggérée : '+escapeHtml(hint.load||"—")+'</strong></div>'+

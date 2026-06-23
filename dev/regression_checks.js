@@ -41,7 +41,7 @@ function formatTimerDisplay(sec){
   return String(Math.floor(sec / 60)) + ':' + String(sec % 60).padStart(2, '0');
 }
 function currentVersion(){
-  const m = read('app.js').match(/APP_VERSION\s*=\s*"(V\d+\.\d+)"/);
+  const m = read('app.js').match(/APP_VERSION\s*=\s*"(V\d+\.\d+(?:-multi)?)"/);
   return m && m[1];
 }
 
@@ -56,11 +56,11 @@ const detectedModeReason = forcedUpdatePackage ? 'update (--update-package)' : (
 
 // 1. Artefacts et fichiers interdits.
 const forbiddenRootDocs = [
-  /^RELEASE_NOTES_V\d+\.\d+/,
-  /^OFFICIAL_RELEASE_.*V\d+\.\d+/,
-  /^STRUCTURE_AUDIT.*V\d+\.\d+/,
-  /^AUDIT.*V\d+\.\d+/,
-  /^REGRESSION_REPORT.*V\d+\.\d+/,
+  /^RELEASE_NOTES_V\d+\.\d+(?:-multi)?/,
+  /^OFFICIAL_RELEASE_.*V\d+\.\d+(?:-multi)?/,
+  /^STRUCTURE_AUDIT.*V\d+\.\d+(?:-multi)?/,
+  /^AUDIT.*V\d+\.\d+(?:-multi)?/,
+  /^REGRESSION_REPORT.*V\d+\.\d+(?:-multi)?/,
   /^VERSION_HISTORY\.md$/
 ];
 allFiles.forEach(f => {
@@ -112,15 +112,15 @@ if(version){
   assert(index.includes('<footer class="footer">' + version), 'index.html doit afficher la version dans le footer.');
   assert(index.includes('?v=' + cache), 'index.html doit cache-buster les assets avec ?v=' + cache + '.');
   assert(readme.includes('- Version : `' + version + '`'), 'README.md doit afficher la version courante.');
-  assert((readme.match(/V\d+\.\d+/g) || []).length === 1, 'README.md ne doit pas redevenir un deuxième changelog.');
+  assert((readme.match(/V\d+\.\d+(?:-multi)?/g) || []).length === 1, 'README.md ne doit pas redevenir un deuxième changelog.');
   assert(etat.includes('Version actuelle : ' + version), 'ETAT_ACTUEL.md doit afficher la version courante.');
-  assert((etat.match(/V\d+\.\d+/g) || []).every(v => v === version), 'ETAT_ACTUEL.md ne doit pas contenir d’anciennes versions.');
+  assert((etat.match(/V\d+\.\d+(?:-multi)?/g) || []).every(v => v === version), 'ETAT_ACTUEL.md ne doit pas contenir d’anciennes versions.');
   assert(changelog.includes('## ' + version), 'CHANGELOG.md doit contenir une entrée pour la version courante.');
   assert(contract.includes('## Contrat de version'), 'STRUCTURE_CONTRACT.md doit garder le contrat de version visible.');
   assert(contract.includes('Fichiers qui portent la version courante'), 'Le contrat doit lister les fichiers qui portent la version.');
   assert(contract.includes('Fichiers qui ne doivent pas porter la version courante'), 'Le contrat doit lister les fichiers déversionnés.');
-  assert(!/V\d+\.\d+/.test(manifest), 'manifest.json ne doit pas porter la version affichée.');
-  assert(!/V\d+\.\d+|v\d+-\d+|\b\d+\.\d+\b/.test(serviceWorker), 'service-worker.js doit rester déversionné en mode no-cache.');
+  assert(!/V\d+\.\d+(?:-multi)?/.test(manifest), 'manifest.json ne doit pas porter la version affichée.');
+  assert(!/V\d+\.\d+(?:-multi)?|v\d+-\d+|\b\d+\.\d+\b/.test(serviceWorker), 'service-worker.js doit rester déversionné en mode no-cache.');
 }
 
 // 4b. Navigation semaine : completedDays/missedDays doivent être reconstruits par semaine.
@@ -164,6 +164,7 @@ const html = read('index.html');
   'scripts/state/index.js',
   'scripts/charge/index.js',
   'scripts/profiles/storage.js',
+  'scripts/profiles/reference.js',
   'scripts/profiles/onboarding.js',
   'scripts/profiles/ui.js',
   'scripts/view_pc.js',

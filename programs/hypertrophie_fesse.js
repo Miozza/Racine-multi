@@ -1,4 +1,4 @@
-// Coach Beurt — Programme autonome : Hypertrophie Fessiers (4 semaines)
+// Racine — Programme autonome : Hypertrophie Fessiers (4 semaines)
 // Objectif : spécialisation fessiers réaliste, sans frapper les hanches/lombaires lourdement 4 jours de suite.
 // Structure : 4 jours/semaine, 4 semaines. Deux vrais stimuli fessiers, un jour support haut du corps/posture, un jour pump/récupération active.
 // Règle centrale : progression par RPE/RIR et qualité, pas par charges inventées.

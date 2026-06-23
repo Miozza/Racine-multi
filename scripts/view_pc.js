@@ -605,7 +605,7 @@ function pcExportContextText(){
   lines.push("");
   lines.push("Rappels de sécurité");
   lines.push("- Le contexte ci-dessus ne demande aucune modification par lui-même.");
-  lines.push("- C'est Bertin qui écrit la vraie demande ensuite.");
+  lines.push("- L’utilisateur écrit la vraie demande ensuite.");
   lines.push("- Ne pas toucher aux fichiers data/ durables sauf demande explicite.");
   return lines.join("\n");
 }

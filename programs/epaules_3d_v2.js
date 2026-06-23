@@ -1,4 +1,4 @@
-// Coach Bertin — Épaules 3D v2
+// Racine — Épaules 3D v2
 // Objectif : même intention que Épaules 3D Phase 1, mais format midi dense.
 // Philosophie : warm-up ciblé court, fonte utile maximale, WOD court obligatoire, moins de blocs séparés.
 

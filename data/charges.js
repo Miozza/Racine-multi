@@ -1,5 +1,5 @@
-// Coach Bertin — charges de base / équipement
-// Configuration stable unique. Les upgrades/PR viennent de l’historique, pas d’un niveau implicite.
+// Racine — charges génériques de programme / équipement
+// Ce fichier n’est pas un profil utilisateur. Les charges réelles viennent de l’onboarding, des PR et de l’historique local.
 
 window.DEFAULT_CHARGES = {
   "Strict Press": "115 lb",

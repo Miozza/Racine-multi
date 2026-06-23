@@ -137,13 +137,13 @@
     var state = null, charges = null;
     try{ state = JSON.parse(localStorage.getItem(keys.state) || "null"); }catch(e){}
     try{ charges = JSON.parse(localStorage.getItem(keys.charges) || "null"); }catch(e){}
-    return { profile: profile, state: state, customCharges: charges };
+    return { schema:"racine-profile-export-v2", exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
   };
 
   api.importProfileBlob = function(blob){
     if(!blob || !blob.profile) return null;
     var reg = readRegistry();
-    var incoming = Object.assign({}, blob.profile, { id: uid() });
+    var incoming = Object.assign({}, blob.profile, { id: uid(), importedAt:new Date().toISOString() });
     reg.profiles.push(incoming);
     reg.activeProfileId = incoming.id;
     writeRegistry(reg);

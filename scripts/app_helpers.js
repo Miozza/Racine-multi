@@ -1,6 +1,6 @@
-// Coach Bertin V51.63 — Helpers applicatifs simples
+// Racine — helpers applicatifs simples
 // Extraction prudente depuis app.js.
-// Ces fonctions ne portent pas la logique de charges, d'historique, de cycle ou de sync GitHub.
+// Ces fonctions ne portent pas la logique de charges, d'historique, de cycle ou de sauvegarde profil.
 
 function copy(o){return JSON.parse(JSON.stringify(o));}
 function $(id){return document.getElementById(id);}

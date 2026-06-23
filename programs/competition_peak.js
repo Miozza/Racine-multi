@@ -1,4 +1,4 @@
-// Coach Bertin 2026-06-09 — Phase 4 : Compétition CrossFit Peak (8 semaines)
+// Racine 2026-06-09 — Phase 4 : Compétition CrossFit Peak (8 semaines)
 // Objectif : performance CrossFit / Open janvier 2027.
 // Logique : pas de PPL, pas d'hypertrophie. Pacing, transitions, barbell cycling, gymnastics, simulations, taper.
 // La force est maintenue, le WOD devient central. Aucune séance ne doit détruire les 3 jours suivants.
