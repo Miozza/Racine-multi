@@ -103,6 +103,7 @@
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
 
         '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
+        '<div style="text-align:center;margin-top:20px"><button type="button" id="racineAdminPinBtn" style="background:none;border:none;cursor:pointer;opacity:.15;color:var(--text2);font-size:11px;padding:4px 8px">▪</button></div>'+
       '</div>'
     );
     Array.prototype.forEach.call(card.querySelectorAll("[data-pick]"), function(btn){
@@ -125,6 +126,26 @@
     card.querySelector("#racineNewProfileBtn").onclick = function(){
       wiz = { mode:"create", step:"welcome", answers:{} };
       render();
+    };
+
+    var pinBtn = card.querySelector("#racineAdminPinBtn");
+    if(pinBtn) pinBtn.onclick = function(){
+      var pin = prompt("Code :");
+      if(!pin) return;
+      if(pin.trim() !== "8989"){ return; }
+      // PIN correct — chercher ou créer le profil Bertin
+      var existing = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.name === "Bertin"; }) : [];
+      if(existing.length){
+        CoachProfiles.setActive(existing[0].id);
+        closeGate();
+        window.coachFullBoot();
+        return;
+      }
+      if(window.migrateBertin){
+        var id = window.migrateBertin();
+        if(id){ closeGate(); window.coachFullBoot(); return; }
+      }
+      alert("Profil Bertin introuvable.");
     };
     var closeBtn = card.querySelector("#racineCloseGateBtn");
     if(closeBtn){
@@ -507,13 +528,7 @@
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
 
-      '<p id="profileSettingsStatus" class="status-msg"></p>'+
-      // Lien admin discret — visible seulement si profil actif n'est PAS Bertin
-      ((!active || active.name !== "Bertin") ?
-        '<div id="adminAccessHint" style="margin-top:24px;text-align:center">'+
-          '<a id="adminAccessLink" href="#" style="font-size:10px;opacity:.18;color:var(--text2);text-decoration:none;letter-spacing:.04em">&#9632;</a>'+
-        '</div>'
-      : '');
+      '<p id="profileSettingsStatus" class="status-msg"></p>';
     api.bindSettingsPanel();
   };
   api.bindSettingsPanel = function(){
@@ -569,22 +584,6 @@
       };
       r.readAsText(file);
     };
-    // ─── Lien admin discret ───────────────────────────────────────────────────
-    var adminLink = document.getElementById("adminAccessLink");
-    if(adminLink) adminLink.onclick = function(e){
-      e.preventDefault();
-      var url = window.location.origin + window.location.pathname + "?admin=bertin";
-      // Copier dans le presse-papiers
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(url).then(function(){
-          adminLink.textContent = "✓";
-          setTimeout(function(){ adminLink.textContent = "■"; }, 1500);
-        });
-      } else {
-        prompt("Lien admin :", url);
-      }
-    };
-
     var delBtn = document.getElementById("deleteProfileBtn");
     if(delBtn) delBtn.onclick = function(){
       var active = CoachProfiles.getActive();

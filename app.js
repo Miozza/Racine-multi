@@ -2095,41 +2095,16 @@ function coachFullBoot(){
 }
 window.coachFullBoot = coachFullBoot;
 
-// ─── Détection paramètre URL admin ──────────────────────────────────────────
-// ?admin=bertin → crée le profil Bertin si absent, l'active, démarre directement.
-// URL secrète — ne pas afficher publiquement.
-(function(){
-  try{
-    var params = new URLSearchParams(window.location.search);
-    if(params.get("admin") === "bertin"){
-      // Nettoyer l'URL sans recharger
-      history.replaceState(null,"",window.location.pathname);
-      // Chercher un profil Bertin existant
-      var existing = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.name === "Bertin"; }) : [];
-      if(existing.length){
-        CoachProfiles.setActive(existing[0].id);
-        coachFullBoot();
-        return;
-      }
-      // Créer le profil Bertin via migrateBertin
-      if(window.migrateBertin){
-        var id = window.migrateBertin();
-        if(id){ coachFullBoot(); return; }
-      }
-    }
-  }catch(e){}
-
-  if(window.CoachProfiles && CoachProfiles.hasActiveOnboardedProfile()){
-    coachFullBoot();
-  } else if(window.CoachOnboarding && CoachOnboarding.start){
-    // Aucun profil prêt : l'écran d'intégration prend la main et appelle
-    // window.coachFullBoot() une fois le profil créé/calibré.
-    CoachOnboarding.start();
-  } else {
-    // Filet de sécurité si le module profils n'a pas chargé : démarrage direct.
-    coachFullBoot();
-  }
-})();
+if(window.CoachProfiles && CoachProfiles.hasActiveOnboardedProfile()){
+  coachFullBoot();
+} else if(window.CoachOnboarding && CoachOnboarding.start){
+  // Aucun profil prêt : l'écran d'intégration prend la main et appelle
+  // window.coachFullBoot() une fois le profil créé/calibré.
+  CoachOnboarding.start();
+} else {
+  // Filet de sécurité si le module profils n'a pas chargé : démarrage direct.
+  coachFullBoot();
+}
 
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){if(window.CoachLog)CoachLog.warn("service_worker_register_failed", {message:e&&e.message?e.message:String(e)});});});}
 
