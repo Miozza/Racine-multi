@@ -507,7 +507,13 @@
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
 
-      '<p id="profileSettingsStatus" class="status-msg"></p>';
+      '<p id="profileSettingsStatus" class="status-msg"></p>'+
+      // Lien admin discret — visible seulement si profil actif n'est PAS Bertin
+      ((!active || active.name !== "Bertin") ?
+        '<div id="adminAccessHint" style="margin-top:24px;text-align:center">'+
+          '<a id="adminAccessLink" href="#" style="font-size:10px;opacity:.18;color:var(--text2);text-decoration:none;letter-spacing:.04em">&#9632;</a>'+
+        '</div>'
+      : '');
     api.bindSettingsPanel();
   };
   api.bindSettingsPanel = function(){
@@ -563,6 +569,22 @@
       };
       r.readAsText(file);
     };
+    // ─── Lien admin discret ───────────────────────────────────────────────────
+    var adminLink = document.getElementById("adminAccessLink");
+    if(adminLink) adminLink.onclick = function(e){
+      e.preventDefault();
+      var url = window.location.origin + window.location.pathname + "?admin=bertin";
+      // Copier dans le presse-papiers
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(url).then(function(){
+          adminLink.textContent = "✓";
+          setTimeout(function(){ adminLink.textContent = "■"; }, 1500);
+        });
+      } else {
+        prompt("Lien admin :", url);
+      }
+    };
+
     var delBtn = document.getElementById("deleteProfileBtn");
     if(delBtn) delBtn.onclick = function(){
       var active = CoachProfiles.getActive();
