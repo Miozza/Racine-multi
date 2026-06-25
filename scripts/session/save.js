@@ -65,7 +65,15 @@ function setupSessionSave(){
       return h.date===payload.date&&h.day===payload.jour&&h.cycle===payload.cycle;
     });
     if(!alreadySaved){
-      state.history.push({date:payload.date,time:payload.time,week:state.week,day:state.day,plannedDay:state.day,actualDate:payload.actualDate,actualDayName:payload.actualDayName,cycle:payload.cycle,focus:focus().label,results:results,version:APP_VERSION});
+      // Récupérer la dernière note WOD non-vide parmi les résultats
+      var globalNote = "";
+      Object.keys(results).forEach(function(key){
+        var r = results[key];
+        if(r && r.note && String(r.note).trim()) globalNote = String(r.note).trim();
+      });
+      var entry = {date:payload.date,time:payload.time,week:state.week,day:state.day,plannedDay:state.day,actualDate:payload.actualDate,actualDayName:payload.actualDayName,cycle:payload.cycle,focus:focus().label,results:results,version:APP_VERSION};
+      if(globalNote) entry.note = globalNote;
+      state.history.push(entry);
       save();
     }
     if(autoPrUpdates.length){ renderProfile(); renderReferences(); }
