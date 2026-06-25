@@ -1581,10 +1581,12 @@ function renderHistory(){
     if(res){
       Object.keys(res).forEach(function(k){
         var r=res[k];
-        if(r.load||r.result){
-          rows+='<div class="history-row"><span class="mv">'+escHtml(k)+'</span><span class="val">'+
-            (r.load?escHtml(r.load+" lb"+(r.reps?" × "+r.reps:"")+(r.rpe?" RPE "+r.rpe:"")):escHtml(r.result||""))+
-            '</span></div>';
+        if(r.load||r.result||r.note||r.rpe){
+          var _mv=r.load
+            ?escHtml(r.load+" lb"+(r.reps?" × "+r.reps:"")+(r.rpe?" RPE "+r.rpe:""))
+            :escHtml(r.result||"");
+          var _nt=r.note?'<span class="history-note">'+escHtml(r.note)+'</span>':"";
+          rows+='<div class="history-row"><span class="mv">'+escHtml(k)+'</span><span class="val">'+_mv+_nt+'</span></div>';
         }
       });
     }

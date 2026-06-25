@@ -472,6 +472,20 @@ function sessionSummarySection(title,items,emptyText){
   return '<div class="summary-section"><div class="summary-section-title">'+sessionSummaryEscape(title)+'</div>'+list.map(function(line){return '<div class="summary-line">'+sessionSummaryEscape(line)+'</div>';}).join('')+'</div>';
 }
 
+function downloadProfileBackup(){
+  if(!window.CoachProfiles)return;
+  var id=CoachProfiles.getActiveId();
+  var blob=CoachProfiles.exportProfileBlob(id);
+  if(!blob)return;
+  var text=JSON.stringify(blob,null,2);
+  var date=new Date().toISOString().slice(0,10);
+  var name="racine-"+(blob.profile&&blob.profile.name?blob.profile.name.toLowerCase().replace(/[^a-z0-9]+/g,"-"):"profil")+"-"+date+".json";
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+  a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+}
+
 function showSessionSummaryModal(summary){
   var existing=document.getElementById("summaryModal");
   if(existing)existing.remove();
@@ -513,7 +527,8 @@ function showSessionSummaryModal(summary){
         summary.lines.map(function(l){return'<div class="summary-line">'+sessionSummaryEscape(l)+'</div>';}).join("")+
       '</div>'+
       weekAdvanceHtml+
-      '<button id="closeSummaryBtn" class="btn-ghost" style="width:100%;margin-top:12px">Fermer</button>'+
+      '<button id="backupProfileBtn" class="btn-ghost" style="width:100%;margin-top:12px">↓ Sauvegarder profil</button>'+
+      '<button id="closeSummaryBtn" class="btn-ghost" style="width:100%;margin-top:8px">Fermer</button>'+
     '</div>';
   document.body.appendChild(modal);
   setTimeout(function(){modal.classList.add("visible");},30);
@@ -522,6 +537,8 @@ function showSessionSummaryModal(summary){
     modal.classList.remove("visible");
     setTimeout(function(){modal.remove();},300);
   };
+  var backup = document.getElementById("backupProfileBtn");
+  if(backup) backup.onclick = downloadProfileBackup;
   var adv = document.getElementById("advanceWeekBtn");
   if(adv) adv.onclick = function(){
     advanceWeek("Semaine complétée/traitée");
