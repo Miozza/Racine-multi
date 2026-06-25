@@ -2097,12 +2097,13 @@ window.coachFullBoot = coachFullBoot;
 
 if(window.CoachProfiles && CoachProfiles.hasActiveOnboardedProfile()){
   coachFullBoot();
-} else if(window.CoachOnboarding && CoachOnboarding.start){
-  // Aucun profil prêt : l'écran d'intégration prend la main et appelle
-  // window.coachFullBoot() une fois le profil créé/calibré.
-  CoachOnboarding.start();
+} else if(window.CoachOnboarding){
+  // Toujours afficher le picker d'abord — il contient le bouton PIN admin.
+  // Le picker a le bouton "+ Nouveau profil" qui lance l'onboarding.
+  if(CoachOnboarding.openPicker) CoachOnboarding.openPicker();
+  else if(CoachOnboarding.start) CoachOnboarding.start();
 } else {
-  // Filet de sécurité si le module profils n'a pas chargé : démarrage direct.
+  // Filet de sécurité si le module profils n'a pas chargé.
   coachFullBoot();
 }
 
