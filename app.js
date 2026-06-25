@@ -1596,6 +1596,7 @@ function renderHistory(){
         '</div>'+
         '<button type="button" class="history-delete-btn" data-history-index="'+originalIndex+'">Supprimer</button>'+
       '</div>'+
+      (s.note?'<div class="history-note">'+escHtml(s.note)+'</div>':'')+
       '<div class="history-rows">'+rows+'</div>';
     h.appendChild(div);
   });

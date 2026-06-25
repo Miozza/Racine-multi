@@ -329,7 +329,8 @@ function finishGuidedSession(){
   if(guidedWakeLockAuto){ releaseWakeLock(); }
   guidedWakeLockAuto=false;
   document.body.classList.remove("guided-session-active");
-  guidedResultCache = {};
+  // Ne PAS vider guidedResultCache ici — il contient les résultats saisis pendant la séance.
+  // Le cache sera vidé seulement dans returnFromResultsToWod() après sauvegarde.
   guidedResultsMode = true;
   switchView("results");
   setTimeout(function(){

@@ -345,6 +345,8 @@ function renderSessionEntry(){
 function collectSessionResults(){
   var results={};
   var scope=$("sessionFields")||document;
+
+  // Inputs de l'écran résultats final (data-field)
   scope.querySelectorAll(".sf-input").forEach(function(inp){
     var key=inp.getAttribute("data-key"),field=inp.getAttribute("data-field");
     if(!key||!field)return;
@@ -353,6 +355,19 @@ function collectSessionResults(){
     if(!results[key])results[key]={};
     results[key][field]=val;
   });
+
+  // Inputs saisis directement en cours de séance (data-guided-field)
+  document.querySelectorAll("[data-guided-field][data-key]").forEach(function(inp){
+    var key=inp.getAttribute("data-key"),field=inp.getAttribute("data-guided-field");
+    if(!key||!field)return;
+    var val=String(inp.value||"").trim();
+    if(!val)return;
+    if(!results[key])results[key]={};
+    // Ne pas écraser si déjà renseigné par l'écran final
+    if(results[key][field]===undefined) results[key][field]=val;
+  });
+
+  // Cache guidedResultCache (priorité maximale — reflète la dernière valeur saisie)
   Object.keys(guidedResultCache||{}).forEach(function(key){
     var r=guidedResultCache[key]||{};
     Object.keys(r).forEach(function(field){
@@ -362,6 +377,7 @@ function collectSessionResults(){
       results[key][field]=val;
     });
   });
+
   return results;
 }
 
