@@ -464,28 +464,85 @@ function athleteSuggestedLoad(nameOrKey, currentLoad, targetReps, context){
 window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context){
   var base = guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context);
 
-  // ── Progression intelligente basée sur RPE réel ───────────────────────────
-  // Programme = direction. Séance réelle = décision de charge.
-  // Plancher : jamais en dessous de la charge du programme.
-  // Plafond  : jamais plus de 2x coachMaxJumpForExercise au-dessus du programme.
-  // Contexte technique/wod/light = ignoré.
+  // ── Moteur Brain V1.13 ────────────────────────────────────────────────────
+  // Couche 1 : Règles RPE
+  // Couche 2 : Moyenne mobile pondérée (≥2 séances)
+  // Couche 3 : Vélocité de progression (≥3 séances)
+  // Couche 4 : Signal de cohérence (recalibrage si dépassement systématique)
+  // Deload   : -20% principal / -25% accessoire / -30% technique
+  // Contexte technique/wod/light = ignoré
   try{
     var baseNum = base.loadNum;
     if(!baseNum || baseNum <= 0) return base.loadText;
 
     var label = base.label || nameOrKey;
     var mv = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(label) : null;
-    var hist = (mv && Array.isArray(mv.history)) ? mv.history : [];
-    if(!hist.length) return base.loadText;
+    var histAll = (mv && Array.isArray(mv.history)) ? mv.history : [];
+    if(!histAll.length) return base.loadText;
 
     var ctx = (context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
     var isLimited = (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
     if(isLimited) return base.loadText;
 
-    var last     = hist[hist.length - 1];
-    var lastRpe  = Number(last && last.rpe)  || 0;
-    var lastLoad = Number(last && (last.load || last.externalLoad)) || 0;
-    var lastReps = Number(last && (last.reps || last.actualReps))   || 0;
+    var isDeload = (typeof coachIsDeloadWeekOrContext==='function') ? coachIsDeloadWeekOrContext(ctx) : false;
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function rowLoad(r){ return Number(r && (r.load || r.externalLoad)) || 0; }
+    function rowRpe(r){  return Number(r && r.rpe) || 0; }
+    function rowReps(r){ return Number(r && (r.reps || r.actualReps)) || 0; }
+    function isDeloadRow(r){ return !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
+
+    // Filtrer les séances deload de l'historique pour les calculs
+    var hist = histAll.filter(function(r){ return !isDeloadRow(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
+    if(!hist.length) return base.loadText;
+
+    var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, rowLoad(hist[hist.length-1])) : 5;
+    var maxJump = (typeof coachMaxJumpForExercise==='function')  ? coachMaxJumpForExercise(label, rowLoad(hist[hist.length-1]))  : 5;
+
+    // ── Deload calculé en % ───────────────────────────────────────────────────
+    if(isDeload){
+      var lastNormal = hist[hist.length-1];
+      var lastNormalLoad = rowLoad(lastNormal);
+      if(!lastNormalLoad) return base.loadText;
+
+      // Détecter le type de mouvement
+      var deloadPct = 0.80; // principal par défaut (-20%)
+      if(typeof coachIsIsolationMovement==='function' && coachIsIsolationMovement(label)){
+        deloadPct = 0.75; // accessoire (-25%)
+      } else if(ctx && (ctx.primaryIntent === 'technique' || ctx.kind === 'technique')){
+        deloadPct = 0.70; // technique (-30%)
+      }
+      var deloadLoad = lastNormalLoad * deloadPct;
+      var deloadRounded = (typeof roundLoadForExercise==='function')
+        ? roundLoadForExercise(label, deloadLoad, 'nearest', String(lastNormalLoad))
+        : Math.round(deloadLoad / step) * step;
+
+      var deloadPctLabel = Math.round((1-deloadPct)*100) + '%';
+      var reason = 'Deload — réduction de ' + deloadPctLabel + ' vs dernière charge normale (' + lastNormalLoad + ' lb).';
+      if(typeof storeLoadDecisionHint==='function'){
+        storeLoadDecisionHint(label, String(deloadRounded)+' lb', reason, 'ok', histAll, ctx);
+      }
+      try{
+        if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
+          var dk = coachNormalizeMoveText(label);
+          if(dk && window.__coachLoadHints[dk]){
+            window.__coachLoadHints[dk].load=String(deloadRounded)+' lb';
+            window.__coachLoadHints[dk].reason=reason;
+            window.__coachLoadHints[dk].source='brain';
+          }
+        }
+      }catch(e){}
+      return String(deloadRounded);
+    }
+
+    // ── Données des dernières séances normales ────────────────────────────────
+    var last  = hist[hist.length-1];
+    var prev  = hist.length >= 2 ? hist[hist.length-2] : null;
+    var prev2 = hist.length >= 3 ? hist[hist.length-3] : null;
+
+    var lastLoad = rowLoad(last);
+    var lastRpe  = rowRpe(last);
+    var lastReps = rowReps(last);
     if(!lastLoad || !lastRpe) return base.loadText;
 
     var tmax = Number(
@@ -494,9 +551,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       targetReps || 8
     );
 
-    var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, lastLoad) : 5;
-    var maxJump = (typeof coachMaxJumpForExercise==='function')  ? coachMaxJumpForExercise(label, lastLoad)  : 5;
-
+    // ── Couche 1 : Règle RPE → delta de base ─────────────────────────────────
     var delta = 0;
     var reason = '';
 
@@ -516,46 +571,88 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       delta  = 0;
       reason = 'RPE ' + lastRpe + ' — maintien recommandé.';
     } else {
-      var prev = hist.length >= 2 ? hist[hist.length - 2] : null;
-      var prevRpe = Number(prev && prev.rpe) || 0;
+      var prevRpe = prev ? rowRpe(prev) : 0;
       if(prevRpe >= 9){
         delta  = -(Math.round((maxJump * 0.5) / step) * step || step);
         reason = 'RPE ≥ 9 deux séances consécutives — réduction recommandée.';
       } else {
         delta  = 0;
-        reason = 'RPE ' + lastRpe + ' — maintien, une séance difficile isolée.';
+        reason = 'RPE ' + lastRpe + ' — maintien, séance difficile isolée.';
       }
     }
 
-    // Charge disponible immédiatement supérieure à la charge actuelle
-    var nextAvail = (typeof nextLoadForExercise === 'function')
-      ? nextLoadForExercise(label, lastLoad, 1, String(lastLoad))
-      : lastLoad + step;
+    // ── Couche 2 : Moyenne mobile pondérée (≥2 séances) ──────────────────────
+    var baseLoad = lastLoad;
+    if(hist.length >= 2){
+      var w1 = 0.50, w2 = 0.30, w3 = 0.20;
+      if(hist.length === 2){
+        w1 = 0.60; w2 = 0.40; w3 = 0;
+      }
+      var l1 = lastLoad;
+      var l2 = rowLoad(prev) || l1;
+      var l3 = prev2 ? (rowLoad(prev2) || l2) : l2;
+      baseLoad = (l1*w1) + (l2*w2) + (l3*w3);
+      if(hist.length >= 2){
+        reason += ' [Moy. ' + Math.round(baseLoad) + ' lb]';
+      }
+    }
 
-    // Charge brute calculée → arrondie aux poids disponibles
-    var rawLoad = lastLoad + delta;
-    var roundedLoad = (typeof roundLoadForExercise === 'function')
+    // ── Couche 3 : Vélocité de progression (≥3 séances) ──────────────────────
+    var velocityDelta = 0;
+    if(hist.length >= 3){
+      var v1 = rowLoad(last);
+      var v2 = rowLoad(prev);
+      var v3 = rowLoad(prev2);
+      // Vélocité = tendance linéaire sur 3 points
+      var rawVelocity = ((v1 - v3) / 2);
+      // Plafonner à 1× maxJump
+      velocityDelta = Math.max(-maxJump, Math.min(maxJump, rawVelocity));
+      // Pondérer la vélocité à 30% — ne domine pas les règles RPE
+      velocityDelta = velocityDelta * 0.30;
+    }
+
+    // ── Couche 4 : Signal de cohérence ───────────────────────────────────────
+    // Si tu dépasses la suggestion 3 séances de suite → recalibrer la base
+    var consistencyBoost = 0;
+    if(hist.length >= 3){
+      var overrides = [last, prev, prev2].filter(function(r){
+        if(!r) return false;
+        var suggested = Number(r.planned && r.planned.load) || 0;
+        return suggested > 0 && rowLoad(r) > suggested * 1.05;
+      });
+      if(overrides.length >= 3){
+        // Recalibrer vers le haut — moyenne des dépassements
+        var avgOverride = overrides.reduce(function(sum,r){
+          return sum + (rowLoad(r) - (Number(r.planned&&r.planned.load)||rowLoad(r)));
+        }, 0) / overrides.length;
+        consistencyBoost = Math.min(avgOverride, maxJump);
+        reason += ' [Recalibrage +' + Math.round(consistencyBoost) + ' lb]';
+      }
+    }
+
+    // ── Calcul final ──────────────────────────────────────────────────────────
+    var rawLoad = baseLoad + delta + velocityDelta + consistencyBoost;
+    rawLoad = Math.max(rawLoad, lastLoad); // jamais en dessous de la dernière réelle
+
+    // Arrondir aux poids disponibles
+    var roundedLoad = (typeof roundLoadForExercise==='function')
       ? roundLoadForExercise(label, rawLoad, 'nearest', String(lastLoad))
       : Math.round(rawLoad / step) * step;
     if(!roundedLoad || roundedLoad <= 0) roundedLoad = lastLoad;
 
+    // Charge disponible immédiatement supérieure
+    var nextAvail = (typeof nextLoadForExercise==='function')
+      ? nextLoadForExercise(label, lastLoad, 1, String(lastLoad))
+      : lastLoad + step;
+
+    // ── Logique reps/poids ────────────────────────────────────────────────────
     var newLoad = roundedLoad;
     var newReps = null;
     var repsSuggestion = '';
 
-    // ── Logique reps/poids ─────────────────────────────────────────────────
-    // Si la progression tombe entre lastLoad et nextAvail (poids inexistant)
-    // → augmenter les reps jusqu'au seuil targetMax + 3
-    // → au seuil → passer au poids supérieur disponible
     if(delta > 0 && roundedLoad > lastLoad && roundedLoad < nextAvail){
-      var tmax2 = Number(
-        (ctx && ctx.targetMax) ||
-        (last && last.planned && last.planned.targetMax) ||
-        targetReps || 8
-      );
-      var repThreshold = tmax2 + 3;
-      var currentReps  = lastReps || tmax2;
-
+      var repThreshold = tmax + 3;
+      var currentReps  = lastReps || tmax;
       if(currentReps < repThreshold){
         newLoad        = lastLoad;
         newReps        = currentReps + 1;
@@ -563,24 +660,21 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
         reason         = 'RPE ' + lastRpe + ' — progression en reps (' + newReps + '/' + repThreshold + ' avant passage à ' + nextAvail + ' lb).';
       } else {
         newLoad = nextAvail;
-        reason  = 'RPE ' + lastRpe + ' — seuil reps atteint (' + currentReps + '), passage à ' + nextAvail + ' lb.';
+        reason  = 'RPE ' + lastRpe + ' — seuil reps atteint, passage à ' + nextAvail + ' lb.';
       }
     }
 
-    // Plancher : dernière charge réelle (sauf historique très bas vs programme)
-    var floor = lastLoad > baseNum * 0.70 ? lastLoad : baseNum;
-    newLoad = Math.max(newLoad, floor);
     // Plafond : jamais plus de 2× maxJump au-dessus de la dernière charge réelle
     newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
 
     if(newLoad === baseNum && !newReps) return base.loadText;
 
     var hintLoad = String(newLoad) + ' lb' + repsSuggestion;
-    if(typeof storeLoadDecisionHint === 'function'){
-      storeLoadDecisionHint(label, hintLoad, reason, delta < 0 ? 'watch' : 'ok', hist, ctx);
+    if(typeof storeLoadDecisionHint==='function'){
+      storeLoadDecisionHint(label, hintLoad, reason, delta < 0 ? 'watch' : 'ok', histAll, ctx);
     }
     try{
-      if(window.__coachLoadHints && typeof coachNormalizeMoveText === 'function'){
+      if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
         var normKey = coachNormalizeMoveText(label);
         if(normKey && window.__coachLoadHints[normKey]){
           window.__coachLoadHints[normKey].load   = hintLoad;
