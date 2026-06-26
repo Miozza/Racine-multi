@@ -269,9 +269,30 @@ function storeLoadDecisionHint(name,loadText,reason,severity,history,context){
   var label=ctx&&ctx.label?ctx.label:canonicalMovementLabel(name);
   var rows=(history||[]).slice(-5).reverse().map(function(x){
     var load=coachHistoryRawLoadValue(x);
-    return{date:x.date||"?",load:(load||load===0)?load:"?",reps:x.reps||x.actualReps||x.currentReps||"?",rpe:x.rpe||"?",status:x.status||""};
+    // Origine de chaque ligne d'historique
+    var origine = x._fromAthleteState ? 'Historique brut' : (x._fromML ? 'Brain local' : 'Historique brut');
+    return{date:x.date||"?",load:(load||load===0)?load:"?",reps:x.reps||x.actualReps||x.currentReps||"?",rpe:x.rpe||"?",status:x.status||"",origine:origine};
   });
-  var payload={name:label,load:loadText,reason:reason||"Charge prévue par le programme.",severity:severity||"ok",rows:rows};
+
+  // ── Déterminer la source de la suggestion ──────────────────────────────────
+  // 'moteur'   : charge numérique venue du programme, arrondie équipement seulement
+  // 'brain'    : ajustée par l'historique, RPE, caps, deload, garde-fous
+  // 'reperes'  : pas d'historique fiable, on utilise les seeds par défaut
+  var source = 'moteur';
+  var reasonLow = String(reason||'').toLowerCase();
+  if(reasonLow.indexOf('historique') >= 0 || reasonLow.indexOf('controle') >= 0 ||
+     reasonLow.indexOf('rpe') >= 0 || reasonLow.indexOf('deload') >= 0 ||
+     reasonLow.indexOf('prudence') >= 0 || reasonLow.indexOf('cap') >= 0 ||
+     reasonLow.indexOf('garde') >= 0 || reasonLow.indexOf('bloque') >= 0 ||
+     reasonLow.indexOf('maintien') >= 0 || reasonLow.indexOf('surveillance') >= 0){
+    source = 'brain';
+  }
+  if(reasonLow.indexOf('repere') >= 0 || reasonLow.indexOf('equipement') >= 0 ||
+     reasonLow.indexOf('aucun historique') >= 0 || reasonLow.indexOf('non numerique') >= 0){
+    source = 'reperes';
+  }
+
+  var payload={name:label,load:loadText,reason:reason||"Charge prévue par le programme.",severity:severity||"ok",rows:rows,source:source};
   if(ctx)payload.context={equipment:ctx.equipment||"",intent:ctx.primaryIntent||"",contextKey:coachMovementContextKey(ctx),intents:ctx.intents||[],kind:ctx.kind||"",blockTitle:ctx.blockTitle||"",day:ctx.day||"",week:ctx.week||""};
   var aliases=(typeof coachMovementLookupLabels==='function')?coachMovementLookupLabels(label):[label];
   aliases.forEach(function(a){ window.__coachLoadHints[coachNormalizeMoveText(a)]=payload; });

@@ -102,6 +102,24 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var cap=mv&&mv.ranges?(mv.ranges[range]||null):null;
   var histAll=(mv&&Array.isArray(mv.history))?mv.history:[];
   var hist=(typeof coachFilterHistoryForProgression==='function')?coachFilterHistoryForProgression(histAll,moveContext):histAll;
+
+  // ── Filtre de vraisemblance : retire les charges invraisemblables de l'historique ──
+  // Une charge est invraisemblable si elle est < 20% du seed par défaut du mouvement
+  // ET < 15 lb absolus (seuil universel haltères minimum réaliste).
+  // Ça protège contre les erreurs de saisie (ex: 5 lb au lieu de 50 lb).
+  var genericSeedForFilter = coachDefaultLoadSeedForMovement(label, target);
+  hist = hist.filter(function(row){
+    var load = coachHistoryLoadNumber(row);
+    if(!load || load <= 0) return true; // pas de charge = garder (poids du corps, etc.)
+    var tooLow = load < 15;
+    var farBelowSeed = genericSeedForFilter && load < (genericSeedForFilter * 0.20);
+    if(tooLow && farBelowSeed){
+      if(typeof coachLogWarn === 'function') coachLogWarn('plausibility_filter', label + ' : charge ignoree (' + load + ' lb) — invraisemblable vs seed ' + genericSeedForFilter + ' lb');
+      return false;
+    }
+    return true;
+  });
+
   var last=hist.length?hist[hist.length-1]:null;
   var lastLoad=coachHistoryLoadNumber(last);
   var lastHasValidLoad=last?coachHistoryHasValidLoad(last,label,moveContext):false;
@@ -123,8 +141,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     if(seedFromReal||seedFromReal===0){
       seed=seedFromReal;
     }else{
-      var genericSeed=coachDefaultLoadSeedForMovement(label,target);
-      seed=(genericSeed||genericSeed===0)?coachApplyUserLoadScale(label,genericSeed):null;
+      seed=(genericSeedForFilter||genericSeedForFilter===0)?coachApplyUserLoadScale(label,genericSeedForFilter):null;
     }
     if(seed||seed===0){
       programNum=seed;
@@ -445,5 +462,100 @@ function athleteSuggestedLoad(nameOrKey, currentLoad, targetReps, context){
   return guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context).loadText;
 }
 window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context){
-  return guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context).loadText;
+  var base = guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context);
+
+  // ── Progression intelligente basée sur RPE réel ───────────────────────────
+  // Programme = direction. Séance réelle = décision de charge.
+  // Plancher : jamais en dessous de la charge du programme.
+  // Plafond  : jamais plus de 2x coachMaxJumpForExercise au-dessus du programme.
+  // Contexte technique/wod/light = ignoré.
+  try{
+    var baseNum = base.loadNum;
+    if(!baseNum || baseNum <= 0) return base.loadText;
+
+    var label = base.label || nameOrKey;
+    var mv = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(label) : null;
+    var hist = (mv && Array.isArray(mv.history)) ? mv.history : [];
+    if(!hist.length) return base.loadText;
+
+    var ctx = (context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
+    var isLimited = (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
+    if(isLimited) return base.loadText;
+
+    var last     = hist[hist.length - 1];
+    var lastRpe  = Number(last && last.rpe)  || 0;
+    var lastLoad = Number(last && (last.load || last.externalLoad)) || 0;
+    var lastReps = Number(last && (last.reps || last.actualReps))   || 0;
+    if(!lastLoad || !lastRpe) return base.loadText;
+
+    var tmax = Number(
+      (ctx && ctx.targetMax) ||
+      (last && last.planned && last.planned.targetMax) ||
+      targetReps || 8
+    );
+
+    var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, lastLoad) : 5;
+    var maxJump = (typeof coachMaxJumpForExercise==='function')  ? coachMaxJumpForExercise(label, lastLoad)  : 5;
+
+    var delta = 0;
+    var reason = '';
+
+    if(lastRpe <= 6 && lastReps >= tmax){
+      delta  = Math.round((maxJump * 2) / step) * step;
+      reason = 'RPE ' + lastRpe + ' avec reps au max (' + lastReps + '/' + tmax + ') — hausse majeure.';
+    } else if(lastRpe <= 7){
+      delta  = maxJump;
+      reason = 'RPE ' + lastRpe + ' — progression normale.';
+    } else if(lastRpe <= 8){
+      delta  = Math.round((maxJump * 0.5) / step) * step || step;
+      reason = 'RPE ' + lastRpe + ' — progression prudente.';
+    } else if(lastRpe <= 8.5){
+      delta  = Math.round((maxJump * 0.25) / step) * step || step;
+      reason = 'RPE ' + lastRpe + ' — micro-progression.';
+    } else if(lastRpe < 9){
+      delta  = 0;
+      reason = 'RPE ' + lastRpe + ' — maintien recommandé.';
+    } else {
+      var prev = hist.length >= 2 ? hist[hist.length - 2] : null;
+      var prevRpe = Number(prev && prev.rpe) || 0;
+      if(prevRpe >= 9){
+        delta  = -(Math.round((maxJump * 0.5) / step) * step || step);
+        reason = 'RPE ≥ 9 deux séances consécutives — réduction recommandée.';
+      } else {
+        delta  = 0;
+        reason = 'RPE ' + lastRpe + ' — maintien, une séance difficile isolée.';
+      }
+    }
+
+    var newLoad = Math.round((lastLoad + delta) / step) * step;
+    // Plancher : dernière charge réelle (pas le programme)
+    // Le programme n'est un plancher que si l'historique est très en dessous
+    var floor = lastLoad > baseNum * 0.70 ? lastLoad : baseNum;
+    newLoad = Math.max(newLoad, floor);
+    // Plafond : jamais plus de 2x maxJump au-dessus de la dernière charge réelle
+    newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
+
+    if(newLoad === baseNum) return base.loadText;
+
+    // Forcer l'écrasement du hint "Moteur initial" — écrire directement dans __coachLoadHints
+    if(typeof storeLoadDecisionHint === 'function'){
+      storeLoadDecisionHint(label, String(newLoad) + ' lb', reason, delta < 0 ? 'watch' : 'ok', hist, ctx);
+    }
+    // Double-écriture directe pour garantir que Brain écrase Moteur initial
+    try{
+      if(window.__coachLoadHints && typeof coachNormalizeMoveText === 'function'){
+        var normKey = coachNormalizeMoveText(label);
+        if(normKey && window.__coachLoadHints[normKey]){
+          window.__coachLoadHints[normKey].load   = String(newLoad) + ' lb';
+          window.__coachLoadHints[normKey].reason = reason;
+          window.__coachLoadHints[normKey].source = delta !== 0 ? 'brain' : 'moteur';
+        }
+      }
+    }catch(e){}
+
+    return String(newLoad);
+
+  }catch(e){ /* silencieux — fallback moteur */ }
+
+  return base.loadText;
 };

@@ -69,6 +69,43 @@ function setupSessionSave(){
       state.history.push(entry);
       save();
     }
+    // Collecte silencieuse Brain.js — aucun effet sur le moteur, jamais bloquant
+    try{
+      if(window.CoachML){
+        var fatigueAvg = 8;
+        if(window.state && Array.isArray(window.state.history) && window.state.history.length){
+          var recentRpes = [];
+          window.state.history.slice(-7).forEach(function(s){
+            Object.keys(s.results||{}).forEach(function(k){
+              var r = s.results[k]; var rpe = Number(r&&r.rpe)||0;
+              if(rpe > 0) recentRpes.push(rpe);
+            });
+          });
+          if(recentRpes.length) fatigueAvg = recentRpes.reduce(function(a,b){return a+b;},0)/recentRpes.length;
+        }
+        Object.keys(results).forEach(function(key){
+          var r = results[key];
+          var usedLoad      = Number(r&&r.load)  || 0;
+          var rpeReal       = Number(r&&r.rpe)   || 8;
+          var suggestedLoad = Number(r&&r.planned&&r.planned.load) || 0;
+          if(!usedLoad || !suggestedLoad) return;
+          var mv   = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(key) : null;
+          var hist = (mv&&Array.isArray(mv.history)) ? mv.history : [];
+          var prev = hist.length >= 2 ? hist[hist.length-2] : null;
+          var prevRpe = Number(prev&&prev.rpe)||8;
+          var lastDate = prev && (prev.date||prev.actualDate);
+          var daysSince = lastDate ? Math.round((Date.now()-new Date(lastDate).getTime())/(864e5)) : 3;
+          var actualFactor = Math.round((usedLoad/suggestedLoad)*100)/100;
+          CoachML.recordTrainingVector(key, {
+            ratioUsed:   usedLoad/suggestedLoad,
+            rpeReal:     rpeReal,
+            rpePrev:     prevRpe,
+            daysSince:   daysSince,
+            systemicAvg: fatigueAvg
+          }, actualFactor);
+        });
+      }
+    }catch(e){ /* silencieux — jamais de crash */ }
     if(autoPrUpdates.length){ renderProfile(); renderReferences(); }
     // 6. Séance déjà sauvegardée localement (étape 5). Plus d'envoi réseau : tout reste sur l'appareil.
     var result={ok:true,msg:"✅ Séance sauvegardée."};

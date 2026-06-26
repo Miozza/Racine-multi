@@ -2082,6 +2082,7 @@ function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();
 
 function coachFullBoot(){
   load();
+  coachSanitizeImplausibleLoads();
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   ensureCurrentDay();
