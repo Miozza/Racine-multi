@@ -527,28 +527,65 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       }
     }
 
-    var newLoad = Math.round((lastLoad + delta) / step) * step;
-    // Plancher : dernière charge réelle (pas le programme)
-    // Le programme n'est un plancher que si l'historique est très en dessous
+    // Charge disponible immédiatement supérieure à la charge actuelle
+    var nextAvail = (typeof nextLoadForExercise === 'function')
+      ? nextLoadForExercise(label, lastLoad, 1, String(lastLoad))
+      : lastLoad + step;
+
+    // Charge brute calculée → arrondie aux poids disponibles
+    var rawLoad = lastLoad + delta;
+    var roundedLoad = (typeof roundLoadForExercise === 'function')
+      ? roundLoadForExercise(label, rawLoad, 'nearest', String(lastLoad))
+      : Math.round(rawLoad / step) * step;
+    if(!roundedLoad || roundedLoad <= 0) roundedLoad = lastLoad;
+
+    var newLoad = roundedLoad;
+    var newReps = null;
+    var repsSuggestion = '';
+
+    // ── Logique reps/poids ─────────────────────────────────────────────────
+    // Si la progression tombe entre lastLoad et nextAvail (poids inexistant)
+    // → augmenter les reps jusqu'au seuil targetMax + 3
+    // → au seuil → passer au poids supérieur disponible
+    if(delta > 0 && roundedLoad > lastLoad && roundedLoad < nextAvail){
+      var tmax2 = Number(
+        (ctx && ctx.targetMax) ||
+        (last && last.planned && last.planned.targetMax) ||
+        targetReps || 8
+      );
+      var repThreshold = tmax2 + 3;
+      var currentReps  = lastReps || tmax2;
+
+      if(currentReps < repThreshold){
+        newLoad        = lastLoad;
+        newReps        = currentReps + 1;
+        repsSuggestion = ' × ' + newReps + ' reps';
+        reason         = 'RPE ' + lastRpe + ' — progression en reps (' + newReps + '/' + repThreshold + ' avant passage à ' + nextAvail + ' lb).';
+      } else {
+        newLoad = nextAvail;
+        reason  = 'RPE ' + lastRpe + ' — seuil reps atteint (' + currentReps + '), passage à ' + nextAvail + ' lb.';
+      }
+    }
+
+    // Plancher : dernière charge réelle (sauf historique très bas vs programme)
     var floor = lastLoad > baseNum * 0.70 ? lastLoad : baseNum;
     newLoad = Math.max(newLoad, floor);
-    // Plafond : jamais plus de 2x maxJump au-dessus de la dernière charge réelle
+    // Plafond : jamais plus de 2× maxJump au-dessus de la dernière charge réelle
     newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
 
-    if(newLoad === baseNum) return base.loadText;
+    if(newLoad === baseNum && !newReps) return base.loadText;
 
-    // Forcer l'écrasement du hint "Moteur initial" — écrire directement dans __coachLoadHints
+    var hintLoad = String(newLoad) + ' lb' + repsSuggestion;
     if(typeof storeLoadDecisionHint === 'function'){
-      storeLoadDecisionHint(label, String(newLoad) + ' lb', reason, delta < 0 ? 'watch' : 'ok', hist, ctx);
+      storeLoadDecisionHint(label, hintLoad, reason, delta < 0 ? 'watch' : 'ok', hist, ctx);
     }
-    // Double-écriture directe pour garantir que Brain écrase Moteur initial
     try{
       if(window.__coachLoadHints && typeof coachNormalizeMoveText === 'function'){
         var normKey = coachNormalizeMoveText(label);
         if(normKey && window.__coachLoadHints[normKey]){
-          window.__coachLoadHints[normKey].load   = String(newLoad) + ' lb';
+          window.__coachLoadHints[normKey].load   = hintLoad;
           window.__coachLoadHints[normKey].reason = reason;
-          window.__coachLoadHints[normKey].source = delta !== 0 ? 'brain' : 'moteur';
+          window.__coachLoadHints[normKey].source = 'brain';
         }
       }
     }catch(e){}
