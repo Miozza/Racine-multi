@@ -345,6 +345,8 @@ function renderSessionEntry(){
 function collectSessionResults(){
   var results={};
   var scope=$("sessionFields")||document;
+
+  // Inputs de l'écran résultats final (data-field)
   scope.querySelectorAll(".sf-input").forEach(function(inp){
     var key=inp.getAttribute("data-key"),field=inp.getAttribute("data-field");
     if(!key||!field)return;
@@ -353,6 +355,19 @@ function collectSessionResults(){
     if(!results[key])results[key]={};
     results[key][field]=val;
   });
+
+  // Inputs saisis directement en cours de séance (data-guided-field)
+  document.querySelectorAll("[data-guided-field][data-key]").forEach(function(inp){
+    var key=inp.getAttribute("data-key"),field=inp.getAttribute("data-guided-field");
+    if(!key||!field)return;
+    var val=String(inp.value||"").trim();
+    if(!val)return;
+    if(!results[key])results[key]={};
+    // Ne pas écraser si déjà renseigné par l'écran final
+    if(results[key][field]===undefined) results[key][field]=val;
+  });
+
+  // Cache guidedResultCache (priorité maximale — reflète la dernière valeur saisie)
   Object.keys(guidedResultCache||{}).forEach(function(key){
     var r=guidedResultCache[key]||{};
     Object.keys(r).forEach(function(field){
@@ -362,6 +377,7 @@ function collectSessionResults(){
       results[key][field]=val;
     });
   });
+
   return results;
 }
 
@@ -456,6 +472,20 @@ function sessionSummarySection(title,items,emptyText){
   return '<div class="summary-section"><div class="summary-section-title">'+sessionSummaryEscape(title)+'</div>'+list.map(function(line){return '<div class="summary-line">'+sessionSummaryEscape(line)+'</div>';}).join('')+'</div>';
 }
 
+function downloadProfileBackup(){
+  if(!window.CoachProfiles)return;
+  var id=CoachProfiles.getActiveId();
+  var blob=CoachProfiles.exportProfileBlob(id);
+  if(!blob)return;
+  var text=JSON.stringify(blob,null,2);
+  var date=new Date().toISOString().slice(0,10);
+  var name="racine-"+(blob.profile&&blob.profile.name?blob.profile.name.toLowerCase().replace(/[^a-z0-9]+/g,"-"):"profil")+"-"+date+".json";
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+  a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+}
+
 function showSessionSummaryModal(summary){
   var existing=document.getElementById("summaryModal");
   if(existing)existing.remove();
@@ -497,7 +527,8 @@ function showSessionSummaryModal(summary){
         summary.lines.map(function(l){return'<div class="summary-line">'+sessionSummaryEscape(l)+'</div>';}).join("")+
       '</div>'+
       weekAdvanceHtml+
-      '<button id="closeSummaryBtn" class="btn-ghost" style="width:100%;margin-top:12px">Fermer</button>'+
+      '<button id="backupProfileBtn" class="btn-ghost" style="width:100%;margin-top:12px">↓ Sauvegarder profil</button>'+
+      '<button id="closeSummaryBtn" class="btn-ghost" style="width:100%;margin-top:8px">Fermer</button>'+
     '</div>';
   document.body.appendChild(modal);
   setTimeout(function(){modal.classList.add("visible");},30);
@@ -506,6 +537,8 @@ function showSessionSummaryModal(summary){
     modal.classList.remove("visible");
     setTimeout(function(){modal.remove();},300);
   };
+  var backup = document.getElementById("backupProfileBtn");
+  if(backup) backup.onclick = downloadProfileBackup;
   var adv = document.getElementById("advanceWeekBtn");
   if(adv) adv.onclick = function(){
     advanceWeek("Semaine complétée/traitée");

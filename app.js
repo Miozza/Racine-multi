@@ -1,5 +1,5 @@
-// Racine V1.6-multi — prototype multi-utilisateur viable + catalogue client sportif + cycle strict muscle-up
-var APP_VERSION = "V1.6-multi";
+// Racine V1.16-multi — moteur Brain : baisse contrôlée + tendance vs moyenne + renommage vélocité
+var APP_VERSION = "V1.16-multi";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -52,9 +52,21 @@ function totalWeeks(){
 var focusConfigs = {};
 
 function programIndexIds(){
+  var activePerms = [];
+  try{
+    var ap = window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive();
+    activePerms = (ap && Array.isArray(ap.programPermissions)) ? ap.programPermissions : [];
+  }catch(e){}
+
   return (window.COACH_BERTIN_PROGRAM_INDEX || [])
-    .map(function(item){ return item && item.id; })
-    .filter(Boolean);
+    .filter(function(item){
+      if(!item || !item.id) return false;
+      var vis = item.visibility || "public";
+      if(vis === "public") return true;
+      if(vis === "private") return activePerms.indexOf(item.id) !== -1;
+      return false;
+    })
+    .map(function(item){ return item.id; });
 }
 
 function registerProgramsFromIndex(){
@@ -971,23 +983,56 @@ function requestAdvanceWeek(){
 var wakeLock = null;
 var wakeLockWanted = false;
 var guidedWakeLockAuto = false;
+var wakeLockUiState = "idle"; // idle | active | unsupported | failed
+var wakeLockLastMessage = "Écran actif : automatique en mode Séance.";
 
-function updateWakeLockButton(active, unsupported){
-  var buttons=[];
-  var main=$("wakeLockBtn");
-  if(main)buttons.push(main);
-  var wodPlus=$("wodPlusWakeBtn");
-  if(wodPlus)buttons.push(wodPlus);
-  if(!buttons.length)return;
-  buttons.forEach(function(btn){
-    if(unsupported){
-      btn.textContent="⚠️ Écran non supporté";
-      btn.classList.remove("active");
-      return;
+function wakeLockStatusText(){
+  if(wakeLockUiState === "active") return "Écran actif : actif.";
+  if(wakeLockUiState === "unsupported") return "Écran actif : non supporté par ce navigateur/appareil.";
+  if(wakeLockUiState === "failed") return wakeLockLastMessage || "Écran actif : activation refusée. Réessaie depuis Gear / Debug.";
+  return "Écran actif : automatique en mode Séance.";
+}
+function renderWakeLockStatus(){
+  var el=$("wakeLockStatus");
+  if(el){
+    el.textContent = wakeLockStatusText();
+    el.classList.toggle("ok", wakeLockUiState === "active");
+    el.classList.toggle("err", wakeLockUiState === "unsupported" || wakeLockUiState === "failed");
+  }
+  var guided=$("guidedWakeLockStatus");
+  if(guided){
+    if(wakeLockUiState === "unsupported"){
+      guided.textContent = "Écran non supporté";
+      guided.classList.remove("hidden");
+    }else if(wakeLockUiState === "failed" && wakeLockWanted){
+      guided.textContent = "Écran à réactiver";
+      guided.classList.remove("hidden");
+    }else{
+      guided.textContent = "";
+      guided.classList.add("hidden");
     }
-    btn.textContent=active?"🔆 Écran actif":"💤 Écran";
-    btn.classList.toggle("active",!!active);
-  });
+  }
+}
+function wakeLockSessionStatusHtml(){
+  if(wakeLockUiState === "unsupported") return '<span id="guidedWakeLockStatus" class="guided-wake-status">Écran non supporté</span>';
+  if(wakeLockUiState === "failed" && wakeLockWanted) return '<span id="guidedWakeLockStatus" class="guided-wake-status">Écran à réactiver</span>';
+  return '<span id="guidedWakeLockStatus" class="guided-wake-status hidden"></span>';
+}
+function updateWakeLockButton(active, unsupported, reason){
+  if(unsupported){
+    wakeLockUiState = "unsupported";
+    wakeLockLastMessage = "Écran actif : non supporté par ce navigateur/appareil.";
+  }else if(active){
+    wakeLockUiState = "active";
+    wakeLockLastMessage = "Écran actif : actif.";
+  }else if(reason === "failed"){
+    wakeLockUiState = "failed";
+    wakeLockLastMessage = "Écran actif : activation refusée. Réessaie depuis Gear / Debug.";
+  }else{
+    wakeLockUiState = "idle";
+    wakeLockLastMessage = "Écran actif : automatique en mode Séance.";
+  }
+  renderWakeLockStatus();
 }
 
 async function requestWakeLock(){
@@ -1016,7 +1061,8 @@ async function requestWakeLock(){
     return true;
   }catch(e){
     if(window.CoachLog)CoachLog.warn("wakelock_request_failed", {message:e&&e.message?e.message:String(e)});
-    updateWakeLockButton(false,false);
+    wakeLockLastMessage = "Écran actif : activation refusée. Réessaie depuis Gear / Debug.";
+    updateWakeLockButton(false,false,"failed");
     return false;
   }
 }
@@ -1047,10 +1093,6 @@ document.addEventListener("visibilitychange",function(){
 // supprimé/neutralisé : l'app ne doit jamais écrire charges.js automatiquement.
 // charges.js est la seule configuration de charges. Les upgrades viennent des PR/historique.
 function buildChargesJsContent(){ return ""; }
-async function saveChargesToGitHub(token){
-  return {ok:false,msg:"Désactivé : Racine fonctionne en local. Utilise Exporter JSON pour sauvegarder un profil."};
-}
-
 
 
 // ─── Indicateur profil actif ────────────────────────────────────────────────
@@ -1060,11 +1102,12 @@ function renderSyncStatusIndicator(){
   var name = (p && p.name) ? p.name : "?";
   el.className = "sync-dot profile-dot";
   el.textContent = name.trim().slice(0,1).toUpperCase() || "?";
-  el.title = p ? ("Profil actif : "+p.name+" · clique pour changer") : "Aucun profil actif";
+  el.title = p ? ("Profil actif : " + p.name) : "Aucun profil actif";
 }
 function openSyncSettings(){
   switchView("settings");
 }
+
 
 
 
@@ -1572,10 +1615,12 @@ function renderHistory(){
     if(res){
       Object.keys(res).forEach(function(k){
         var r=res[k];
-        if(r.load||r.result){
-          rows+='<div class="history-row"><span class="mv">'+escHtml(k)+'</span><span class="val">'+
-            (r.load?escHtml(r.load+" lb"+(r.reps?" × "+r.reps:"")+(r.rpe?" RPE "+r.rpe:"")):escHtml(r.result||""))+
-            '</span></div>';
+        if(r.load||r.result||r.note||r.rpe){
+          var _mv=r.load
+            ?escHtml(r.load+" lb"+(r.reps?" × "+r.reps:"")+(r.rpe?" RPE "+r.rpe:""))
+            :escHtml(r.result||"");
+          var _nt=r.note?'<span class="history-note">'+escHtml(r.note)+'</span>':"";
+          rows+='<div class="history-row"><span class="mv">'+escHtml(k)+'</span><span class="val">'+_mv+_nt+'</span></div>';
         }
       });
     }
@@ -1587,6 +1632,7 @@ function renderHistory(){
         '</div>'+
         '<button type="button" class="history-delete-btn" data-history-index="'+originalIndex+'">Supprimer</button>'+
       '</div>'+
+      (s.note?'<div class="history-note">'+escHtml(s.note)+'</div>':'')+
       '<div class="history-rows">'+rows+'</div>';
     h.appendChild(div);
   });
@@ -1998,9 +2044,9 @@ function bind(){
   var pvb=$("phoneViewBtn");if(pvb)pvb.onclick=function(){switchView("phone");};
   var btb=$("backTrainingBtn");if(btb)btb.onclick=function(){switchView("training");};
   var fs=$("fullscreenBtn");if(fs)fs.onclick=function(){var el=document.documentElement,fn=el.requestFullscreen||el.webkitRequestFullscreen;if(fn)try{fn.call(el);}catch(e){}};
+  renderWakeLockStatus();
   var smb=$("sessionModeBtn");if(smb)smb.onclick=function(){CoachSession.openFrom("phone");};
-  var wl=$("wakeLockBtn");if(wl)wl.onclick=function(){if(wakeLockWanted||wakeLock)releaseWakeLock();else requestWakeLock();};
-  var wpl=$("wodPlusWakeBtn");if(wpl)wpl.onclick=function(){if(wakeLockWanted||wakeLock)releaseWakeLock();else requestWakeLock();};
+  var wdbg=$("wakeLockDebugBtn");if(wdbg)wdbg.onclick=function(){requestWakeLock();};
   var wpt=$("wodPlusTmsBtn");if(wpt)wpt.onclick=function(){
     if(typeof window.openCoachBeurtTmsChoice==="function"){
       window.openCoachBeurtTmsChoice({fromWodPlus:true});
@@ -2008,8 +2054,16 @@ function bind(){
       alert("TMS pas encore chargé. Recharge la page.");
     }
   };
+  var tgb=$("tmsGlobalBtn");if(tgb)tgb.onclick=function(){
+    if(typeof window.openCoachBeurtTmsChoice==="function"){
+      window.openCoachBeurtTmsChoice({fromGlobal:true});
+    }else{
+      alert("TMS pas encore chargé. Recharge la page.");
+    }
+  };
   var cp=$("copyPhoneBtn");if(cp)cp.onclick=function(){navigator.clipboard.writeText(stableIphoneText()).then(function(){alert("Copié.");}).catch(function(){alert("Copie bloquée.");});};
   var sd=$("syncStatusDot");if(sd)sd.onclick=openSyncSettings;
+  // Sélecteur de profil déplacé dans Gear / réglages : aucun mini bouton dans la topnav.
   var sc=$("saveCycleBtn");if(sc)sc.onclick=saveCycle;
   var nc=$("newCycleBtn");if(nc)nc.onclick=newCycle;
   var spr=$("savePrBtn");if(spr)spr.onclick=savePrProfile;
@@ -2058,6 +2112,7 @@ function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();
 
 function coachFullBoot(){
   load();
+  coachSanitizeImplausibleLoads();
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   ensureCurrentDay();
@@ -2076,12 +2131,13 @@ window.coachFullBoot = coachFullBoot;
 
 if(window.CoachProfiles && CoachProfiles.hasActiveOnboardedProfile()){
   coachFullBoot();
-} else if(window.CoachOnboarding && CoachOnboarding.start){
-  // Aucun profil prêt : l'écran d'intégration prend la main et appelle
-  // window.coachFullBoot() une fois le profil créé/calibré.
-  CoachOnboarding.start();
+} else if(window.CoachOnboarding){
+  // Toujours afficher le picker d'abord — il contient le bouton PIN admin.
+  // Le picker a le bouton "+ Nouveau profil" qui lance l'onboarding.
+  if(CoachOnboarding.openPicker) CoachOnboarding.openPicker();
+  else if(CoachOnboarding.start) CoachOnboarding.start();
 } else {
-  // Filet de sécurité si le module profils n'a pas chargé : démarrage direct.
+  // Filet de sécurité si le module profils n'a pas chargé.
   coachFullBoot();
 }
 

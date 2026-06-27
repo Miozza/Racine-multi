@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Racine V1.6-multi</title>
+  <title>Racine V1.16-multi</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   <link rel="apple-touch-icon-precomposed" sizes="180x180" href="./apple-touch-icon-precomposed.png">
@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css?v=1.6-multi"/>
+  <link rel="stylesheet" href="styles.css?v=1.16-multi"/>
   <link rel="preload" as="image" href="assets/splash-racine.webp"/>
 </head>
 <body>
@@ -28,7 +28,7 @@
 
 <!-- ═══ TOPNAV ═══ -->
 <nav class="topnav">
-  <span class="topnav-brand"><span class="topnav-mark">R</span><span class="topnav-v">V1.6-multi</span></span><button type="button" id="syncStatusDot" class="sync-dot profile-dot" title="Profil actif" aria-label="Profil actif">?</button>
+  <span class="topnav-brand"><span class="topnav-mark">R</span><span class="topnav-v">V1.16-multi</span></span><button type="button" id="syncStatusDot" class="sync-dot profile-dot" title="Profil actif" aria-label="Profil actif">?</button>
   <div class="topnav-tabs" id="mainTabs">
     <button id="trainingTab"    class="tab active">WOD</button>
     <button id="profileTab"     class="tab">PR</button>
@@ -36,6 +36,7 @@
     <button id="cycleTab"       class="tab">Cycle</button>
     <button id="historyTab"     class="tab">Historique</button>
     <button id="phoneTab"       class="tab tab-pc-discreet">PC</button>
+    <button type="button" id="tmsGlobalBtn" class="tab tab-tms-global" title="TMS" aria-label="Ouvrir TMS">TMS</button>
     <button id="settingsTab"    class="tab">⚙</button>
   </div>
 </nav>
@@ -51,7 +52,6 @@
     </div>
     <div class="wodplus-header-tools">
       <button type="button" id="wodPlusTmsBtn" class="btn-ghost wodplus-tool-btn">TMS</button>
-      <button type="button" id="wodPlusWakeBtn" class="btn-ghost wodplus-tool-btn">Écran</button>
       <button id="phoneViewBtn" class="btn-ghost wodplus-legacy-btn">PC →</button>
     </div>
   </div>
@@ -96,7 +96,6 @@
     </div>
     <button class="tb-btn tb-primary" id="sessionModeBtn">▶ Séance</button>
     <button class="tb-btn" id="tmsSessionBtn">TMS</button>
-    <button class="tb-btn" id="wakeLockBtn">💤 Écran</button>
     <button class="tb-btn" id="copyPhoneBtn">⎘</button>
     <button class="tb-btn" id="fullscreenBtn">⛶</button>
   </div>
@@ -204,8 +203,10 @@
     <div class="btn-row">
       <button id="copyErrorLogBtn" class="btn-ghost" type="button">Copier rapport erreurs</button>
       <button id="clearErrorLogBtn" class="btn-danger" type="button">Effacer erreurs</button>
+      <button id="wakeLockDebugBtn" class="btn-ghost" type="button">Réactiver écran actif</button>
     </div>
     <p id="errorLogStatus" class="status-msg"></p>
+    <p id="wakeLockStatus" class="status-msg wake-lock-status">Écran actif : automatique en mode Séance.</p>
   </div>
 
   <div class="panel">
@@ -360,59 +361,68 @@
   </div>
 </main>
 
-<footer class="footer">V1.6-multi · Racine · multi-utilisateur local · onboarding · charge scaling · WOD+ mobile-first</footer>
+<footer class="footer">V1.16-multi · Racine · multi-utilisateur local · onboarding · charge scaling · WOD+ mobile-first</footer>
 </div>
 
-<script src="scripts/core/logger.js?v=1.6-multi"></script>
-<script src="scripts/profiles/storage.js?v=1.6-multi"></script>
-<script src="scripts/profiles/reference.js?v=1.6-multi"></script>
-<script src="scripts/profiles/onboarding.js?v=1.6-multi"></script>
-<script src="scripts/profiles/ui.js?v=1.6-multi"></script>
-<script src="programs/index.js?v=1.6-multi"></script>
-<script src="programs/epaules_3d.js?v=1.6-multi"></script>
-<script src="programs/epaules_3d_v2.js?v=1.6-multi"></script>
-<script src="programs/hypertrophy_base.js?v=1.6-multi"></script>
-<script src="programs/force_performance.js?v=1.6-multi"></script>
-<script src="programs/competition_peak.js?v=1.6-multi"></script>
-<script src="programs/hypertrophie_fesse.js?v=1.6-multi"></script><script src="programs/force.js?v=1.6-multi"></script>
-<script src="programs/heritage_225.js?v=1.6-multi"></script>
-<script src="programs/arnold_split_beurt.js?v=1.6-multi"></script>
-<script src="programs/general_strength_3d.js?v=1.6-multi"></script>
-<script src="programs/general_hypertrophy_2d.js?v=1.6-multi"></script>
-<script src="programs/general_hypertrophy_3d.js?v=1.6-multi"></script>
-<script src="programs/racine_client_programs.js?v=1.6-multi"></script>
-<script src="programs/racine_crossfit_programs.js?v=1.6-multi"></script>
-<script src="programs/strict_muscle_up_cycle.js?v=1.6-multi"></script>
-<script src="programs/config.js?v=1.6-multi"></script>
-<script src="programs/workouts.js?v=1.6-multi"></script>
-<script src="programs/tutorials.js?v=1.6-multi"></script>
-<script src="data/charges.js?v=1.6-multi"></script><script src="scripts/app_helpers.js?v=1.6-multi"></script>
-<script src="scripts/state/storage.js?v=1.6-multi"></script>
-<script src="scripts/state/index.js?v=1.6-multi"></script>
-<script src="scripts/charge/equipement.js?v=1.6-multi"></script>
-<script src="scripts/charge/utilitaires.js?v=1.6-multi"></script>
-<script src="scripts/charge/mouvements.js?v=1.6-multi"></script>
-<script src="scripts/charge/historique.js?v=1.6-multi"></script>
-<script src="scripts/charge/rpe.js?v=1.6-multi"></script>
-<script src="scripts/charge/scaling.js?v=1.6-multi"></script>
-<script src="scripts/charge/suggestion.js?v=1.6-multi"></script>
-<script src="scripts/history/index.js?v=1.6-multi"></script>
-  <script src="scripts/progression/index.js?v=1.6-multi"></script>
-  <script src="scripts/summary/index.js?v=1.6-multi"></script>
-<script src="scripts/charge/index.js?v=1.6-multi"></script>
-<script src="scripts/view_pc.js?v=1.6-multi"></script>
-<script src="scripts/charge_diagnostic_ui.js?v=1.6-multi"></script>
-<script src="scripts/ui_modals.js?v=1.6-multi"></script>
-<script src="scripts/ui/index.js?v=1.6-multi"></script>
-<script src="scripts/app_navigation.js?v=1.6-multi"></script>
-<script src="scripts/view_wodplus.js?v=1.6-multi"></script>
-<script src="scripts/session/view.js?v=1.6-multi"></script>
-<script src="scripts/session/timer.js?v=1.6-multi"></script>
-<script src="scripts/session/results.js?v=1.6-multi"></script>
-<script src="scripts/session/save.js?v=1.6-multi"></script>
-<script src="scripts/session/index.js?v=1.6-multi"></script>
-<script src="app.js?v=1.6-multi"></script>
-<script src="scripts/tms_session.js?v=1.6-multi"></script>
+<script src="scripts/core/logger.js?v=1.16-multi"></script>
+<script src="scripts/profiles/storage.js?v=1.16-multi"></script>
+<script src="scripts/profiles/reference.js?v=1.16-multi"></script>
+<script src="scripts/profiles/onboarding.js?v=1.16-multi"></script>
+<script src="scripts/profiles/ui.js?v=1.16-multi"></script>
+<script src="scripts/migrate_bertin.js?v=1.16-multi"></script>
+<script src="programs/index.js?v=1.16-multi"></script>
+<script src="programs/epaules_3d.js?v=1.16-multi"></script>
+<script src="programs/epaules_3d_v2.js?v=1.16-multi"></script>
+<script src="programs/hypertrophy_base.js?v=1.16-multi"></script>
+<script src="programs/force_performance.js?v=1.16-multi"></script>
+<script src="programs/competition_peak.js?v=1.16-multi"></script>
+<script src="programs/hypertrophie_fesse.js?v=1.16-multi"></script><script src="programs/force.js?v=1.16-multi"></script>
+<script src="programs/heritage_225.js?v=1.16-multi"></script>
+<script src="programs/arnold_split_beurt.js?v=1.16-multi"></script>
+<script src="programs/general_strength_3d.js?v=1.16-multi"></script>
+<script src="programs/general_hypertrophy_2d.js?v=1.16-multi"></script>
+<script src="programs/general_hypertrophy_3d.js?v=1.16-multi"></script>
+<script src="programs/racine_client_programs.js?v=1.16-multi"></script>
+<script src="programs/racine_crossfit_programs.js?v=1.16-multi"></script>
+<script src="programs/strict_muscle_up_cycle.js?v=1.16-multi"></script>
+<!-- Programmes privés Bertin — chargés mais filtrés par visibility dans programIndexIds() -->
+<script src="programs/epaules_3d_press225_phase2.js?v=1.16-multi"></script>
+<script src="programs/posture_cyphose.js?v=1.16-multi"></script>
+<script src="programs/strict_muscle_up_personnel.js?v=1.16-multi"></script>
+<script src="programs/arnold_split_2026_adapte.js?v=1.16-multi"></script>
+<script src="programs/hypertrophie_fesse_stephanie.js?v=1.16-multi"></script>
+<script src="programs/config.js?v=1.16-multi"></script>
+<script src="programs/workouts.js?v=1.16-multi"></script>
+<script src="programs/tutorials.js?v=1.16-multi"></script>
+<script src="data/charges.js?v=1.16-multi"></script><script src="scripts/app_helpers.js?v=1.16-multi"></script>
+<script src="scripts/state/storage.js?v=1.16-multi"></script>
+<script src="scripts/state/index.js?v=1.16-multi"></script>
+<script src="scripts/charge/equipement.js?v=1.16-multi"></script>
+<script src="scripts/charge/utilitaires.js?v=1.16-multi"></script>
+<script src="scripts/charge/mouvements.js?v=1.16-multi"></script>
+<script src="scripts/charge/historique.js?v=1.16-multi"></script>
+<script src="scripts/charge/rpe.js?v=1.16-multi"></script>
+<script src="scripts/charge/scaling.js?v=1.16-multi"></script>
+<script src="scripts/charge/suggestion.js?v=1.16-multi"></script>
+<script src="scripts/charge/ml_refinement.js?v=1.16-multi"></script>
+<script src="scripts/history/index.js?v=1.16-multi"></script>
+  <script src="scripts/progression/index.js?v=1.16-multi"></script>
+  <script src="scripts/summary/index.js?v=1.16-multi"></script>
+  <!-- Brain.js — ML local ~100kb, collecte silencieuse uniquement en V1.12 -->
+<script src="scripts/charge/index.js?v=1.16-multi"></script>
+<script src="scripts/view_pc.js?v=1.16-multi"></script>
+<script src="scripts/charge_diagnostic_ui.js?v=1.16-multi"></script>
+<script src="scripts/ui_modals.js?v=1.16-multi"></script>
+<script src="scripts/ui/index.js?v=1.16-multi"></script>
+<script src="scripts/app_navigation.js?v=1.16-multi"></script>
+<script src="scripts/view_wodplus.js?v=1.16-multi"></script>
+<script src="scripts/session/view.js?v=1.16-multi"></script>
+<script src="scripts/session/timer.js?v=1.16-multi"></script>
+<script src="scripts/session/results.js?v=1.16-multi"></script>
+<script src="scripts/session/save.js?v=1.16-multi"></script>
+<script src="scripts/session/index.js?v=1.16-multi"></script>
+<script src="app.js?v=1.16-multi"></script>
+<script src="scripts/tms_session.js?v=1.16-multi"></script>
 <script>
 (function(){
   var splash = document.getElementById("racineSplash");

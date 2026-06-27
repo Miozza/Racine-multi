@@ -72,7 +72,9 @@
       bodyweightLb: (meta && Number(meta.bodyweightLb)) || null,
       aggressiveness: (meta && Number(meta.aggressiveness)) || 1.0,
       onboarded: false,
-      scaleRatios: null
+      scaleRatios: null,
+      // Programmes privés accessibles à ce profil. [] = aucun programme private visible.
+      programPermissions: (meta && Array.isArray(meta.programPermissions)) ? meta.programPermissions.slice() : []
     };
     reg.profiles.push(profile);
     reg.activeProfileId = profile.id;
@@ -99,6 +101,29 @@
 
   api.markOnboarded = function(id, payload){
     return api.update(id, Object.assign({onboarded:true}, payload||{}));
+  };
+
+  // ─── Permissions programmes privés ────────────────────────────────────────
+  api.grantProgramPermission = function(profileId, programId){
+    var p = api.get(profileId);
+    if(!p) return false;
+    var perms = Array.isArray(p.programPermissions) ? p.programPermissions.slice() : [];
+    if(perms.indexOf(programId) === -1) perms.push(programId);
+    return api.update(profileId, { programPermissions: perms });
+  };
+
+  api.revokeProgramPermission = function(profileId, programId){
+    var p = api.get(profileId);
+    if(!p) return false;
+    var perms = Array.isArray(p.programPermissions) ? p.programPermissions.slice() : [];
+    perms = perms.filter(function(id){ return id !== programId; });
+    return api.update(profileId, { programPermissions: perms });
+  };
+
+  api.hasProgramPermission = function(profileId, programId){
+    var p = api.get(profileId);
+    if(!p) return false;
+    return Array.isArray(p.programPermissions) && p.programPermissions.indexOf(programId) !== -1;
   };
 
   api.remove = function(id){

@@ -65,6 +65,24 @@
     };
   }
 
+  // ── Détection et migration legacy Coach-Beurt ───────────────────────────
+  function detectLegacyState(){
+    var stateKeys = ["coachBertinState","coachBertinV46","coachBertinV43","coachBertinV41"];
+    for(var i = 0; i < stateKeys.length; i++){
+      try{
+        var raw = localStorage.getItem(stateKeys[i]);
+        if(raw){ var d = JSON.parse(raw); if(d && typeof d === "object") return d; }
+      }catch(e){}
+    }
+    return null;
+  }
+
+  function runLegacyMigration(){
+    if(!window.migrateBertin){ return false; }
+    var result = window.migrateBertin();
+    return !!(result);
+  }
+
   // ── Écran : sélecteur de profil ─────────────────────────────────────────
   function renderPicker(){
     var list = (window.CoachProfiles ? CoachProfiles.list() : []).filter(function(p){ return p.onboarded; });
@@ -81,8 +99,11 @@
         '<div class="racine-gate-title">Qui s\'entraîne aujourd\'hui ?</div>'+
         '<div class="racine-gate-sub">Chaque profil a ses propres charges, son propre historique et son propre rythme de progression. Tout reste sur cet appareil.</div>'+
         rows+
+        (detectLegacyState() ? '<button class="btn-accent" id="racineMigrateBtn" style="width:100%;margin-top:10px">↩ Reprendre mon profil Coach-Beurt</button>' : '')+
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
+
         '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
+        '<div style="text-align:center;margin-top:20px"><button type="button" id="racineAdminPinBtn" style="background:none;border:none;cursor:pointer;opacity:.15;color:var(--text2);font-size:11px;padding:4px 8px">▪</button></div>'+
       '</div>'
     );
     Array.prototype.forEach.call(card.querySelectorAll("[data-pick]"), function(btn){
@@ -92,9 +113,39 @@
         window.coachFullBoot();
       };
     });
+    var migrateBtn = card.querySelector("#racineMigrateBtn");
+    if(migrateBtn) migrateBtn.onclick = function(){
+      var ok = runLegacyMigration();
+      if(ok){
+        closeGate();
+        window.coachFullBoot();
+      } else {
+        alert("Migration échouée. Essaie de créer un nouveau profil.");
+      }
+    };
     card.querySelector("#racineNewProfileBtn").onclick = function(){
       wiz = { mode:"create", step:"welcome", answers:{} };
       render();
+    };
+
+    var pinBtn = card.querySelector("#racineAdminPinBtn");
+    if(pinBtn) pinBtn.onclick = function(){
+      var pin = prompt("Code :");
+      if(!pin) return;
+      if(pin.trim() !== "8989"){ return; }
+      // PIN correct — chercher ou créer le profil Bertin
+      var existing = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.name === "Bertin"; }) : [];
+      if(existing.length){
+        CoachProfiles.setActive(existing[0].id);
+        closeGate();
+        window.coachFullBoot();
+        return;
+      }
+      if(window.migrateBertin){
+        var id = window.migrateBertin();
+        if(id){ closeGate(); window.coachFullBoot(); return; }
+      }
+      alert("Profil Bertin introuvable.");
     };
     var closeBtn = card.querySelector("#racineCloseGateBtn");
     if(closeBtn){
@@ -476,6 +527,7 @@
       '<div class="btn-row">'+
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
+
       '<p id="profileSettingsStatus" class="status-msg"></p>';
     api.bindSettingsPanel();
   };

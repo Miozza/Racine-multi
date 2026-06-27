@@ -1327,6 +1327,7 @@ label {
 .history-date  { font-family: var(--font-hud); font-size: 11px; color: var(--muted); letter-spacing: .08em; margin-bottom: 5px; }
 .history-title { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 7px; font-family: var(--font-hud); letter-spacing: .04em; }
 .history-rows  { display: grid; gap: 4px; }
+.history-note  { font-size: 12px; color: var(--text2); font-style: italic; margin: 4px 0 6px; line-height: 1.4; }
 .history-row   { display: flex; justify-content: space-between; font-size: 12px; }
 .history-row .mv  { color: var(--text2); }
 .history-row .val { color: var(--cyan); font-weight: 700; font-family: var(--font-hud); }
@@ -5966,4 +5967,137 @@ body.arnold-mode{
 @media (prefers-reduced-motion: reduce){
   .racine-splash.racine-splash-hide{ animation-duration:.01s; }
   .racine-splash-icon{ animation:none; }
+}
+
+/* ─── Mini bouton switch profil (topnav) ──────────────────────────────────── */
+.topnav .tab-tms-global:active,
+.topnav .tab-tms-global:hover{
+  border-color:rgba(0,212,255,.75)!important;
+  background:rgba(0,212,255,.16)!important;
+}
+@media(max-width:700px){
+  .topnav .tab-tms-global{
+    font-size:10px;
+    padding:6px 8px;
+    min-width:auto;
+  }
+}
+
+
+
+/* V1.15 — restauration styles Progression PC depuis V1.9 */
+/* ─── Admin tab — toggle permissions ─────────────────────────────────────── */
+.pcx-perm-toggle { transition: opacity .15s, transform .1s; }
+.pcx-perm-toggle:hover { opacity: 0.8 !important; transform: scale(1.3); }
+.pcx-perm-toggle.active { color: var(--cyan); }
+
+
+/* PC — progression mouvements principaux */
+.pcx-progress-summary{border-color:rgba(34,197,94,.26)}
+.pcx-progress-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.pcx-progress-stats span{font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);border:1px solid rgba(34,197,94,.24);background:rgba(34,197,94,.07);border-radius:999px;padding:9px 12px}
+.pcx-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(320px,1fr));gap:18px;align-items:start}
+.pcx-progress-card{background:linear-gradient(180deg,rgba(16,24,42,.96),rgba(7,11,23,.96));border:1px solid rgba(140,170,210,.18);border-radius:22px;padding:18px;box-shadow:0 16px 44px rgba(0,0,0,.20)}
+.pcx-progress-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pcx-progress-card h3{margin:0;color:var(--white);font-size:clamp(22px,1.8vw,30px);line-height:1.1}
+.pcx-progress-card header p{margin:6px 0 0;color:var(--text2);font-size:14px;font-weight:800}
+.pcx-progress-trend{font-family:var(--font-hud);font-size:13px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;border-radius:999px;padding:8px 10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--text2)}
+.pcx-progress-trend.up{color:var(--green);border-color:rgba(34,197,94,.34);background:rgba(34,197,94,.10)}
+.pcx-progress-trend.down{color:#ff7a7a;border-color:rgba(239,68,68,.38);background:rgba(239,68,68,.10)}
+.pcx-progress-trend.flat{color:var(--gold);border-color:rgba(255,213,0,.30);background:rgba(255,213,0,.08)}
+.pcx-progress-chart{border:1px solid rgba(0,212,255,.14);background:rgba(0,0,0,.18);border-radius:16px;padding:12px;overflow:hidden}
+.pcx-progress-svg{display:block;width:100%;height:auto;min-height:220px}
+.pcx-progress-svg .pcx-progress-plot-bg{fill:rgba(255,255,255,.018);stroke:rgba(255,255,255,.045);stroke-width:1}
+.pcx-progress-svg line{stroke:rgba(148,163,184,.22);stroke-width:1}
+.pcx-progress-svg .pcx-progress-axis{stroke:rgba(226,232,240,.45);stroke-width:1.2}
+.pcx-progress-svg .pcx-progress-gridline line{stroke:rgba(148,163,184,.18);stroke-dasharray:4 5}
+.pcx-progress-svg polyline{fill:none;stroke:var(--cyan);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(0,212,255,.30))}
+.pcx-progress-svg circle{fill:var(--gold);stroke:#07111f;stroke-width:2}
+.pcx-progress-svg circle.last{fill:var(--green);stroke-width:3}
+.pcx-progress-svg circle.best{fill:var(--cyan);stroke-width:3}
+.pcx-progress-svg text{fill:var(--text2);font-family:var(--font-hud);font-size:11px;letter-spacing:.04em}
+.pcx-progress-svg .pcx-progress-gridline text{text-anchor:end;fill:rgba(226,232,240,.78);font-size:10px}
+.pcx-progress-svg .pcx-progress-axis-title{fill:var(--white);font-size:11px;text-anchor:start}
+.pcx-progress-svg .pcx-progress-date{fill:var(--text2);font-family:var(--font-main);font-weight:900;font-size:11px;text-anchor:middle}
+.pcx-progress-svg .pcx-progress-point-label{fill:var(--white);font-family:var(--font-hud);font-size:10px;text-anchor:middle;paint-order:stroke;stroke:#07111f;stroke-width:3px;stroke-linejoin:round}
+.pcx-progress-scale-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.pcx-progress-scale-row span{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:12px;padding:8px;color:var(--white);font-size:12px;font-weight:900;line-height:1.2}
+.pcx-progress-scale-row b{display:block;color:var(--text2);font-family:var(--font-hud);font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pcx-progress-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.pcx-progress-metrics span{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:14px;padding:10px;color:var(--white);font-size:14px;font-weight:900;line-height:1.25}
+.pcx-progress-metrics b{display:block;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:var(--font-hud)}
+.pcx-progress-details{margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.pcx-progress-details summary{cursor:pointer;color:var(--cyan);font-weight:900;font-size:15px}
+.pcx-progress-details table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;color:var(--text)}
+.pcx-progress-details th{color:var(--text2);font-family:var(--font-hud);font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:6px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pcx-progress-details td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.pcx-progress-details small{display:block;color:var(--text2);font-size:11px;margin-top:2px}
+.pcx-progress-empty{border-color:rgba(255,213,0,.28)}
+@media (max-width:1100px){.pcx-progress-grid{grid-template-columns:1fr}.pcx-progress-metrics{grid-template-columns:repeat(2,1fr)}.pcx-progress-scale-row{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.pcx-progress-metrics,.pcx-progress-scale-row{grid-template-columns:1fr}.pcx-progress-svg{min-width:520px}.pcx-progress-chart{overflow-x:auto}}
+
+/* PC — progression interactive + comparaison */
+.pcx-progress-summary-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.pcx-progress-controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-items:end}
+.pcx-progress-controls.compact{margin-top:10px;display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:12px}
+.pcx-progress-controls label{display:grid;gap:6px;color:var(--text2);font-size:11px;font-family:var(--font-hud);letter-spacing:.08em;text-transform:uppercase;font-weight:900}
+.pcx-progress-filter{border:1px solid rgba(0,212,255,.25);background:rgba(0,212,255,.06);color:var(--text);border-radius:999px;padding:10px 14px;font-family:var(--font-hud);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pcx-progress-filter.active{background:rgba(0,212,255,.18);border-color:rgba(0,212,255,.55);color:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,.18)}
+.pcx-progress-insight{display:grid;gap:3px;margin:-2px 0 12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.035)}
+.pcx-progress-insight strong{font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.pcx-progress-insight span{font-size:13px;color:var(--text2);line-height:1.35;font-weight:750}
+.pcx-progress-insight.good{border-color:rgba(34,197,94,.32);background:rgba(34,197,94,.08)}
+.pcx-progress-insight.good strong{color:var(--green)}
+.pcx-progress-insight.warn{border-color:rgba(255,213,0,.35);background:rgba(255,213,0,.08)}
+.pcx-progress-insight.warn strong{color:var(--gold)}
+.pcx-progress-insight.bad{border-color:rgba(239,68,68,.38);background:rgba(239,68,68,.10)}
+.pcx-progress-insight.bad strong{color:#ff7a7a}
+.pcx-progress-insight.flat strong,.pcx-progress-insight.watch strong{color:var(--cyan)}
+.pcx-progress-svg circle{cursor:pointer;transition:r .12s,filter .12s}
+.pcx-progress-svg circle:hover{filter:drop-shadow(0 0 8px rgba(255,213,0,.55))}
+.pcx-progress-svg circle.selected{fill:var(--white);stroke:var(--gold);stroke-width:4;filter:drop-shadow(0 0 10px rgba(255,213,0,.7))}
+.pcx-progress-selected{margin-top:12px;border:1px solid rgba(255,213,0,.28);background:rgba(255,213,0,.07);border-radius:16px;padding:12px}
+.pcx-progress-selected h4{margin:0 0 10px;color:var(--gold);font-family:var(--font-hud);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.pcx-progress-selected-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pcx-progress-selected-grid span{border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.16);border-radius:12px;padding:8px;color:var(--white);font-size:12px;font-weight:850;line-height:1.25;min-width:0;overflow-wrap:anywhere}
+.pcx-progress-selected-grid b{display:block;color:var(--text2);font-family:var(--font-hud);font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pcx-progress-selected p{margin:10px 0 0;color:var(--text2);font-size:13px;font-weight:750}
+.pcx-progress-compare{border-color:rgba(0,212,255,.22)}
+.pcx-progress-compare-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pcx-progress-compare h3{margin-top:0;color:var(--white)}
+.pcx-progress-compare p{color:var(--text2);font-weight:750;line-height:1.45}
+.pcx-progress-legend{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.pcx-progress-legend span{border:1px solid rgba(255,255,255,.10);border-radius:999px;padding:8px 11px;font-family:var(--font-hud);font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+.pcx-progress-legend .a{color:var(--cyan);background:rgba(0,212,255,.07);border-color:rgba(0,212,255,.28)}
+.pcx-progress-legend .b{color:var(--gold);background:rgba(255,213,0,.07);border-color:rgba(255,213,0,.28)}
+.pcx-compare-svg polyline.compare-a{stroke:var(--cyan);stroke-width:4.5}
+.pcx-compare-svg polyline.compare-b{stroke:var(--gold);stroke-width:4.5;filter:drop-shadow(0 0 6px rgba(255,213,0,.26))}
+@media (max-width:900px){.pcx-progress-summary-head{display:grid}.pcx-progress-controls.compact{grid-template-columns:1fr}.pcx-progress-selected-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.pcx-progress-svg{min-width:640px}.pcx-progress-selected-grid{grid-template-columns:1fr}.pcx-progress-summary-head{gap:8px}}
+
+/* V1.11 — Wake Lock auto : plus de bouton visible, seulement un statut utile */
+.wake-lock-status{
+  color:var(--muted);
+}
+.guided-wake-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:112px;
+  padding:4px 7px;
+  border-radius:999px;
+  border:1px solid rgba(255,216,74,.42);
+  background:rgba(255,216,74,.10);
+  color:var(--gold);
+  font-family:var(--font-hud);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.045em;
+  line-height:1.05;
+  text-align:center;
+  white-space:normal;
+}
+.guided-wake-status.hidden{display:none!important;}
+@media(max-width:402px){
+  .guided-wake-status{max-width:86px;font-size:8px;padding:3px 5px;}
 }

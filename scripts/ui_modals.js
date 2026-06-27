@@ -239,19 +239,56 @@ function renderLoadInfoModalBody(msg){
     var rows=(hint.rows&&hint.rows.length)?hint.rows:[];
     function loadText(v){
       var t=String(v==null?"":v).trim();
-      if(!t||t==="—")return "—";
+      if(!t||t==="\u2014")return "\u2014";
       return /^\d+(?:\.\d+)?$/.test(t) ? t+" lb" : t;
     }
+    // Source de suggestion
+    // Déterminer la source — priorité au champ source, fallback sur la raison
+    var reasonCheck = String(hint.reason || '').toLowerCase();
+    var computedSource = hint.source || 'moteur';
+    if(computedSource === 'moteur'){
+      // Fallback : détecter depuis la raison si le champ source n'a pas été mis à jour
+      if(reasonCheck.indexOf('rpe') >= 0 && (
+         reasonCheck.indexOf('progression') >= 0 ||
+         reasonCheck.indexOf('maintien') >= 0 ||
+         reasonCheck.indexOf('hausse') >= 0 ||
+         reasonCheck.indexOf('réduction') >= 0 ||
+         reasonCheck.indexOf('reduction') >= 0 ||
+         reasonCheck.indexOf('micro') >= 0
+      )) computedSource = 'brain';
+      else if(reasonCheck.indexOf('repere') >= 0 || reasonCheck.indexOf('aucun historique') >= 0)
+        computedSource = 'reperes';
+    }
+    var sourceLabel="Moteur initial";
+    var sourceDesc="La charge vient directement du programme, avec seulement l'arrondi équipement.";
+    var sourceColor="#4CAF50";
+    if(computedSource==="brain"){
+      sourceLabel="Brain";
+      sourceDesc="La charge a été ajustée selon l'historique, le RPE, les caps de progression, deload ou garde-fous.";
+      sourceColor="#2196F3";
+    } else if(computedSource==="reperes"){
+      sourceLabel="Repères de base";
+      sourceDesc="Pas assez d'historique fiable — l'app utilise des repères de base pour ce mouvement.";
+      sourceColor="#FF9800";
+    }
+    var sourceHtml='<div class="tuto-section" style="margin-bottom:8px">'+
+      '<div class="tuto-section-title">Source de suggestion</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">'+
+        '<span style="background:'+sourceColor+';color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.5px">'+escapeHtml(sourceLabel)+'</span>'+
+        '<span style="font-size:12px;color:#ccc">'+escapeHtml(sourceDesc)+'</span>'+
+      '</div></div>';
     var lis=rows.length ? rows.map(function(r){
-      return "<li><strong>"+escapeHtml(r.date||"?")+"</strong> — "+
-        escapeHtml(loadText(r.load))+" × "+escapeHtml(r.reps||"?")+
-        " — RPE "+escapeHtml(r.rpe||"?")+(r.status?" <small>"+escapeHtml(r.status)+"</small>":"")+"</li>";
-    }).join("") : "<li>Aucun historique retrouvé pour ce mouvement. Vérifie que tu es dans le bon profil ou importe une sauvegarde JSON si l’historique existe ailleurs.</li>";
+      var origineTag=r.origine?'<span style="font-size:10px;color:#aaa;margin-left:4px">('+escapeHtml(r.origine)+')</span>':"";
+      return "<li><strong>"+escapeHtml(r.date||"?")+"</strong> \u2014 "+
+        escapeHtml(loadText(r.load))+" \u00d7 "+escapeHtml(r.reps||"?")+
+        " \u2014 RPE "+escapeHtml(r.rpe||"?")+(r.status?" <small>"+escapeHtml(r.status)+"</small>":"")+origineTag+"</li>";
+    }).join("") : "<li>Aucun historique retrouv\u00e9 pour ce mouvement. V\u00e9rifie que tu es dans le bon profil ou importe une sauvegarde JSON si l'historique existe ailleurs.</li>";
     return '<div class="tuto-topline">HISTORIQUE DE CHARGE</div>'+
       '<div class="tuto-title">'+escapeHtml(hint.name||"Mouvement")+'</div>'+
-      '<div class="tuto-goal"><strong>Charge suggérée : '+escapeHtml(hint.load||"—")+'</strong></div>'+
-      '<div class="tuto-section"><div class="tuto-section-title">Historique des poids utilisés</div><ul>'+lis+'</ul></div>'+
-      '<div class="tuto-section compact"><div class="tuto-section-title">Pourquoi</div><p>'+escapeHtml(hint.reason||"—")+'</p></div>';
+      '<div class="tuto-goal"><strong>Charge sugg\u00e9r\u00e9e : '+escapeHtml(hint.load||"\u2014")+'</strong></div>'+
+      sourceHtml+
+      '<div class="tuto-section"><div class="tuto-section-title">Historique des poids utilis\u00e9s</div><ul>'+lis+'</ul></div>'+
+      '<div class="tuto-section compact"><div class="tuto-section-title">Pourquoi</div><p>'+escapeHtml(hint.reason||"\u2014")+'</p></div>';
   }
   return '<div class="tuto-topline">EXPLICATION DE CHARGE</div>'+
     '<div class="tuto-title">Pourquoi cette charge?</div>'+

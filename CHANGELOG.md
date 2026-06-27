@@ -1,4 +1,67 @@
+# V1.16-multi — Moteur Brain : corrections logique de charge
+
+- **Bug corrigé** : le plancher `Math.max(rawLoad, lastLoad)` bloquait les baisses justifiées. Une baisse contrôlée est maintenant autorisée quand `delta < 0` (RPE ≥ 9 × 2 séances, RPE ≥ 9.5, échec), avec plancher sécuritaire à `lastLoad - 2×maxJump`.
+- **Couche 2 refaite** : la moyenne mobile ne remplace plus `lastLoad` comme base de calcul. Elle sert uniquement à détecter une progression rapide (moyenne > 10% sous lastLoad) et réduit légèrement le delta dans ce cas. Base = toujours `lastLoad`.
+- **Renommage** : "Vélocité de progression" → "Tendance récente de progression" dans le code et les commentaires. Ce n'est pas de la vélocité VBT (vitesse de barre), c'est la pente de charge sur 3 séances.
+- Aucun fichier data/ ni programs/ modifié.
+
+# V1.15-multi — TMS session host réel
+
+- Correction TMS: ouverture forcée dans `sessionView`, pas dans la vue PC.
+- Cause: depuis l’extraction du mode Séance, `guidedSession` est déplacé dans `sessionView`; l’ancien correctif ouvrait PC, donc le rendu TMS pouvait rester dans un `main` caché.
+- TMS topnav, WOD+ et PC utilisent maintenant le même hôte `sessionView`.
+- Retour à la vue d’origine conservé à la fermeture.
+
+
+## V1.15-multi
+
+- Topnav nettoyée : retrait du mini bouton `profileSwitchDot` près de la version.
+- Le changement de profil reste disponible dans les réglages/Gear, pas comme raccourci permanent en haut à gauche.
+- Aucun impact sur les données durables ni sur le catalogue de programmes.
+
 # Changelog — Racine multi-utilisateur
+
+## V1.15-multi
+
+- Retire les boutons visibles `Écran` de WOD+ et de la toolbar PC : le Wake Lock est maintenant automatique au démarrage du mode Séance.
+- Ajoute un statut discret en mode Séance seulement si l’écran actif est refusé ou non supporté.
+- Ajoute un fallback dans Gear / Diagnostic app : bouton `Réactiver écran actif`.
+- Conserve la logique de réacquisition quand l’app revient au premier plan.
+
+## V1.10-multi
+
+- Restaure TMS comme outil global visible après la fusion multi-profil.
+- Ajoute un bouton `TMS` permanent dans la topnav, indépendant du profil actif et des permissions de programmes.
+- Renforce le binding de `scripts/tms_session.js` pour connecter `tmsSessionBtn`, `wodPlusTmsBtn` et `tmsGlobalBtn`.
+- Garde TMS hors du catalogue de cycles : c’est une routine libre, pas un programme périodisé.
+
+## V1.9-multi
+
+- Correctif lecture graphique : les points sont maintenant condensés par mouvement/date pour éviter deux fois la même date de suite quand plusieurs sets ou sources existent le même jour.
+- Le point retenu par séance est représentatif : meilleur e1RM pour les mouvements chargés, meilleur nombre de reps pour les mouvements au poids du corps.
+- Le détail au clic indique le nombre d’entrées regroupées et liste les sets condensés.
+- Ajout des filtres `4 sem.`, `8 sem.` et `Tout` pour contrôler la période affichée.
+- Ajout du clic sur les points du graphique : date, mouvement lu, charge/reps/RPE, e1RM, source, prévu et contexte.
+- Ajout d’un mode comparaison entre deux mouvements, normalisé en % depuis le premier point pour comparer des mouvements de charges différentes.
+- Ajout d’une alerte de tendance par mouvement : progression propre, monte cher, stable lourd, baisse suspecte ou données insuffisantes.
+- Graphiques légèrement agrandis pour améliorer la lecture des axes et des labels.
+
+## V1.7-multi
+
+Fusion mono → multi : programmes privés Bertin, système de visibilité programmes, panneau admin PC, migration données.
+
+- Ajout de 5 programmes privés depuis Coach-Beurt mono : `epaules_3d_press225_phase2`, `posture_cyphose`, `strict_muscle_up_personnel`, `arnold_split_2026_adapte`, `hypertrophie_fesse_stephanie`.
+- Système `visibility` dans `programs/index.js` : `"public"` pour tous, `"private"` pour profils avec permission explicite.
+- `profile.programPermissions[]` dans `scripts/profiles/storage.js` : `grantProgramPermission()`, `revokeProgramPermission()`, `hasProgramPermission()`.
+- `programIndexIds()` dans `app.js` filtre selon visibility + permissions du profil actif.
+- `BERTIN_MACROCYCLE_OVERRIDE` dans `programs/index.js` : route personnelle Bertin (`shoulders3d_press225_phase2` en phase 2).
+- Mini bouton `·` dans topnav : switch profil discret, visible seulement si 2+ profils onboardés.
+- Onglet Admin dans vue PC : tableau croisé profils × programmes privés, toggle immédiat des permissions.
+- `pcIsAdmin()` : visible si `profile.isAdmin` ou `profile.name === "Bertin"`.
+- `scripts/migrate_bertin.js` : `migrateBertin()` depuis localStorage legacy + `migrateBertinFromFiles()` depuis fichiers JSON.
+- Onglet Progression dans la vue PC : graphiques lecture seule pour les mouvements principaux trackables, sans toucher aux données durables.
+- Graphiques Progression enrichis : échelle graduée, grille horizontale, labels de valeurs, min/max réels, pas de graduation, points Dernier/Meilleur visuellement distincts et métriques de variation.
+- Correction cache-bust V1.7-multi et chargement explicite de `scripts/charge/ml_refinement.js`.
 
 ## V1.6-multi
 
