@@ -2036,13 +2036,6 @@ function bind(){
   renderWakeLockStatus();
   var smb=$("sessionModeBtn");if(smb)smb.onclick=function(){CoachSession.openFrom("phone");};
   var wdbg=$("wakeLockDebugBtn");if(wdbg)wdbg.onclick=function(){requestWakeLock();};
-  var wpt=$("wodPlusTmsBtn");if(wpt)wpt.onclick=function(){
-    if(typeof window.openCoachBeurtTmsChoice==="function"){
-      window.openCoachBeurtTmsChoice({fromWodPlus:true});
-    }else{
-      alert("TMS pas encore chargé. Recharge la page.");
-    }
-  };
   var tgb=$("tmsGlobalBtn");if(tgb)tgb.onclick=function(){
     if(typeof window.openCoachBeurtTmsChoice==="function"){
       window.openCoachBeurtTmsChoice({fromGlobal:true});

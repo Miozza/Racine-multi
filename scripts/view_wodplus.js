@@ -116,7 +116,7 @@ function wodPlusProgressExerciseHtml(mvKey, kind, index, isPrimary){
 
 function renderWorkout(){
   var w=buildWorkout(state.day,state.week);
-  var wt=$("workoutTitle"),wf=$("workoutFocus"),fi=$("focusImpact"),c=$("blocks"),pa=$("progressionAdvice");
+  var wt=$("workoutTitle"),fi=$("focusImpact"),c=$("blocks"),pa=$("progressionAdvice");
   var plan=state.cycle.goal==="shoulders3d"?shouldersWeekPlan(state.week):null;
   var wi=buildWeekInfo();
   var weekLabel=(wi[state.week]?wi[state.week].label:"S"+state.week);
@@ -125,8 +125,11 @@ function renderWorkout(){
   var priority=wodPlusPriority(w.blocks);
   var dayState=isDayCompleted(state.day)?"complétée":(isDayMissed(state.day)?"manquée":"prévue");
 
-  if(wt)wt.textContent="WOD";
-  if(wf)wf.textContent="Vue mobile-first · WOD+";
+  if(wt){
+    var p = window.CoachProfiles && CoachProfiles.getActive ? CoachProfiles.getActive() : null;
+    var pname = (p && p.name) ? p.name : 'Racine';
+    wt.textContent = 'WOD · ' + pname;
+  }
 
   var deloadWarning=state.deloadAlert
     ?"<div class='wodplus-alert'>⚠ RPE élevé détecté — considère un deload</div>":"";
