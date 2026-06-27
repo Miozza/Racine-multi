@@ -267,7 +267,14 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     var floorRepsReached=!target||!floorReps||floorReps>=target;
     var floorBadStatuses=['recalibrating','watch','failed','major_fail','context_logged'];
     var floorStatusOk=!last.status||floorBadStatuses.indexOf(last.status)===-1;
-    if(floorRepsReached&&floorStatusOk&&suggested<lastLoad){
+    // Exception : RPE >= 9 deux séances consécutives sur la même charge → baisse autorisée.
+    var lastRpeFloor=coachHistoryRpeNumber(last);
+    var histForFloor=Array.isArray(hist)?hist:[];
+    var prevForFloor=histForFloor.length>=2?histForFloor[histForFloor.length-2]:null;
+    var prevRpeFloor=coachHistoryRpeNumber(prevForFloor);
+    var prevLoadFloor=coachHistoryLoadNumber(prevForFloor);
+    var consecutiveHardOnSameLoad=lastRpeFloor>=9&&prevRpeFloor>=9&&prevLoadFloor>=lastLoad;
+    if(floorRepsReached&&floorStatusOk&&suggested<lastLoad&&!consecutiveHardOnSameLoad){
       suggested=lastLoad;mode="nearest";severity=severity==="ok"?"watch":severity;
       reason="Plancher historique : dernier "+lastLoad+" lb x "+(floorReps||target)+" reellement reussi (reps atteintes, pas un echec). La suggestion ne redescend pas sous cette reference.";
     }

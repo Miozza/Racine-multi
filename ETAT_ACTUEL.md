@@ -1,4 +1,4 @@
-# ETAT ACTUEL — V1.16-multi
+# ETAT ACTUEL — V2
 
 ## Correctif TMS
 
@@ -6,7 +6,7 @@ TMS est maintenant rendu dans `sessionView`, le même hôte que le mode Séance.
 
 # État courant — Racine multi-utilisateur
 
-Version actuelle : V1.16-multi
+Version actuelle : V2
 
 ### Correctif V1.15-multi — TMS visible partout
 - TMS reste un outil global, mais il force maintenant l’ouverture de l’hôte PC/Séance avant de rendre le choix de routine.

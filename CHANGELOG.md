@@ -1,3 +1,13 @@
+# V2 — Topnav épurée
+
+- Topnav réduite aux onglets uniquement : retrait du brand (R + version), retrait du rond de statut profil (syncStatusDot).
+- Le rond dupliquait Gear sans valeur ajoutée.
+- Titre onglet browser : `Racine` (sans version).
+- Footer : `Racine V2 · local`.
+- APP_VERSION : `V2`, cache-bust : `?v=2.0`.
+- CSS nettoyé : `.topnav-brand`, `.topnav-mark`, `.topnav-v`, `.sync-dot`, `.profile-dot` retirés.
+- Docs : 2 rapports d'audit temporaires supprimés (`PHASE_2_EXTRACTION_REPORT.md`, `CHARGE_PROGRESSION_AUDIT.md`).
+
 # V1.16-multi — Moteur Brain : corrections logique de charge
 
 - **Bug corrigé** : le plancher `Math.max(rawLoad, lastLoad)` bloquait les baisses justifiées. Une baisse contrôlée est maintenant autorisée quand `delta < 0` (RPE ≥ 9 × 2 séances, RPE ≥ 9.5, échec), avec plancher sécuritaire à `lastLoad - 2×maxJump`.

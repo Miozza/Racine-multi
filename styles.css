@@ -93,33 +93,6 @@ body::before {
   background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), var(--blue), transparent);
 }
 
-.topnav-brand {
-  font-family: var(--font-hud);
-  font-size: 11px;
-  font-weight: 900;
-  color: var(--cyan);
-  letter-spacing: .12em;
-  white-space: nowrap;
-  flex-shrink: 0;
-  line-height: 1.2;
-}
-.topnav-mark {
-  display: block;
-  font-family: var(--font-hud);
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--cyan);
-  letter-spacing: .02em;
-  line-height: 1;
-  text-shadow: 0 0 8px rgba(0,212,255,.4), 0 0 18px rgba(0,212,255,.18);
-}
-.topnav-brand span {
-  display: block;
-  color: var(--muted);
-  font-size: 8px;
-  letter-spacing: .08em;
-  font-weight: 400;
-}
 
 .topnav-tabs {
   display: flex;
@@ -1802,10 +1775,6 @@ label {
     gap: 6px;
   }
 
-  .topnav-brand {
-    min-width: 42px;
-  }
-
   #phoneView {
     width: 100%;
     padding: 0;
@@ -3128,14 +3097,6 @@ label {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
-}
-.topnav-v {
-  display: block;
-  color: var(--gold);
-  font-size: 8px;
-  letter-spacing: .08em;
-  font-weight: 500;
-  margin-top: 1px;
 }
 .pr-save-panel {
   margin-top: 14px;
@@ -5004,12 +4965,7 @@ body.guided-browser-zoom .guided-actions{
 .pcx-week-load{display:inline-flex;align-items:center;gap:6px;color:var(--cyan);font-weight:900;}
 .pcx-week-block .load-info-btn{width:24px;height:24px;min-width:24px;font-size:14px;line-height:1;margin-left:3px;vertical-align:middle;}
 
-/* V51.04 — Roadmap macro + statut sync GitHub */
-.sync-dot{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text2);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;font-family:var(--font-hud);letter-spacing:.04em;cursor:pointer;white-space:nowrap;}
-.sync-dot.ok{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12);color:#22c55e;}
-.sync-dot.err{border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.12);color:#ef4444;}
-.sync-dot.missing{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.10);color:#f59e0b;}
-.sync-dot.pending{border-color:rgba(0,212,255,.35);background:rgba(0,212,255,.10);color:var(--cyan);}
+/* V51.04 — Roadmap macro */
 .roadmap-card{margin:14px 0;padding:14px;border:1px solid rgba(0,212,255,.22);background:rgba(0,212,255,.06);border-radius:14px;}
 .roadmap-status{display:inline-flex;margin:10px 0;padding:7px 10px;border-radius:999px;font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;}
 .roadmap-status.ok{color:#22c55e;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);}
@@ -5057,7 +5013,7 @@ body.guided-browser-zoom .guided-actions{
 .pcx-rd-comp-pin{font-size:22px;line-height:16px;margin-top:-3px;}
 .pcx-rd-next-name{margin:4px 0;color:var(--white);}
 .pcx-rd-next-branch{margin-top:12px;border:1px solid rgba(245,158,11,.34);background:rgba(245,158,11,.10);color:#ffd166;border-radius:12px;padding:10px;font-weight:900;}
-@media (max-width:700px){.sync-dot{padding:6px 8px;font-size:10px}.roadmap-row,.pcx-roadmap-row{grid-template-columns:1fr}.pcx-roadmap-status{display:block}.pcx-roadmap-status span{display:block;margin-top:6px}.pcx-rd-dash{grid-template-columns:1fr}.pcx-rd-timeline{overflow-x:auto;padding-bottom:8px}.pcx-rd-phase{min-width:140px}.pcx-rd-counters{grid-template-columns:1fr}}
+@media (max-width:700px){.roadmap-row,.pcx-roadmap-row{grid-template-columns:1fr}.pcx-roadmap-status{display:block}.pcx-roadmap-status span{display:block;margin-top:6px}.pcx-rd-dash{grid-template-columns:1fr}.pcx-rd-timeline{overflow-x:auto;padding-bottom:8px}.pcx-rd-phase{min-width:140px}.pcx-rd-counters{grid-template-columns:1fr}}
 
 
 /* V51.08 — Séance guidée: Reps/RPE compacts sur une ligne avec +/- */
@@ -5166,40 +5122,6 @@ body.guided-browser-zoom .guided-actions{
 :root{
   --guided-action-h: 58px;
 }
-
-.sync-dot{
-  width: 18px !important;
-  min-width: 18px !important;
-  height: 18px !important;
-  padding: 0 !important;
-  border-radius: 999px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 10px !important;
-  line-height: 1 !important;
-  letter-spacing: 0 !important;
-  margin-left: 2px !important;
-  margin-right: 0 !important;
-  overflow: hidden !important;
-  color: transparent !important;
-  position: relative !important;
-  opacity: .86;
-}
-.sync-dot::before{
-  content: '◐';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: currentColor;
-}
-.sync-dot.ok::before{ content: '●'; color: #22c55e; }
-.sync-dot.err::before{ content: '●'; color: #ef4444; }
-.sync-dot.missing::before{ content: '○'; color: #f59e0b; }
-.sync-dot.pending::before{ content: '◐'; color: var(--cyan); }
 
 body.guided-session-active{
   height: var(--guided-vh, 100dvh);
@@ -5894,13 +5816,6 @@ body.arnold-mode{
    Portail d'intégration + sélecteur de profil. Réutilise les variables et
    classes existantes (.panel, .btn-accent, .btn-ghost, .input-field...).
    ══════════════════════════════ */
-.profile-dot{
-  width:26px;height:26px;border-radius:50%;
-  display:inline-flex;align-items:center;justify-content:center;
-  font-family:var(--font-hud);font-size:11px;font-weight:900;
-  background:rgba(30,144,255,.18);color:var(--cyan);border:1px solid var(--blue);
-  cursor:pointer;
-}
 .racine-gate{
   position:fixed;inset:0;z-index:9999;
   background:rgba(2,4,10,.92);backdrop-filter:blur(6px);

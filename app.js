@@ -1,5 +1,5 @@
-// Racine V1.16-multi — moteur Brain : baisse contrôlée + tendance vs moyenne + renommage vélocité
-var APP_VERSION = "V1.16-multi";
+// Racine V2 — moteur Brain : baisse contrôlée + tendance + corrections logique charge
+var APP_VERSION = "V2";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1095,18 +1095,7 @@ document.addEventListener("visibilitychange",function(){
 function buildChargesJsContent(){ return ""; }
 
 
-// ─── Indicateur profil actif ────────────────────────────────────────────────
-function renderSyncStatusIndicator(){
-  var el=$("syncStatusDot"); if(!el)return;
-  var p = window.CoachProfiles && CoachProfiles.getActive ? CoachProfiles.getActive() : null;
-  var name = (p && p.name) ? p.name : "?";
-  el.className = "sync-dot profile-dot";
-  el.textContent = name.trim().slice(0,1).toUpperCase() || "?";
-  el.title = p ? ("Profil actif : " + p.name) : "Aucun profil actif";
-}
-function openSyncSettings(){
-  switchView("settings");
-}
+
 
 
 
@@ -2062,7 +2051,6 @@ function bind(){
     }
   };
   var cp=$("copyPhoneBtn");if(cp)cp.onclick=function(){navigator.clipboard.writeText(stableIphoneText()).then(function(){alert("Copié.");}).catch(function(){alert("Copie bloquée.");});};
-  var sd=$("syncStatusDot");if(sd)sd.onclick=openSyncSettings;
   // Sélecteur de profil déplacé dans Gear / réglages : aucun mini bouton dans la topnav.
   var sc=$("saveCycleBtn");if(sc)sc.onclick=saveCycle;
   var nc=$("newCycleBtn");if(nc)nc.onclick=newCycle;
@@ -2102,7 +2090,7 @@ function bind(){
   if(typeof setupChargeDiagnosticBindings==="function")setupChargeDiagnosticBindings();
 }
 
-function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();renderSyncStatusIndicator();}
+function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();}
 
 
 
