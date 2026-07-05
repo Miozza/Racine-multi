@@ -1,4 +1,4 @@
-// Racine V1.10 — CoachML
+// Racine V1.11 — CoachML
 // Étape 1 : collecte silencieuse uniquement.
 // Le moteur de charges N'EST PAS modifié.
 // getCorrectionFactor() retourne toujours 1.0 — aucun effet sur les suggestions.

@@ -49,6 +49,14 @@ function setupSessionSave(){
     results=CoachCharge.enrichSessionResults(results);
     var autoPrUpdates=detectAndApplyAutomaticPr(results,todayDateString());
     var payload=buildSessionPayload(results);
+    // Avis IA V3.3 — si l'utilisateur modifie manuellement une charge après un avis IA,
+    // Racine documente l'influence sans jamais modifier la charge automatiquement.
+    try{
+      if(window.RacineAIInfluence && typeof RacineAIInfluence.annotateSessionResults==='function'){
+        var aiInfluences=RacineAIInfluence.annotateSessionResults(results,payload);
+        if(aiInfluences&&aiInfluences.length)payload.aiAdviceInfluences=aiInfluences;
+      }
+    }catch(e){ /* consultatif seulement — jamais bloquant */ }
     if(autoPrUpdates.length)payload.autoPrUpdates=autoPrUpdates;
     // 1. Mettre à jour références + historique RPE
     updateRefsFromResults(results);
@@ -69,6 +77,13 @@ function setupSessionSave(){
       state.history.push(entry);
       save();
     }
+    // Brain V2.1 — mémoire locale par mouvement + intention.
+    // Apprend uniquement des résultats déjà enrichis; aucun effet réseau et aucune donnée durable statique modifiée.
+    try{
+      if(window.CoachBrainMemory && typeof CoachBrainMemory.updateFromSessionResults==='function'){
+        CoachBrainMemory.updateFromSessionResults(results, payload);
+      }
+    }catch(e){ /* silencieux — jamais bloquant */ }
     // Collecte silencieuse Brain.js — aucun effet sur le moteur, jamais bloquant
     try{
       if(window.CoachML){

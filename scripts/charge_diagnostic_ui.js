@@ -159,6 +159,20 @@ function buildChargeDiagnosticForExercise(exercise, shownLoad, context){
     add('far_from_program','watch','Ecart important avec le programme','La charge affichee est loin de la charge prevue. Ce n est pas forcement une erreur, mais ca merite verification.');
   }
 
+  var brainStats=null;
+  var ambitiousOption='';
+  try{
+    if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
+      var hk=coachNormalizeMoveText(label);
+      var hint=window.__coachLoadHints[hk];
+      if(hint&&hint.brainStats)brainStats=hint.brainStats;
+      if(hint&&hint.ambitiousOption)ambitiousOption=hint.ambitiousOption;
+    }
+  }catch(e){}
+  if(brainStats){
+    add('brain_v2','watch','Brain V2','Confiance '+brainStats.confidence+'% · ambition '+brainStats.ambition+'% · validations '+brainStats.validations+'/'+brainStats.requiredConfirmations+' · intention '+brainStats.intent+'.'+(brainStats.memory?' Mémoire : '+brainStats.memory.sessions+' séances · précision '+brainStats.memory.precision+'% · connaissance '+brainStats.memory.knowledge+'%.':''));
+  }
+
   var cycleComment='';
   try{
     var wk=state&&state.week?state.week:null;
@@ -193,6 +207,8 @@ function buildChargeDiagnosticForExercise(exercise, shownLoad, context){
     noLoadUseful:noLoadUseful,
     recentBest:recentBest?{date:recentBest.date,load:recentBest.load,reps:recentBest.reps,rpe:recentBest.rpe,status:recentBest.status}:null,
     cap:cap||null,
+    brainStats:brainStats,
+    ambitiousOption:ambitiousOption,
     recentHistory:validRows.slice(-5).reverse()
   };
 }
@@ -265,7 +281,8 @@ function renderChargeDiagnosticPanel(){
     html+='<div class="history-list">'+flags.map(function(r){
       var icon=r.severity==='critical'?'⚠️':(r.severity==='warning'?'⚠':'•');
       var first=(r.alerts&&r.alerts[0])?r.alerts[0]:null;
-      return '<div class="history-item"><strong>'+icon+' '+escapeHtml(r.name)+'</strong><br><small>'+escapeHtml(r.blockTitle||'')+' · '+escapeHtml(r.shownLoad||'—')+' · '+escapeHtml(r.summary)+'</small>'+(first?'<p class="muted">'+escapeHtml(first.detail)+'</p>':'')+'</div>';
+      var brain=r.brainStats?'<p class="muted"><strong>Brain V2</strong> · confiance '+escapeHtml(r.brainStats.confidence)+'% · ambition '+escapeHtml(r.brainStats.ambition)+'% · validations '+escapeHtml(r.brainStats.validations)+'/'+escapeHtml(r.brainStats.requiredConfirmations)+(r.ambitiousOption?' · option ambitieuse '+escapeHtml(r.ambitiousOption):'')+(r.brainStats.memory?' · mémoire '+escapeHtml(r.brainStats.memory.sessions)+' séances · précision '+escapeHtml(r.brainStats.memory.precision)+'%':'')+'</p>':'';
+      return '<div class="history-item"><strong>'+icon+' '+escapeHtml(r.name)+'</strong><br><small>'+escapeHtml(r.blockTitle||'')+' · '+escapeHtml(r.shownLoad||'—')+' · '+escapeHtml(r.summary)+'</small>'+(first?'<p class="muted">'+escapeHtml(first.detail)+'</p>':'')+brain+'</div>';
     }).join('')+'</div>';
   }else{
     html+='<p class="muted">Aucune alerte pour la seance affichee.</p>';

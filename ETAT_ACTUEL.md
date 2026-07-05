@@ -1,42 +1,37 @@
-# État courant — Racine multi-utilisateur
+# ETAT ACTUEL — V4.2
 
-Version actuelle : V1.7-multi
+Version actuelle : V4.2
 
-Statut : fusion mono → multi complète. Programmes perso Bertin intégrés avec système de visibilité. Panneau admin programmes dans vue PC. Migration des données Bertin scriptée.
+## État courant
 
-## Décisions actives
+Racine est un prototype multi-utilisateur local. Cette version ajoute la première couche Brain statistique au moteur de charges, sans brancher Avis IA et sans modifier les données durables.
 
-- Les données vivantes sont isolées par profil dans `localStorage`.
-- `scripts/profiles/reference.js` contient seulement l'ancre de calibration des programmes.
-- `PRELOADED_REFS` n'est plus injecté automatiquement dans `state.movementRefs`.
-- `freshState()` démarre avec un profil vide et aucune référence de mouvement vivante.
-- L'onboarding écrit les charges calculées dans `state.profile`, `athleteState`, `movementRefs` et les ratios dans le registre de profil.
-- La sauvegarde est locale : export/import JSON, pas de sync GitHub.
-- Les programmes privés (Bertin) sont filtrés par `profile.programPermissions` — invisibles aux autres profils.
-- Le macrocycle Bertin est surchargé via `profile.macrocycleOverrideKey` → `BERTIN_MACROCYCLE_OVERRIDE`.
+## Brain — portée active
 
-## Fusion mono → multi (V1.7)
+- Statistiques locales par mouvement + intention.
+- Confiance de prédiction.
+- Ambition.
+- Sensibilité des mouvements, incluant poids de corps et poids de corps lesté.
+- RPE interprété par profil utilisateur : chez Bertin, RPE 8 = signal moyen et RPE 9+ = signal fort.
+- Validations multiples adaptatives.
+- Option ambitieuse dans le diagnostic lorsque Brain hésite.
+- Validation/confort : une charge peut être validée sans être maîtrisée si le coût est très élevé.
 
-### Programmes privés ajoutés
-- `programs/epaules_3d_press225_phase2.js` — Phase 2 Épaules 3D + Press 225 (Bertin)
-- `programs/posture_cyphose.js` — Posture / Cyphose (Bertin)
-- `programs/strict_muscle_up_personnel.js` — Strict Muscle-Up Personnel 12 semaines (Bertin)
-- `programs/arnold_split_2026_adapte.js` — Arnold Split 2026 adapté (Bertin)
-- `programs/hypertrophie_fesse_stephanie.js` — Hypertrophie Fessiers Stéphanie (Bertin)
+## Profils de mouvements
 
-### Système visibility
-Chaque programme dans `programs/index.js` porte `visibility: "public"` ou `"private"`. `programIndexIds()` dans `app.js` filtre selon `profile.programPermissions`. Les programmes privés sont chargés en mémoire mais invisibles aux profils sans permission.
+- Nouveau module : `scripts/charge/movement_profiles.js`.
+- Les profils décrivent la famille, la sensibilité, le style de progression et le vocabulaire Brain Explain.
+- Brain Explain doit utiliser ces profils pour éviter les explications génériques.
+- `app.js` ne contient aucune logique de profil.
 
-### Mini bouton switch profil
-Bouton `·` dans la topnav (gauche du logo), `opacity: 0.25`, visible seulement si 2+ profils onboardés. Ouvre le picker de profil directement.
+## Données protégées
 
-### Panneau Admin dans vue PC
-Onglet `Admin` visible seulement si `profile.isAdmin === true` ou `profile.name === "Bertin"`. Tableau croisé profils × programmes privés. Toggle immédiat via `CoachProfiles.grantProgramPermission()` / `revokeProgramPermission()`.
+Ne pas modifier ni écraser :
 
-### Migration données Bertin
-`scripts/migrate_bertin.js` expose deux fonctions :
-- `migrateBertin()` — lit le localStorage legacy Coach-Beurt et migre automatiquement
-- `migrateBertinFromFiles(athleteState, cycleState, resultats, customCharges)` — voie de secours si pas de localStorage legacy
+- `data/resultats.json`
+- `data/athlete_state.json`
+- `data/cycle_state.json`
+- `data/charges.js`
 
 ## Validations à lancer avant livraison
 
@@ -67,3 +62,50 @@ node dev/strict_muscle_up_checks.js
 - `docs/CHARGE_PROGRESSION_CONTRACT.md`
 - `docs/ERROR_LOGGING.md`
 - `docs/PHASE_2_EXTRACTION_REPORT.md`
+
+
+## RPE Profile + Validation Comfort
+- Profil RPE personnalisé : RPE 8 = signal moyen, RPE 9+ = signal fort.
+- Distinction validation/confort dans Brain Explain.
+- Plancher historique traité comme décision Brain quand il agit comme garde-fou.
+- Aucune donnée durable modifiée.
+
+- Document officiel : `docs/BRAIN.md`.
+
+
+## Brain Explain Engine
+
+- `scripts/charge/brain_explain.js` devient la source unique du langage Brain dans le panneau `(!)`.
+- Le calcul de charge est gelé; cette passe améliore seulement l’explication.
+
+## Brain Journal
+
+- `scripts/charge/brain_journal.js` est ajouté comme couche consultative.
+- Le journal lit la mémoire Brain locale et produit un apprentissage court par mouvement + intention.
+- Le panneau `(!)` peut afficher `Journal Brain` lorsque l'information existe.
+- Cette version ne modifie pas les charges et ne touche pas aux données durables.
+
+
+
+## Avis IA Export
+
+- `scripts/ai/ai_export.js` génère des prompts universels sans API ni abonnement imposé.
+- Les exports Avis IA sont consultatifs. Ils ne modifient jamais les charges.
+- Le panneau `(!)` peut copier un prompt ciblé sur le mouvement affiché.
+- La vue PC peut copier un prompt global pour la séance / cycle sélectionné.
+
+
+## Avis IA Import
+
+- Import mobile-first dans le panneau `(!)`.
+- L’utilisateur colle la réponse IA dans Racine; l’app extrait seulement le bloc structuré avec marqueurs.
+- Sauvegarde locale sur l’iPhone via localStorage.
+- Avis IA consultatif seulement; Brain garde la décision et aucune charge n’est changée automatiquement.
+
+
+## Correctif DOM Avis IA
+
+- Le panneau `(!)` regénère maintenant le contenu Avis IA après un import ou un effacement.
+- Un avis mouvement et un avis cycle empilés ne peuvent plus laisser un bloc obsolète affiché après effacement.
+- Le bouton Fermer dupliqué dans la modale d'import Avis IA a été retiré.
+- Aucune donnée durable modifiée.

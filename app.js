@@ -1,5 +1,5 @@
-// Racine V1.7-multi — prototype multi-utilisateur viable + catalogue client sportif + cycle strict muscle-up
-var APP_VERSION = "V1.7-multi";
+// Racine V4.2 — Avis IA Influence Tracker
+var APP_VERSION = "V4.2";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -983,23 +983,56 @@ function requestAdvanceWeek(){
 var wakeLock = null;
 var wakeLockWanted = false;
 var guidedWakeLockAuto = false;
+var wakeLockUiState = "idle"; // idle | active | unsupported | failed
+var wakeLockLastMessage = "Écran actif : automatique en mode Séance.";
 
-function updateWakeLockButton(active, unsupported){
-  var buttons=[];
-  var main=$("wakeLockBtn");
-  if(main)buttons.push(main);
-  var wodPlus=$("wodPlusWakeBtn");
-  if(wodPlus)buttons.push(wodPlus);
-  if(!buttons.length)return;
-  buttons.forEach(function(btn){
-    if(unsupported){
-      btn.textContent="⚠️ Écran non supporté";
-      btn.classList.remove("active");
-      return;
+function wakeLockStatusText(){
+  if(wakeLockUiState === "active") return "Écran actif : actif.";
+  if(wakeLockUiState === "unsupported") return "Écran actif : non supporté par ce navigateur/appareil.";
+  if(wakeLockUiState === "failed") return wakeLockLastMessage || "Écran actif : activation refusée. Réessaie depuis Gear / Debug.";
+  return "Écran actif : automatique en mode Séance.";
+}
+function renderWakeLockStatus(){
+  var el=$("wakeLockStatus");
+  if(el){
+    el.textContent = wakeLockStatusText();
+    el.classList.toggle("ok", wakeLockUiState === "active");
+    el.classList.toggle("err", wakeLockUiState === "unsupported" || wakeLockUiState === "failed");
+  }
+  var guided=$("guidedWakeLockStatus");
+  if(guided){
+    if(wakeLockUiState === "unsupported"){
+      guided.textContent = "Écran non supporté";
+      guided.classList.remove("hidden");
+    }else if(wakeLockUiState === "failed" && wakeLockWanted){
+      guided.textContent = "Écran à réactiver";
+      guided.classList.remove("hidden");
+    }else{
+      guided.textContent = "";
+      guided.classList.add("hidden");
     }
-    btn.textContent=active?"🔆 Écran actif":"💤 Écran";
-    btn.classList.toggle("active",!!active);
-  });
+  }
+}
+function wakeLockSessionStatusHtml(){
+  if(wakeLockUiState === "unsupported") return '<span id="guidedWakeLockStatus" class="guided-wake-status">Écran non supporté</span>';
+  if(wakeLockUiState === "failed" && wakeLockWanted) return '<span id="guidedWakeLockStatus" class="guided-wake-status">Écran à réactiver</span>';
+  return '<span id="guidedWakeLockStatus" class="guided-wake-status hidden"></span>';
+}
+function updateWakeLockButton(active, unsupported, reason){
+  if(unsupported){
+    wakeLockUiState = "unsupported";
+    wakeLockLastMessage = "Écran actif : non supporté par ce navigateur/appareil.";
+  }else if(active){
+    wakeLockUiState = "active";
+    wakeLockLastMessage = "Écran actif : actif.";
+  }else if(reason === "failed"){
+    wakeLockUiState = "failed";
+    wakeLockLastMessage = "Écran actif : activation refusée. Réessaie depuis Gear / Debug.";
+  }else{
+    wakeLockUiState = "idle";
+    wakeLockLastMessage = "Écran actif : automatique en mode Séance.";
+  }
+  renderWakeLockStatus();
 }
 
 async function requestWakeLock(){
@@ -1028,7 +1061,8 @@ async function requestWakeLock(){
     return true;
   }catch(e){
     if(window.CoachLog)CoachLog.warn("wakelock_request_failed", {message:e&&e.message?e.message:String(e)});
-    updateWakeLockButton(false,false);
+    wakeLockLastMessage = "Écran actif : activation refusée. Réessaie depuis Gear / Debug.";
+    updateWakeLockButton(false,false,"failed");
     return false;
   }
 }
@@ -1061,18 +1095,7 @@ document.addEventListener("visibilitychange",function(){
 function buildChargesJsContent(){ return ""; }
 
 
-// ─── Indicateur profil actif ────────────────────────────────────────────────
-function renderSyncStatusIndicator(){
-  var el=$("syncStatusDot"); if(!el)return;
-  var p = window.CoachProfiles && CoachProfiles.getActive ? CoachProfiles.getActive() : null;
-  var name = (p && p.name) ? p.name : "?";
-  el.className = "sync-dot profile-dot";
-  el.textContent = name.trim().slice(0,1).toUpperCase() || "?";
-  el.title = p ? ("Profil actif : " + p.name) : "Aucun profil actif";
-}
-function openSyncSettings(){
-  switchView("settings");
-}
+
 
 
 
@@ -2010,30 +2033,18 @@ function bind(){
   var pvb=$("phoneViewBtn");if(pvb)pvb.onclick=function(){switchView("phone");};
   var btb=$("backTrainingBtn");if(btb)btb.onclick=function(){switchView("training");};
   var fs=$("fullscreenBtn");if(fs)fs.onclick=function(){var el=document.documentElement,fn=el.requestFullscreen||el.webkitRequestFullscreen;if(fn)try{fn.call(el);}catch(e){}};
+  renderWakeLockStatus();
   var smb=$("sessionModeBtn");if(smb)smb.onclick=function(){CoachSession.openFrom("phone");};
-  var wl=$("wakeLockBtn");if(wl)wl.onclick=function(){if(wakeLockWanted||wakeLock)releaseWakeLock();else requestWakeLock();};
-  var wpl=$("wodPlusWakeBtn");if(wpl)wpl.onclick=function(){if(wakeLockWanted||wakeLock)releaseWakeLock();else requestWakeLock();};
-  var wpt=$("wodPlusTmsBtn");if(wpt)wpt.onclick=function(){
+  var wdbg=$("wakeLockDebugBtn");if(wdbg)wdbg.onclick=function(){requestWakeLock();};
+  var tgb=$("tmsGlobalBtn");if(tgb)tgb.onclick=function(){
     if(typeof window.openCoachBeurtTmsChoice==="function"){
-      window.openCoachBeurtTmsChoice({fromWodPlus:true});
+      window.openCoachBeurtTmsChoice({fromGlobal:true});
     }else{
       alert("TMS pas encore chargé. Recharge la page.");
     }
   };
   var cp=$("copyPhoneBtn");if(cp)cp.onclick=function(){navigator.clipboard.writeText(stableIphoneText()).then(function(){alert("Copié.");}).catch(function(){alert("Copie bloquée.");});};
-  var sd=$("syncStatusDot");if(sd)sd.onclick=openSyncSettings;
-  // Mini bouton switch profil — visible seulement si 2+ profils onboardés
-  (function(){
-    var dot = $("profileSwitchDot");
-    if(!dot) return;
-    var profiles = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.onboarded; }) : [];
-    if(profiles.length > 1){
-      dot.style.display = "";
-      dot.onclick = function(){
-        if(window.CoachOnboarding && CoachOnboarding.openPicker) CoachOnboarding.openPicker();
-      };
-    }
-  })();
+  // Sélecteur de profil déplacé dans Gear / réglages : aucun mini bouton dans la topnav.
   var sc=$("saveCycleBtn");if(sc)sc.onclick=saveCycle;
   var nc=$("newCycleBtn");if(nc)nc.onclick=newCycle;
   var spr=$("savePrBtn");if(spr)spr.onclick=savePrProfile;
@@ -2072,7 +2083,7 @@ function bind(){
   if(typeof setupChargeDiagnosticBindings==="function")setupChargeDiagnosticBindings();
 }
 
-function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();renderSyncStatusIndicator();}
+function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();}
 
 
 

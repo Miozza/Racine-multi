@@ -2,7 +2,7 @@
 // Module utilitaire : ne modifie pas le cycle, l'historique, athlete_state ni les programmes.
 
 (function(){
-  var tmsState = { session:null, index:0, wakeLockAuto:false, returnToWodPlus:false };
+  var tmsState = { session:null, index:0, wakeLockAuto:false, returnToWodPlus:false, returnView:"training" };
 
   var sessions = {
     full: {
@@ -139,14 +139,67 @@
       .replace(/'/g,"&#039;");
   }
 
-  function openTmsChoice(options){
-    options = options || {};
-    tmsState.returnToWodPlus = !!options.fromWodPlus;
-    if(tmsState.returnToWodPlus){
-      if(typeof switchView === "function") switchView("phone");
-      document.body.classList.add("guided-session-active");
-      document.body.classList.remove("guided-results-active");
+  function detectActiveView(){
+    var pairs = [
+      ["training", "trainingView"],
+      ["pc", "pcView"],
+      ["session", "sessionView"],
+      ["results", "resultsView"],
+      ["cycle", "cycleView"],
+      ["history", "historyView"],
+      ["settings", "settingsView"],
+      ["profile", "profileView"],
+      ["references", "referencesView"],
+      ["backup", "backupView"]
+    ];
+    for(var i=0;i<pairs.length;i++){
+      var el = $(pairs[i][1]);
+      if(el && el.classList && el.classList.contains("view-active")) return pairs[i][0];
     }
+    var legacyPc = $("phoneView");
+    if(legacyPc && legacyPc.classList && legacyPc.classList.contains("view-active")) return "pc";
+    return "training";
+  }
+
+  function ensureTmsSessionHost(){
+    if(typeof ensurePcViewHost === "function") ensurePcViewHost();
+
+    var guided = $("guidedSession");
+    if(!guided) return null;
+
+    var view = $("sessionView");
+    if(!view){
+      view = document.createElement("main");
+      view.id = "sessionView";
+      view.className = "session-view";
+      var pcView = $("pcView") || $("phoneView");
+      var parent = pcView && pcView.parentNode ? pcView.parentNode : document.querySelector(".app");
+      var before = pcView && pcView.nextSibling ? pcView.nextSibling : $("resultsView");
+      if(parent) parent.insertBefore(view, before || null);
+    }
+
+    if(guided.parentNode !== view){
+      view.appendChild(guided);
+    }
+    return view;
+  }
+
+  function showTmsHost(){
+    ensureTmsSessionHost();
+    if(typeof switchView === "function") switchView("session");
+    document.body.classList.add("guided-session-active");
+    document.body.classList.remove("guided-results-active");
+    var el = $("guidedSession");
+    if(el) el.classList.remove("hidden");
+  }
+
+  function openTmsChoice(options){
+    options = (options && !options.type) ? options : {};
+    if(!options.keepReturnView){
+      tmsState.returnView = options.returnView || detectActiveView() || "training";
+    }
+    tmsState.returnToWodPlus = !!options.fromWodPlus;
+    showTmsHost();
     var el = $("guidedSession");
     if(!el) return;
     if(typeof resumeAudio === "function") resumeAudio();
@@ -195,15 +248,15 @@
     }
     if(tmsState.wakeLockAuto && typeof releaseWakeLock === "function") releaseWakeLock();
     var returnToWodPlus = !!tmsState.returnToWodPlus;
+    var returnView = returnToWodPlus ? "training" : (tmsState.returnView || "training");
     tmsState.session = null;
     tmsState.index = 0;
     tmsState.wakeLockAuto = false;
     tmsState.returnToWodPlus = false;
-    if(returnToWodPlus){
-      document.body.classList.remove("guided-session-active");
-      document.body.classList.remove("guided-results-active");
-      if(typeof switchView === "function") switchView("training");
-    }
+    tmsState.returnView = "training";
+    document.body.classList.remove("guided-session-active");
+    document.body.classList.remove("guided-results-active");
+    if(typeof switchView === "function") switchView(returnView);
   }
 
   function renderTms(){
@@ -262,21 +315,30 @@
       if(isLast) closeTms();
       else { tmsState.index++; renderTms(); }
     };
-    $("tmsChoiceBtn").onclick = openTmsChoice;
+    $("tmsChoiceBtn").onclick = function(){
+      openTmsChoice({ keepReturnView:true, returnView:tmsState.returnView, fromWodPlus:tmsState.returnToWodPlus });
+    };
   }
 
-  function bindTmsButton(){
-    var btn = $("tmsSessionBtn");
-    if(!btn || btn.__tmsBound) return;
-    btn.__tmsBound = true;
-    btn.onclick = openTmsChoice;
+  function bindTmsButtons(){
+    [
+      { id:"tmsSessionBtn", options:{} },
+      { id:"tmsGlobalBtn", options:{ fromGlobal:true } },
+      { id:"wodPlusTmsBtn", options:{ fromWodPlus:true } }
+    ].forEach(function(item){
+      var btn = $(item.id);
+      if(!btn || btn.__tmsBound) return;
+      btn.__tmsBound = true;
+      btn.onclick = function(){ openTmsChoice(item.options || {}); };
+    });
   }
 
   window.openCoachBeurtTmsChoice = openTmsChoice;
+  window.bindCoachBeurtTmsButtons = bindTmsButtons;
 
   if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", bindTmsButton);
+    document.addEventListener("DOMContentLoaded", bindTmsButtons);
   } else {
-    bindTmsButton();
+    bindTmsButtons();
   }
 })();

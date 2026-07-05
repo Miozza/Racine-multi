@@ -500,12 +500,13 @@ function renderGuidedSession(){
   var isFirst=i===0, isLast=i===blocks.length-1;
   var text=cleanLine(displayChargeText(st.text||""));
   var cfg=st.timer;
+  var wakeStatus = (typeof wakeLockSessionStatusHtml === "function") ? wakeLockSessionStatusHtml() : "";
 
   var html="";
   html+="<div class='guided-top'>"+
         "<button class='tb-btn' id='guidedCloseBtn'>✕</button>"+
         "<div class='guided-top-title'>Mode séance · "+escHtml(currentDayLabel())+" · S"+state.week+"</div>"+
-        "<div class='guided-top-right'><div id='guidedLiveClock' class='guided-live-clock' aria-label='Heure actuelle'></div><div class='guided-count'>"+(i+1)+"/"+blocks.length+"</div></div>"+
+        "<div class='guided-top-right'>"+wakeStatus+"<div id='guidedLiveClock' class='guided-live-clock' aria-label='Heure actuelle'></div><div class='guided-count'>"+(i+1)+"/"+blocks.length+"</div></div>"+
         "</div>";
   html+="<div class='guided-progress'><div style='width:"+pct+"%'></div></div>";
   html+="<div class='guided-card kind-"+escHtml(st.kind)+"'>";
@@ -556,6 +557,7 @@ function renderGuidedSession(){
   el.innerHTML=html;
   el.classList.remove("hidden");
   updateGlobalClock();
+  if(typeof renderWakeLockStatus === "function") renderWakeLockStatus();
   $("guidedCloseBtn").onclick=closeGuidedSession;
   $("guidedPrevBtn").onclick=guidedPrev;
   $("guidedNextBtn").onclick=function(){ if(isLast)finishGuidedSession(); else guidedNext(); };

@@ -13,7 +13,7 @@ function defaultEquipmentLoadRules(){
     },
     dumbbell: {
       match:["haltère","haltères","haltere","halteres","dumbbell","db ","db-","lateral raise","rear delt fly","bulgarian","farmer carry","db rdl","db snatch","shoulder press"],
-      available:[2.5,5,10,12,15,17.5,20,22.5,25,30,35,40,45,50,55,60,65,70,85]
+      available:[2.5,5,8,10,12.5,15,17.5,20,22.5,25,30,35,40,45,50,55,60,65,70,75,85]
     },
     barbell: {
       match:["barbell","bench","squat","strict press","push press","deadlift","clean","row","hip thrust"],

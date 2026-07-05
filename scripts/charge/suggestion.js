@@ -267,9 +267,20 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     var floorRepsReached=!target||!floorReps||floorReps>=target;
     var floorBadStatuses=['recalibrating','watch','failed','major_fail','context_logged'];
     var floorStatusOk=!last.status||floorBadStatuses.indexOf(last.status)===-1;
-    if(floorRepsReached&&floorStatusOk&&suggested<lastLoad){
+    // Exception : RPE >= 9 deux séances consécutives sur la même charge → baisse autorisée.
+    var lastRpeFloor=coachHistoryRpeNumber(last);
+    var histForFloor=Array.isArray(hist)?hist:[];
+    var prevForFloor=histForFloor.length>=2?histForFloor[histForFloor.length-2]:null;
+    var prevRpeFloor=coachHistoryRpeNumber(prevForFloor);
+    var prevLoadFloor=coachHistoryLoadNumber(prevForFloor);
+    var consecutiveHardOnSameLoad=lastRpeFloor>=9&&prevRpeFloor>=9&&prevLoadFloor>=lastLoad;
+    if(floorRepsReached&&floorStatusOk&&suggested<lastLoad&&!consecutiveHardOnSameLoad){
       suggested=lastLoad;mode="nearest";severity=severity==="ok"?"watch":severity;
-      reason="Plancher historique : dernier "+lastLoad+" lb x "+(floorReps||target)+" reellement reussi (reps atteintes, pas un echec). La suggestion ne redescend pas sous cette reference.";
+      if(lastRpeFloor>=9){
+        reason="Brain — Plancher de validation : "+lastLoad+" lb x "+(floorReps||target)+" valide, mais confort faible (RPE "+lastRpeFloor+"). Maintien pour consolidation; aucune hausse automatique.";
+      }else{
+        reason="Brain — Plancher maitrise : "+lastLoad+" lb x "+(floorReps||target)+" valide avec confort acceptable. Brain evite de redescendre sans signal durable.";
+      }
     }
   }
 
@@ -331,8 +342,18 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   }
   var text=(rounded===0||rounded)?rounded+" lb":originalText;
   if(severity==="warning"||severity==="critical")text += " ⚠";
-  storeLoadDecisionHint(label,text,reason,severity,hist,moveContext);
-  return{label:label,loadText:text,loadNum:rounded,severity:severity,reason:reason,last:last,cap:cap,historySignal:historySignal};
+  var decision={label:label,loadText:text,loadNum:rounded,severity:severity,reason:reason,last:last,cap:cap,historySignal:historySignal};
+  if(typeof coachBrainApplyStatsGate==='function' && lastHasValidLoad && rounded>lastLoad && severity==='ok' && !contextLimited && !isDeload){
+    decision=coachBrainApplyStatsGate(decision,label,hist,moveContext,target,lastLoad);
+  }
+  storeLoadDecisionHint(label,decision.loadText,decision.reason,decision.severity,hist,moveContext);
+  try{
+    if(decision.brainStats && window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
+      var bk=coachNormalizeMoveText(label);
+      if(window.__coachLoadHints[bk])window.__coachLoadHints[bk].brainStats=decision.brainStats;
+    }
+  }catch(e){}
+  return decision;
 }
 
 function plannedMapFromSessionExercises(){
@@ -464,10 +485,10 @@ function athleteSuggestedLoad(nameOrKey, currentLoad, targetReps, context){
 window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context){
   var base = guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context);
 
-  // ── Moteur Brain V1.13 ────────────────────────────────────────────────────
-  // Couche 1 : Règles RPE
-  // Couche 2 : Moyenne mobile pondérée (≥2 séances)
-  // Couche 3 : Vélocité de progression (≥3 séances)
+  // ── Moteur Brain V1.16 ────────────────────────────────────────────────────
+  // Couche 1 : Règles RPE (delta de base — baisse contrôlée autorisée si RPE≥9×2)
+  // Couche 2 : Moyenne mobile — signal de confiance/prudence (base = lastLoad)
+  // Couche 3 : Tendance récente de progression (≥3 séances — pas de la vélocité VBT)
   // Couche 4 : Signal de cohérence (recalibrage si dépassement systématique)
   // Deload   : -20% principal / -25% accessoire / -30% technique
   // Contexte technique/wod/light = ignoré
@@ -581,33 +602,41 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       }
     }
 
-    // ── Couche 2 : Moyenne mobile pondérée (≥2 séances) ──────────────────────
+    // ── Couche 2 : Moyenne mobile — signal de confiance uniquement ───────────
+    // La base reste la dernière charge réelle (lastLoad).
+    // La moyenne sert uniquement à moduler l'agressivité du delta :
+    // si la moyenne est très en retard sur lastLoad → progression rapide → delta réduit.
     var baseLoad = lastLoad;
     if(hist.length >= 2){
       var w1 = 0.50, w2 = 0.30, w3 = 0.20;
-      if(hist.length === 2){
-        w1 = 0.60; w2 = 0.40; w3 = 0;
-      }
+      if(hist.length === 2){ w1 = 0.60; w2 = 0.40; w3 = 0; }
       var l1 = lastLoad;
       var l2 = rowLoad(prev) || l1;
       var l3 = prev2 ? (rowLoad(prev2) || l2) : l2;
-      baseLoad = (l1*w1) + (l2*w2) + (l3*w3);
-      if(hist.length >= 2){
-        reason += ' [Moy. ' + Math.round(baseLoad) + ' lb]';
+      var movingAvg = (l1*w1) + (l2*w2) + (l3*w3);
+      // Si la moyenne est plus de 10% sous lastLoad → progression rapide → prudence sur le delta
+      var avgGap = lastLoad - movingAvg;
+      var rapidProgressionPenalty = 0;
+      if(avgGap > lastLoad * 0.10 && delta > 0){
+        rapidProgressionPenalty = Math.round((delta * 0.30) / step) * step;
+        delta = Math.max(0, delta - rapidProgressionPenalty);
+        reason += ' [Tendance rapide : +' + Math.round(avgGap) + ' lb sur moy., delta réduit]';
       }
     }
 
-    // ── Couche 3 : Vélocité de progression (≥3 séances) ──────────────────────
+    // ── Couche 3 : Tendance récente de progression (≥3 séances) ─────────────
+    // NOTE : ce n'est PAS de la vélocité VBT (vitesse de barre en m/s).
+    // C'est la vitesse de progression de la charge dans le temps.
     var velocityDelta = 0;
     if(hist.length >= 3){
       var v1 = rowLoad(last);
       var v2 = rowLoad(prev);
       var v3 = rowLoad(prev2);
-      // Vélocité = tendance linéaire sur 3 points
-      var rawVelocity = ((v1 - v3) / 2);
+      // Tendance = pente moyenne sur 3 points
+      var rawTrend = ((v1 - v3) / 2);
       // Plafonner à 1× maxJump
-      velocityDelta = Math.max(-maxJump, Math.min(maxJump, rawVelocity));
-      // Pondérer la vélocité à 30% — ne domine pas les règles RPE
+      velocityDelta = Math.max(-maxJump, Math.min(maxJump, rawTrend));
+      // Pondérer à 30% — ne domine pas les règles RPE
       velocityDelta = velocityDelta * 0.30;
     }
 
@@ -632,7 +661,16 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
 
     // ── Calcul final ──────────────────────────────────────────────────────────
     var rawLoad = baseLoad + delta + velocityDelta + consistencyBoost;
-    rawLoad = Math.max(rawLoad, lastLoad); // jamais en dessous de la dernière réelle
+    // Plancher conditionnel :
+    // - Si delta > 0 (hausse) : jamais sous la dernière charge réelle (sécurité normale)
+    // - Si delta < 0 (baisse justifiée : RPE≥9×2, RPE≥9.5, échec) : la baisse est autorisée
+    //   mais plancher à (lastLoad - 2×maxJump) pour éviter un effondrement brutal
+    if(delta >= 0){
+      rawLoad = Math.max(rawLoad, lastLoad);
+    } else {
+      var minFloor = lastLoad - (maxJump * 2);
+      rawLoad = Math.max(rawLoad, minFloor);
+    }
 
     // Arrondir aux poids disponibles
     var roundedLoad = (typeof roundLoadForExercise==='function')
@@ -667,11 +705,19 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     // Plafond : jamais plus de 2× maxJump au-dessus de la dernière charge réelle
     newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
 
-    if(newLoad === baseNum && !newReps) return base.loadText;
+    var safeDecision={label:label,loadNum:newLoad,loadText:String(newLoad)+' lb'+repsSuggestion,severity:(delta<0?'watch':'ok'),reason:reason};
+    if(typeof coachBrainApplyStatsGate==='function' && newLoad>lastLoad && (safeDecision.severity==='ok') && !isDeload){
+      safeDecision=coachBrainApplyStatsGate(safeDecision,label,histAll,ctx,targetReps,lastLoad);
+      newLoad=safeDecision.loadNum;
+      reason=safeDecision.reason;
+      repsSuggestion='';
+    }
 
-    var hintLoad = String(newLoad) + ' lb' + repsSuggestion;
+    if(newLoad === baseNum && !newReps && !(safeDecision&&safeDecision.brainStats)) return base.loadText;
+
+    var hintLoad = safeDecision.loadText || (String(newLoad) + ' lb' + repsSuggestion);
     if(typeof storeLoadDecisionHint==='function'){
-      storeLoadDecisionHint(label, hintLoad, reason, delta < 0 ? 'watch' : 'ok', histAll, ctx);
+      storeLoadDecisionHint(label, hintLoad, reason, safeDecision.severity || (delta < 0 ? 'watch' : 'ok'), histAll, ctx);
     }
     try{
       if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
@@ -680,6 +726,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
           window.__coachLoadHints[normKey].load   = hintLoad;
           window.__coachLoadHints[normKey].reason = reason;
           window.__coachLoadHints[normKey].source = 'brain';
+          if(safeDecision.brainStats)window.__coachLoadHints[normKey].brainStats=safeDecision.brainStats;
         }
       }
     }catch(e){}

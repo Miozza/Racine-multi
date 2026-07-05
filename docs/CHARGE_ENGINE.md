@@ -12,6 +12,7 @@ La suggestion de charge suit cette logique générale :
 ## Règles de prudence
 
 - Après un RPE réel `>= 9`, aucune hausse automatique.
+- RPE `>= 9` deux séances consécutives sur la même charge → baisse contrôlée autorisée (V1.16). Le plancher historique ne bloque pas cette baisse. Plancher sécuritaire : `lastLoad - 2×maxJump`.
 - Pour les isolations à RPE `>= 8.5`, maintenir ou réduire légèrement.
 - Les mouvements techniques ne doivent pas progresser comme les mouvements principaux.
 - Le deload doit réduire/maintenir la charge, pas seulement le volume.

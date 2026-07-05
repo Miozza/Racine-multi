@@ -284,7 +284,9 @@ function storeLoadDecisionHint(name,loadText,reason,severity,history,context){
      reasonLow.indexOf('rpe') >= 0 || reasonLow.indexOf('deload') >= 0 ||
      reasonLow.indexOf('prudence') >= 0 || reasonLow.indexOf('cap') >= 0 ||
      reasonLow.indexOf('garde') >= 0 || reasonLow.indexOf('bloque') >= 0 ||
-     reasonLow.indexOf('maintien') >= 0 || reasonLow.indexOf('surveillance') >= 0){
+     reasonLow.indexOf('maintien') >= 0 || reasonLow.indexOf('surveillance') >= 0 || reasonLow.indexOf('brain') >= 0 ||
+     reasonLow.indexOf('validation') >= 0 || reasonLow.indexOf('hausse') >= 0 ||
+     reasonLow.indexOf('option ambitieuse') >= 0){
     source = 'brain';
   }
   if(reasonLow.indexOf('repere') >= 0 || reasonLow.indexOf('equipement') >= 0 ||

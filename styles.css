@@ -93,33 +93,6 @@ body::before {
   background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), var(--blue), transparent);
 }
 
-.topnav-brand {
-  font-family: var(--font-hud);
-  font-size: 11px;
-  font-weight: 900;
-  color: var(--cyan);
-  letter-spacing: .12em;
-  white-space: nowrap;
-  flex-shrink: 0;
-  line-height: 1.2;
-}
-.topnav-mark {
-  display: block;
-  font-family: var(--font-hud);
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--cyan);
-  letter-spacing: .02em;
-  line-height: 1;
-  text-shadow: 0 0 8px rgba(0,212,255,.4), 0 0 18px rgba(0,212,255,.18);
-}
-.topnav-brand span {
-  display: block;
-  color: var(--muted);
-  font-size: 8px;
-  letter-spacing: .08em;
-  font-weight: 400;
-}
 
 .topnav-tabs {
   display: flex;
@@ -1802,10 +1775,6 @@ label {
     gap: 6px;
   }
 
-  .topnav-brand {
-    min-width: 42px;
-  }
-
   #phoneView {
     width: 100%;
     padding: 0;
@@ -3129,14 +3098,6 @@ label {
   font-size: 13px;
   line-height: 1.55;
 }
-.topnav-v {
-  display: block;
-  color: var(--gold);
-  font-size: 8px;
-  letter-spacing: .08em;
-  font-weight: 500;
-  margin-top: 1px;
-}
 .pr-save-panel {
   margin-top: 14px;
   background: var(--panel2);
@@ -3781,8 +3742,6 @@ body.stephanie-mode .app { display:none !important; }
   color:var(--cyan);
   text-shadow:0 0 18px rgba(0,212,255,.30);
 }
-#trainingView .view-sub{font-size:13px;color:var(--muted)}
-.wodplus-legacy-btn{font-size:11px;padding:8px 10px;opacity:.78}
 #trainingView .week-day-nav{
   border:1px solid rgba(0,212,255,.14);
   background:linear-gradient(180deg, rgba(8,13,26,.96), rgba(4,6,15,.90));
@@ -3918,7 +3877,6 @@ body.stephanie-mode .app { display:none !important; }
 @media(max-width:600px){
   #trainingView.view-active{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding-left:6px;padding-right:6px}
   #trainingView .view-header{padding:2px 2px 0}
-  .wodplus-legacy-btn{font-size:10px;padding:7px 8px}
   .wodplus-hero{border-radius:18px;padding:14px;margin-top:10px}
   .wodplus-hero-top{display:block}
   .wodplus-hero h1{font-size:39px}
@@ -3975,72 +3933,29 @@ body:has(#resultsView.view-active) .app{
   width:100%;
 }
 
-/* V50.42 — outils WOD+ en haut à droite : TMS + écran actif */
+/* V2 — header WOD+ : nom du profil centré */
 .wodplus-main-header{
   display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-}
-.wodplus-header-tools{
-  display:flex;
   align-items:center;
-  justify-content:flex-end;
-  gap:10px;
-  flex-wrap:wrap;
+  justify-content:center;
+  padding:4px 0 3px;
 }
-.wodplus-tool-btn{
-  min-height:46px;
-  padding:10px 18px;
-  border-radius:8px;
+.wodplus-profile-name{
   font-family:var(--font-hud);
-  font-size:16px;
+  font-size:28px;
   font-weight:900;
+  color:var(--cyan);
   letter-spacing:.08em;
-  color:var(--cyan) !important;
-  border:2px solid rgba(30,144,255,.95) !important;
-  background:linear-gradient(180deg,rgba(0,0,0,.88),rgba(7,15,32,.96)) !important;
-  box-shadow:0 0 0 5px rgba(30,144,255,.18), 0 6px 0 rgba(255,255,255,.18), 0 0 18px rgba(0,212,255,.18);
-  text-shadow:0 0 10px rgba(0,212,255,.45);
+  text-align:center;
+  text-shadow:0 0 12px rgba(0,212,255,.35);
+  margin:0;
 }
-.wodplus-tool-btn.active{
-  color:#03111f !important;
-  background:linear-gradient(180deg,#44e7ff,#1e90ff) !important;
-  border-color:#44e7ff !important;
   box-shadow:0 0 0 5px rgba(0,212,255,.25), 0 0 22px rgba(0,212,255,.35);
   text-shadow:none;
 }
-@media(max-width:600px){
-  .wodplus-main-header{align-items:flex-start;gap:8px;}
-  .wodplus-header-tools{gap:7px;max-width:68%;}
-  .wodplus-tool-btn{min-height:40px;padding:8px 10px;font-size:12px;box-shadow:0 0 0 3px rgba(30,144,255,.15),0 0 14px rgba(0,212,255,.12);}
-  .wodplus-legacy-btn{min-height:40px;}
-}
 
 
-/* V50.44 — WOD+ compact tools / no nav arrows / load warning icon */
-.wodplus-main-header{align-items:flex-start;}
-.wodplus-header-tools{display:flex;align-items:flex-start;justify-content:flex-end;gap:6px;flex-wrap:wrap;max-width:58%;}
-.wodplus-tool-btn{
-  min-height:30px;
-  min-width:0;
-  padding:5px 9px;
-  border-radius:10px;
-  font-size:10px;
-  line-height:1;
-  letter-spacing:.07em;
-  box-shadow:0 0 0 1px rgba(0,212,255,.18),0 0 8px rgba(0,212,255,.10);
-  opacity:.82;
-}
-.wodplus-tool-btn.active{opacity:1;box-shadow:0 0 0 1px rgba(0,255,136,.35),0 0 10px rgba(0,255,136,.14);}
-.wodplus-legacy-btn{
-  min-height:30px;
-  padding:5px 9px;
-  border-radius:10px;
-  font-size:10px;
-  line-height:1;
-  opacity:.62;
-}
+/* V50.44 — no nav arrows / load warning icon */
 #trainingView #weekPrev,
 #trainingView #weekNext,
 #trainingView #dayPrev,
@@ -4055,9 +3970,6 @@ body:has(#resultsView.view-active) .app{
 }
 .wodplus-loadbox .load-info-btn{margin-left:8px;vertical-align:middle;}
 @media (max-width:700px){
-  .wodplus-main-header{gap:6px;}
-  .wodplus-header-tools{max-width:54%;gap:5px;}
-  .wodplus-tool-btn,.wodplus-legacy-btn{min-height:28px;padding:5px 8px;font-size:9px;border-radius:9px;}
   #trainingView .pill-row{gap:10px;}
 }
 
@@ -4274,9 +4186,6 @@ body:has(#resultsView.view-active) .app{
 }
 .topnav .tab-pc-discreet.active{
   opacity:1;
-}
-#trainingView .wodplus-legacy-btn{
-  display:none!important;
 }
 @media (max-width:700px){
   .topnav .tab-pc-discreet{
@@ -5004,12 +4913,7 @@ body.guided-browser-zoom .guided-actions{
 .pcx-week-load{display:inline-flex;align-items:center;gap:6px;color:var(--cyan);font-weight:900;}
 .pcx-week-block .load-info-btn{width:24px;height:24px;min-width:24px;font-size:14px;line-height:1;margin-left:3px;vertical-align:middle;}
 
-/* V51.04 — Roadmap macro + statut sync GitHub */
-.sync-dot{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text2);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;font-family:var(--font-hud);letter-spacing:.04em;cursor:pointer;white-space:nowrap;}
-.sync-dot.ok{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12);color:#22c55e;}
-.sync-dot.err{border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.12);color:#ef4444;}
-.sync-dot.missing{border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.10);color:#f59e0b;}
-.sync-dot.pending{border-color:rgba(0,212,255,.35);background:rgba(0,212,255,.10);color:var(--cyan);}
+/* V51.04 — Roadmap macro */
 .roadmap-card{margin:14px 0;padding:14px;border:1px solid rgba(0,212,255,.22);background:rgba(0,212,255,.06);border-radius:14px;}
 .roadmap-status{display:inline-flex;margin:10px 0;padding:7px 10px;border-radius:999px;font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;}
 .roadmap-status.ok{color:#22c55e;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);}
@@ -5057,7 +4961,7 @@ body.guided-browser-zoom .guided-actions{
 .pcx-rd-comp-pin{font-size:22px;line-height:16px;margin-top:-3px;}
 .pcx-rd-next-name{margin:4px 0;color:var(--white);}
 .pcx-rd-next-branch{margin-top:12px;border:1px solid rgba(245,158,11,.34);background:rgba(245,158,11,.10);color:#ffd166;border-radius:12px;padding:10px;font-weight:900;}
-@media (max-width:700px){.sync-dot{padding:6px 8px;font-size:10px}.roadmap-row,.pcx-roadmap-row{grid-template-columns:1fr}.pcx-roadmap-status{display:block}.pcx-roadmap-status span{display:block;margin-top:6px}.pcx-rd-dash{grid-template-columns:1fr}.pcx-rd-timeline{overflow-x:auto;padding-bottom:8px}.pcx-rd-phase{min-width:140px}.pcx-rd-counters{grid-template-columns:1fr}}
+@media (max-width:700px){.roadmap-row,.pcx-roadmap-row{grid-template-columns:1fr}.pcx-roadmap-status{display:block}.pcx-roadmap-status span{display:block;margin-top:6px}.pcx-rd-dash{grid-template-columns:1fr}.pcx-rd-timeline{overflow-x:auto;padding-bottom:8px}.pcx-rd-phase{min-width:140px}.pcx-rd-counters{grid-template-columns:1fr}}
 
 
 /* V51.08 — Séance guidée: Reps/RPE compacts sur une ligne avec +/- */
@@ -5166,40 +5070,6 @@ body.guided-browser-zoom .guided-actions{
 :root{
   --guided-action-h: 58px;
 }
-
-.sync-dot{
-  width: 18px !important;
-  min-width: 18px !important;
-  height: 18px !important;
-  padding: 0 !important;
-  border-radius: 999px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 10px !important;
-  line-height: 1 !important;
-  letter-spacing: 0 !important;
-  margin-left: 2px !important;
-  margin-right: 0 !important;
-  overflow: hidden !important;
-  color: transparent !important;
-  position: relative !important;
-  opacity: .86;
-}
-.sync-dot::before{
-  content: '◐';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: currentColor;
-}
-.sync-dot.ok::before{ content: '●'; color: #22c55e; }
-.sync-dot.err::before{ content: '●'; color: #ef4444; }
-.sync-dot.missing::before{ content: '○'; color: #f59e0b; }
-.sync-dot.pending::before{ content: '◐'; color: var(--cyan); }
 
 body.guided-session-active{
   height: var(--guided-vh, 100dvh);
@@ -5894,13 +5764,6 @@ body.arnold-mode{
    Portail d'intégration + sélecteur de profil. Réutilise les variables et
    classes existantes (.panel, .btn-accent, .btn-ghost, .input-field...).
    ══════════════════════════════ */
-.profile-dot{
-  width:26px;height:26px;border-radius:50%;
-  display:inline-flex;align-items:center;justify-content:center;
-  font-family:var(--font-hud);font-size:11px;font-weight:900;
-  background:rgba(30,144,255,.18);color:var(--cyan);border:1px solid var(--blue);
-  cursor:pointer;
-}
 .racine-gate{
   position:fixed;inset:0;z-index:9999;
   background:rgba(2,4,10,.92);backdrop-filter:blur(6px);
@@ -5970,21 +5833,235 @@ body.arnold-mode{
 }
 
 /* ─── Mini bouton switch profil (topnav) ──────────────────────────────────── */
-.profile-switch-dot {
-  background: none;
-  border: none;
-  color: var(--text2);
-  font-size: 20px;
-  line-height: 1;
-  padding: 0 6px 0 2px;
-  cursor: pointer;
-  opacity: 0.25;
-  transition: opacity .15s;
-  font-family: var(--font-hud);
+.topnav .tab-tms-global:active,
+.topnav .tab-tms-global:hover{
+  border-color:rgba(0,212,255,.75)!important;
+  background:rgba(0,212,255,.16)!important;
 }
-.profile-switch-dot:hover { opacity: 0.7; }
+@media(max-width:700px){
+  .topnav .tab-tms-global{
+    font-size:10px;
+    padding:6px 8px;
+    min-width:auto;
+  }
+}
 
+
+
+/* V1.15 — restauration styles Progression PC depuis V1.9 */
 /* ─── Admin tab — toggle permissions ─────────────────────────────────────── */
 .pcx-perm-toggle { transition: opacity .15s, transform .1s; }
 .pcx-perm-toggle:hover { opacity: 0.8 !important; transform: scale(1.3); }
 .pcx-perm-toggle.active { color: var(--cyan); }
+
+
+/* PC — progression mouvements principaux */
+.pcx-progress-summary{border-color:rgba(34,197,94,.26)}
+.pcx-progress-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.pcx-progress-stats span{font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);border:1px solid rgba(34,197,94,.24);background:rgba(34,197,94,.07);border-radius:999px;padding:9px 12px}
+.pcx-progress-grid{display:grid;grid-template-columns:repeat(2,minmax(320px,1fr));gap:18px;align-items:start}
+.pcx-progress-card{background:linear-gradient(180deg,rgba(16,24,42,.96),rgba(7,11,23,.96));border:1px solid rgba(140,170,210,.18);border-radius:22px;padding:18px;box-shadow:0 16px 44px rgba(0,0,0,.20)}
+.pcx-progress-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pcx-progress-card h3{margin:0;color:var(--white);font-size:clamp(22px,1.8vw,30px);line-height:1.1}
+.pcx-progress-card header p{margin:6px 0 0;color:var(--text2);font-size:14px;font-weight:800}
+.pcx-progress-trend{font-family:var(--font-hud);font-size:13px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;border-radius:999px;padding:8px 10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--text2)}
+.pcx-progress-trend.up{color:var(--green);border-color:rgba(34,197,94,.34);background:rgba(34,197,94,.10)}
+.pcx-progress-trend.down{color:#ff7a7a;border-color:rgba(239,68,68,.38);background:rgba(239,68,68,.10)}
+.pcx-progress-trend.flat{color:var(--gold);border-color:rgba(255,213,0,.30);background:rgba(255,213,0,.08)}
+.pcx-progress-chart{border:1px solid rgba(0,212,255,.14);background:rgba(0,0,0,.18);border-radius:16px;padding:12px;overflow:hidden}
+.pcx-progress-svg{display:block;width:100%;height:auto;min-height:220px}
+.pcx-progress-svg .pcx-progress-plot-bg{fill:rgba(255,255,255,.018);stroke:rgba(255,255,255,.045);stroke-width:1}
+.pcx-progress-svg line{stroke:rgba(148,163,184,.22);stroke-width:1}
+.pcx-progress-svg .pcx-progress-axis{stroke:rgba(226,232,240,.45);stroke-width:1.2}
+.pcx-progress-svg .pcx-progress-gridline line{stroke:rgba(148,163,184,.18);stroke-dasharray:4 5}
+.pcx-progress-svg polyline{fill:none;stroke:var(--cyan);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(0,212,255,.30))}
+.pcx-progress-svg circle{fill:var(--gold);stroke:#07111f;stroke-width:2}
+.pcx-progress-svg circle.last{fill:var(--green);stroke-width:3}
+.pcx-progress-svg circle.best{fill:var(--cyan);stroke-width:3}
+.pcx-progress-svg text{fill:var(--text2);font-family:var(--font-hud);font-size:11px;letter-spacing:.04em}
+.pcx-progress-svg .pcx-progress-gridline text{text-anchor:end;fill:rgba(226,232,240,.78);font-size:10px}
+.pcx-progress-svg .pcx-progress-axis-title{fill:var(--white);font-size:11px;text-anchor:start}
+.pcx-progress-svg .pcx-progress-date{fill:var(--text2);font-family:var(--font-main);font-weight:900;font-size:11px;text-anchor:middle}
+.pcx-progress-svg .pcx-progress-point-label{fill:var(--white);font-family:var(--font-hud);font-size:10px;text-anchor:middle;paint-order:stroke;stroke:#07111f;stroke-width:3px;stroke-linejoin:round}
+.pcx-progress-scale-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.pcx-progress-scale-row span{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:12px;padding:8px;color:var(--white);font-size:12px;font-weight:900;line-height:1.2}
+.pcx-progress-scale-row b{display:block;color:var(--text2);font-family:var(--font-hud);font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pcx-progress-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.pcx-progress-metrics span{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:14px;padding:10px;color:var(--white);font-size:14px;font-weight:900;line-height:1.25}
+.pcx-progress-metrics b{display:block;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:var(--font-hud)}
+.pcx-progress-details{margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.pcx-progress-details summary{cursor:pointer;color:var(--cyan);font-weight:900;font-size:15px}
+.pcx-progress-details table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;color:var(--text)}
+.pcx-progress-details th{color:var(--text2);font-family:var(--font-hud);font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:6px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pcx-progress-details td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.pcx-progress-details small{display:block;color:var(--text2);font-size:11px;margin-top:2px}
+.pcx-progress-empty{border-color:rgba(255,213,0,.28)}
+@media (max-width:1100px){.pcx-progress-grid{grid-template-columns:1fr}.pcx-progress-metrics{grid-template-columns:repeat(2,1fr)}.pcx-progress-scale-row{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.pcx-progress-metrics,.pcx-progress-scale-row{grid-template-columns:1fr}.pcx-progress-svg{min-width:520px}.pcx-progress-chart{overflow-x:auto}}
+
+/* PC — progression interactive + comparaison */
+.pcx-progress-summary-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.pcx-progress-controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-items:end}
+.pcx-progress-controls.compact{margin-top:10px;display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:12px}
+.pcx-progress-controls label{display:grid;gap:6px;color:var(--text2);font-size:11px;font-family:var(--font-hud);letter-spacing:.08em;text-transform:uppercase;font-weight:900}
+.pcx-progress-filter{border:1px solid rgba(0,212,255,.25);background:rgba(0,212,255,.06);color:var(--text);border-radius:999px;padding:10px 14px;font-family:var(--font-hud);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pcx-progress-filter.active{background:rgba(0,212,255,.18);border-color:rgba(0,212,255,.55);color:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,.18)}
+.pcx-progress-insight{display:grid;gap:3px;margin:-2px 0 12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.035)}
+.pcx-progress-insight strong{font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.pcx-progress-insight span{font-size:13px;color:var(--text2);line-height:1.35;font-weight:750}
+.pcx-progress-insight.good{border-color:rgba(34,197,94,.32);background:rgba(34,197,94,.08)}
+.pcx-progress-insight.good strong{color:var(--green)}
+.pcx-progress-insight.warn{border-color:rgba(255,213,0,.35);background:rgba(255,213,0,.08)}
+.pcx-progress-insight.warn strong{color:var(--gold)}
+.pcx-progress-insight.bad{border-color:rgba(239,68,68,.38);background:rgba(239,68,68,.10)}
+.pcx-progress-insight.bad strong{color:#ff7a7a}
+.pcx-progress-insight.flat strong,.pcx-progress-insight.watch strong{color:var(--cyan)}
+.pcx-progress-svg circle{cursor:pointer;transition:r .12s,filter .12s}
+.pcx-progress-svg circle:hover{filter:drop-shadow(0 0 8px rgba(255,213,0,.55))}
+.pcx-progress-svg circle.selected{fill:var(--white);stroke:var(--gold);stroke-width:4;filter:drop-shadow(0 0 10px rgba(255,213,0,.7))}
+.pcx-progress-selected{margin-top:12px;border:1px solid rgba(255,213,0,.28);background:rgba(255,213,0,.07);border-radius:16px;padding:12px}
+.pcx-progress-selected h4{margin:0 0 10px;color:var(--gold);font-family:var(--font-hud);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.pcx-progress-selected-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pcx-progress-selected-grid span{border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.16);border-radius:12px;padding:8px;color:var(--white);font-size:12px;font-weight:850;line-height:1.25;min-width:0;overflow-wrap:anywhere}
+.pcx-progress-selected-grid b{display:block;color:var(--text2);font-family:var(--font-hud);font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pcx-progress-selected p{margin:10px 0 0;color:var(--text2);font-size:13px;font-weight:750}
+.pcx-progress-compare{border-color:rgba(0,212,255,.22)}
+.pcx-progress-compare-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pcx-progress-compare h3{margin-top:0;color:var(--white)}
+.pcx-progress-compare p{color:var(--text2);font-weight:750;line-height:1.45}
+.pcx-progress-legend{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.pcx-progress-legend span{border:1px solid rgba(255,255,255,.10);border-radius:999px;padding:8px 11px;font-family:var(--font-hud);font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+.pcx-progress-legend .a{color:var(--cyan);background:rgba(0,212,255,.07);border-color:rgba(0,212,255,.28)}
+.pcx-progress-legend .b{color:var(--gold);background:rgba(255,213,0,.07);border-color:rgba(255,213,0,.28)}
+.pcx-compare-svg polyline.compare-a{stroke:var(--cyan);stroke-width:4.5}
+.pcx-compare-svg polyline.compare-b{stroke:var(--gold);stroke-width:4.5;filter:drop-shadow(0 0 6px rgba(255,213,0,.26))}
+@media (max-width:900px){.pcx-progress-summary-head{display:grid}.pcx-progress-controls.compact{grid-template-columns:1fr}.pcx-progress-selected-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.pcx-progress-svg{min-width:640px}.pcx-progress-selected-grid{grid-template-columns:1fr}.pcx-progress-summary-head{gap:8px}}
+
+/* V1.11 — Wake Lock auto : plus de bouton visible, seulement un statut utile */
+.wake-lock-status{
+  color:var(--muted);
+}
+.guided-wake-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:112px;
+  padding:4px 7px;
+  border-radius:999px;
+  border:1px solid rgba(255,216,74,.42);
+  background:rgba(255,216,74,.10);
+  color:var(--gold);
+  font-family:var(--font-hud);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.045em;
+  line-height:1.05;
+  text-align:center;
+  white-space:normal;
+}
+.guided-wake-status.hidden{display:none!important;}
+@media(max-width:402px){
+  .guided-wake-status{max-width:86px;font-size:8px;padding:3px 5px;}
+}
+
+/* Racine V3.1 — Avis IA export */
+.ai-advice-box{border-color:rgba(147,197,253,.28);background:rgba(30,64,175,.10);}
+.ai-advice-note{font-size:14px;line-height:1.35;color:var(--muted);margin:6px 0 10px;}
+.ai-advice-btn{font-size:16px;min-height:44px;width:100%;}
+.ai-advice-card{border-color:rgba(147,197,253,.32);background:linear-gradient(180deg,rgba(30,64,175,.20),rgba(7,11,23,.84));}
+
+/* Racine V3.2 — Avis IA import mobile-first */
+.ai-advice-summary{border:1px solid rgba(147,197,253,.22);background:rgba(15,23,42,.56);border-radius:14px;padding:10px 12px;margin:8px 0 10px;font-size:15px;line-height:1.35;}
+.ai-advice-summary p{margin:6px 0;color:var(--text,#e5e7eb);}
+.ai-advice-summary small{color:var(--muted,#9ca3af);font-size:13px;}
+.ai-import-modal{max-width:min(94vw,640px);}
+.ai-import-textarea{width:100%;min-height:220px;border-radius:16px;border:1px solid rgba(148,163,184,.32);background:rgba(2,6,23,.92);color:#e5e7eb;padding:12px;font-size:16px;line-height:1.35;resize:vertical;box-sizing:border-box;}
+.ai-import-result{margin-top:10px;font-size:15px;line-height:1.35;}
+.ai-import-result .good{color:#bbf7d0;}
+.ai-import-result .warn{color:#fde68a;}
+.ai-import-result .bad{color:#fecaca;}
+.ai-advice-btn+.ai-advice-btn{margin-top:8px;}
+
+
+/* Racine V3.8 — Lisibilité renforcée du panneau historique de charge (!)
+   Objectif : lecture sans lunettes sur iPhone, sans débordement. */
+#loadInfoModal .tuto-modal-inner{
+  max-width:min(98vw,760px);
+  max-height:94vh;
+  padding:22px 16px calc(26px + var(--safe-bot));
+}
+#loadInfoModal .tuto-topline{
+  font-size:12px;
+}
+#loadInfoModal .tuto-title{
+  font-size:clamp(26px,6.6vw,36px);
+  line-height:1.08;
+}
+#loadInfoModal .tuto-goal,
+#loadInfoModal .tuto-section p,
+#loadInfoModal .tuto-section li,
+#loadInfoModal .ai-advice-note,
+#loadInfoModal .ai-advice-summary,
+#loadInfoModal .ai-advice-summary p,
+#loadInfoModal .ai-advice-summary small,
+#loadInfoModal .tuto-cue,
+#loadInfoModal .brain-grid,
+#loadInfoModal .brain-grid small{
+  font-size:clamp(17px,4.6vw,22px);
+  line-height:1.45;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#loadInfoModal .tuto-section{
+  padding:14px 13px;
+  border-radius:12px;
+}
+#loadInfoModal .tuto-section-title{
+  font-size:clamp(13px,3.4vw,16px);
+  margin-bottom:10px;
+}
+#loadInfoModal .brain-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+#loadInfoModal .brain-grid strong,
+#loadInfoModal .tuto-section strong{
+  font-size:1.02em;
+}
+#loadInfoModal .ai-advice-summary{
+  padding:12px 13px;
+  border-radius:14px;
+}
+#loadInfoModal .ai-advice-btn,
+#loadInfoModal #closeLoadInfoBtn{
+  min-height:54px;
+  font-size:clamp(18px,4.8vw,22px);
+  line-height:1.2;
+  white-space:normal;
+}
+#loadInfoModal .ai-advice-btn+.ai-advice-btn{
+  margin-top:10px;
+}
+@media (min-width: 700px){
+  #loadInfoModal .brain-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+
+
+/* Racine V3.9 — Import Avis IA cycle en vue PC */
+.pc-ai-actions{display:grid;gap:8px;min-width:220px}
+.pc-ai-actions .pcx-action{width:100%}
+.pcx-action.secondary{background:rgba(15,23,42,.72);border-color:rgba(148,163,184,.42);color:var(--text,#e5e7eb)}
+.pc-ai-cycle-import-panel .ai-advice-summary{font-size:clamp(16px,4vw,20px);line-height:1.45}
+.pc-ai-cycle-summary ul{margin:10px 0 8px;padding-left:20px;display:grid;gap:8px}
+.pc-ai-cycle-summary li{line-height:1.38}
+@media(max-width:700px){.pc-ai-actions{min-width:0;width:100%}.pcx-export-action header{display:grid;gap:12px}.pc-ai-actions .pcx-action{min-height:52px;font-size:17px}}
+
+/* Racine V4.1 — Avis IA actif + nettoyage */
+.ai-advice-summary strong{display:block;margin-bottom:4px;}
+.ai-advice-clear-btn{margin-top:10px;width:100%;}
+.ai-advice-clear-btn.danger,.pcx-action.danger{border-color:rgba(248,113,113,.55);color:#fecaca;background:rgba(127,29,29,.22);}
+.ai-advice-cycle-summary{border-color:rgba(251,191,36,.34);background:rgba(113,63,18,.18);}
+.pc-ai-cycle-summary .pcx-action{margin-top:10px;margin-right:8px;}
+#loadInfoModal .ai-advice-clear-btn{min-height:50px;font-size:clamp(17px,4.4vw,21px);white-space:normal;}
