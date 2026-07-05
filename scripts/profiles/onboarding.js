@@ -30,24 +30,32 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     }
   };
 
-  // Les 5 tests guidés. Chaque test produit un e1RM (formule Epley, identique
-  // à celle déjà utilisée par le moteur de charge) pour son mouvement
-  // "primaire" (même famille d'implément que ce qui est testé). Les variantes
-  // à la même famille d'implément (barre -> barre) sont dérivées par la même
-  // formule Epley (absoluteKeys). Les variantes qui changent de famille
-  // d'implément (barre -> haltère unilatéral) ne peuvent PAS être dérivées
-  // par 1RM absolu : l'échelle de charge n'est pas la même (un Bulgarian
-  // Split Squat à haltère n'a rien à voir, en lb, avec un Front Squat à la
-  // barre). Pour celles-là on applique plutôt le RATIO du test à la valeur
-  // de référence (proportionalKeys).
+  // Les 5 tests guidés. Chaque test produit un 1RM de base (formule Epley,
+  // identique à celle du moteur de charge) sur son mouvement "primaire" — le
+  // mouvement réellement effectué. Toutes les autres valeurs de ce test en
+  // dérivent, ce qui garde des ratios physiologiques que le test soit fait ou
+  // non :
+  //   - absoluteKeys  : même mouvement/famille d'implément (barre -> barre),
+  //     simplement à un autre nombre de reps → 1RM ramené à ces reps (Epley).
+  //   - ratioKeys     : un AUTRE mouvement barre lié au primaire par un
+  //     coefficient de 1RM physiologique (ex. front squat ≈ 0.85 du back
+  //     squat, power clean ≈ 0.65). On applique le coefficient au 1RM de base
+  //     puis on convertit au nombre de reps de la clé. C'est ce qui évite les
+  //     absurdités du passé (back squat = front squat, power clean ≈ squat).
+  //   - proportionalKeys : variantes qui changent de famille d'implément
+  //     (barre -> haltère unilatéral). L'échelle absolue en lb n'est pas
+  //     comparable (un Bulgarian Split Squat haltère n'a rien à voir, en lb,
+  //     avec un squat barre), donc on applique le RATIO du test à la valeur de
+  //     référence plutôt que le 1RM absolu.
   api.TEST_PLAN = [
     {
       id: "squat",
-      title: "Squat",
-      subtitle: "Front Squat ou Back Squat — celui que tu maîtrises le mieux.",
-      guidance: "Échauffe-toi progressivement, puis fais UNE série de travail propre de 5 à 10 répétitions à RPE 7-8 (encore 2-3 reps en réserve). Pas de tentative maximale.",
-      primary: "frontSquat", primaryReps: 1,
-      absoluteKeys: { backSquat5RM: 5 },
+      title: "Back Squat",
+      subtitle: "Back Squat à la barre — le squat de référence.",
+      guidance: "Échauffe-toi progressivement, puis fais UNE série de travail propre de 5 à 10 répétitions à RPE 7-8 (encore 2-3 reps en réserve). Pas de tentative maximale. Le front squat et le power clean sont estimés à partir de ce test.",
+      primary: "backSquat5RM", primaryReps: 5,
+      absoluteKeys: {},
+      ratioKeys: { frontSquat: { coeff: 0.85, reps: 1 }, powerClean: { coeff: 0.65, reps: 1 } },
       proportionalKeys: ["bulgarianDb"]
     },
     {
@@ -57,6 +65,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       guidance: "Même logique : une série de travail propre de 5 à 10 répétitions à RPE 7-8.",
       primary: "bench", primaryReps: 1,
       absoluteKeys: {},
+      ratioKeys: {},
       proportionalKeys: ["inclineDb10RM"]
     },
     {
@@ -66,6 +75,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       guidance: "Charge modérée, 5 à 10 répétitions propres à RPE 7-8.",
       primary: "strictPress", primaryReps: 1,
       absoluteKeys: {},
+      ratioKeys: {},
       proportionalKeys: []
     },
     {
@@ -75,6 +85,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       guidance: "5 à 10 répétitions propres à RPE 7-8, dos neutre.",
       primary: "row8RM", primaryReps: 8,
       absoluteKeys: { chestRow8RM: 8, latPulldown10RM: 10 },
+      ratioKeys: {},
       proportionalKeys: []
     },
     {
@@ -84,6 +95,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       guidance: "5 à 10 répétitions propres à RPE 7-8.",
       primary: "hipThrust8RM", primaryReps: 8,
       absoluteKeys: {},
+      ratioKeys: {},
       proportionalKeys: ["dbRdl"]
     }
   ];
@@ -115,56 +127,54 @@ window.CoachOnboarding = window.CoachOnboarding || {};
 
     api.TEST_PLAN.forEach(function(test){
       var a = answers[test.id];
-      var e1rm = null;
+
+      // 1RM de base de ce test. Testé -> Epley sur la série saisie. Non testé
+      // -> 1RM de l'athlète de référence pour le mouvement primaire, ramené au
+      // niveau déclaré (fallbackRatio). Tout le reste du test dérive de ce
+      // base1RM, donc les ratios entre mouvements restent physiologiques que le
+      // test soit fait ou non.
+      var base1RM = null;
       if(a && Number(a.weight) > 0 && Number(a.reps) > 0){
-        e1rm = epley(Number(a.weight), Number(a.reps));
+        base1RM = epley(Number(a.weight), Number(a.reps));
+      } else {
+        var pd = ref[test.primary];
+        if(pd || pd === 0) base1RM = epley(pd, test.primaryReps) * lvl.fallbackRatio;
       }
+      if(!(base1RM > 0)) return;
 
-      // 1. Mouvement primaire + variantes de même famille d'implément (barre) :
-      //    dérivés directement par 1RM (Epley), comme le ferait le moteur.
-      var primaryDefault = ref[test.primary];
-      var primaryVal = null;
-      if(e1rm){
-        primaryVal = round5(fromOneRM(e1rm, test.primaryReps));
-      } else if(primaryDefault || primaryDefault === 0){
-        primaryVal = round5(primaryDefault * lvl.fallbackRatio);
-      }
-      if(primaryVal || primaryVal === 0) values[test.primary] = primaryVal;
+      // 1. Mouvement primaire (le mouvement réellement effectué).
+      values[test.primary] = round5(fromOneRM(base1RM, test.primaryReps));
 
+      // 2. Variantes de même mouvement/famille d'implément (barre), à un autre
+      //    nombre de reps : 1RM de base ramené à ces reps.
       Object.keys(test.absoluteKeys || {}).forEach(function(key){
-        var reps = test.absoluteKeys[key];
-        var d = ref[key];
-        var val = null;
-        if(e1rm){ val = round5(fromOneRM(e1rm, reps)); }
-        else if(d || d === 0){ val = round5(d * lvl.fallbackRatio); }
-        if(val || val === 0) values[key] = val;
+        values[key] = round5(fromOneRM(base1RM, test.absoluteKeys[key]));
       });
 
-      // Ratio représentatif de ce test, basé sur le mouvement primaire —
-      // utilisé pour le power clean et pour les variantes haltère ci-dessous.
+      // 3. Autres mouvements barre liés par un coefficient de 1RM physiologique
+      //    (front squat, power clean...). Coefficient appliqué au 1RM de base,
+      //    puis conversion au nombre de reps de la clé.
+      Object.keys(test.ratioKeys || {}).forEach(function(key){
+        var rk = test.ratioKeys[key];
+        values[key] = round5(fromOneRM(base1RM * rk.coeff, rk.reps || 1));
+      });
+
+      // Ratio représentatif de ce test (mouvement primaire vs référence) —
+      // utilisé pour mettre à l'échelle les variantes haltère ci-dessous.
+      var primaryDefault = ref[test.primary];
       if((values[test.primary] || values[test.primary] === 0) && primaryDefault){
         testRatio[test.id] = values[test.primary] / primaryDefault;
       }
 
-      // 2. Variantes qui changent de famille d'implément (barre -> haltère
-      //    unilatéral) : l'échelle absolue en lb n'est pas comparable, donc
-      //    on met à l'échelle proportionnellement au ratio du test plutôt
-      //    que de réutiliser le 1RM absolu du mouvement barre.
+      // 4. Variantes qui changent de famille d'implément (barre -> haltère
+      //    unilatéral) : échelle absolue non comparable, donc mise à l'échelle
+      //    proportionnelle au ratio du test plutôt que par 1RM absolu.
       var ratioForProportional = testRatio[test.id] || lvl.fallbackRatio;
       (test.proportionalKeys || []).forEach(function(key){
         var d = ref[key];
         if(d || d === 0) values[key] = round5(d * ratioForProportional);
       });
     });
-
-    // Power clean : mouvement hybride non testé directement (trop technique
-    // pour un mini-test sans supervision). Estimation prudente : moyenne du
-    // ratio squat et du ratio tirage.
-    if(ref.powerClean){
-      var rs = testRatio.squat || lvl.fallbackRatio;
-      var rr = testRatio.row || lvl.fallbackRatio;
-      values.powerClean = round5(ref.powerClean * ((rs + rr) / 2));
-    }
 
     var ratios = api.ratiosFromValues(values, experienceLevel);
     return { values: values, ratios: ratios };
@@ -236,7 +246,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
         bodyweightLb: meta.bodyweightLb || null,
         aggressiveness: meta.aggressiveness,
         scaleRatios: computed.ratios,
-        referenceVersion: "racine-reference-v1"
+        referenceVersion: "racine-reference-v2"
       });
     }
   };
