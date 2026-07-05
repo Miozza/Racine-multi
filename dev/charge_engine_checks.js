@@ -39,7 +39,7 @@ const ctx = {
   clearTimeout: function(){},
   document: { getElementById: function(){ return null; } },
   navigator: {},
-  localStorage: { getItem(){return null;}, setItem(){}, removeItem(){} },
+  localStorage: { _s:{}, getItem(k){return Object.prototype.hasOwnProperty.call(this._s,k)?this._s[k]:null;}, setItem(k,v){this._s[k]=String(v);}, removeItem(k){delete this._s[k];} },
   APP_VERSION: 'TEST',
   customCharges: {},
   DEFAULT_CHARGES: {
@@ -85,6 +85,9 @@ const loadOrder = [
   'scripts/charge/rpe.js',
   'scripts/charge/historique.js',
   'scripts/charge/scaling.js',
+  'scripts/charge/brain_stats.js',
+  'scripts/charge/brain_memory.js',
+  'scripts/charge/brain_journal.js',
   'scripts/charge/suggestion.js',
   'scripts/charge_diagnostic_ui.js'
 ];
@@ -280,7 +283,7 @@ try {
   };
   const frontSquatDecision = ctx.guardedSuggestedLoadDecision('Front Squat', '55 lb', 8, frontSquatCtx);
   assert(frontSquatDecision.loadNum === 60, 'Plancher historique : Front Squat ne redescend pas sous le dernier 60 lb x8 RPE9 reellement reussi.');
-  assert(/Plancher historique/.test(frontSquatDecision.reason), 'Plancher historique explique pourquoi la suggestion ne descend pas sous 60 lb.');
+  assert(/Plancher de validation|Plancher maitrise|Plancher historique/.test(frontSquatDecision.reason), 'Brain explique le plancher historique comme validation/maitrise avant de descendre sous 60 lb.');
 
   // 8d. Ecart de reps : un 1RM ou singulier recent ne se traduit pas directement
   // en charge pour un format a plusieurs reps (ex: 210 lb x1 ne suggere pas
@@ -378,6 +381,75 @@ try {
   ctx.state.profile = { aggressiveness: 0.01 };
   assert(ctx.coachAggressivenessFactor() === 0.4, 'L agressivite de progression est plancher a 0.4.');
   ctx.state.profile = null;
+
+
+
+  // 14. Brain V2 statistiques : confiance de prediction par mouvement + intention.
+  assert(typeof ctx.coachBrainBuildStats === 'function', 'Brain V2 expose coachBrainBuildStats.');
+  assert(ctx.coachBrainIntentKey(ctx.coachBuildMovementContext('Front Squat', {kind:'main', blockTitle:'Force principale', format:'5x3'}), 3) === 'strength', 'Brain V2 classe Front Squat 5x3 comme strength.');
+  assert(ctx.coachBrainSensitivity('Weighted Pull-up', pullCtx) === 'high', 'Brain V2 classe les mouvements poids de corps lestes comme haute sensibilite.');
+
+  const rpeFlatStats = ctx.coachBrainRpeReliability([
+    {load:100,reps:8,rpe:8},{load:105,reps:8,rpe:8},{load:110,reps:8,rpe:8},
+    {load:115,reps:8,rpe:8},{load:120,reps:8,rpe:8},{load:125,reps:8,rpe:8}
+  ]);
+  assert(['personalized','compressed','low'].indexOf(rpeFlatStats.label) !== -1, 'Brain V2 applique un profil RPE personnalise quand tout est note pareil.');
+
+  resetState();
+  ctx.state.day = 'jeudi';
+  const fsCtxV2 = ctx.coachBuildMovementContext('Front Squat', { kind:'main', blockTitle:'A. Front Squat', format:'5x3', day:'jeudi', week:5 });
+  ctx.state.athleteState.movements['Front Squat'] = {
+    ranges: { strength: { currentLoad:195, actualLoad:195, currentReps:3, actualReps:3, rpe:8, confidence:0.8, status:'success' } },
+    history: [
+      { date:'2026-06-18', load:185, reps:4, rpe:8, range:'strength', status:'success', context:fsCtxV2, planned:{load:185,reps:4,targetMin:4,context:fsCtxV2} },
+      { date:'2026-06-25', load:190, reps:4, rpe:8, range:'strength', status:'success', context:fsCtxV2, planned:{load:190,reps:4,targetMin:4,context:fsCtxV2} },
+      { date:'2026-07-02', load:195, reps:3, rpe:8, range:'strength', status:'success', context:fsCtxV2, planned:{load:195,reps:3,targetMin:3,context:fsCtxV2} }
+    ]
+  };
+  const fsV2Decision = ctx.guardedSuggestedLoadDecision('Front Squat', '200 lb', 3, fsCtxV2);
+  assert(fsV2Decision.brainStats && fsV2Decision.brainStats.intent === 'strength', 'Brain V2 attache les stats strength a la decision Front Squat.');
+  assert(fsV2Decision.loadNum === 195, 'Brain V2 peut garder 195 lb avant de proposer 200 quand les validations sont insuffisantes.');
+  assert(/Option ambitieuse : 200 lb/.test(fsV2Decision.reason), 'Brain V2 garde une option ambitieuse au lieu de bloquer mentalement la progression.');
+
+  resetState();
+  ctx.state.day = 'jeudi';
+  const htCtxV2 = ctx.coachBuildMovementContext('Hip Thrust', { kind:'accessory', blockTitle:'C. Chaîne postérieure', format:'3x8', day:'jeudi', week:5 });
+  ctx.state.athleteState.movements['Hip Thrust'] = {
+    ranges: { hypertrophy: { currentLoad:275, actualLoad:275, currentReps:8, actualReps:8, rpe:8, confidence:0.8, status:'success' } },
+    history: [
+      { date:'2026-06-11', load:225, reps:10, rpe:8, range:'hypertrophy', status:'success', context:htCtxV2, planned:{load:215,reps:10,targetMin:10,context:htCtxV2} },
+      { date:'2026-06-25', load:245, reps:8, rpe:8.5, range:'hypertrophy', status:'success', context:htCtxV2, planned:{load:225,reps:8,targetMin:8,context:htCtxV2} },
+      { date:'2026-07-02', load:275, reps:8, rpe:8, range:'hypertrophy', status:'success', context:htCtxV2, planned:{load:260,reps:8,targetMin:8,context:htCtxV2} }
+    ]
+  };
+  const htV2Decision = ctx.guardedSuggestedLoadDecision('Hip Thrust', '285 lb', 8, htCtxV2);
+  assert(htV2Decision.loadNum >= 275, 'Brain V2 ne bloque pas inutilement Hip Thrust quand le mouvement progresse encore bien.');
+
+
+
+  // 15. Brain V2.1 mémoire locale : apprend par mouvement + intention sans toucher aux data/*.json.
+  assert(ctx.CoachBrainMemory && typeof ctx.CoachBrainMemory.updateFromSessionResults === 'function', 'Brain V2.1 expose la mémoire locale.');
+  ctx.CoachBrainMemory.clear();
+  const memoryCtx = ctx.coachBuildMovementContext('Front Squat', { kind:'main', blockTitle:'Force principale', format:'5x3', day:'jeudi', week:5 });
+  ctx.CoachBrainMemory.updateFromSessionResults({
+    'Front Squat': { load:'195 lb', reps:3, rpe:8, planned:{ load:195, reps:3, targetMin:3, kind:'main', format:'5x3', context:memoryCtx } }
+  }, { date:'2026-07-02' });
+  ctx.CoachBrainMemory.updateFromSessionResults({
+    'Front Squat': { load:'195 lb', reps:5, rpe:8, planned:{ load:195, reps:3, targetMin:3, kind:'main', format:'5x3', context:memoryCtx } }
+  }, { date:'2026-07-09' });
+  const memProfile = ctx.CoachBrainMemory.getProfile('Front Squat', 'strength');
+  assert(memProfile && memProfile.sessions === 2, 'Brain mémoire cumule deux séances Front Squat strength.');
+  assert(memProfile.overPredictions >= 1, 'Brain mémoire détecte une prédiction trop prudente quand reps réelles dépassent la cible.');
+  const memStats = ctx.coachBrainBuildStats('Front Squat', [
+    {date:'2026-07-02', load:195, reps:3, rpe:8, context:memoryCtx, planned:{load:195,reps:3,context:memoryCtx}},
+    {date:'2026-07-09', load:195, reps:5, rpe:8, context:memoryCtx, planned:{load:195,reps:3,context:memoryCtx}}
+  ], memoryCtx, 3, 200, 195);
+  assert(memStats.memory && memStats.memory.sessions === 2, 'Brain stats fusionne le profil mémoire dans le diagnostic.');
+  assert(memStats.memory.precision >= 100, 'Brain mémoire expose une précision élevée après deux prédictions testées réussies.');
+  assert(ctx.CoachBrainJournal && typeof ctx.CoachBrainJournal.summaryFor === 'function', 'Brain Journal V3.0 est exposé.');
+  const journalSummary = ctx.CoachBrainJournal.summaryFor('Front Squat', 'strength');
+  assert(journalSummary && journalSummary.sessions >= 2, 'Brain Journal résume les apprentissages Front Squat strength.');
+  assert(journalSummary.latestSentence && journalSummary.latestSentence.indexOf('Dernier apprentissage') >= 0, 'Brain Journal produit une phrase d apprentissage exploitable.');
 
   // 13. Alertes : mouvements sans charge utile ne doivent pas crier donnees faibles.
   resetState();
