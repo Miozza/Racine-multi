@@ -221,14 +221,19 @@
   function renderKeyMovements(){
     var plan = api.TEST_PLAN;
     var rows = plan.map(function(test, i){
+      var inputs = test.repsOnly
+        ? '<div class="racine-test-row">'+
+            '<div style="flex:1"><label>Tractions (poids du corps)</label><input id="rk_r_'+test.id+'" type="number" class="input-field" placeholder="ex. 8"/></div>'+
+          '</div>'
+        : '<div class="racine-test-row">'+
+            '<div style="flex:1"><label>Charge (lb)</label><input id="rk_w_'+test.id+'" type="number" class="input-field" placeholder="ex. 135"/></div>'+
+            '<div style="flex:1"><label>Reps faites</label><input id="rk_r_'+test.id+'" type="number" class="input-field" placeholder="ex. 8"/></div>'+
+            '<div style="flex:1"><label>RPE ressenti</label><input id="rk_p_'+test.id+'" type="number" class="input-field" placeholder="7-8" step="0.5"/></div>'+
+          '</div>';
       return '<div style="margin-top:'+(i===0?"4":"18")+'px;padding-top:'+(i===0?"0":"14")+'px;'+(i===0?"":"border-top:1px solid var(--border);")+'">'+
         '<strong>'+esc(test.title)+'</strong>'+
         '<div class="field-hint">'+esc(test.subtitle)+' — '+esc(test.guidance)+'</div>'+
-        '<div class="racine-test-row">'+
-          '<div style="flex:1"><label>Charge (lb)</label><input id="rk_w_'+test.id+'" type="number" class="input-field" placeholder="ex. 135"/></div>'+
-          '<div style="flex:1"><label>Reps faites</label><input id="rk_r_'+test.id+'" type="number" class="input-field" placeholder="ex. 8"/></div>'+
-          '<div style="flex:1"><label>RPE ressenti</label><input id="rk_p_'+test.id+'" type="number" class="input-field" placeholder="7-8" step="0.5"/></div>'+
-        '</div>'+
+        inputs+
       '</div>';
     }).join("");
     var card = el(
@@ -245,6 +250,11 @@
     );
     card.querySelector("#rkNext").onclick = function(){
       plan.forEach(function(test){
+        if(test.repsOnly){
+          var rr = Number(card.querySelector("#rk_r_"+test.id).value)||0;
+          wiz.answers[test.id] = (rr>0) ? {reps:rr, repsOnly:true} : null;
+          return;
+        }
         var w = Number(card.querySelector("#rk_w_"+test.id).value)||0;
         var r = Number(card.querySelector("#rk_r_"+test.id).value)||0;
         var rpe = Number(card.querySelector("#rk_p_"+test.id).value)||0;

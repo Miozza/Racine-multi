@@ -84,19 +84,34 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       subtitle: "Barbell Row, Chest Supported Row ou équivalent.",
       guidance: "5 à 10 répétitions propres à RPE 7-8, dos neutre.",
       primary: "row8RM", primaryReps: 8,
-      absoluteKeys: { chestRow8RM: 8, latPulldown10RM: 10 },
+      absoluteKeys: { chestRow8RM: 8 },
       ratioKeys: {},
       proportionalKeys: []
     },
     {
+      // Test "reps seulement" : une traction lestée ne s'estime pas au 1RM à
+      // partir d'un autre mouvement (un poids ajouté n'a aucune commune mesure).
+      // On compte simplement les tractions au poids du corps ; le lestage se
+      // règle plus tard à l'entraînement (le moteur de charge prend le relais).
+      id: "pullups",
+      title: "Tractions strictes",
+      subtitle: "Au poids du corps, sans élan.",
+      guidance: "Combien de tractions strictes propres peux-tu enchaîner ? On part du poids du corps ; le lestage viendra plus tard à l'entraînement.",
+      repsOnly: true, storeRepsAs: "strictPullupReps"
+    },
+    {
+      // Chaîne postérieure testée au DB RDL (haltères) : le Hip Thrust en est
+      // dérivé PROPORTIONNELLEMENT et non au 1RM absolu — un hip thrust chargé
+      // à la barre (~315) et un DB RDL aux haltères (~70) ne sont pas à la même
+      // échelle de charge.
       id: "hinge",
       title: "Chaîne postérieure",
-      subtitle: "Hip Thrust ou DB RDL.",
-      guidance: "5 à 10 répétitions propres à RPE 7-8.",
-      primary: "hipThrust8RM", primaryReps: 8,
+      subtitle: "DB RDL aux haltères (soulevé de terre jambes semi-tendues).",
+      guidance: "5 à 10 répétitions propres à RPE 7-8, dos neutre. Le Hip Thrust est estimé à partir de ce test.",
+      primary: "dbRdl", primaryReps: 8,
       absoluteKeys: {},
       ratioKeys: {},
-      proportionalKeys: ["dbRdl"]
+      proportionalKeys: ["hipThrust8RM"]
     }
   ];
 
@@ -127,6 +142,16 @@ window.CoachOnboarding = window.CoachOnboarding || {};
 
     api.TEST_PLAN.forEach(function(test){
       var a = answers[test.id];
+
+      // Test "reps seulement" (ex. tractions au poids du corps) : aucune charge
+      // dérivée, on stocke seulement le nombre de répétitions. Le lestage se
+      // fera plus tard à l'entraînement.
+      if(test.repsOnly){
+        if(a && Number(a.reps) > 0 && test.storeRepsAs){
+          values[test.storeRepsAs] = Math.round(Number(a.reps));
+        }
+        return;
+      }
 
       // 1RM de base de ce test. Testé -> Epley sur la série saisie. Non testé
       // -> 1RM de l'athlète de référence pour le mouvement primaire, ramené au

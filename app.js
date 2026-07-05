@@ -2092,6 +2092,7 @@ function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();
 // rappelable, pour pouvoir redémarrer proprement après création/changement de profil.
 
 function coachFullBoot(){
+  if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
   load();
   coachSanitizeImplausibleLoads();
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
