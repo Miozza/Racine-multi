@@ -126,6 +126,27 @@
     return Array.isArray(p.programPermissions) && p.programPermissions.indexOf(programId) !== -1;
   };
 
+  // Réconcilie les permissions d'un profil "propriétaire" (Bertin) avec le
+  // catalogue courant : accorde tout programme privé ajouté au catalogue APRÈS
+  // la création du profil (la migration est un one-shot qui n'accorde qu'une
+  // fois). Idempotent. Le propriétaire est identifié par le marqueur
+  // macrocycleOverrideKey posé à la migration — jamais par le nom, car un
+  // client pourrait s'appeler Bertin. Ne touche aucun profil client.
+  api.reconcileOwnerPermissions = function(){
+    var ids = window.BERTIN_PRIVATE_PROGRAM_IDS;
+    if(!Array.isArray(ids) || !ids.length) return false;
+    var reg = readRegistry();
+    var changed = false;
+    reg.profiles.forEach(function(p){
+      if(p.macrocycleOverrideKey !== "BERTIN_MACROCYCLE_OVERRIDE") return;
+      var perms = Array.isArray(p.programPermissions) ? p.programPermissions.slice() : [];
+      ids.forEach(function(id){ if(perms.indexOf(id) === -1){ perms.push(id); changed = true; } });
+      p.programPermissions = perms;
+    });
+    if(changed) writeRegistry(reg);
+    return changed;
+  };
+
   api.remove = function(id){
     var reg = readRegistry();
     var idx = findIndex(reg, id);
