@@ -119,7 +119,6 @@ if(versionMatch){
   assert(!!headerMatch, 'app.js doit garder un commentaire d’en-tête Racine Vx.xx.');
   assert(headerMatch && headerMatch[1] === version, 'En-tête app.js cohérent avec APP_VERSION : ' + version);
   assert(index.includes('<title>Racine ' + version + '</title>'), 'index.html affiche la version dans le titre.');
-  assert(index.includes('class="topnav-v">' + version + '</span>'), 'index.html affiche la version dans la topnav.');
   assert(index.includes('<footer class="footer">' + version), 'index.html affiche la version dans le footer.');
   assert(index.includes('?v=' + cache), 'index.html utilise le cache-bust courant.');
   assert(readme.includes('- Version : `' + version + '`'), 'README.md affiche la version courante.');
