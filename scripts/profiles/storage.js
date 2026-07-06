@@ -147,6 +147,47 @@
     return changed;
   };
 
+  // Admin (coach) vs client. Centralisé : toute vérification admin passe par ici.
+  // Admin = flag isAdmin, sinon marqueur propriétaire posé à la migration, sinon
+  // fallback nom "Bertin" (compat pcIsAdmin historique).
+  api.isActiveAdmin = function(){
+    var p = api.getActive();
+    if(!p) return false;
+    return !!(p.isAdmin || p.macrocycleOverrideKey === "BERTIN_MACROCYCLE_OVERRIDE" || p.name === "Bertin");
+  };
+
+  // Active un programme comme cycle courant d'un profil (même non actif), sans
+  // basculer le profil actif et sans contaminer un autre profil. Écrit directement
+  // dans le state du profil cible (clé racineState::<id>). On change le cycle, on
+  // NE réinitialise PAS la personne : on préserve l'historique, les résultats et
+  // les charges personnalisées du profil.
+  api.setProfileActiveProgram = function(profileId, programId){
+    var p = api.get(profileId);
+    if(!p) return { ok:false, error:"Profil introuvable." };
+    var catalog = window.COACH_BERTIN_PROGRAM_INDEX || [];
+    var entry = null;
+    for(var i=0;i<catalog.length;i++){ if(catalog[i].id === programId){ entry = catalog[i]; break; } }
+    if(!entry) return { ok:false, error:"Programme inconnu dans le catalogue." };
+    // Programme privé : accorder la permission au profil cible (geste attendu de l'admin).
+    if(entry.visibility === "private" && !api.hasProgramPermission(profileId, programId)){
+      api.grantProgramPermission(profileId, programId);
+    }
+    var keys = api.storageKeysFor(profileId);
+    var st = {};
+    try{ st = JSON.parse(localStorage.getItem(keys.state) || "{}") || {}; }catch(e){ st = {}; }
+    st.cycle = st.cycle || {};
+    st.cycle.goal = programId;
+    st.week = 1;
+    st.day = (window.COACH_BERTIN_PROGRAMS && COACH_BERTIN_PROGRAMS[programId] && COACH_BERTIN_PROGRAMS[programId].days && COACH_BERTIN_PROGRAMS[programId].days[0]) || "lundi";
+    st.activeCycleStartDate = new Date().toISOString();
+    // Préservés tels quels (jamais réinitialisés) : st.history, st.athleteState,
+    // st.results et les charges du profil.
+    try{ localStorage.setItem(keys.state, JSON.stringify(st)); }catch(e){ return { ok:false, error:"Écriture du state impossible." }; }
+    // Si c'est le profil actif, resynchroniser l'UI.
+    if(profileId === api.getActiveId() && typeof window.coachFullBoot === "function"){ window.coachFullBoot(); }
+    return { ok:true };
+  };
+
   api.remove = function(id){
     var reg = readRegistry();
     var idx = findIndex(reg, id);

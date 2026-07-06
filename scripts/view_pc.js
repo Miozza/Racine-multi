@@ -269,8 +269,9 @@ function pcRenderSelectors(){
     '</div>';
 }
 function pcIsAdmin(){
-  // Admin = profil ayant le flag isAdmin, ou profil "Bertin" comme fallback initial.
+  // Délègue au helper centralisé. Fallback local si CoachProfiles absent.
   try{
+    if(window.CoachProfiles && CoachProfiles.isActiveAdmin) return CoachProfiles.isActiveAdmin();
     var ap = window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive();
     if(!ap) return false;
     return !!(ap.isAdmin || ap.name === "Bertin");

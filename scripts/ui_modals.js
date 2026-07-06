@@ -460,11 +460,17 @@ function renderLoadInfoModalBody(msg){
           if(txt) influence='<p class="ai-advice-note"><strong>Suivi</strong><br>'+escapeHtml(txt)+'</p>';
         }
       }catch(e){}
+      var aiAdmin=!!(window.CoachProfiles&&CoachProfiles.isActiveAdmin&&CoachProfiles.isActiveAdmin());
+      // Client (non-admin) : pas d'outils de gestion Avis IA. Un avis déjà importé
+      // reste visible en lecture seule ; sinon on n'affiche pas la boîte vide.
+      if(!aiAdmin && !summary && !influence) return '';
+      var aiButtons=aiAdmin
+        ? '<button type="button" id="copyAiAdviceMovementBtn" class="btn-accent ai-advice-btn">Copier prompt Avis IA</button>'+
+          '<button type="button" id="importAiAdviceMovementBtn" class="btn-secondary ai-advice-btn">Importer réponse IA</button>'
+        : '';
       return '<div class="tuto-section compact ai-advice-box"><div class="tuto-section-title">Avis IA</div>'+
         '<p class="ai-advice-note">Consultatif. Ne modifie jamais la charge automatiquement.</p>'+
-        summary+influence+
-        '<button type="button" id="copyAiAdviceMovementBtn" class="btn-accent ai-advice-btn">Copier prompt Avis IA</button>'+
-        '<button type="button" id="importAiAdviceMovementBtn" class="btn-secondary ai-advice-btn">Importer réponse IA</button>'+
+        summary+influence+aiButtons+
       '</div>';
     }
     function renderBrainExplain(h){
