@@ -513,8 +513,12 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     function rowReps(r){ return Number(r && (r.reps || r.actualReps)) || 0; }
     function isDeloadRow(r){ return !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
 
-    // Filtrer les séances deload de l'historique pour les calculs
-    var hist = histAll.filter(function(r){ return !isDeloadRow(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
+    // Filtrer l'historique : on exclut les séances deload ET les repères de
+    // calibrage (source "manual_recalibration" = 1RM/5RM semé à l'onboarding).
+    // Un repère de calibrage n'est pas une charge de travail : le laisser piloter
+    // la progression faisait suggérer ~1RM pour des sets de 8-12 reps.
+    function isCalibrationSeed(r){ return !!(r && r.planned && r.planned.source === 'manual_recalibration'); }
+    var hist = histAll.filter(function(r){ return !isDeloadRow(r) && !isCalibrationSeed(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
     if(!hist.length) return base.loadText;
 
     var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, rowLoad(hist[hist.length-1])) : 5;
