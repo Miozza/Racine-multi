@@ -6069,3 +6069,14 @@ body.arnold-mode{
 /* Vue client allégée : masquer les outils coach (topnav PC/TMS, diagnostics, Avis IA) */
 body.is-client .admin-only{display:none!important}
 body.is-client [data-ai-clear]{display:none!important}
+
+/* Panneau admin « Programmes clients » */
+.admin-prog-card{border:1px solid rgba(127,127,127,.35);border-radius:10px;padding:10px 12px;margin:8px 0}
+.admin-prog-card.is-active{border-color:#4caf50}
+.admin-prog-head{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.admin-prog-badge{font-size:11px;padding:2px 7px;border-radius:999px;background:rgba(127,127,127,.2)}
+.admin-prog-stat{font-size:11px;font-weight:700}
+.admin-prog-stat.actif{color:#4caf50}
+.admin-prog-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.admin-prog-btn{min-height:44px}
+.admin-prog-group-title{font-size:12px;text-transform:uppercase;opacity:.6;margin:14px 0 4px}

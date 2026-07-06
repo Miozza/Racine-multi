@@ -1980,6 +1980,7 @@ function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalis
 
 function renderSettings(){
   if(window.CoachOnboarding && CoachOnboarding.renderSettingsPanel)CoachOnboarding.renderSettingsPanel();
+  if(window.RacineAdminPrograms && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminPrograms.render();
   renderChargeSettings();
   if(typeof renderChargeDiagnosticPanel==="function")renderChargeDiagnosticPanel();
 }
