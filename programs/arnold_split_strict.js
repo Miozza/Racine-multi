@@ -28,7 +28,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Pull-Up","4×AMRAP propre","Poids du corps","90-150 sec","Option : Ring Row si les pull-ups ne sont pas propres. Arrête avant de perdre la forme."),
         ex("Barbell Row","4×8-12","165 lb","90-150 sec","Dos gainé, tire les coudes vers les hanches."),
         ex("DB Fly","3×10-15","35 lb","60-90 sec","Grand étirement, aucune douleur d’épaule."),
-        ex("Tirage élastique","4×10-12","Élastique moyen","60-90 sec","Option : Ring Row wide. Remplacement du lat pulldown. Mouvement contrôlé.")
+        ex("Weighted Pull-up","4×10-12","25 lb","60-90 sec","Prise large, cible le dos. Commence au poids du corps si besoin ; ajoute du poids (ceinture/haltère) quand 12 reps propres deviennent faciles.")
       ]},
       {time:"5–8 min",title:"Sortie",tag:"Mobilité",kind:"mobility",text:"Mobilité pecs/lats légère + respiration. Stopper si épaules irritées."}
     ];
@@ -40,7 +40,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Cable Lateral Raise","4×10-15","25 lb","60-90 sec","Monte jusqu’à l’épaule, contrôle la descente."),
         ex("Barbell Curl","4×8-12","75 lb","60-90 sec","Coudes fixes, pas de swing du dos."),
         ex("Dips","4×AMRAP propre","Poids du corps","90-150 sec","Si épaules sensibles, amplitude réduite."),
-        ex("Preacher Curl","3×10-12","60 lb","60-90 sec","Option : Curl incliné. Mouvement strict, étirement contrôlé."),
+        ex("Hammer Curls","3×10-12","40 lb","60-90 sec","Prise marteau (neutre), coudes fixes, contrôle la descente."),
         ex("Skull Crusher","3×8-12","70 lb","60-90 sec","Coudes stables, charge modérée.")
       ]},
       {time:"5 min",title:"Sortie",tag:"Mobilité",kind:"mobility",text:"Décompression épaules/coudes. Aucun set forcé."}
