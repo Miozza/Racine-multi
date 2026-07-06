@@ -6065,3 +6065,7 @@ body.arnold-mode{
 .ai-advice-cycle-summary{border-color:rgba(251,191,36,.34);background:rgba(113,63,18,.18);}
 .pc-ai-cycle-summary .pcx-action{margin-top:10px;margin-right:8px;}
 #loadInfoModal .ai-advice-clear-btn{min-height:50px;font-size:clamp(17px,4.4vw,21px);white-space:normal;}
+
+/* Vue client allégée : masquer les outils coach (topnav PC/TMS, diagnostics, Avis IA) */
+body.is-client .admin-only{display:none!important}
+body.is-client [data-ai-clear]{display:none!important}

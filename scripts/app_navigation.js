@@ -45,6 +45,8 @@ ensurePcViewHost();
 
 function switchView(v){
   v=normalizeViewName(v);
+  // Garde client : la vue PC (inspection coach) est réservée à l'admin.
+  if(v==="pc" && window.CoachProfiles && CoachProfiles.isActiveAdmin && !CoachProfiles.isActiveAdmin()) v="training";
   ensurePcViewHost();
   VIEWS.forEach(function(x){
     var main=$(viewMainId(x)),tab=$(viewTabId(x));

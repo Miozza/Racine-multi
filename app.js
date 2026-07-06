@@ -2091,6 +2091,14 @@ function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();
 // V1 multi-utilisateur : tout le boot principal est regroupé dans une fonction
 // rappelable, pour pouvoir redémarrer proprement après création/changement de profil.
 
+// Vue client allégée : masque les outils de coach pour les profils non-admin.
+// Recalculé à chaque boot (rappelé après changement de profil). Le gating visuel
+// passe par la classe body.is-client + CSS .admin-only ; les rendus dynamiques
+// (Réglages, modale) testent CoachProfiles.isActiveAdmin() directement.
+function applyAdminVisibility(){
+  var admin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
+  document.body.classList.toggle('is-client', !admin);
+}
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
   load();
@@ -2107,6 +2115,7 @@ function coachFullBoot(){
   CoachSession.setupSave();
   if(!window.__racineClockStarted){window.__racineClockStarted=true;startGlobalClock();}
   render();
+  applyAdminVisibility();
   switchView("training");
 }
 window.coachFullBoot = coachFullBoot;

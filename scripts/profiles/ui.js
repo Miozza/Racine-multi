@@ -501,6 +501,7 @@
   // Ouvre le tableau de bord sans toucher au profil actif (lecture seule tant
   // qu'on ne clique pas "Voir"). Indépendant de l'assistant d'intégration.
   api.openClientDashboard = function(){
+    if(window.CoachProfiles && CoachProfiles.isActiveAdmin && !CoachProfiles.isActiveAdmin()) return;
     var gate = ensureGateEl();
     gate.innerHTML = "";
     gate.appendChild(renderClientDashboard());
@@ -515,17 +516,10 @@
     var lvl = active ? (api.EXPERIENCE_LEVELS[active.experienceLevel]||{}).label : "";
     var agg = (active && Number(active.aggressiveness)) || 1;
     var others = profiles.filter(function(p){ return !active || p.id!==active.id; });
-    var catalog = window.COACH_BERTIN_PROGRAM_INDEX || [];
-    var granted = (active && Array.isArray(active.programPermissions)) ? active.programPermissions : [];
-    var privateAvail = catalog.filter(function(p){ return p.visibility === "private" && granted.indexOf(p.id) === -1; });
-    var privateHtml = privateAvail.length ?
-      ('<label style="margin-top:12px">Activer un programme privé pour ce profil</label>'+
-       '<div class="btn-row">'+
-         '<select id="privateProgSelect" class="input-field">'+
-           privateAvail.map(function(p){ return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'; }).join("")+
-         '</select>'+
-         '<button id="grantPrivateProgBtn" class="btn-ghost">Activer</button>'+
-       '</div>') : "";
+    // L'activation de programmes (privés ou publics) a déménagé dans le panneau
+    // admin « Programmes clients » (RacineAdminPrograms) : plus fiable et pour
+    // n'importe quel profil. On ne rend plus le sélecteur ici.
+    var isAdmin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
     host.innerHTML =
       '<p><strong>'+esc(active?active.name:"—")+'</strong>'+(lvl?(' · '+esc(lvl)):'')+(active&&active.bodyweightLb?(' · '+esc(active.bodyweightLb)+' lb'):'')+'</p>'+
       '<label>Agressivité de la progression</label>'+
@@ -538,14 +532,13 @@
         '<button id="switchProfileBtn" class="btn-ghost">Changer de profil'+(others.length?(' ('+others.length+')'):'')+'</button>'+
         '<button id="newProfileSettingsBtn" class="btn-ghost">Nouveau profil</button>'+
       '</div>'+
-      '<div class="btn-row">'+
+      (isAdmin?('<div class="btn-row">'+
         '<button id="clientDashboardBtn" class="btn-ghost">Tableau de bord clients'+(profiles.length>1?(' ('+profiles.length+')'):'')+'</button>'+
-      '</div>'+
+      '</div>'):'')+
       '<div class="btn-row">'+
         '<button id="exportProfileBtn" class="btn-ghost">Exporter ce profil (JSON)</button>'+
         '<label class="btn-ghost file-label">Importer un profil<input id="importProfileFile" type="file" accept="application/json"/></label>'+
       '</div>'+
-      privateHtml+
       '<div class="btn-row">'+
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
@@ -570,16 +563,6 @@
         if(s){s.textContent="✅ Agressivité mise à jour.";s.className="status-msg ok";}
       };
     }
-    var grantBtn = document.getElementById("grantPrivateProgBtn");
-    if(grantBtn) grantBtn.onclick = function(){
-      var sel = document.getElementById("privateProgSelect");
-      if(!sel || !sel.value) return;
-      var id = window.CoachProfiles && CoachProfiles.getActiveId();
-      if(id) CoachProfiles.grantProgramPermission(id, sel.value);
-      var s = document.getElementById("profileSettingsStatus");
-      if(s){ s.textContent = "✅ Programme activé pour ce profil. Il apparaît dans la sélection de programmes."; s.className = "status-msg ok"; }
-      api.renderSettingsPanel();
-    };
     var recal = document.getElementById("recalibrateBtn");
     if(recal) recal.onclick = function(){ api.openRecalibrate(); };
     var switchBtn = document.getElementById("switchProfileBtn");

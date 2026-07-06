@@ -34,8 +34,8 @@
     <button id="referencesTab"  class="tab">Réfs</button>
     <button id="cycleTab"       class="tab">Cycle</button>
     <button id="historyTab"     class="tab">Historique</button>
-    <button id="phoneTab"       class="tab tab-pc-discreet">PC</button>
-    <button type="button" id="tmsGlobalBtn" class="tab tab-tms-global" title="TMS" aria-label="Ouvrir TMS">TMS</button>
+    <button id="phoneTab"       class="tab tab-pc-discreet admin-only">PC</button>
+    <button type="button" id="tmsGlobalBtn" class="tab tab-tms-global admin-only" title="TMS" aria-label="Ouvrir TMS">TMS</button>
     <button id="settingsTab"    class="tab">⚙</button>
   </div>
 </nav>
@@ -168,6 +168,12 @@
     <div id="profileSettingsBody">Chargement…</div>
   </div>
 
+  <div class="panel admin-only" id="adminProgramsPanel">
+    <h2>Programmes clients</h2>
+    <p class="muted">Active un programme (public ou privé) pour n’importe quel profil, sans avoir à basculer dans son profil.</p>
+    <div id="adminProgramsBody">Chargement…</div>
+  </div>
+
   <div class="panel settings-priority-panel">
     <div class="system-tag" style="margin-bottom:12px">Réglages · priorité</div>
     <h2>Actions principales</h2>
@@ -177,7 +183,7 @@
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel admin-only">
     <h2>Diagnostic charges</h2>
     <p class="muted">Lecture seule. Analyse la séance affichée avec l’historique enregistré, ajoute des commentaires de cycle et repère les aberrations possibles.</p>
     <div class="btn-row">
@@ -193,8 +199,8 @@
     <h2>Diagnostic app</h2>
     <p class="muted">Journal local des erreurs runtime. Utile quand quelque chose plante sur iPhone : copie le rapport et envoie-le dans le chat de dev.</p>
     <div class="btn-row">
-      <button id="copyErrorLogBtn" class="btn-ghost" type="button">Copier rapport erreurs</button>
-      <button id="clearErrorLogBtn" class="btn-danger" type="button">Effacer erreurs</button>
+      <button id="copyErrorLogBtn" class="btn-ghost admin-only" type="button">Copier rapport erreurs</button>
+      <button id="clearErrorLogBtn" class="btn-danger admin-only" type="button">Effacer erreurs</button>
       <button id="wakeLockDebugBtn" class="btn-ghost" type="button">Réactiver écran actif</button>
     </div>
     <p id="errorLogStatus" class="status-msg"></p>

@@ -147,6 +147,15 @@
     return changed;
   };
 
+  // Admin (coach) vs client. Centralisé : toute vérification admin passe par ici.
+  // Admin = flag isAdmin, sinon marqueur propriétaire posé à la migration, sinon
+  // fallback nom "Bertin" (compat pcIsAdmin historique).
+  api.isActiveAdmin = function(){
+    var p = api.getActive();
+    if(!p) return false;
+    return !!(p.isAdmin || p.macrocycleOverrideKey === "BERTIN_MACROCYCLE_OVERRIDE" || p.name === "Bertin");
+  };
+
   api.remove = function(id){
     var reg = readRegistry();
     var idx = findIndex(reg, id);
