@@ -133,8 +133,16 @@ function coachBrainValidationCount(rows,lastLoad,targetReps){
   }
   return count;
 }
+function coachBrainIsDeloadRow(r){ return !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
+function coachBrainIsCalibrationSeed(r){ return !!(r && r.planned && r.planned.source === 'manual_recalibration'); }
 function coachBrainBuildStats(label,history,context,targetReps,proposedLoad,lastLoad){
-  var rows=(Array.isArray(history)?history:[]).filter(function(r){return r&&coachBrainRowLoad(r)>0&&coachBrainRowReps(r)>0;});
+  // Exclut les séances deload et les seeds de calibrage (1RM/5RM d'onboarding) :
+  // ce ne sont pas des charges de travail normales. Sans ce filtre, une semaine
+  // deload récente casse le compteur de validations et redemande des
+  // confirmations sur une charge déjà maîtrisée. Filtre appliqué ici (et non
+  // seulement chez l'appelant) pour rester valide quel que soit l'historique
+  // transmis.
+  var rows=(Array.isArray(history)?history:[]).filter(function(r){return r&&!coachBrainIsDeloadRow(r)&&!coachBrainIsCalibrationSeed(r)&&coachBrainRowLoad(r)>0&&coachBrainRowReps(r)>0;});
   var intent=coachBrainIntentKey(context,targetReps);
   var intentRows=rows.filter(function(r){return coachBrainRowIntent(r,targetReps)===intent;});
   if(intentRows.length<2)intentRows=rows.slice(-8);
@@ -240,7 +248,7 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   decision.brainStats=stats;
   try{
     if(typeof storeLoadDecisionHint==='function'){
-      storeLoadDecisionHint(label,loadText,reason,level,history,context);
+      storeLoadDecisionHint(label,loadText,reason,level,history,context,'brain');
       if(window.__coachLoadHints&&typeof coachNormalizeMoveText==='function'){
         var k=coachNormalizeMoveText(label);
         if(window.__coachLoadHints[k]){

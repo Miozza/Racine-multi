@@ -151,7 +151,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
           ? "Charge de programme non numerique : suggestion basee sur l'historique controle."
           : "Charge de programme non numerique : suggestion basee sur les reperes d'equipement, ajustee a ton profil.");
     }else{
-      storeLoadDecisionHint(label,originalText,"Charge non numerique et aucun historique/repere fiable trouve.","watch",hist,moveContext);
+      storeLoadDecisionHint(label,originalText,"Charge non numerique et aucun historique/repere fiable trouve.","watch",hist,moveContext,'reperes');
       return{label:label,loadText:originalText,loadNum:null,severity:"watch",reason:"Charge non numerique et aucun historique/repere fiable trouve.",last:last,cap:cap};
     }
   }
@@ -159,10 +159,16 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var severity="ok";
   var reason=seedReason;
   var mode="nearest";
+  // Trace explicite : passe a true chaque fois qu'une regle depassant le simple
+  // arrondi equipement intervient (historique, RPE, deload, cap contextuel).
+  // Remplace la detection par mots-cles sur `reason` faite plus loin dans
+  // storeLoadDecisionHint : la source est ici un fait connu, pas une supposition.
+  var brainAdjusted=false;
 
   if(contextLimited || isTechnicalMovement(label)){
     suggested=programNum;mode="nearest";severity=severity==="ok"?"watch":severity;
     reason=contextLimitReason || "Mouvement technique : pas d'auto-progression comme un mouvement principal.";
+    brainAdjusted=true;
   }
 
   // Si le programme est clairement sous l'historique reel controle, remonter vers la reference reelle.
@@ -180,6 +186,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
       mode="nearest";
       severity=severity==="ok"?"watch":severity;
       reason="Historique reel controle detecte : "+bestControlled.load+" lb x "+bestControlled.reps+" @RPE "+bestControlled.rpe+". Le moteur evite de sous-suggerer sous une reference facile.";
+      brainAdjusted=true;
     }
   }
 
@@ -190,15 +197,18 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
       mode="nearest";
       severity=severity==="ok"?"watch":severity;
       reason="Reference reelle plus haute validee : "+bestControlled.load+" lb x "+(bestReps||target)+" @RPE "+bestControlled.rpe+". La prochaine suggestion repart de cette charge, pas de l'ancienne suggestion.";
+      brainAdjusted=true;
     }
   }
 
   if(historySignal&&(historySignal.status==='blocked'||historySignal.status==='stalled')&&lastHasValidLoad&&suggested>lastLoad){
     suggested=lastLoad;mode='down';severity='warning';
     reason=historySignal.reason;
+    brainAdjusted=true;
   }else if(historySignal&&historySignal.status==='watch'&&suggested>programNum){
     severity=severity==='ok'?'watch':severity;
     reason=historySignal.reason;
+    brainAdjusted=true;
   }
 
   if(last){
@@ -208,6 +218,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     if(lastHasValidLoad&&lastRpe<=8&&suggested>lastLoad+maxJump){
       suggested=lastLoad+maxJump;mode="down";severity=severity==="ok"?"watch":severity;
       reason="Progression limitee : derniere reference "+lastLoad+" lb @RPE "+lastRpe+". Saut maximal prudent +"+maxJump+" lb.";
+      brainAdjusted=true;
     }
     if(lastHasValidLoad&&lastRpe>0&&lastRpe<=7&&repsReached&&!contextLimited&&!isTechnicalMovementInContext(label,moveContext)&&!isDeload&&hist.length>=2){
       var next=nextLoadForExercise(label,lastLoad,1,currentLoad);
@@ -216,18 +227,22 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
         if(suggested<=lastLoad){
           suggested=next;mode="up";severity=severity==="ok"?"watch":severity;
           reason="Progression prete : dernier "+lastLoad+" lb x "+(lastReps||target)+" @RPE "+lastRpe+". Petite hausse vers la prochaine charge disponible.";
+          brainAdjusted=true;
         }
       }else if(suggested<=lastLoad){
         severity=severity==="ok"?"watch":severity;
         reason="Progression prete, mais aucune charge superieure disponible/configuree dans le saut prudent autorise.";
+        brainAdjusted=true;
       }
     }
     if(lastHasValidLoad&&lastRpe>=9 && suggested>lastLoad){
       suggested=lastLoad;mode="down";severity="warning";
       reason="Bloque : dernier RPE reel "+lastRpe+" a "+lastLoad+" lb. Regle V51 : RPE >= 9 = aucune hausse automatique.";
+      brainAdjusted=true;
     }else if(lastHasValidLoad&&lastRpe>=8.5 && coachLastSetIsSimilarOrHarder(target,lastReps) && suggested>lastLoad){
       suggested=lastRpe>=9.5?Math.max(0,lastLoad-coachLoadStepForExercise(label,currentLoad)):lastLoad;mode="down";severity="warning";
       reason="Frein RPE : dernier RPE "+lastRpe+" sur une cible similaire ou plus dure. Maintenir ou reduire, pas augmenter.";
+      brainAdjusted=true;
     }
     // Ecart de reps important entre la derniere reference et la cible (ex : 1RM ou
     // singulier récent utilisé tel quel pour suggérer un format type 5x5) : le poids
@@ -242,6 +257,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
         if(projCapacity>0&&suggested>projCapacity){
           suggested=projCapacity;mode="down";severity=severity==="ok"?"watch":severity;
           reason="Ecart de reps : dernier "+lastLoad+" lb x "+lastReps+" ne se traduit pas directement en "+target+" reps. Capacite estimee ~"+Math.round(projCapacity)+" lb (projection Epley).";
+          brainAdjusted=true;
         }
       }
     }
@@ -334,19 +350,27 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
         + ".";
     }
   }
-  if(last&&lastHasValidLoad&&lastRpe>=9&&rounded>lastLoad&&!(mvProgCap&&coachIsFridayContext()))rounded=roundLoadForExercise(label,lastLoad,"down",currentLoad)||lastLoad;
+  if(last&&lastHasValidLoad&&lastRpe>=9&&rounded>lastLoad&&!(mvProgCap&&coachIsFridayContext())){
+    rounded=roundLoadForExercise(label,lastLoad,"down",currentLoad)||lastLoad;
+    brainAdjusted=true;
+  }
   if(contextLimited&&rounded>programNum){
     rounded=roundLoadForExercise(label,programNum,"nearest",currentLoad)||programNum;
     severity=severity==="ok"?"watch":severity;
     reason=contextLimitReason||reason;
+    brainAdjusted=true;
   }
   var text=(rounded===0||rounded)?rounded+" lb":originalText;
   if(severity==="warning"||severity==="critical")text += " ⚠";
   var decision={label:label,loadText:text,loadNum:rounded,severity:severity,reason:reason,last:last,cap:cap,historySignal:historySignal};
   if(typeof coachBrainApplyStatsGate==='function' && lastHasValidLoad && rounded>lastLoad && severity==='ok' && !contextLimited && !isDeload){
     decision=coachBrainApplyStatsGate(decision,label,hist,moveContext,target,lastLoad);
+    brainAdjusted=true;
   }
-  storeLoadDecisionHint(label,decision.loadText,decision.reason,decision.severity,hist,moveContext);
+  // Source explicite : fait connu a cet endroit, plus fiable qu'une detection
+  // par mots-cles sur `decision.reason` faite en aval.
+  var explicitSource=brainAdjusted?'brain':'moteur';
+  storeLoadDecisionHint(label,decision.loadText,decision.reason,decision.severity,hist,moveContext,explicitSource);
   try{
     if(decision.brainStats && window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
       var bk=coachNormalizeMoveText(label);
@@ -545,7 +569,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       var deloadPctLabel = Math.round((1-deloadPct)*100) + '%';
       var reason = 'Deload — réduction de ' + deloadPctLabel + ' vs dernière charge normale (' + lastNormalLoad + ' lb).';
       if(typeof storeLoadDecisionHint==='function'){
-        storeLoadDecisionHint(label, String(deloadRounded)+' lb', reason, 'ok', histAll, ctx);
+        storeLoadDecisionHint(label, String(deloadRounded)+' lb', reason, 'ok', histAll, ctx, 'brain');
       }
       try{
         if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
@@ -711,7 +735,12 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
 
     var safeDecision={label:label,loadNum:newLoad,loadText:String(newLoad)+' lb'+repsSuggestion,severity:(delta<0?'watch':'ok'),reason:reason};
     if(typeof coachBrainApplyStatsGate==='function' && newLoad>lastLoad && (safeDecision.severity==='ok') && !isDeload){
-      safeDecision=coachBrainApplyStatsGate(safeDecision,label,histAll,ctx,targetReps,lastLoad);
+      // Fix : on passait histAll (brut, deload + seeds de calibrage inclus) au
+      // gate de validations. `hist` (defini plus haut, ligne ~545) exclut deja
+      // ces lignes pour le reste du moteur ; le gate doit voir le meme historique,
+      // sinon un deload recent peut casser le compteur de validations et
+      // redemander 2-3 confirmations sur une charge deja maitrisee.
+      safeDecision=coachBrainApplyStatsGate(safeDecision,label,hist,ctx,targetReps,lastLoad);
       newLoad=safeDecision.loadNum;
       reason=safeDecision.reason;
       repsSuggestion='';
@@ -720,8 +749,9 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     if(newLoad === baseNum && !newReps && !(safeDecision&&safeDecision.brainStats)) return base.loadText;
 
     var hintLoad = safeDecision.loadText || (String(newLoad) + ' lb' + repsSuggestion);
+    var explicitSource = (safeDecision&&safeDecision.brainStats) || newLoad!==baseNum || newReps ? 'brain' : 'moteur';
     if(typeof storeLoadDecisionHint==='function'){
-      storeLoadDecisionHint(label, hintLoad, reason, safeDecision.severity || (delta < 0 ? 'watch' : 'ok'), histAll, ctx);
+      storeLoadDecisionHint(label, hintLoad, reason, safeDecision.severity || (delta < 0 ? 'watch' : 'ok'), histAll, ctx, explicitSource);
     }
     try{
       if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
