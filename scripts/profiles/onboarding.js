@@ -246,19 +246,34 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     state.profile.competitionDateIso = meta.competitionDateIso || null;
     state.profile.scaleRatios = computed.ratios;
 
-    // Ensemence aussi athleteState/movementRefs via le mécanisme PR déjà
-    // existant dans app.js (onglet Profil/PR), pour démarrer cohérent partout.
-    // RPE 8 (pas 10) : le mini-test est un set sous-maximal contrôlé, pas un
-    // essai proche de l'échec — sinon le frein RPE>=9 bloquerait toute hausse
-    // dès la séance suivant un recalibrage.
-    if(typeof PR_FIELD_MAP === "object" && typeof updateAthleteStateFromPR === "function" && typeof updateMovementRefFromPR === "function"){
+    // Ensemence movementRefs (référence de charge utilisée pour le scaling et
+    // l'affichage), MAIS PLUS l'historique d'entraînement (athleteState.history).
+    // Un repère de calibrage est un 1RM/5RM à bas reps : ce n'est pas une séance.
+    // Le pousser dans l'historique faussait les suggestions en plage hypertrophie
+    // — le moteur Brain le prenait pour une charge de travail récente et proposait
+    // ~1RM pour des sets de 8-12 reps. Sans ce seed, le moteur repart de la charge
+    // de base du programme, mise à l'échelle par scaleRatios : cohérente ET
+    // adaptée à la plage de reps.
+    if(typeof PR_FIELD_MAP === "object" && typeof updateMovementRefFromPR === "function"){
       var dateStr = (typeof todayDateString === "function") ? todayDateString() : new Date().toLocaleDateString("fr-CA");
       Object.keys(PR_FIELD_MAP).forEach(function(id){
         var cfg = PR_FIELD_MAP[id];
         var val = computed.values[cfg.profile];
         if(val || val === 0){
           updateMovementRefFromPR(cfg, val, dateStr, 8);
-          updateAthleteStateFromPR(cfg, val, dateStr, 8);
+        }
+      });
+    }
+    // Heals un profil calibré par une version précédente : retire les repères de
+    // calibrage déjà semés dans l'historique (source "manual_recalibration"),
+    // sans toucher aux vraies séances loggées ni aux PR max saisis (manual_pr).
+    if(state.athleteState && state.athleteState.movements){
+      Object.keys(state.athleteState.movements).forEach(function(mvKey){
+        var mv = state.athleteState.movements[mvKey];
+        if(mv && Array.isArray(mv.history)){
+          mv.history = mv.history.filter(function(r){
+            return !(r && r.planned && r.planned.source === "manual_recalibration");
+          });
         }
       });
     }
