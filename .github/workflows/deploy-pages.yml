@@ -1,0 +1,62 @@
+# Déploiement GitHub Pages robuste.
+#
+# Remplace le workflow "deploy from branch" par défaut (qui n'a AUCUNE reprise
+# sur erreur) pour éliminer les échecs transitoires du backend Pages
+# ("Deployment failed, try again later").
+#
+# ⚠️ ACTIVATION (une seule fois) : Repo → Settings → Pages → Build and deployment
+#    → Source : choisir "GitHub Actions". Sans ça, GitHub continue d'utiliser le
+#    déploiement par branche et ce workflow échoue.
+#
+# Deux protections :
+#   - concurrency + cancel-in-progress : évite les collisions quand plusieurs
+#     commits arrivent coup sur coup (une des causes des échecs).
+#   - deux tentatives de deploy-pages : si la 1re bute sur un hoquet transitoire,
+#     on réessaie automatiquement après une courte pause.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy2.outputs.page_url || steps.deploy1.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages (attempt 1)
+        id: deploy1
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      - name: Wait before retry
+        if: steps.deploy1.outcome == 'failure'
+        run: sleep 45
+
+      - name: Deploy to GitHub Pages (attempt 2)
+        id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        uses: actions/deploy-pages@v5
