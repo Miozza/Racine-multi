@@ -1,3 +1,9 @@
+## V4.3 — Vue client allégée + panneau admin d'activation de programmes
+- Vue client (non-admin) : masque les outils coach — onglet PC, bouton TMS global, panneaux Diagnostic charges/app, gestion Avis IA dans le panneau (!), tableau de bord clients. Conserve recalibrage, changer/nouveau profil, export/import JSON, agressivité et « Réactiver écran actif ».
+- Helper admin centralisé `CoachProfiles.isActiveAdmin()` ; `pcIsAdmin()` y délègue ; `switchView` protège la vue PC.
+- Nouveau panneau admin « Programmes clients » (Réglages) : active un programme public ou privé comme cycle courant de n'importe quel profil sans basculer, via `CoachProfiles.setProfileActiveProgram()`. L'historique du profil est conservé.
+- `dev/client_view_checks.js` ajouté.
+
 ## V4.2 — Correctif DOM Avis IA dans le panneau (!)
 - Après effacement d’un avis mouvement ou cycle dans le panneau (!), le contenu Avis IA est maintenant regénéré au complet.
 - Corrige le cas où `querySelector` mettait à jour le mauvais bloc quand avis mouvement + avis cycle étaient empilés.

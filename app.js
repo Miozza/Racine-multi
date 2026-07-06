@@ -1,5 +1,5 @@
-// Racine V4.2 — Avis IA Influence Tracker
-var APP_VERSION = "V4.2";
+// Racine V4.3 — Vue client allégée + panneau admin programmes
+var APP_VERSION = "V4.3";
 
 // Architecture stable
 // programs/*.js = plan prévu
