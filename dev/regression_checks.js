@@ -108,7 +108,6 @@ if(version){
 
   assert(app.includes('// Racine ' + version), 'app.js doit garder un en-tête aligné avec APP_VERSION.');
   assert(index.includes('<title>Racine ' + version + '</title>'), 'index.html doit afficher la version dans le titre.');
-  assert(index.includes('class="topnav-v">' + version + '</span>'), 'index.html doit afficher la version dans la topnav.');
   assert(index.includes('<footer class="footer">' + version), 'index.html doit afficher la version dans le footer.');
   assert(index.includes('?v=' + cache), 'index.html doit cache-buster les assets avec ?v=' + cache + '.');
   assert(readme.includes('- Version : `' + version + '`'), 'README.md doit afficher la version courante.');

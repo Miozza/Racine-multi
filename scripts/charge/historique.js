@@ -263,7 +263,7 @@ function isTechnicalMovementInContext(name, context){
   return coachIsTechnicalOrLimitedMovement(name, context);
 }
 
-function storeLoadDecisionHint(name,loadText,reason,severity,history,context){
+function storeLoadDecisionHint(name,loadText,reason,severity,history,context,explicitSource){
   window.__coachLoadHints=window.__coachLoadHints||{};
   var ctx=(context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(name,context||{}):null);
   var label=ctx&&ctx.label?ctx.label:canonicalMovementLabel(name);
@@ -278,20 +278,30 @@ function storeLoadDecisionHint(name,loadText,reason,severity,history,context){
   // 'moteur'   : charge numérique venue du programme, arrondie équipement seulement
   // 'brain'    : ajustée par l'historique, RPE, caps, deload, garde-fous
   // 'reperes'  : pas d'historique fiable, on utilise les seeds par défaut
-  var source = 'moteur';
-  var reasonLow = String(reason||'').toLowerCase();
-  if(reasonLow.indexOf('historique') >= 0 || reasonLow.indexOf('controle') >= 0 ||
-     reasonLow.indexOf('rpe') >= 0 || reasonLow.indexOf('deload') >= 0 ||
-     reasonLow.indexOf('prudence') >= 0 || reasonLow.indexOf('cap') >= 0 ||
-     reasonLow.indexOf('garde') >= 0 || reasonLow.indexOf('bloque') >= 0 ||
-     reasonLow.indexOf('maintien') >= 0 || reasonLow.indexOf('surveillance') >= 0 || reasonLow.indexOf('brain') >= 0 ||
-     reasonLow.indexOf('validation') >= 0 || reasonLow.indexOf('hausse') >= 0 ||
-     reasonLow.indexOf('option ambitieuse') >= 0){
-    source = 'brain';
-  }
-  if(reasonLow.indexOf('repere') >= 0 || reasonLow.indexOf('equipement') >= 0 ||
-     reasonLow.indexOf('aucun historique') >= 0 || reasonLow.indexOf('non numerique') >= 0){
-    source = 'reperes';
+  //
+  // Priorité : si l'appelant connaît la source (fait réel au moment de la
+  // décision), on l'utilise directement. La détection par mots-clés sur
+  // `reason` ne sert plus que de repli pour les appels qui ne la fournissent
+  // pas encore — elle ne doit plus être la seule source de vérité.
+  var source;
+  if(explicitSource === 'moteur' || explicitSource === 'brain' || explicitSource === 'reperes'){
+    source = explicitSource;
+  }else{
+    source = 'moteur';
+    var reasonLow = String(reason||'').toLowerCase();
+    if(reasonLow.indexOf('historique') >= 0 || reasonLow.indexOf('controle') >= 0 ||
+       reasonLow.indexOf('rpe') >= 0 || reasonLow.indexOf('deload') >= 0 ||
+       reasonLow.indexOf('prudence') >= 0 || reasonLow.indexOf('cap') >= 0 ||
+       reasonLow.indexOf('garde') >= 0 || reasonLow.indexOf('bloque') >= 0 ||
+       reasonLow.indexOf('maintien') >= 0 || reasonLow.indexOf('surveillance') >= 0 || reasonLow.indexOf('brain') >= 0 ||
+       reasonLow.indexOf('validation') >= 0 || reasonLow.indexOf('hausse') >= 0 ||
+       reasonLow.indexOf('option ambitieuse') >= 0){
+      source = 'brain';
+    }
+    if(reasonLow.indexOf('repere') >= 0 || reasonLow.indexOf('equipement') >= 0 ||
+       reasonLow.indexOf('aucun historique') >= 0 || reasonLow.indexOf('non numerique') >= 0){
+      source = 'reperes';
+    }
   }
 
   var payload={name:label,load:loadText,reason:reason||"Charge prévue par le programme.",severity:severity||"ok",rows:rows,source:source};
