@@ -58,12 +58,14 @@ function programIndexIds(){
     activePerms = (ap && Array.isArray(ap.programPermissions)) ? ap.programPermissions : [];
   }catch(e){}
 
+  // L'admin (coach) voit tous les programmes, y compris les privés, sans permission.
+  var isAdmin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
   return (window.COACH_BERTIN_PROGRAM_INDEX || [])
     .filter(function(item){
       if(!item || !item.id) return false;
       var vis = item.visibility || "public";
       if(vis === "public") return true;
-      if(vis === "private") return activePerms.indexOf(item.id) !== -1;
+      if(vis === "private") return isAdmin || activePerms.indexOf(item.id) !== -1;
       return false;
     })
     .map(function(item){ return item.id; });

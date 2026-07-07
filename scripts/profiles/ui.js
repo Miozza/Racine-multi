@@ -99,7 +99,6 @@
         '<div class="racine-gate-title">Qui s\'entraîne aujourd\'hui ?</div>'+
         '<div class="racine-gate-sub">Chaque profil a ses propres charges, son propre historique et son propre rythme de progression. Tout reste sur cet appareil.</div>'+
         rows+
-        (detectLegacyState() ? '<button class="btn-accent" id="racineMigrateBtn" style="width:100%;margin-top:10px">↩ Reprendre mon profil Coach-Beurt</button>' : '')+
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
 
         '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
@@ -113,16 +112,6 @@
         window.coachFullBoot();
       };
     });
-    var migrateBtn = card.querySelector("#racineMigrateBtn");
-    if(migrateBtn) migrateBtn.onclick = function(){
-      var ok = runLegacyMigration();
-      if(ok){
-        closeGate();
-        window.coachFullBoot();
-      } else {
-        alert("Migration échouée. Essaie de créer un nouveau profil.");
-      }
-    };
     card.querySelector("#racineNewProfileBtn").onclick = function(){
       wiz = { mode:"create", step:"welcome", answers:{} };
       render();
