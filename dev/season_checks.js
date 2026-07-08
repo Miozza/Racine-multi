@@ -167,6 +167,19 @@ st = {history:[
 const avg = CoachSuggest.recentAvgRpe(st, '2026-07-08');
 assert(Math.abs(avg - 8.666) < 0.01, 'recentAvgRpe moyenne les 2 dernières semaines (8,67), ignore le reste.');
 
+// ═══ UI Saison (statique) ════════════════════════════════════════════════════
+const seasonUiSrc = read('scripts/season/ui.js');
+assert(!/localStorage/.test(seasonUiSrc), 'season/ui.js n’accède jamais à localStorage directement.');
+assert(!/movementRefs/.test(seasonUiSrc), 'season/ui.js ne touche pas aux références de mouvements.');
+assert(seasonUiSrc.includes('escapeHtml'), 'season/ui.js échappe les données affichées.');
+const indexHtml = read('index.html');
+assert(indexHtml.includes('id="seasonBanner"'), 'Le conteneur du bandeau existe dans la vue WOD.');
+assert(indexHtml.includes('id="seasonTimeline"'), 'Le conteneur de la frise existe dans la vue Cycle.');
+const appSrc = read('app.js');
+assert(appSrc.includes('CoachSeasonUI.renderBanner'), 'render() rafraîchit le bandeau.');
+assert(appSrc.includes('CoachSeasonUI.renderTimeline'), 'renderCycle() rafraîchit la frise.');
+assert(appSrc.includes('CoachSeason.recordCycleEnd'), 'Les flux d’archivage/remplacement journalisent la fin de cycle.');
+
 // ─── Sortie ──────────────────────────────────────────────────────────────────
 if(errors.length){
   console.error('ÉCHEC season_checks.js');

@@ -6105,3 +6105,57 @@ body.is-client [data-ai-clear]{display:none!important}
 .admin-prog-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .admin-prog-btn{min-height:44px}
 .admin-prog-group-title{font-size:12px;text-transform:uppercase;opacity:.6;margin:14px 0 4px}
+
+/* ═══ La Saison (V4.4) — bandeau fin de cycle, écran, frise ═══ */
+.season-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(30,144,255,.14), rgba(124,58,255,.14));
+  border: 1px solid var(--blue);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.season-banner-text { flex: 1; font-size: 13px; line-height: 1.4; }
+.season-banner-text span { color: var(--muted); font-size: 12px; }
+.season-banner-btn { white-space: nowrap; }
+
+.season-gate-card { max-width: 440px; }
+.season-bilan {
+  display: flex; flex-wrap: wrap; gap: 8px 14px;
+  margin: 10px 0 14px;
+  font-size: 12px; color: var(--text2);
+  font-family: var(--font-hud); letter-spacing: .04em;
+}
+.season-goal-ask { margin-bottom: 14px; }
+.season-props { display: flex; flex-direction: column; gap: 10px; }
+.season-prop {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.season-prop-info { flex: 1; font-size: 13px; line-height: 1.35; }
+.season-prop-reason { color: var(--muted); font-size: 12px; }
+.season-start-btn { white-space: nowrap; }
+
+.season-timeline { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+.season-tl-item {
+  position: relative;
+  padding: 10px 0 10px 22px;
+  border-left: 2px solid var(--border);
+  font-size: 13px; line-height: 1.4;
+}
+.season-tl-item strong { display: block; }
+.season-tl-item span { color: var(--muted); font-size: 12px; }
+.season-tl-item::before {
+  content: "";
+  position: absolute; left: -6px; top: 14px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--border);
+}
+.season-tl-done::before { background: var(--green); }
+.season-tl-current { border-left-color: var(--blue); }
+.season-tl-current::before { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+.season-tl-next { border-left-style: dashed; }
+.season-tl-next::before { background: var(--purple); }

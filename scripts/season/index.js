@@ -107,6 +107,11 @@
     return done >= (Number(programDaysCount) || 1);
   };
 
+  // Exposé pour le bilan de l'écran Fin de cycle (même calcul que le journal).
+  api.countPrs = function(state, startIso, endIso){
+    return countPrsBetween(state || {}, startIso || null, endIso || null);
+  };
+
   api.journal = function(state){
     return (state && state.season && Array.isArray(state.season.cycles)) ? state.season.cycles.slice() : [];
   };

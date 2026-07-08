@@ -1484,7 +1484,7 @@ function renderFocusDetails(){
   Array.prototype.forEach.call(fd.querySelectorAll('.toggle-archived-status-btn'),function(btn){btn.onclick=function(){toggleArchivedCycleStatus(Number(btn.getAttribute('data-idx')));};});
   Array.prototype.forEach.call(fd.querySelectorAll('.delete-archived-cycle-btn'),function(btn){btn.onclick=function(){deleteArchivedCycle(Number(btn.getAttribute('data-idx')));};});
 }
-function renderCycle(){populateCycleGoalOptions();ensurePreviewPosition();var csi=$("cycleStartDateInput");if(csi&&!csi.value)csi.value=cycleStartDateForActive();renderFocusDetails();var sc=$("saveCycleBtn");if(sc)sc.textContent=(previewProgramId()===activeProgramId()?"Redémarrer ce programme":"Démarrer ce programme");var nc=$("newCycleBtn");if(nc)nc.textContent="Archiver cycle actif";}
+function renderCycle(){populateCycleGoalOptions();ensurePreviewPosition();var csi=$("cycleStartDateInput");if(csi&&!csi.value)csi.value=cycleStartDateForActive();renderFocusDetails();var sc=$("saveCycleBtn");if(sc)sc.textContent=(previewProgramId()===activeProgramId()?"Redémarrer ce programme":"Démarrer ce programme");var nc=$("newCycleBtn");if(nc)nc.textContent="Archiver cycle actif";if(window.CoachSeasonUI)CoachSeasonUI.renderTimeline();}
 function saveCycle(){
   var selected=$("cycleGoal").value;
   if(!selected||!focusConfigs[selected]){alert("Programme introuvable.");return;}
@@ -2140,7 +2140,7 @@ function bind(){
   if(typeof setupChargeDiagnosticBindings==="function")setupChargeDiagnosticBindings();
 }
 
-function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();}
+function render(){ensureCurrentDay();renderWeeks();renderDays();renderWorkout();if(window.CoachSeasonUI)CoachSeasonUI.renderBanner();}
 
 
 
