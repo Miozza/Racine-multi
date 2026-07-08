@@ -34,6 +34,19 @@
     if(g) g.remove();
   }
 
+  // Bascule de profil. Si l'app tournait déjà sur un autre profil, on recharge
+  // la page au lieu de re-booter à chaud : des timers ou closures encore
+  // vivants (mode séance, chrono) pourraient sinon écrire les données de
+  // l'ancien profil sous les clés localStorage du nouveau.
+  function switchToProfile(id){
+    var prevId = CoachProfiles.getActiveId ? CoachProfiles.getActiveId() : null;
+    var wasBooted = !!(prevId && CoachProfiles.hasActiveOnboardedProfile && CoachProfiles.hasActiveOnboardedProfile());
+    CoachProfiles.setActive(id);
+    closeGate();
+    if(wasBooted && prevId !== id){ location.reload(); return; }
+    window.coachFullBoot();
+  }
+
   function stepDots(total, current){
     var html = '<div class="racine-gate-steps">';
     for(var i=0;i<total;i++){
@@ -107,9 +120,7 @@
     );
     Array.prototype.forEach.call(card.querySelectorAll("[data-pick]"), function(btn){
       btn.onclick = function(){
-        CoachProfiles.setActive(btn.getAttribute("data-pick"));
-        closeGate();
-        window.coachFullBoot();
+        switchToProfile(btn.getAttribute("data-pick"));
       };
     });
     card.querySelector("#racineNewProfileBtn").onclick = function(){
@@ -125,14 +136,18 @@
       // PIN correct — chercher ou créer le profil Bertin
       var existing = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.name === "Bertin"; }) : [];
       if(existing.length){
-        CoachProfiles.setActive(existing[0].id);
-        closeGate();
-        window.coachFullBoot();
+        switchToProfile(existing[0].id);
         return;
       }
       if(window.migrateBertin){
+        var prevBooted = !!(CoachProfiles.getActiveId() && CoachProfiles.hasActiveOnboardedProfile());
         var id = window.migrateBertin();
-        if(id){ closeGate(); window.coachFullBoot(); return; }
+        if(id){
+          closeGate();
+          if(prevBooted){ location.reload(); return; }
+          window.coachFullBoot();
+          return;
+        }
       }
       alert("Profil Bertin introuvable.");
     };
@@ -479,9 +494,7 @@
     );
     Array.prototype.forEach.call(card.querySelectorAll("[data-dashpick]"), function(btn){
       btn.onclick = function(){
-        CoachProfiles.setActive(btn.getAttribute("data-dashpick"));
-        closeGate();
-        window.coachFullBoot();
+        switchToProfile(btn.getAttribute("data-dashpick"));
       };
     });
     card.querySelector("#racineDashCloseBtn").onclick = function(){ closeGate(); };
