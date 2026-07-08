@@ -1,10 +1,19 @@
-# ETAT ACTUEL — V4.3
+# ETAT ACTUEL — V4.4
 
-Version actuelle : V4.3
+Version actuelle : V4.4
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version ajoute la première couche Brain statistique au moteur de charges, sans brancher Avis IA et sans modifier les données durables.
+Racine est un prototype multi-utilisateur local. Cette version pose les fondations « La Saison » : catalogue avec graphe de succession, journal des cycles, rétention long terme, objectif d'entraînement par profil et écran de fin de cycle avec suggestions explicables. Le moteur de charges et le Brain ne sont pas modifiés.
+
+## La Saison — portée active (V4.4)
+
+- `scripts/season/index.js` : journal `state.season.cycles` (programme, dates, semaines, PR) alimenté à l'archivage/remplacement d'un cycle ; vocabulaire d'objectifs `CoachSeasonGoals`.
+- `scripts/season/retention.js` : agrégats mensuels par mouvement (`state.longTerm.byMovement`), 36 mois glissants — collecte silencieuse, aucune analyse.
+- `scripts/season/suggest.js` : suggestions de prochain cycle — objectif de l'utilisateur dominant, graphe `suggestedNext`, deload inséré si RPE moyen 14 j ≥ 8,5, diversité en simple départage.
+- `scripts/season/ui.js` : bandeau fin de cycle, écran bilan + propositions, frise Saison dans l'onglet Cycle.
+- Catalogue : `objective`/`frequency`/`suggestedNext` obligatoires sur tout programme public (matrice : `docs/CATALOGUE_MATRICE.md`) ; semaines de transition deload/tests dans `programs/transition_weeks.js`.
+- Profil : `state.profile.trainingGoal` posé à l'onboarding et éditable dans Réglages.
 
 ## Brain — portée active
 
@@ -42,6 +51,7 @@ node dev/progression_contract_checks.js
 node dev/regression_checks.js --full
 node dev/structure_checks.js --full
 node dev/program_catalog_checks.js
+node dev/season_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 ```

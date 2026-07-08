@@ -1,6 +1,6 @@
 # Rapport simulation multi-utilisateurs — Racine V1.16-multi
 
-Généré: 2026-07-08T10:26:56.783Z
+Généré: 2026-07-08T10:28:47.215Z
 
 ## Verdict global
 

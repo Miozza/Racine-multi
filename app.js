@@ -1,5 +1,5 @@
-// Racine V4.3 — Vue client allégée + panneau admin programmes
-var APP_VERSION = "V4.3";
+// Racine V4.4 — La Saison : fondations (catalogue, journal, objectif, fin de cycle)
+var APP_VERSION = "V4.4";
 
 // Architecture stable
 // programs/*.js = plan prévu
