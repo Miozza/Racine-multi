@@ -373,6 +373,16 @@
     return card;
   }
 
+  // Options du sélecteur d'objectif d'entraînement (vocabulaire CoachSeasonGoals).
+  function trainingGoalOptionsHtml(selected){
+    var goals = window.CoachSeasonGoals;
+    var html = '<option value=""' + (!selected ? ' selected' : '') + '>— À définir plus tard —</option>';
+    if(goals) goals.KEYS.forEach(function(k){
+      html += '<option value="' + k + '"' + (selected === k ? ' selected' : '') + '>' + esc(goals.LABELS[k]) + '</option>';
+    });
+    return html;
+  }
+
   // ── Écran : agressivité de la progression + objectif long terme ─────────
   function renderAggressiveness(){
     var agg = wiz.meta.aggressiveness;
@@ -382,7 +392,10 @@
         stepDots(WIZARD_STEPS.length, wizStepIndex())+
         '<div class="racine-gate-title">Vitesse de progression</div>'+
         '<div class="racine-gate-sub">Ce réglage contrôle la taille des sauts de charge proposés quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</div>'+
-        '<label>Agressivité de la progression</label>'+
+        '<label>Pourquoi t\'entraînes-tu ?</label>'+
+        '<select id="rrTrainingGoal" class="select-field">'+trainingGoalOptionsHtml(null)+'</select>'+
+        '<p class="field-hint">Ton objectif guide les programmes proposés en fin de cycle. Modifiable à tout moment dans Réglages.</p>'+
+        '<label style="margin-top:16px">Agressivité de la progression</label>'+
         '<div class="racine-agg-row">'+
           '<input id="rrAgg" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
           '<span class="racine-agg-label" id="rrAggLabel">'+aggressivenessLabel(agg)+'</span>'+
@@ -416,6 +429,8 @@
     });
     card.querySelector("#rrConfirm").onclick = function(){
       wiz.meta.aggressiveness = Number(aggInput.value)||1;
+      var goalSel = card.querySelector("#rrTrainingGoal");
+      wiz.meta.trainingGoal = goalSel ? (goalSel.value || null) : null;
       var hasGoal = card.querySelector("#rrHasGoalYes").checked;
       var compDate = hasGoal ? card.querySelector("#rrCompDate").value : "";
       wiz.meta.competitionDateIso = compDate || null;
@@ -544,6 +559,8 @@
     var isAdmin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
     host.innerHTML =
       '<p><strong>'+esc(active?active.name:"—")+'</strong>'+(lvl?(' · '+esc(lvl)):'')+(active&&active.bodyweightLb?(' · '+esc(active.bodyweightLb)+' lb'):'')+'</p>'+
+      '<label>Pourquoi t\'entraînes-tu ?</label>'+
+      '<select id="settingsTrainingGoal" class="select-field">'+trainingGoalOptionsHtml((typeof state==="object"&&state.profile&&state.profile.trainingGoal)||(active&&active.trainingGoal)||null)+'</select>'+
       '<label>Agressivité de la progression</label>'+
       '<div class="racine-agg-row">'+
         '<input id="settingsAggSlider" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
@@ -583,6 +600,19 @@
         if(id) CoachProfiles.update(id, {aggressiveness:v});
         var s=document.getElementById("profileSettingsStatus");
         if(s){s.textContent="✅ Agressivité mise à jour.";s.className="status-msg ok";}
+      };
+    }
+    var goalSel = document.getElementById("settingsTrainingGoal");
+    if(goalSel){
+      goalSel.onchange = function(){
+        var v = (window.CoachSeasonGoals ? CoachSeasonGoals.normalize(goalSel.value) : goalSel.value) || null;
+        if(typeof state!=="object"||!state.profile) return;
+        state.profile.trainingGoal = v;
+        if(typeof save==="function") save();
+        var id = window.CoachProfiles && CoachProfiles.getActiveId();
+        if(id) CoachProfiles.update(id, {trainingGoal:v});
+        var s=document.getElementById("profileSettingsStatus");
+        if(s){s.textContent="✅ Objectif mis à jour.";s.className="status-msg ok";}
       };
     }
     var recal = document.getElementById("recalibrateBtn");

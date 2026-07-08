@@ -244,6 +244,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     state.profile.bodyweightLb = meta.bodyweightLb || null;
     state.profile.aggressiveness = meta.aggressiveness;
     state.profile.competitionDateIso = meta.competitionDateIso || null;
+    state.profile.trainingGoal = (window.CoachSeasonGoals ? CoachSeasonGoals.normalize(meta.trainingGoal) : meta.trainingGoal) || null;
     state.profile.scaleRatios = computed.ratios;
 
     // Ensemence movementRefs (référence de charge utilisée pour le scaling et

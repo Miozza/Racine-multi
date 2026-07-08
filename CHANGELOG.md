@@ -1,3 +1,14 @@
+## V4.4 — La Saison : fondations (étapes 1-4 du design)
+- Catalogue : `objective`, `frequency` et graphe `suggestedNext` obligatoires sur tout programme public (assertions dans `program_catalog_checks`). Matrice de couverture objectif × fréquence : `docs/CATALOGUE_MATRICE.md`, trous documentés et assumés.
+- Nouveaux micro-cycles publics `programs/transition_weeks.js` : semaine deload (3 j, ~60 %) et semaine de tests (recalibrage des 5 mouvements de référence à RPE 8).
+- Journal de saison `state.season` (`scripts/season/index.js`) : chaque cycle terminé est consigné (programme, dates, semaines, PR) à l'archivage ou au remplacement ; reconstruction best-effort depuis `weekTransitions` pour les profils existants.
+- Rétention long terme `state.longTerm` (`scripts/season/retention.js`) : agrégat mensuel par mouvement (bestLoad, bestReps, avgRpe, sessions), plafond 36 mois. Collecte seulement — l'analyse viendra quand les données existeront.
+- Objectif d'entraînement : question « Pourquoi t'entraînes-tu ? » à l'onboarding (7 choix, vocabulaire fermé), éditable dans Réglages → Profil.
+- Fin de cycle : bandeau persistant dans la vue WOD, écran bilan (semaines, PR) + 2-3 propositions avec raison en une phrase, démarrage un tap. Classement : objectif dominant, graphe ensuite, deload inséré si RPE moyen 14 j ≥ 8,5, diversité en départage. Choix manuel toujours accessible.
+- Frise Saison dans l'onglet Cycle : cycles passés, cycle en cours, suggestion suivante.
+- Nouveau check `dev/season_checks.js` (journal, rétention, suggestion, objectif, UI) ajouté à la checklist de release.
+- Moteur de charges et Brain inchangés (lecture seule).
+
 ## V4.3.3 — Durcissement admin + dédoublonnage
 - Le PIN admin n'apparaît plus en clair dans le source : vérification par empreinte SHA-256 (`verifyAdminPin` dans `scripts/profiles/ui.js`, commande pour changer le code en commentaire). Limite assumée : côté client, cela décourage la lecture casuelle, pas un utilisateur outillé.
 - La porte dérobée « profil nommé Bertin = admin » est fermée dans `isActiveAdmin()` et dans le fallback de `pcIsAdmin()`. Seuls comptent le flag `isAdmin` et le marqueur de migration ; le PIN pose maintenant `isAdmin: true` au passage, ce qui répare aussi les anciens profils Bertin sans flag.
