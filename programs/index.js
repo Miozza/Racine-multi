@@ -69,6 +69,14 @@
     }, item);
   });
 
+  // ─── Semaines de transition (La Saison) ────────────────────────────────────
+  // Micro-cycles d'une semaine entre deux cycles. Le deload est proposé par le
+  // moteur de suggestion sur signal de fatigue, jamais comme successeur normal.
+  var transitionPrograms = [
+    { id: "transition_deload_3d", file: "programs/transition_weeks.js", name: "Transition — Semaine Deload",   objective: "transition", frequency: 3, suggestedNext: [], phase: 0, macroRole: "transition_cycle", macroStatus: "décharge entre cycles",   durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["deload", "récupération", "transition"] },
+    { id: "transition_tests_3d",  file: "programs/transition_weeks.js", name: "Transition — Semaine de Tests", objective: "transition", frequency: 3, suggestedNext: [], phase: 0, macroRole: "transition_cycle", macroStatus: "recalibrage références", durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["tests", "recalibrage", "transition"] }
+  ];
+
   var specializedPrograms = [
     {
       id: "strict_muscle_up_10w",
@@ -93,6 +101,7 @@
   window.COACH_BERTIN_PROGRAM_INDEX = legacyPrograms
     .concat(bertinPrivatePrograms)
     .concat(clientPrograms)
+    .concat(transitionPrograms)
     .concat(specializedPrograms);
 
   // IDs privés Bertin — référence pour création du profil Bertin
