@@ -62,6 +62,9 @@ node dev/strict_muscle_up_checks.js
 - `docs/CHARGE_PROGRESSION_CONTRACT.md`
 - `docs/ERROR_LOGGING.md`
 - `docs/PHASE_2_EXTRACTION_REPORT.md`
+- `docs/CATALOGUE_MATRICE.md`
+- `docs/superpowers/specs/2026-07-08-la-saison-design.md`
+- `docs/superpowers/plans/2026-07-08-la-saison-etapes-1-4.md`
 
 
 ## RPE Profile + Validation Comfort

@@ -60,4 +60,21 @@ const catalogText = read('programs/racine_client_programs.js') + '\n' + read('pr
 assert(!/resultats\.json|athlete_state\.json|cycle_state\.json/.test(catalogText), 'Le catalogue ne référence pas de données durables historiques.');
 assert(!/Miozza|GitHub|github/i.test(catalogText), 'Le catalogue client ne dépend pas de GitHub.');
 
+// ─── V4.4 — Métadonnées de suggestion (La Saison) ───────────────────────────
+// Tout programme public doit porter les champs dont le moteur de suggestion
+// dépend : objective, frequency et le graphe suggestedNext.
+const publicEntries = index.filter(p => p && (p.visibility || 'public') === 'public');
+assert(publicEntries.length >= 20, 'Le catalogue expose au moins 20 programmes publics.');
+publicEntries.forEach(p => {
+  assert(typeof p.objective === 'string' && p.objective.length > 0, p.id + ' : objective présent.');
+  assert(Number.isInteger(p.frequency) && p.frequency >= 1 && p.frequency <= 6, p.id + ' : frequency valide (1-6).');
+  assert(Array.isArray(p.suggestedNext), p.id + ' : suggestedNext présent (tableau, peut être vide).');
+  (p.suggestedNext || []).forEach(nid => {
+    const target = index.find(t => t && t.id === nid);
+    assert(!!target, p.id + " : suggestedNext '" + nid + "' référence un id existant.");
+    assert(target && (target.visibility || 'public') === 'public', p.id + " : suggestedNext '" + nid + "' est public.");
+    assert(nid !== p.id, p.id + ' : ne se suggère pas lui-même.');
+  });
+});
+
 console.log('✅ Catalogue client/sportif V1.5 : OK');
