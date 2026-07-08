@@ -1,12 +1,12 @@
-# ETAT ACTUEL — V4.4
+# ETAT ACTUEL — V4.5
 
-Version actuelle : V4.4
+Version actuelle : V4.5
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version pose les fondations « La Saison » : catalogue avec graphe de succession, journal des cycles, rétention long terme, objectif d'entraînement par profil et écran de fin de cycle avec suggestions explicables. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version recalibre le catalogue public (convention 1RM de référence, rotation hebdomadaire des accessoires, principal fixe) sur les fondations « La Saison » : catalogue avec graphe de succession, journal des cycles, rétention long terme, objectif d'entraînement par profil et écran de fin de cycle avec suggestions explicables. Le moteur de charges et le Brain ne sont pas modifiés.
 
-## La Saison — portée active (V4.4)
+## La Saison — portée active (V4.5)
 
 - `scripts/season/index.js` : journal `state.season.cycles` (programme, dates, semaines, PR) alimenté à l'archivage/remplacement d'un cycle ; vocabulaire d'objectifs `CoachSeasonGoals`.
 - `scripts/season/retention.js` : agrégats mensuels par mouvement (`state.longTerm.byMovement`), 36 mois glissants — collecte silencieuse, aucune analyse.
@@ -52,6 +52,7 @@ node dev/regression_checks.js --full
 node dev/structure_checks.js --full
 node dev/program_catalog_checks.js
 node dev/season_checks.js
+node dev/program_calibration_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 ```

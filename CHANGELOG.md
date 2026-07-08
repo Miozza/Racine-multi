@@ -1,3 +1,11 @@
+## V4.5 — Catalogue recalibré : convention 1RM référence + rotation hebdomadaire
+- Nouvelle convention gravée : les `BASE_LOADS` des catalogues client et CrossFit sont les 1RM estimés de l'athlète de référence (`reference.js`), les multiplicateurs de semaine des %1RM réels. Fini la double réduction qui donnait des poids ridiculement bas (Goblet 18 %, Hip Thrust 46 % du max de référence).
+- Rotation hebdomadaire dans le catalogue client : le mouvement PRINCIPAL reste identique tout le cycle (progression visible chaque semaine, « surprise » de fin de cycle), les blocs B/C tournent chaque semaine dans des banques de variantes du même pattern. Ex. : Hypertrophie 4 j passe de 7 mouvements figés à 22 distincts par jour de cycle.
+- `hypertrophie_fesse` : les deux mouvements principaux (Hip Thrust, RDL) ont maintenant des charges numériques par semaine (68/71/77/55 %1RM réf.) — le moteur n'est plus aveugle.
+- ~25 repères moteur ajoutés (`coachDefaultLoadSeedForMovement`) : hip thrust, DB RDL, goblet, pull-through, KB swing, farmer carry, landmine, mouvements au poids du corps… Plus aucun mouvement du catalogue sans filet.
+- Nouveau check permanent `dev/program_calibration_checks.js` (504 assertions) : bases = 1RM référence, intensités des mains dans la fenêtre 42-90 %1RM (deload ≤ 66 %), principal fixe par cycle, accessoires qui tournent, seeds présents.
+- Non touchés volontairement : les programmes privés du coach et `arnold_split_strict` (calibrés sur son niveau réel) ; les legacy publics (hypertrophy_base, force_performance, strength, general_*) sont une passe suivante avec revue coach.
+
 ## V4.4.1 — Onboarding : tests à 8 répétitions fixes, RPE intégré, bases affichées
 - Les 5 tests de calibration se font maintenant à 8 répétitions fixes (plus de fourchette 5-10) : chiffre plus précis, protocole identique pour tous.
 - Le RPE ressenti entre enfin dans l'estimation : les répétitions en réserve (10 − RPE, bornées à 4) s'ajoutent avant Epley. RPE non saisi = RPE 8 supposé (la consigne). Avant, le champ RPE était collecté mais ignoré.

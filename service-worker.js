@@ -6,7 +6,7 @@
 // déjà en local.
 // Bump CACHE_NAME à chaque release pour purger les caches précédents.
 
-const CACHE_NAME = "racine-v4.4";
+const CACHE_NAME = "racine-v4.5";
 
 self.addEventListener("install", event => {
   self.skipWaiting();

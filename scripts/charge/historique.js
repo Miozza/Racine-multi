@@ -66,6 +66,29 @@ function coachDefaultLoadSeedForMovement(label, targetReps){
   if(/power clean technique|power clean/.test(n))return 115;
   if(/db fly|dumbbell fly/.test(n))return 30;
   if(/db pullover|dumbbell pullover/.test(n))return 45;
+  // V4.5 — repères ajoutés : mouvements des programmes publics qui n'avaient
+  // aucun seed (le moteur restait aveugle sur charge textuelle sans historique).
+  if(/single leg hip thrust/.test(n))return 95;
+  if(/hip thrust/.test(n))return 225;
+  if(/db rdl|romanian deadlift|stiff leg deadlift/.test(n))return 60;
+  if(/goblet/.test(n))return 70;
+  if(/front foot elevated|split squat|bulgarian/.test(n))return 40;
+  if(/pull through/.test(n))return 70;
+  if(/hip abduction/.test(n))return 25;
+  if(/kb swing|kettlebell swing/.test(n))return 53;
+  if(/step up|box step/.test(n))return 35;
+  if(/farmer carry|farmer walk/.test(n))return 70;
+  if(/db snatch/.test(n))return 50;
+  if(/db thruster/.test(n))return 35;
+  if(/thruster/.test(n))return 95;
+  if(/wall ball/.test(n))return 20;
+  if(/walking lunge|lunge/.test(n))return 35;
+  if(/landmine/.test(n))return 70;
+  if(/one arm db row|db row/.test(n))return 65;
+  // Mouvements au poids du corps : seed 0 = pas de charge externe.
+  if(/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang/.test(n))return 0;
+  if(/pull up|pullup|chin up|chest to bar|toes to bar|knee raise|muscle up/.test(n))return 0;
+  if(/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap/.test(n))return 0;
   return null;
 }
 
