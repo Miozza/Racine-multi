@@ -1,6 +1,6 @@
 {
   "summary": {
-    "generatedAt": "2026-07-08T10:28:47.215Z",
+    "generatedAt": "2026-07-08T18:11:04.750Z",
     "version": "V1.16-multi",
     "personas": 10,
     "pass": 1,
@@ -37,17 +37,17 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 70,
-        "frontSquat": 70,
-        "powerClean": 50,
+        "backSquat5RM": 75,
+        "frontSquat": 75,
+        "powerClean": 55,
         "bulgarianDb": 15,
-        "bench": 65,
-        "inclineDb10RM": 10,
+        "bench": 75,
+        "inclineDb10RM": 15,
         "strictPress": 45,
-        "row8RM": 65,
-        "chestRow8RM": 65,
-        "dbRdl": 85,
-        "hipThrust8RM": 380
+        "row8RM": 70,
+        "chestRow8RM": 70,
+        "dbRdl": 90,
+        "hipThrust8RM": 405
       },
       "warnings": [],
       "fails": [],
@@ -58,11 +58,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Goblet Squat",
-            "load": 20,
+            "load": 25,
             "reps": 9,
             "rpe": 8.3,
-            "e1rm": 26,
-            "suggestedLoad": 20,
+            "e1rm": 32.5,
+            "suggestedLoad": 25,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -71,17 +71,17 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Goblet Squat",
-            "load": 15,
+            "load": 20,
             "reps": 11,
-            "rpe": 7.4,
-            "e1rm": 20.5,
-            "suggestedLoad": 15,
+            "rpe": 7.5,
+            "e1rm": 27.333333333333336,
+            "suggestedLoad": 20,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.366666666666667,
+          "avgRpe": 8.383333333333335,
           "trend": {
             "status": "stable",
             "delta": 0
@@ -92,11 +92,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Incline DB Press",
-            "load": 5,
+            "load": 7.5,
             "reps": 10,
             "rpe": 8.2,
-            "e1rm": 6.666666666666666,
-            "suggestedLoad": 5,
+            "e1rm": 10,
+            "suggestedLoad": 7.5,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -105,11 +105,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Incline DB Press",
-            "load": 5,
+            "load": 7.5,
             "reps": 10,
             "rpe": 8.6,
-            "e1rm": 6.666666666666666,
-            "suggestedLoad": 5,
+            "e1rm": 10,
+            "suggestedLoad": 7.5,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -126,11 +126,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Ring Row",
-            "load": 35,
+            "load": 40,
             "reps": 8,
             "rpe": 8.6,
-            "e1rm": 44.33333333333333,
-            "suggestedLoad": 35,
+            "e1rm": 50.666666666666664,
+            "suggestedLoad": 40,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -139,11 +139,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Ring Row",
-            "load": 30,
+            "load": 35,
             "reps": 10,
             "rpe": 8,
-            "e1rm": 40,
-            "suggestedLoad": 30,
+            "e1rm": 46.666666666666664,
+            "suggestedLoad": 35,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -152,7 +152,7 @@
           "avgRpe": 8.399999999999999,
           "trend": {
             "status": "stable",
-            "delta": 2.631578947368432
+            "delta": 2.6315789473684257
           }
         },
         {
@@ -160,11 +160,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Hip Thrust",
-            "load": 210,
+            "load": 225,
             "reps": 8,
             "rpe": 8.5,
-            "e1rm": 266,
-            "suggestedLoad": 210,
+            "e1rm": 285,
+            "suggestedLoad": 225,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -173,20 +173,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Hip Thrust",
-            "load": 175,
+            "load": 185,
             "reps": 8,
-            "rpe": 7.9,
-            "e1rm": 221.66666666666666,
-            "suggestedLoad": 175,
+            "rpe": 7.8,
+            "e1rm": 234.33333333333331,
+            "suggestedLoad": 185,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.283333333333333,
+          "avgRpe": 8.266666666666666,
           "trend": {
             "status": "stable",
-            "delta": 2.756892230576434
+            "delta": 2.923976608187128
           }
         },
         {
@@ -239,20 +239,20 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 100,
-        "frontSquat": 95,
-        "powerClean": 75,
+        "backSquat5RM": 105,
+        "frontSquat": 100,
+        "powerClean": 80,
         "bulgarianDb": 20,
         "bench": 135,
         "inclineDb10RM": 25,
-        "strictPress": 65,
-        "row8RM": 85,
-        "chestRow8RM": 85,
-        "dbRdl": 120,
-        "hipThrust8RM": 540
+        "strictPress": 70,
+        "row8RM": 90,
+        "chestRow8RM": 90,
+        "dbRdl": 125,
+        "hipThrust8RM": 565
       },
       "warnings": [
-        "Hip Thrust: saut possiblement agressif 25 lb",
+        "Hip Thrust: saut possiblement agressif 30 lb",
         "Hip Thrust: baisse suspecte non attendue"
       ],
       "fails": [],
@@ -263,11 +263,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Front Squat",
-            "load": 55,
+            "load": 60,
             "reps": 4,
             "rpe": 8.9,
-            "e1rm": 62.33333333333333,
-            "suggestedLoad": 60,
+            "e1rm": 68,
+            "suggestedLoad": 65,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -278,7 +278,7 @@
             "movement": "Front Squat",
             "load": 45,
             "reps": 8,
-            "rpe": 8.2,
+            "rpe": 8.1,
             "e1rm": 57,
             "suggestedLoad": 45,
             "suggestionReason": "deload simulé",
@@ -289,7 +289,7 @@
           "avgRpe": 8.316666666666668,
           "trend": {
             "status": "stable",
-            "delta": 1.6042780748663104
+            "delta": 2.4509803921568487
           }
         },
         {
@@ -331,11 +331,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Hip Thrust",
-            "load": 350,
+            "load": 365,
             "reps": 10,
             "rpe": 7.9,
-            "e1rm": 466.66666666666663,
-            "suggestedLoad": 350,
+            "e1rm": 486.66666666666663,
+            "suggestedLoad": 365,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -344,11 +344,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Hip Thrust",
-            "load": 270,
+            "load": 280,
             "reps": 11,
             "rpe": 7.5,
-            "e1rm": 369,
-            "suggestedLoad": 290,
+            "e1rm": 382.6666666666667,
+            "suggestedLoad": 300,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -357,7 +357,7 @@
           "avgRpe": 8.366666666666667,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -10.142857142857126
+            "delta": -10.03424657534245
           }
         },
         {
@@ -366,10 +366,10 @@
             "date": "2026-07-01",
             "movement": "Ring Row",
             "load": 55,
-            "reps": 9,
-            "rpe": 9.1,
-            "e1rm": 71.5,
-            "suggestedLoad": 55,
+            "reps": 10,
+            "rpe": 8.9,
+            "e1rm": 73.33333333333333,
+            "suggestedLoad": 60,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -380,7 +380,7 @@
             "movement": "Ring Row",
             "load": 45,
             "reps": 9,
-            "rpe": 8.2,
+            "rpe": 8,
             "e1rm": 58.5,
             "suggestedLoad": 45,
             "suggestionReason": "deload simulé",
@@ -388,10 +388,10 @@
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.549999999999999,
+          "avgRpe": 8.366666666666667,
           "trend": {
             "status": "stable",
-            "delta": -2.564102564102577
+            "delta": -2.4999999999999933
           }
         },
         {
@@ -399,11 +399,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "DB RDL",
-            "load": 75,
+            "load": 80,
             "reps": 9,
             "rpe": 8.5,
-            "e1rm": 97.5,
-            "suggestedLoad": 77.5,
+            "e1rm": 104,
+            "suggestedLoad": 82.5,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -412,11 +412,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "DB RDL",
-            "load": 70,
+            "load": 75,
             "reps": 10,
             "rpe": 8.5,
-            "e1rm": 93.33333333333333,
-            "suggestedLoad": 65,
+            "e1rm": 100,
+            "suggestedLoad": 70,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -425,7 +425,7 @@
           "avgRpe": 8.516666666666666,
           "trend": {
             "status": "stable",
-            "delta": 0.683760683760674
+            "delta": 0.4807692307692308
           }
         }
       ]
@@ -444,22 +444,22 @@
         "visibleCount": 33
       },
       "computedValues": {
-        "backSquat5RM": 115,
-        "frontSquat": 110,
-        "powerClean": 85,
+        "backSquat5RM": 120,
+        "frontSquat": 115,
+        "powerClean": 90,
         "bulgarianDb": 25,
-        "bench": 90,
-        "inclineDb10RM": 15,
-        "strictPress": 55,
-        "row8RM": 90,
-        "chestRow8RM": 90,
-        "dbRdl": 155,
-        "hipThrust8RM": 700
+        "bench": 100,
+        "inclineDb10RM": 20,
+        "strictPress": 60,
+        "row8RM": 95,
+        "chestRow8RM": 95,
+        "dbRdl": 165,
+        "hipThrust8RM": 745
       },
       "warnings": [
         "Hip Thrust: saut possiblement agressif 15 lb",
         "Hip Thrust: saut possiblement agressif 15 lb",
-        "Hip Thrust: saut possiblement agressif 15 lb"
+        "Hip Thrust: saut possiblement agressif 20 lb"
       ],
       "fails": [],
       "progressionPointCount": 30,
@@ -469,11 +469,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Hip Thrust",
-            "load": 520,
+            "load": 550,
             "reps": 7,
             "rpe": 8.8,
-            "e1rm": 641.3333333333334,
-            "suggestedLoad": 505,
+            "e1rm": 678.3333333333334,
+            "suggestedLoad": 535,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -482,11 +482,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Hip Thrust",
-            "load": 490,
+            "load": 520,
             "reps": 10,
             "rpe": 8.4,
-            "e1rm": 653.3333333333333,
-            "suggestedLoad": 480,
+            "e1rm": 693.3333333333333,
+            "suggestedLoad": 510,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -495,7 +495,7 @@
           "avgRpe": 8.383333333333333,
           "trend": {
             "status": "progression propre",
-            "delta": 8.653846153846153
+            "delta": 9.090909090909085
           }
         },
         {
@@ -503,11 +503,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "DB RDL",
-            "load": 115,
+            "load": 122.5,
             "reps": 8,
             "rpe": 8.5,
-            "e1rm": 145.66666666666666,
-            "suggestedLoad": 112.5,
+            "e1rm": 155.16666666666666,
+            "suggestedLoad": 120,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -516,20 +516,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "DB RDL",
-            "load": 97.5,
+            "load": 110,
             "reps": 9,
-            "rpe": 8,
-            "e1rm": 126.75,
-            "suggestedLoad": 97.5,
+            "rpe": 8.2,
+            "e1rm": 143,
+            "suggestedLoad": 107.5,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.25,
+          "avgRpe": 8.299999999999999,
           "trend": {
             "status": "stable",
-            "delta": 2.631578947368428
+            "delta": 4.726100966702477
           }
         },
         {
@@ -650,17 +650,17 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 165,
-        "frontSquat": 160,
-        "powerClean": 120,
+        "backSquat5RM": 175,
+        "frontSquat": 165,
+        "powerClean": 130,
         "bulgarianDb": 35,
-        "bench": 175,
-        "inclineDb10RM": 30,
-        "strictPress": 105,
-        "row8RM": 145,
-        "chestRow8RM": 145,
-        "dbRdl": 215,
-        "hipThrust8RM": 970
+        "bench": 185,
+        "inclineDb10RM": 35,
+        "strictPress": 115,
+        "row8RM": 155,
+        "chestRow8RM": 155,
+        "dbRdl": 225,
+        "hipThrust8RM": 1015
       },
       "warnings": [
         "Deadlift: saut possiblement agressif 25 lb",
@@ -675,44 +675,10 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Back Squat",
-            "load": 140,
+            "load": 150,
             "reps": 7,
             "rpe": 8.8,
-            "e1rm": 172.66666666666669,
-            "suggestedLoad": 135,
-            "suggestionReason": "onboarding seed",
-            "severity": "watch",
-            "confidence": 0.25,
-            "failed": false
-          },
-          "last": {
-            "date": "2026-08-08",
-            "movement": "Back Squat",
-            "load": 125,
-            "reps": 7,
-            "rpe": 8.1,
-            "e1rm": 154.16666666666669,
-            "suggestedLoad": 130,
-            "suggestionReason": "deload simulé",
-            "severity": "watch",
-            "confidence": 0.8333333333333334,
-            "failed": false
-          },
-          "avgRpe": 8.45,
-          "trend": {
-            "status": "stable",
-            "delta": 1.7374517374517209
-          }
-        },
-        {
-          "movement": "Bench Press",
-          "first": {
-            "date": "2026-07-01",
-            "movement": "Bench Press",
-            "load": 145,
-            "reps": 7,
-            "rpe": 8.6,
-            "e1rm": 178.83333333333334,
+            "e1rm": 185,
             "suggestedLoad": 145,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
@@ -721,21 +687,55 @@
           },
           "last": {
             "date": "2026-08-08",
-            "movement": "Bench Press",
-            "load": 125,
-            "reps": 6,
-            "rpe": 8,
-            "e1rm": 150,
-            "suggestedLoad": 130,
+            "movement": "Back Squat",
+            "load": 135,
+            "reps": 7,
+            "rpe": 8.1,
+            "e1rm": 166.5,
+            "suggestedLoad": 140,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.383333333333333,
+          "avgRpe": 8.433333333333334,
           "trend": {
             "status": "stable",
-            "delta": 4.007455731593657
+            "delta": 1.0810810810810811
+          }
+        },
+        {
+          "movement": "Bench Press",
+          "first": {
+            "date": "2026-07-01",
+            "movement": "Bench Press",
+            "load": 150,
+            "reps": 7,
+            "rpe": 8.6,
+            "e1rm": 185,
+            "suggestedLoad": 150,
+            "suggestionReason": "onboarding seed",
+            "severity": "watch",
+            "confidence": 0.25,
+            "failed": false
+          },
+          "last": {
+            "date": "2026-08-08",
+            "movement": "Bench Press",
+            "load": 130,
+            "reps": 6,
+            "rpe": 8.1,
+            "e1rm": 156,
+            "suggestedLoad": 135,
+            "suggestionReason": "deload simulé",
+            "severity": "watch",
+            "confidence": 0.8333333333333334,
+            "failed": false
+          },
+          "avgRpe": 8.4,
+          "trend": {
+            "status": "stable",
+            "delta": 3.783783783783784
           }
         },
         {
@@ -743,11 +743,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Deadlift",
-            "load": 825,
+            "load": 865,
             "reps": 4,
             "rpe": 8.7,
-            "e1rm": 935,
-            "suggestedLoad": 795,
+            "e1rm": 980.3333333333333,
+            "suggestedLoad": 830,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -756,11 +756,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Deadlift",
-            "load": 705,
+            "load": 730,
             "reps": 5,
             "rpe": 8.4,
-            "e1rm": 822.5,
-            "suggestedLoad": 725,
+            "e1rm": 851.6666666666667,
+            "suggestedLoad": 750,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -769,7 +769,7 @@
           "avgRpe": 8.466666666666667,
           "trend": {
             "status": "progression propre",
-            "delta": 12.121212121212137
+            "delta": 11.339680380822859
           }
         },
         {
@@ -777,11 +777,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Strict Press",
-            "load": 85,
+            "load": 95,
             "reps": 6,
             "rpe": 8.5,
-            "e1rm": 102,
-            "suggestedLoad": 85,
+            "e1rm": 114,
+            "suggestedLoad": 95,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -790,11 +790,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Strict Press",
-            "load": 70,
+            "load": 75,
             "reps": 7,
-            "rpe": 7.6,
-            "e1rm": 86.33333333333334,
-            "suggestedLoad": 70,
+            "rpe": 7.5,
+            "e1rm": 92.5,
+            "suggestedLoad": 75,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -803,7 +803,7 @@
           "avgRpe": 8.083333333333334,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -5.88235294117647
+            "delta": -5.263157894736842
           }
         },
         {
@@ -811,11 +811,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Barbell Row",
-            "load": 115,
+            "load": 120,
             "reps": 9,
             "rpe": 8,
-            "e1rm": 149.5,
-            "suggestedLoad": 120,
+            "e1rm": 156,
+            "suggestedLoad": 125,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -824,11 +824,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Barbell Row",
-            "load": 100,
+            "load": 105,
             "reps": 11,
             "rpe": 7.8,
-            "e1rm": 136.66666666666666,
-            "suggestedLoad": 100,
+            "e1rm": 143.5,
+            "suggestedLoad": 105,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -837,7 +837,7 @@
           "avgRpe": 8.283333333333333,
           "trend": {
             "status": "stable",
-            "delta": 1.6722408026755853
+            "delta": 1.4957264957264838
           }
         }
       ]
@@ -856,22 +856,22 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 255,
-        "frontSquat": 245,
-        "powerClean": 185,
+        "backSquat5RM": 270,
+        "frontSquat": 260,
+        "powerClean": 200,
         "bulgarianDb": 55,
-        "bench": 265,
+        "bench": 280,
         "inclineDb10RM": 50,
-        "strictPress": 165,
-        "row8RM": 205,
-        "chestRow8RM": 205,
-        "dbRdl": 300,
-        "hipThrust8RM": 1350
+        "strictPress": 175,
+        "row8RM": 215,
+        "chestRow8RM": 215,
+        "dbRdl": 315,
+        "hipThrust8RM": 1420
       },
       "warnings": [
         "Back Squat: baisse suspecte non attendue",
         "Deadlift: saut possiblement agressif 35 lb",
-        "Deadlift: saut possiblement agressif 30 lb",
+        "Deadlift: saut possiblement agressif 35 lb",
         "Barbell Row: baisse suspecte non attendue"
       ],
       "fails": [],
@@ -882,11 +882,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Back Squat",
-            "load": 205,
+            "load": 215,
             "reps": 7,
             "rpe": 8.6,
-            "e1rm": 252.83333333333334,
-            "suggestedLoad": 210,
+            "e1rm": 265.1666666666667,
+            "suggestedLoad": 220,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -895,11 +895,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Back Squat",
-            "load": 165,
+            "load": 175,
             "reps": 5,
             "rpe": 8.2,
-            "e1rm": 192.5,
-            "suggestedLoad": 160,
+            "e1rm": 204.16666666666669,
+            "suggestedLoad": 170,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -908,7 +908,7 @@
           "avgRpe": 8.383333333333333,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -4.812129202373113
+            "delta": -4.462602137020755
           }
         },
         {
@@ -916,11 +916,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Bench Press",
-            "load": 210,
+            "load": 225,
             "reps": 7,
             "rpe": 8.2,
-            "e1rm": 259,
-            "suggestedLoad": 215,
+            "e1rm": 277.5,
+            "suggestedLoad": 230,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -929,11 +929,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Bench Press",
-            "load": 190,
+            "load": 205,
             "reps": 6,
             "rpe": 8.1,
-            "e1rm": 228,
-            "suggestedLoad": 190,
+            "e1rm": 246,
+            "suggestedLoad": 205,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -942,7 +942,7 @@
           "avgRpe": 8.3,
           "trend": {
             "status": "stable",
-            "delta": 1.3513513513513513
+            "delta": 0.9009009009009009
           }
         },
         {
@@ -950,11 +950,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Deadlift",
-            "load": 1075,
+            "load": 1135,
             "reps": 4,
             "rpe": 8.4,
-            "e1rm": 1218.3333333333333,
-            "suggestedLoad": 1105,
+            "e1rm": 1286.3333333333333,
+            "suggestedLoad": 1165,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -963,11 +963,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Deadlift",
-            "load": 980,
+            "load": 1035,
             "reps": 5,
             "rpe": 8.1,
-            "e1rm": 1143.3333333333335,
-            "suggestedLoad": 950,
+            "e1rm": 1207.5,
+            "suggestedLoad": 1005,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -976,7 +976,7 @@
           "avgRpe": 8.333333333333334,
           "trend": {
             "status": "progression propre",
-            "delta": 6.771545827633398
+            "delta": 7.022544700699675
           }
         },
         {
@@ -984,11 +984,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Strict Press",
-            "load": 135,
+            "load": 150,
             "reps": 5,
-            "rpe": 8.6,
-            "e1rm": 157.5,
-            "suggestedLoad": 135,
+            "rpe": 8.7,
+            "e1rm": 175,
+            "suggestedLoad": 145,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -997,20 +997,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Strict Press",
-            "load": 105,
+            "load": 115,
             "reps": 6,
-            "rpe": 8,
-            "e1rm": 126,
-            "suggestedLoad": 110,
+            "rpe": 8.1,
+            "e1rm": 138,
+            "suggestedLoad": 120,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.466666666666667,
+          "avgRpe": 8.533333333333333,
           "trend": {
             "status": "stable",
-            "delta": 1.7989417989418048
+            "delta": -1.3333333333333224
           }
         },
         {
@@ -1018,11 +1018,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Barbell Row",
-            "load": 165,
+            "load": 170,
             "reps": 9,
             "rpe": 8.4,
-            "e1rm": 214.5,
-            "suggestedLoad": 170,
+            "e1rm": 221,
+            "suggestedLoad": 175,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1033,7 +1033,7 @@
             "movement": "Barbell Row",
             "load": 135,
             "reps": 11,
-            "rpe": 8,
+            "rpe": 7.9,
             "e1rm": 184.5,
             "suggestedLoad": 130,
             "suggestionReason": "deload simulé",
@@ -1041,10 +1041,10 @@
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.216666666666667,
+          "avgRpe": 8.2,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -11.421911421911423
+            "delta": -11.161387631975876
           }
         }
       ]
@@ -1063,21 +1063,21 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 225,
-        "frontSquat": 215,
-        "powerClean": 165,
+        "backSquat5RM": 240,
+        "frontSquat": 230,
+        "powerClean": 175,
         "bulgarianDb": 50,
-        "bench": 230,
-        "inclineDb10RM": 40,
-        "strictPress": 140,
-        "row8RM": 185,
-        "chestRow8RM": 185,
-        "dbRdl": 270,
-        "hipThrust8RM": 1215
+        "bench": 245,
+        "inclineDb10RM": 45,
+        "strictPress": 150,
+        "row8RM": 195,
+        "chestRow8RM": 195,
+        "dbRdl": 285,
+        "hipThrust8RM": 1285
       },
       "warnings": [
         "Power Clean: baisse suspecte non attendue",
-        "Front Squat: progresse mais RPE coûteux (9.4%)",
+        "Front Squat: progresse mais RPE coûteux (9.2%)",
         "Push Press: baisse suspecte non attendue",
         "Deadlift: saut possiblement agressif 45 lb"
       ],
@@ -1089,11 +1089,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Power Clean",
-            "load": 110,
+            "load": 120,
             "reps": 5,
             "rpe": 7.9,
-            "e1rm": 128.33333333333334,
-            "suggestedLoad": 110,
+            "e1rm": 140,
+            "suggestedLoad": 120,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1102,20 +1102,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Power Clean",
-            "load": 80,
+            "load": 90,
             "reps": 4,
-            "rpe": 8.3,
-            "e1rm": 90.66666666666666,
-            "suggestedLoad": 85,
+            "rpe": 8.4,
+            "e1rm": 102,
+            "suggestedLoad": 95,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.100000000000001,
+          "avgRpe": 8.116666666666667,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -14.285714285714283
+            "delta": -13.571428571428562
           }
         },
         {
@@ -1123,11 +1123,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Front Squat",
-            "load": 150,
+            "load": 160,
             "reps": 4,
             "rpe": 9,
-            "e1rm": 170,
-            "suggestedLoad": 145,
+            "e1rm": 181.33333333333331,
+            "suggestedLoad": 155,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1136,20 +1136,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Front Squat",
-            "load": 135,
+            "load": 145,
             "reps": 7,
             "rpe": 8.5,
-            "e1rm": 166.5,
-            "suggestedLoad": 130,
+            "e1rm": 178.83333333333334,
+            "suggestedLoad": 140,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.783333333333333,
+          "avgRpe": 8.766666666666667,
           "trend": {
             "status": "monte cher",
-            "delta": 9.411764705882353
+            "delta": 9.191176470588246
           }
         },
         {
@@ -1157,11 +1157,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Push Press",
-            "load": 95,
+            "load": 100,
             "reps": 7,
             "rpe": 7.9,
-            "e1rm": 117.16666666666667,
-            "suggestedLoad": 95,
+            "e1rm": 123.33333333333334,
+            "suggestedLoad": 100,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1170,20 +1170,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Push Press",
-            "load": 65,
+            "load": 70,
             "reps": 6,
-            "rpe": 8.4,
-            "e1rm": 78,
-            "suggestedLoad": 70,
+            "rpe": 8.5,
+            "e1rm": 84,
+            "suggestedLoad": 75,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.266666666666667,
+          "avgRpe": 8.283333333333333,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -10.52631578947368
+            "delta": -10.000000000000007
           }
         },
         {
@@ -1191,11 +1191,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Deadlift",
-            "load": 825,
+            "load": 875,
             "reps": 6,
             "rpe": 8.4,
-            "e1rm": 990,
-            "suggestedLoad": 825,
+            "e1rm": 1050,
+            "suggestedLoad": 875,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1204,11 +1204,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Deadlift",
-            "load": 675,
+            "load": 705,
             "reps": 7,
             "rpe": 8.2,
-            "e1rm": 832.5,
-            "suggestedLoad": 725,
+            "e1rm": 869.5,
+            "suggestedLoad": 760,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -1217,7 +1217,7 @@
           "avgRpe": 8.333333333333334,
           "trend": {
             "status": "stable",
-            "delta": 3.0303030303030303
+            "delta": 2.2857142857142856
           }
         },
         {
@@ -1270,23 +1270,23 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 165,
-        "frontSquat": 155,
-        "powerClean": 120,
+        "backSquat5RM": 175,
+        "frontSquat": 165,
+        "powerClean": 125,
         "bulgarianDb": 35,
-        "bench": 165,
+        "bench": 175,
         "inclineDb10RM": 30,
-        "strictPress": 105,
-        "row8RM": 135,
-        "chestRow8RM": 135,
-        "dbRdl": 205,
-        "hipThrust8RM": 920
+        "strictPress": 110,
+        "row8RM": 140,
+        "chestRow8RM": 140,
+        "dbRdl": 215,
+        "hipThrust8RM": 970
       },
       "warnings": [
         "Front Squat: baisse suspecte non attendue",
         "Deadlift: saut possiblement agressif 35 lb",
         "Deadlift: saut possiblement agressif 20 lb",
-        "Deadlift: saut possiblement agressif 25 lb",
+        "Deadlift: saut possiblement agressif 30 lb",
         "Deadlift: saut possiblement agressif 25 lb"
       ],
       "fails": [],
@@ -1297,11 +1297,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Power Clean",
-            "load": 85,
+            "load": 90,
             "reps": 2,
             "rpe": 7.9,
-            "e1rm": 90.66666666666667,
-            "suggestedLoad": 80,
+            "e1rm": 96,
+            "suggestedLoad": 85,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1310,11 +1310,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Power Clean",
-            "load": 75,
+            "load": 80,
             "reps": 4,
             "rpe": 8.7,
-            "e1rm": 85,
-            "suggestedLoad": 70,
+            "e1rm": 90.66666666666666,
+            "suggestedLoad": 75,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -1323,7 +1323,7 @@
           "avgRpe": 8.516666666666666,
           "trend": {
             "status": "stable",
-            "delta": 3.12500000000001
+            "delta": 3.1250000000000147
           }
         },
         {
@@ -1331,11 +1331,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Front Squat",
-            "load": 105,
+            "load": 110,
             "reps": 6,
             "rpe": 9.2,
-            "e1rm": 126,
-            "suggestedLoad": 105,
+            "e1rm": 132,
+            "suggestedLoad": 110,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1344,20 +1344,20 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Front Squat",
-            "load": 75,
-            "reps": 8,
+            "load": 80,
+            "reps": 7,
             "rpe": 8,
-            "e1rm": 95,
-            "suggestedLoad": 75,
+            "e1rm": 98.66666666666667,
+            "suggestedLoad": 80,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.25,
+          "avgRpe": 8.266666666666667,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -11.904761904761903
+            "delta": -11.237373737373733
           }
         },
         {
@@ -1365,11 +1365,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Push Press",
-            "load": 65,
+            "load": 70,
             "reps": 6,
             "rpe": 7.7,
-            "e1rm": 78,
-            "suggestedLoad": 70,
+            "e1rm": 84,
+            "suggestedLoad": 75,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1378,11 +1378,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Push Press",
-            "load": 65,
+            "load": 70,
             "reps": 6,
             "rpe": 8.2,
-            "e1rm": 78,
-            "suggestedLoad": 65,
+            "e1rm": 84,
+            "suggestedLoad": 70,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -1391,7 +1391,7 @@
           "avgRpe": 8.15,
           "trend": {
             "status": "progression propre",
-            "delta": 12.179487179487179
+            "delta": 11.111111111111123
           }
         },
         {
@@ -1399,11 +1399,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Deadlift",
-            "load": 600,
+            "load": 635,
             "reps": 7,
             "rpe": 8.7,
-            "e1rm": 740,
-            "suggestedLoad": 625,
+            "e1rm": 783.1666666666667,
+            "suggestedLoad": 660,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1412,11 +1412,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Deadlift",
-            "load": 605,
-            "reps": 5,
+            "load": 640,
+            "reps": 4,
             "rpe": 8,
-            "e1rm": 705.8333333333334,
-            "suggestedLoad": 600,
+            "e1rm": 725.3333333333333,
+            "suggestedLoad": 635,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -1425,7 +1425,7 @@
           "avgRpe": 8.466666666666667,
           "trend": {
             "status": "progression propre",
-            "delta": 7.972972972972974
+            "delta": 7.81017237710149
           }
         },
         {
@@ -1478,17 +1478,17 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 185,
-        "frontSquat": 180,
-        "powerClean": 135,
+        "backSquat5RM": 195,
+        "frontSquat": 190,
+        "powerClean": 145,
         "bulgarianDb": 40,
-        "bench": 210,
+        "bench": 220,
         "inclineDb10RM": 40,
-        "strictPress": 130,
-        "row8RM": 175,
-        "chestRow8RM": 175,
-        "dbRdl": 245,
-        "hipThrust8RM": 1105
+        "strictPress": 135,
+        "row8RM": 185,
+        "chestRow8RM": 185,
+        "dbRdl": 260,
+        "hipThrust8RM": 1170
       },
       "warnings": [
         "Strict Pull-Up: baisse suspecte non attendue",
@@ -1684,20 +1684,20 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 150,
-        "frontSquat": 145,
-        "powerClean": 110,
-        "bulgarianDb": 30,
-        "bench": 165,
+        "backSquat5RM": 155,
+        "frontSquat": 150,
+        "powerClean": 115,
+        "bulgarianDb": 35,
+        "bench": 175,
         "inclineDb10RM": 30,
-        "strictPress": 105,
-        "row8RM": 135,
-        "chestRow8RM": 135,
-        "dbRdl": 185,
-        "hipThrust8RM": 835
+        "strictPress": 110,
+        "row8RM": 140,
+        "chestRow8RM": 140,
+        "dbRdl": 195,
+        "hipThrust8RM": 880
       },
       "warnings": [
-        "Push Press: progresse mais RPE coûteux (6.7%)",
+        "Push Press: progresse mais RPE coûteux (6.3%)",
         "Power Clean: saut possiblement agressif 5 lb"
       ],
       "fails": [],
@@ -1708,11 +1708,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Front Squat",
-            "load": 105,
+            "load": 110,
             "reps": 6,
             "rpe": 8.2,
-            "e1rm": 126,
-            "suggestedLoad": 105,
+            "e1rm": 132,
+            "suggestedLoad": 110,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1721,11 +1721,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Front Squat",
-            "load": 95,
+            "load": 100,
             "reps": 4,
             "rpe": 9.6,
-            "e1rm": 107.66666666666666,
-            "suggestedLoad": 90,
+            "e1rm": 113.33333333333333,
+            "suggestedLoad": 95,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -1742,11 +1742,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Push Press",
-            "load": 75,
+            "load": 80,
             "reps": 4,
             "rpe": 8.8,
-            "e1rm": 85,
-            "suggestedLoad": 75,
+            "e1rm": 90.66666666666666,
+            "suggestedLoad": 80,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1757,7 +1757,7 @@
             "movement": "Push Press",
             "load": 70,
             "reps": 6,
-            "rpe": 8.9,
+            "rpe": 8.8,
             "e1rm": 84,
             "suggestedLoad": 70,
             "suggestionReason": "deload simulé",
@@ -1765,10 +1765,10 @@
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.866666666666667,
+          "avgRpe": 8.850000000000001,
           "trend": {
             "status": "monte cher",
-            "delta": 6.666666666666655
+            "delta": 6.250000000000005
           }
         },
         {
@@ -1776,11 +1776,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Power Clean",
-            "load": 80,
+            "load": 85,
             "reps": 3,
             "rpe": 8.1,
-            "e1rm": 88,
-            "suggestedLoad": 80,
+            "e1rm": 93.50000000000001,
+            "suggestedLoad": 85,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1791,7 +1791,7 @@
             "movement": "Power Clean",
             "load": 70,
             "reps": 3,
-            "rpe": 9.7,
+            "rpe": 9.6,
             "e1rm": 77,
             "suggestedLoad": 70,
             "suggestionReason": "deload simulé",
@@ -1799,10 +1799,10 @@
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 9.1,
+          "avgRpe": 9.083333333333334,
           "trend": {
             "status": "stable lourd",
-            "delta": 3.0303030303030196
+            "delta": 3.0303030303030094
           }
         },
         {
@@ -1810,11 +1810,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Barbell Row",
-            "load": 95,
+            "load": 100,
             "reps": 8,
             "rpe": 8.7,
-            "e1rm": 120.33333333333333,
-            "suggestedLoad": 95,
+            "e1rm": 126.66666666666666,
+            "suggestedLoad": 100,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1823,11 +1823,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Barbell Row",
-            "load": 75,
+            "load": 80,
             "reps": 7,
             "rpe": 9.1,
-            "e1rm": 92.5,
-            "suggestedLoad": 75,
+            "e1rm": 98.66666666666667,
+            "suggestedLoad": 80,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -1836,7 +1836,7 @@
           "avgRpe": 8.966666666666667,
           "trend": {
             "status": "stable lourd",
-            "delta": -2.770083102493071
+            "delta": -2.499999999999993
           }
         },
         {
@@ -1889,15 +1889,15 @@
         "visibleCount": 32
       },
       "computedValues": {
-        "backSquat5RM": 195,
-        "frontSquat": 185,
-        "powerClean": 140,
-        "bulgarianDb": 40,
+        "backSquat5RM": 210,
+        "frontSquat": 200,
+        "powerClean": 155,
+        "bulgarianDb": 45,
         "bench": 45,
         "inclineDb10RM": 10,
         "strictPress": 140,
-        "row8RM": 295,
-        "chestRow8RM": 295,
+        "row8RM": 320,
+        "chestRow8RM": 320,
         "dbRdl": 80,
         "hipThrust8RM": 360
       },
@@ -1906,10 +1906,10 @@
         "Bench Press: saut possiblement agressif 25 lb",
         "Bench Press: progresse mais RPE coûteux (29.6%)",
         "Front Squat: saut possiblement agressif 15 lb",
-        "Barbell Row: saut possiblement agressif 110 lb",
-        "Barbell Row: saut possiblement agressif 125 lb",
-        "Barbell Row: saut possiblement agressif 145 lb",
-        "Barbell Row: progresse mais RPE coûteux (97.4%)",
+        "Barbell Row: saut possiblement agressif 120 lb",
+        "Barbell Row: saut possiblement agressif 140 lb",
+        "Barbell Row: saut possiblement agressif 160 lb",
+        "Barbell Row: progresse mais RPE coûteux (98.9%)",
         "Hip Thrust: saut possiblement agressif 175 lb",
         "Incline DB Press: progresse mais RPE coûteux (5.3%)"
       ],
@@ -1955,11 +1955,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Front Squat",
-            "load": 90,
+            "load": 95,
             "reps": 10,
             "rpe": 7.7,
-            "e1rm": 120,
-            "suggestedLoad": 135,
+            "e1rm": 126.66666666666666,
+            "suggestedLoad": 145,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -1981,7 +1981,7 @@
           "avgRpe": 7.183333333333334,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -65
+            "delta": -66.84210526315789
           }
         },
         {
@@ -1989,11 +1989,11 @@
           "first": {
             "date": "2026-07-01",
             "movement": "Barbell Row",
-            "load": 275,
+            "load": 300,
             "reps": 9,
             "rpe": 9,
-            "e1rm": 357.5,
-            "suggestedLoad": 210,
+            "e1rm": 390,
+            "suggestedLoad": 230,
             "suggestionReason": "onboarding seed",
             "severity": "watch",
             "confidence": 0.25,
@@ -2002,11 +2002,11 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Barbell Row",
-            "load": 430,
+            "load": 475,
             "reps": 5,
             "rpe": 10,
-            "e1rm": 501.6666666666667,
-            "suggestedLoad": 515,
+            "e1rm": 554.1666666666667,
+            "suggestedLoad": 565,
             "suggestionReason": "deload simulé",
             "severity": "watch",
             "confidence": 0.8333333333333334,
@@ -2015,7 +2015,7 @@
           "avgRpe": 9.549999999999999,
           "trend": {
             "status": "monte cher",
-            "delta": 97.43589743589745
+            "delta": 98.93162393162395
           }
         },
         {

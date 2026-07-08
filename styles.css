@@ -6159,3 +6159,24 @@ body.is-client [data-ai-clear]{display:none!important}
 .season-tl-current::before { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
 .season-tl-next { border-left-style: dashed; }
 .season-tl-next::before { background: var(--purple); }
+
+/* ═══ Onboarding V4.4.1 — reps fixes + base de référence ═══ */
+.racine-test-fixed-reps {
+  display: flex; align-items: center; justify-content: center;
+  height: 42px;
+  background: var(--panel3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--font-hud);
+  font-size: 14px;
+  color: var(--text2);
+}
+.racine-review-basis {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--font-hud);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}

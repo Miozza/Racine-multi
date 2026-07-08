@@ -54,7 +54,10 @@ try{
     hinge:{weight:95,reps:8,rpe:8}
   }, 'debutant');
   assert(computed && computed.values && computed.ratios, 'Onboarding calcule valeurs et ratios.');
-  assert(computed.values.bench > 90 && computed.values.bench < 120, 'Bench débutant reste proche du test réel, pas du bench de référence avancé.');
+  // V4.4.1 : le RPE entre dans l'estimation (95×8 @ RPE 8 = 2 reps en réserve
+  // → 1RM ≈ 125). La borne haute suit, l'intention reste : proche du test
+  // réel, jamais le bench de référence avancé (~275).
+  assert(computed.values.bench > 90 && computed.values.bench < 135, 'Bench débutant reste proche du test réel, pas du bench de référence avancé.');
   assert(computed.ratios.bench > 0.25 && computed.ratios.bench < 0.45, 'Ratio bench débutant cohérent.');
   assert(computed.values.inclineDb10RM < 30, 'Incline DB dérivé reste débutant.');
 }catch(e){

@@ -52,7 +52,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       id: "squat",
       title: "Back Squat",
       subtitle: "Back Squat à la barre — le squat de référence.",
-      guidance: "Échauffe-toi progressivement, puis fais UNE série de travail propre de 5 à 10 répétitions à RPE 7-8 (encore 2-3 reps en réserve). Pas de tentative maximale. Le front squat et le power clean sont estimés à partir de ce test.",
+      guidance: "Échauffe-toi progressivement, puis fais UNE série de travail propre de 8 répétitions à RPE 7-8 (encore 2-3 reps en réserve). Pas de tentative maximale. Le front squat et le power clean sont estimés à partir de ce test.",
       primary: "backSquat5RM", primaryReps: 5,
       absoluteKeys: {},
       ratioKeys: { frontSquat: { coeff: 0.85, reps: 1 }, powerClean: { coeff: 0.65, reps: 1 } },
@@ -62,7 +62,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       id: "bench",
       title: "Bench Press",
       subtitle: "Développé couché à la barre.",
-      guidance: "Même logique : une série de travail propre de 5 à 10 répétitions à RPE 7-8.",
+      guidance: "Même logique : une série de travail propre de 8 répétitions à RPE 7-8.",
       primary: "bench", primaryReps: 1,
       absoluteKeys: {},
       ratioKeys: {},
@@ -72,7 +72,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       id: "press",
       title: "Strict Press",
       subtitle: "Développé épaules strict, debout, sans élan des jambes.",
-      guidance: "Charge modérée, 5 à 10 répétitions propres à RPE 7-8.",
+      guidance: "Charge modérée, 8 répétitions propres à RPE 7-8.",
       primary: "strictPress", primaryReps: 1,
       absoluteKeys: {},
       ratioKeys: {},
@@ -82,7 +82,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       id: "row",
       title: "Tirage horizontal",
       subtitle: "Barbell Row, Chest Supported Row ou équivalent.",
-      guidance: "5 à 10 répétitions propres à RPE 7-8, dos neutre.",
+      guidance: "8 répétitions propres à RPE 7-8, dos neutre.",
       primary: "row8RM", primaryReps: 8,
       absoluteKeys: { chestRow8RM: 8 },
       ratioKeys: {},
@@ -107,13 +107,35 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       id: "hinge",
       title: "Chaîne postérieure",
       subtitle: "DB RDL aux haltères (soulevé de terre jambes semi-tendues).",
-      guidance: "5 à 10 répétitions propres à RPE 7-8, dos neutre. Le Hip Thrust est estimé à partir de ce test.",
+      guidance: "8 répétitions propres à RPE 7-8, dos neutre. Le Hip Thrust est estimé à partir de ce test.",
       primary: "dbRdl", primaryReps: 8,
       absoluteKeys: {},
       ratioKeys: {},
       proportionalKeys: ["hipThrust8RM"]
     }
   ];
+
+  // Protocole de test : nombre de répétitions FIXE. Une cible unique donne un
+  // chiffre plus précis qu'une fourchette — c'est le RPE qui fait la différence
+  // entre deux athlètes à la même charge.
+  api.TEST_REPS = 8;
+
+  // Base de référence de chaque valeur calculée, affichée sous les champs de
+  // l'écran « Mouvements calculés » (mêmes conventions que les onglets PR/Réfs).
+  api.REFERENCE_BASIS = {
+    bench:            "1RM estimé",
+    strictPress:      "1RM estimé",
+    frontSquat:       "1RM estimé · dérivé du squat",
+    powerClean:       "1RM estimé · dérivé du squat",
+    backSquat5RM:     "5RM estimé",
+    hipThrust8RM:     "8RM · dérivé du DB RDL",
+    row8RM:           "8RM",
+    chestRow8RM:      "8RM",
+    bulgarianDb:      "lb par main",
+    dbRdl:            "8RM · lb par main",
+    inclineDb10RM:    "10RM · lb par main",
+    strictPullupReps: "répétitions au poids du corps"
+  };
 
   function round5(n){ return Math.round(Number(n)/5)*5; }
 
@@ -160,7 +182,13 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       // test soit fait ou non.
       var base1RM = null;
       if(a && Number(a.weight) > 0 && Number(a.reps) > 0){
-        base1RM = epley(Number(a.weight), Number(a.reps));
+        // Le RPE entre dans l'estimation : une série à RPE 8 n'est pas une
+        // série maximale. Les répétitions en réserve (10 − RPE, bornées à 4)
+        // s'ajoutent aux reps faites avant Epley. RPE absent → RPE 8 supposé
+        // (la consigne du test), soit 2 reps en réserve.
+        var rpe = Number(a.rpe);
+        var rir = (isFinite(rpe) && rpe >= 5 && rpe <= 10) ? Math.min(4, Math.max(0, 10 - rpe)) : 2;
+        base1RM = epley(Number(a.weight), Number(a.reps) + rir);
       } else {
         var pd = ref[test.primary];
         if(pd || pd === 0) base1RM = epley(pd, test.primaryReps) * lvl.fallbackRatio;
