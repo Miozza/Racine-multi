@@ -269,12 +269,13 @@ function pcRenderSelectors(){
     '</div>';
 }
 function pcIsAdmin(){
-  // Délègue au helper centralisé. Fallback local si CoachProfiles absent.
+  // Délègue au helper centralisé. Fallback local si CoachProfiles absent —
+  // sans passe-droit par nom de profil : seul un flag explicite compte.
   try{
     if(window.CoachProfiles && CoachProfiles.isActiveAdmin) return CoachProfiles.isActiveAdmin();
     var ap = window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive();
     if(!ap) return false;
-    return !!(ap.isAdmin || ap.name === "Bertin");
+    return !!(ap.isAdmin || ap.macrocycleOverrideKey === "BERTIN_MACROCYCLE_OVERRIDE");
   }catch(e){ return false; }
 }
 

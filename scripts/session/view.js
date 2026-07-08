@@ -5,7 +5,10 @@ var guidedSessionState = { blocks: [], index: 0 };
 var guidedLaunchSource = "phone"; // "wodplus" ou "phone"
 var guidedResultsMode = false;
 
+// Délègue à l'implémentation canonique (scripts/ui_modals.js, chargé avant).
+// Le repli inline ne sert que si l'ordre de chargement change un jour.
 function escHtml(v){
+  if(typeof escapeHtml === "function") return escapeHtml(v);
   return String(v===undefined||v===null?"":v)
     .replace(/&/g,"&amp;")
     .replace(/</g,"&lt;")
