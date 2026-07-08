@@ -86,6 +86,15 @@ assert(goals.normalize('prendre_du_muscle') === 'prendre_du_muscle', 'normalize 
 assert(goals.normalize('nimporte_quoi') === null && goals.normalize(undefined) === null,
   'normalize rejette les valeurs hors vocabulaire.');
 
+// ─── Objectif utilisateur branché (statique) ─────────────────────────────────
+const onboardingSrc = read('scripts/profiles/onboarding.js');
+assert(onboardingSrc.includes('state.profile.trainingGoal'), 'L’onboarding persiste trainingGoal dans le profil.');
+assert(onboardingSrc.includes('CoachSeasonGoals.normalize'), 'L’onboarding normalise trainingGoal (vocabulaire fermé).');
+const profilesUiSrc = read('scripts/profiles/ui.js');
+assert(profilesUiSrc.includes('rrTrainingGoal'), 'Le wizard pose la question de l’objectif.');
+assert(profilesUiSrc.includes('settingsTrainingGoal'), 'L’objectif est éditable dans Réglages.');
+assert(profilesUiSrc.includes('trainingGoalOptionsHtml'), 'Les options viennent du vocabulaire partagé.');
+
 // ═══ Rétention long terme (scripts/season/retention.js) ═════════════════════
 vm.runInContext(read('scripts/season/retention.js'), context, {filename:'scripts/season/retention.js'});
 const CoachRetention = context.window.CoachRetention;
