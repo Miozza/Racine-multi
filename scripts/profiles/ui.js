@@ -251,8 +251,8 @@
           '</div>'
         : '<div class="racine-test-row">'+
             '<div style="flex:1"><label>Charge (lb)</label><input id="rk_w_'+test.id+'" type="number" class="input-field" placeholder="ex. 135"/></div>'+
-            '<div style="flex:1"><label>Reps faites</label><input id="rk_r_'+test.id+'" type="number" class="input-field" placeholder="ex. 8"/></div>'+
-            '<div style="flex:1"><label>RPE ressenti</label><input id="rk_p_'+test.id+'" type="number" class="input-field" placeholder="7-8" step="0.5"/></div>'+
+            '<div style="flex:0 0 64px"><label>Reps</label><div class="racine-test-fixed-reps">× 8</div></div>'+
+            '<div style="flex:1"><label>RPE ressenti</label><input id="rk_p_'+test.id+'" type="number" class="input-field" placeholder="7-8" min="5" max="10" step="0.5"/></div>'+
           '</div>';
       return '<div style="margin-top:'+(i===0?"4":"18")+'px;padding-top:'+(i===0?"0":"14")+'px;'+(i===0?"":"border-top:1px solid var(--border);")+'">'+
         '<strong>'+esc(test.title)+'</strong>'+
@@ -265,7 +265,7 @@
         '<div class="racine-gate-eyebrow">Mouvements clés</div>'+
         stepDots(WIZARD_STEPS.length, wizStepIndex())+
         '<div class="racine-gate-title">Tes poids actuels sur 5 mouvements clés</div>'+
-        '<div class="racine-gate-sub">Pour chaque mouvement que tu connais : une série de travail propre, 5 à 10 répétitions, RPE 7-8 (pas un essai maximal). Laisse un mouvement vide si tu ne peux pas le tester — on estime pour toi à partir de ton niveau.</div>'+
+        '<div class="racine-gate-sub">Pour chaque mouvement que tu connais : une série de travail propre de <strong>8 répétitions</strong> (pas un essai maximal). Le RPE ressenti affine l\'estimation — sois honnête. Laisse un mouvement vide si tu ne peux pas le tester : on estime pour toi à partir de ton niveau.</div>'+
         rows+
         '<div class="btn-row">'+
           '<button class="btn-accent" id="rkNext">Voir mon estimation</button>'+
@@ -280,9 +280,9 @@
           return;
         }
         var w = Number(card.querySelector("#rk_w_"+test.id).value)||0;
-        var r = Number(card.querySelector("#rk_r_"+test.id).value)||0;
+        var fixedReps = (window.CoachOnboarding && CoachOnboarding.TEST_REPS) || 8;
         var rpe = Number(card.querySelector("#rk_p_"+test.id).value)||0;
-        wiz.answers[test.id] = (w>0&&r>0) ? {weight:w, reps:r, rpe:rpe} : null;
+        wiz.answers[test.id] = (w>0) ? {weight:w, reps:fixedReps, rpe:rpe} : null;
       });
       wiz.step = "calculated";
       render();
@@ -336,12 +336,16 @@
     var fieldMapPreview = (typeof PR_FIELD_MAP==="object") ? PR_FIELD_MAP : null;
     var rows = "";
     if(fieldMapPreview){
+      var basisMap = (window.CoachOnboarding && CoachOnboarding.REFERENCE_BASIS) || {};
       Object.keys(fieldMapPreview).forEach(function(id){
         var cfg = fieldMapPreview[id];
         var val = computed.values[cfg.profile];
         if(val===undefined) return;
+        var basis = basisMap[cfg.profile];
         rows += '<div class="racine-review-item"><label>'+esc(cfg.label)+'</label>'+
-          '<input type="number" data-profile-key="'+esc(cfg.profile)+'" value="'+esc(val)+'"/></div>';
+          '<input type="number" data-profile-key="'+esc(cfg.profile)+'" value="'+esc(val)+'"/>'+
+          (basis ? '<span class="racine-review-basis">'+esc(basis)+'</span>' : '')+
+          '</div>';
       });
     }
     var card = el(

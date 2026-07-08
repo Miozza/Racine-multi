@@ -1,3 +1,9 @@
+## V4.4.1 — Onboarding : tests à 8 répétitions fixes, RPE intégré, bases affichées
+- Les 5 tests de calibration se font maintenant à 8 répétitions fixes (plus de fourchette 5-10) : chiffre plus précis, protocole identique pour tous.
+- Le RPE ressenti entre enfin dans l'estimation : les répétitions en réserve (10 − RPE, bornées à 4) s'ajoutent avant Epley. RPE non saisi = RPE 8 supposé (la consigne). Avant, le champ RPE était collecté mais ignoré.
+- L'écran « Mouvements calculés » affiche la base de chaque valeur (1RM estimé, 5RM, 8RM, lb par main…) — mêmes conventions que les onglets PR/Réfs.
+- Garde-fou débutant de multi_profile_checks ajusté à la nouvelle estimation (l'intention est inchangée : proche du test réel, jamais la référence avancée).
+
 ## V4.4 — La Saison : fondations (étapes 1-4 du design)
 - Catalogue : `objective`, `frequency` et graphe `suggestedNext` obligatoires sur tout programme public (assertions dans `program_catalog_checks`). Matrice de couverture objectif × fréquence : `docs/CATALOGUE_MATRICE.md`, trous documentés et assumés.
 - Nouveaux micro-cycles publics `programs/transition_weeks.js` : semaine deload (3 j, ~60 %) et semaine de tests (recalibrage des 5 mouvements de référence à RPE 8).
