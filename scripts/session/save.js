@@ -74,6 +74,8 @@ function setupSessionSave(){
     });
     if(!alreadySaved){
       var entry = {date:payload.date,time:payload.time,week:state.week,day:state.day,plannedDay:state.day,actualDate:payload.actualDate,actualDayName:payload.actualDayName,cycle:payload.cycle,focus:focus().label,results:results,version:APP_VERSION};
+      // Rétention long terme (La Saison) : agrégat mensuel par mouvement.
+      try{ if(window.CoachRetention)CoachRetention.recordSession(state, results, entry.date); }catch(e){ /* jamais bloquant */ }
       state.history.push(entry);
       save();
     }
