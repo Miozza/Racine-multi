@@ -1,3 +1,11 @@
+## V4.3.2 — Intégrité des données : import, profils, dates
+- Import de sauvegarde sécurisé : validation de structure, confirmation affichant profil source/date/version de l'export, remplacement complet au lieu d'une fusion (plus d'état hybride), copie de secours de l'état écrasé (`racineImportRescue::<profil>` via `CoachState.writeImportRescue`), puis redémarrage propre de l'app.
+- Changement de profil : rechargement complet de la page quand l'app tournait déjà sur un autre profil. Évite qu'un timer ou une closure d'une séance active écrive les données de l'ancien profil sous les clés du nouveau.
+- Date de compétition parsée en heure locale (`parseLocalIsoDate`) : plus de décalage d'un jour possible sur le compte à rebours.
+- Onglet Historique paginé : 30 séances affichées, bouton « Voir plus » par tranches de 50. Affichage seulement — aucune donnée supprimée.
+- Traces de `migrate_bertin.js` routées vers le journal CoachLog au lieu de la console.
+- Aucune modification au moteur de charges.
+
 ## V4.3.1 — Hors ligne réel + démarrage plus rapide
 - Service worker : cache versionné `racine-v4.3` en mode réseau d'abord. En ligne, chaque fichier est revalidé auprès du serveur (304 si inchangé, plus de re-téléchargement complet de ~1,2 Mo à chaque ouverture). Hors ligne, l'app s'ouvre depuis le cache — utilisable au gym sans réseau.
 - Polices Inter et Orbitron auto-hébergées dans `assets/fonts/` (fontes variables, 145 Ko). Plus aucune requête vers Google Fonts ; suppression du double chargement (`@import` CSS + `<link>` HTML).

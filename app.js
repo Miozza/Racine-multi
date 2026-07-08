@@ -14,8 +14,10 @@ var HAS_COMPETITION_GOAL = false;
 function recomputeCompetitionDate(){
   var iso = state.profile && state.profile.competitionDateIso;
   if(iso){
-    var d = new Date(iso);
-    if(!isNaN(d.getTime())){ COMPETITION_DATE = d; HAS_COMPETITION_GOAL = true; return; }
+    // parseLocalIsoDate évite le décalage d'un jour : new Date("YYYY-MM-DD")
+    // parse en UTC, pas en heure locale.
+    var d = parseLocalIsoDate(iso) || new Date(iso);
+    if(d && !isNaN(d.getTime())){ COMPETITION_DATE = d; HAS_COMPETITION_GOAL = true; return; }
   }
   COMPETITION_DATE = new Date(Date.now() + 180*24*60*60*1000);
   HAS_COMPETITION_GOAL = false;
@@ -1579,6 +1581,8 @@ async function deleteHistorySession(index){
   if(status){status.textContent="✅ Entraînement supprimé.";status.className="status-msg ok";}
 }
 
+var historyRenderLimit = 30; // affichage seulement — les données complètes restent intactes
+
 function renderHistory(){
   var h=$("history");if(!h)return;
   h.innerHTML="";
@@ -1595,7 +1599,10 @@ function renderHistory(){
   }
   renderProgressCharts();
 
-  state.history.slice().reverse().forEach(function(s,revIndex){
+  // Pagination : ne pas construire tout l'historique dans le DOM — après des
+  // mois d'entraînement, la liste complète ralentit sensiblement l'onglet.
+  var visible = historyRenderLimit;
+  state.history.slice().reverse().slice(0, visible).forEach(function(s,revIndex){
     var originalIndex = state.history.length - 1 - revIndex;
     var div=document.createElement("div");
     div.className="history-item deletable";
@@ -1627,6 +1634,15 @@ function renderHistory(){
       '<div class="history-rows">'+rows+'</div>';
     h.appendChild(div);
   });
+
+  if(state.history.length > visible){
+    var more=document.createElement("button");
+    more.type="button";
+    more.className="btn-ghost history-more-btn";
+    more.textContent="Voir plus ("+(state.history.length - visible)+" séances plus anciennes)";
+    more.onclick=function(){ historyRenderLimit += 50; renderHistory(); };
+    h.appendChild(more);
+  }
 
   h.querySelectorAll(".history-delete-btn").forEach(function(btn){
     btn.onclick=function(){
@@ -2020,7 +2036,43 @@ function exportBackup(){
 function importBackup(file){
   if(!file)return;
   var r=new FileReader();
-  r.onload=function(e){try{var d=JSON.parse(e.target.result);if(d.state){state=Object.assign(state,d.state);save();render();alert("Import réussi.");}}catch(ex){if(window.CoachLog)CoachLog.error("backup_import_invalid", ex, {});alert("Fichier invalide.");}};
+  r.onload=function(e){
+    var d;
+    try{ d=JSON.parse(e.target.result); }
+    catch(ex){
+      if(window.CoachLog)CoachLog.error("backup_import_invalid", ex, {});
+      alert("Fichier invalide : ce n’est pas un JSON lisible.");
+      return;
+    }
+    // Validation structurelle : un export Racine complet, pas un JSON quelconque.
+    var KNOWN_KEYS=["history","week","day","cycle","profile"];
+    var looksValid = d && typeof d==="object" && d.state && typeof d.state==="object" &&
+      KNOWN_KEYS.some(function(k){ return k in d.state; });
+    if(!looksValid){
+      if(window.CoachLog)CoachLog.error("backup_import_rejected", {reason:"structure inconnue"}, {});
+      alert("Fichier invalide : ce n’est pas une sauvegarde Racine.");
+      return;
+    }
+    // Confirmation avec les métadonnées de l'export : l'utilisateur voit ce
+    // qu'il s'apprête à restaurer et sur quel profil, avant tout écrasement.
+    var srcName=(d.state.profile&&d.state.profile.name)?d.state.profile.name:"inconnu";
+    var curName=(state.profile&&state.profile.name)?state.profile.name:"actuel";
+    var when=d.exportedAt?String(d.exportedAt).slice(0,10):"date inconnue";
+    var msg="Restaurer cette sauvegarde ?\n\n"+
+      "Export : profil « "+srcName+" » · "+when+" · "+(d.version||"version inconnue")+"\n"+
+      "Elle remplacera ENTIÈREMENT les données du profil actif (« "+curName+" »).";
+    if(d.version && d.version!==APP_VERSION) msg+="\n\n⚠️ Version différente de l’app ("+APP_VERSION+").";
+    if(!confirm(msg)) return;
+    // Filet de sécurité : garder l'état écrasé sous une clé de secours.
+    if(window.CoachState && CoachState.writeImportRescue) CoachState.writeImportRescue(state);
+    // Remplacement complet en conservant l'identité de l'objet global `state` :
+    // une fusion laissait survivre des clés de l'ancien état (état hybride).
+    Object.keys(state).forEach(function(k){ delete state[k]; });
+    Object.assign(state, d.state);
+    save();
+    alert("Import réussi. L’app va redémarrer sur les données restaurées.");
+    location.reload();
+  };
   r.readAsText(file);
 }
 

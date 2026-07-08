@@ -65,6 +65,18 @@
   api.readLegacyBertinState = function(){ return readJson(LEGACY_STATE_KEYS); };
   api.readLegacyCustomCharges = function(){ return readJson(LEGACY_CHARGE_KEYS); };
 
+  // Filet de sécurité avant un import de sauvegarde : conserve l'état écrasé
+  // sous une clé de secours par profil, récupérable manuellement au besoin.
+  api.writeImportRescue = function(state){
+    try{
+      var pid = (window.CoachProfiles && CoachProfiles.getActiveId) ? CoachProfiles.getActiveId() : "inconnu";
+      localStorage.setItem("racineImportRescue::" + pid, JSON.stringify({savedAt: new Date().toISOString(), state: state || {}}));
+      return true;
+    }catch(e){
+      return false;
+    }
+  };
+
   api.storageKeys = function(){
     var k = currentKeys();
     return {

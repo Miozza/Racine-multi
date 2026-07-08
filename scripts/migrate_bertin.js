@@ -11,6 +11,13 @@
 // vers localStorage du profil, pas vers des fichiers JSON statiques.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Trace de migration : journalisée dans CoachLog (consultable dans Diagnostic
+// app) plutôt qu'en console pour garder une prod silencieuse.
+function migrateLog(){
+  var msg = Array.prototype.slice.call(arguments).join(" ");
+  if(window.CoachLog && CoachLog.info) CoachLog.info("migrate_bertin", {message: msg});
+}
+
 window.migrateBertin = function(migrateData) {
   migrateData = (migrateData !== false);
 
@@ -53,11 +60,11 @@ window.migrateBertin = function(migrateData) {
     onboarded: true
   });
 
-  console.log("[migrateBertin] Profil Bertin créé (id:", profileId, ")");
-  console.log("[migrateBertin] Permissions privées:", privatePerms);
+  migrateLog("[migrateBertin] Profil Bertin créé (id:", profileId, ")");
+  migrateLog("[migrateBertin] Permissions privées:", privatePerms);
 
   if(!migrateData) {
-    console.log("[migrateBertin] Migration de données ignorée (migrateData=false).");
+    migrateLog("[migrateBertin] Migration de données ignorée (migrateData=false).");
     CoachProfiles.setActive(profileId);
     return profileId;
   }
@@ -84,7 +91,7 @@ window.migrateBertin = function(migrateData) {
 
   if(!legacyState) {
     console.warn("[migrateBertin] Aucun état legacy Coach-Beurt trouvé dans localStorage.");
-    console.log("[migrateBertin] Profil créé sans données historiques.");
+    migrateLog("[migrateBertin] Profil créé sans données historiques.");
     CoachProfiles.setActive(profileId);
     return profileId;
   }
@@ -93,7 +100,7 @@ window.migrateBertin = function(migrateData) {
   var keys = CoachProfiles.storageKeysFor(profileId);
   try {
     localStorage.setItem(keys.state, JSON.stringify(legacyState));
-    console.log("[migrateBertin] État migré :", Object.keys(legacyState.movements || {}).length, "mouvements,", (legacyState.history || []).length, "séances.");
+    migrateLog("[migrateBertin] État migré :", Object.keys(legacyState.movements || {}).length, "mouvements,", (legacyState.history || []).length, "séances.");
   } catch(e) {
     console.error("[migrateBertin] Erreur écriture état migré:", e);
   }
@@ -101,19 +108,18 @@ window.migrateBertin = function(migrateData) {
   if(legacyCharges) {
     try {
       localStorage.setItem(keys.charges, JSON.stringify(legacyCharges));
-      console.log("[migrateBertin] Charges personnalisées migrées.");
+      migrateLog("[migrateBertin] Charges personnalisées migrées.");
     } catch(e) {
       console.warn("[migrateBertin] Erreur migration charges:", e);
     }
   }
 
   CoachProfiles.setActive(profileId);
-  console.log("[migrateBertin] ✅ Migration complète. Profil Bertin actif.");
-  console.log("[migrateBertin] Recharge la page pour appliquer.");
+  migrateLog("[migrateBertin] ✅ Migration complète. Profil Bertin actif.");
+  migrateLog("[migrateBertin] Recharge la page pour appliquer.");
   return profileId;
 };
 
-console.log("[migrateBertin] Script chargé. Appelle migrateBertin() dans la console pour migrer.");
 
 // ─── Import depuis fichiers JSON (si pas de localStorage legacy) ──────────────
 // Usage : migrateBertinFromFiles(athleteStateObj, cycleStateObj, resultatsArr, chargesObj)
@@ -147,7 +153,7 @@ window.migrateBertinFromFiles = function(athleteState, cycleState, resultats, cu
 
   try {
     localStorage.setItem(keys.state, JSON.stringify(merged));
-    console.log("[migrateBertinFromFiles] State écrit:",
+    migrateLog("[migrateBertinFromFiles] State écrit:",
       Object.keys((athleteState && athleteState.movements) || {}).length, "mouvements,",
       (merged.history || []).length, "séances."
     );
@@ -159,13 +165,13 @@ window.migrateBertinFromFiles = function(athleteState, cycleState, resultats, cu
   if(customCharges) {
     try {
       localStorage.setItem(keys.charges, JSON.stringify(customCharges));
-      console.log("[migrateBertinFromFiles] Charges personnalisées migrées.");
+      migrateLog("[migrateBertinFromFiles] Charges personnalisées migrées.");
     } catch(e) {
       console.warn("[migrateBertinFromFiles] Erreur charges:", e);
     }
   }
 
   CoachProfiles.setActive(profileId);
-  console.log("[migrateBertinFromFiles] ✅ Migration depuis fichiers complète. Recharge la page.");
+  migrateLog("[migrateBertinFromFiles] ✅ Migration depuis fichiers complète. Recharge la page.");
   return profileId;
 };
