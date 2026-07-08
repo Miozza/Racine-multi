@@ -13,9 +13,9 @@
   <meta name="theme-color" content="#04060f"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+  <!-- Polices auto-hébergées via styles.css : aucune requête externe. -->
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin/>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/orbitron-latin.woff2" crossorigin/>
   <link rel="stylesheet" href="styles.css?v=4.3"/>
   <link rel="preload" as="image" href="assets/splash-racine.webp"/>
 </head>
@@ -36,7 +36,7 @@
     <button id="historyTab"     class="tab">Historique</button>
     <button id="phoneTab"       class="tab tab-pc-discreet admin-only">PC</button>
     <button type="button" id="tmsGlobalBtn" class="tab tab-tms-global admin-only" title="TMS" aria-label="Ouvrir TMS">TMS</button>
-    <button id="settingsTab"    class="tab">⚙</button>
+    <button id="settingsTab"    class="tab" aria-label="Réglages">⚙</button>
   </div>
 </nav>
 
@@ -50,9 +50,9 @@
 
   <div class="week-day-nav">
     <div class="nav-row">
-      <button class="arrow-btn" id="weekPrev">&#8249;</button>
+      <button class="arrow-btn" id="weekPrev" aria-label="Semaine précédente">&#8249;</button>
       <div id="weekButtons" class="pill-row"></div>
-      <button class="arrow-btn" id="weekNext">&#8250;</button>
+      <button class="arrow-btn" id="weekNext" aria-label="Semaine suivante">&#8250;</button>
     </div>
     <div class="week-progress-wrap">
       <div class="week-progress-track"><div class="week-progress-bar" id="weekProgressBar"></div></div>
@@ -62,9 +62,9 @@
       </div>
     </div>
     <div class="nav-row">
-      <button class="arrow-btn" id="dayPrev">&#8249;</button>
+      <button class="arrow-btn" id="dayPrev" aria-label="Jour précédent">&#8249;</button>
       <div id="dayButtons" class="pill-row"></div>
-      <button class="arrow-btn" id="dayNext">&#8250;</button>
+      <button class="arrow-btn" id="dayNext" aria-label="Jour suivant">&#8250;</button>
     </div>
     <p id="weekGoal" class="nav-goal"></p>
   </div>
@@ -82,14 +82,14 @@
   <div class="phone-toolbar pc-toolbar">
     <button class="tb-btn" id="backTrainingBtn">← WOD</button>
     <div class="phone-day-nav">
-      <button class="arrow-btn sm" id="phoneDayPrev">&#8249;</button>
+      <button class="arrow-btn sm" id="phoneDayPrev" aria-label="Jour précédent">&#8249;</button>
       <span id="phoneDayLabel" class="phone-day-label"></span>
-      <button class="arrow-btn sm" id="phoneDayNext">&#8250;</button>
+      <button class="arrow-btn sm" id="phoneDayNext" aria-label="Jour suivant">&#8250;</button>
     </div>
     <button class="tb-btn tb-primary" id="sessionModeBtn">▶ Séance</button>
     <button class="tb-btn" id="tmsSessionBtn">TMS</button>
-    <button class="tb-btn" id="copyPhoneBtn">⎘</button>
-    <button class="tb-btn" id="fullscreenBtn">⛶</button>
+    <button class="tb-btn" id="copyPhoneBtn" aria-label="Copier la séance">⎘</button>
+    <button class="tb-btn" id="fullscreenBtn" aria-label="Plein écran">⛶</button>
   </div>
 
   <div id="phoneWod" class="phone-wod"></div>
@@ -362,75 +362,75 @@
 <footer class="footer">V4.3 · local</footer>
 </div>
 
-<script src="scripts/core/logger.js?v=4.3"></script>
-<script src="scripts/profiles/storage.js?v=4.3"></script>
-<script src="scripts/profiles/reference.js?v=4.3"></script>
-<script src="scripts/profiles/onboarding.js?v=4.3"></script>
-<script src="scripts/profiles/ui.js?v=4.3"></script>
-<script src="scripts/profiles/admin_programs.js?v=4.3"></script>
-<script src="scripts/migrate_bertin.js?v=4.3"></script>
-<script src="programs/index.js?v=4.3"></script>
-<script src="programs/epaules_3d.js?v=4.3"></script>
-<script src="programs/epaules_3d_v2.js?v=4.3"></script>
-<script src="programs/hypertrophy_base.js?v=4.3"></script>
-<script src="programs/force_performance.js?v=4.3"></script>
-<script src="programs/competition_peak.js?v=4.3"></script>
-<script src="programs/hypertrophie_fesse.js?v=4.3"></script><script src="programs/force.js?v=4.3"></script>
-<script src="programs/heritage_225.js?v=4.3"></script>
-<script src="programs/arnold_split_beurt.js?v=4.3"></script>
-<script src="programs/general_strength_3d.js?v=4.3"></script>
-<script src="programs/general_hypertrophy_2d.js?v=4.3"></script>
-<script src="programs/general_hypertrophy_3d.js?v=4.3"></script>
-<script src="programs/racine_client_programs.js?v=4.3"></script>
-<script src="programs/racine_crossfit_programs.js?v=4.3"></script>
-<script src="programs/strict_muscle_up_cycle.js?v=4.3"></script>
+<script src="scripts/core/logger.js?v=4.3" defer></script>
+<script src="scripts/profiles/storage.js?v=4.3" defer></script>
+<script src="scripts/profiles/reference.js?v=4.3" defer></script>
+<script src="scripts/profiles/onboarding.js?v=4.3" defer></script>
+<script src="scripts/profiles/ui.js?v=4.3" defer></script>
+<script src="scripts/profiles/admin_programs.js?v=4.3" defer></script>
+<script src="scripts/migrate_bertin.js?v=4.3" defer></script>
+<script src="programs/index.js?v=4.3" defer></script>
+<script src="programs/epaules_3d.js?v=4.3" defer></script>
+<script src="programs/epaules_3d_v2.js?v=4.3" defer></script>
+<script src="programs/hypertrophy_base.js?v=4.3" defer></script>
+<script src="programs/force_performance.js?v=4.3" defer></script>
+<script src="programs/competition_peak.js?v=4.3" defer></script>
+<script src="programs/hypertrophie_fesse.js?v=4.3" defer></script><script src="programs/force.js?v=4.3" defer></script>
+<script src="programs/heritage_225.js?v=4.3" defer></script>
+<script src="programs/arnold_split_beurt.js?v=4.3" defer></script>
+<script src="programs/general_strength_3d.js?v=4.3" defer></script>
+<script src="programs/general_hypertrophy_2d.js?v=4.3" defer></script>
+<script src="programs/general_hypertrophy_3d.js?v=4.3" defer></script>
+<script src="programs/racine_client_programs.js?v=4.3" defer></script>
+<script src="programs/racine_crossfit_programs.js?v=4.3" defer></script>
+<script src="programs/strict_muscle_up_cycle.js?v=4.3" defer></script>
 <!-- Programmes privés Bertin — chargés mais filtrés par visibility dans programIndexIds() -->
-<script src="programs/epaules_3d_press225_phase2.js?v=4.3"></script>
-<script src="programs/posture_cyphose.js?v=4.3"></script>
-<script src="programs/strict_muscle_up_personnel.js?v=4.3"></script>
-<script src="programs/arnold_split_2026_adapte.js?v=4.3"></script>
-<script src="programs/arnold_split_strict.js?v=4.3"></script>
-<script src="programs/hypertrophie_fesse_stephanie.js?v=4.3"></script>
-<script src="programs/config.js?v=4.3"></script>
-<script src="programs/workouts.js?v=4.3"></script>
-<script src="programs/tutorials.js?v=4.3"></script>
-<script src="data/charges.js?v=4.3"></script><script src="data/equipment.js?v=4.3"></script><script src="scripts/app_helpers.js?v=4.3"></script>
-<script src="scripts/state/storage.js?v=4.3"></script>
-<script src="scripts/state/index.js?v=4.3"></script>
-<script src="scripts/charge/equipement.js?v=4.3"></script>
-<script src="scripts/charge/utilitaires.js?v=4.3"></script>
-<script src="scripts/charge/mouvements.js?v=4.3"></script>
-<script src="scripts/charge/historique.js?v=4.3"></script>
-<script src="scripts/charge/rpe.js?v=4.3"></script>
-<script src="scripts/charge/scaling.js?v=4.3"></script>
-<script src="scripts/charge/brain_stats.js?v=4.3"></script>
-<script src="scripts/charge/brain_memory.js?v=4.3"></script>
-<script src="scripts/charge/movement_profiles.js?v=4.3"></script>
-<script src="scripts/charge/brain_explain.js?v=4.3"></script>
-<script src="scripts/charge/brain_journal.js?v=4.3"></script>
-<script src="scripts/ai/ai_export.js?v=4.3"></script>
-<script src="scripts/ai/ai_import.js?v=4.3"></script>
-<script src="scripts/ai/ai_influence.js?v=4.3"></script>
-<script src="scripts/charge/suggestion.js?v=4.3"></script>
-<script src="scripts/charge/ml_refinement.js?v=4.3"></script>
-<script src="scripts/history/index.js?v=4.3"></script>
-  <script src="scripts/progression/index.js?v=4.3"></script>
-  <script src="scripts/summary/index.js?v=4.3"></script>
+<script src="programs/epaules_3d_press225_phase2.js?v=4.3" defer></script>
+<script src="programs/posture_cyphose.js?v=4.3" defer></script>
+<script src="programs/strict_muscle_up_personnel.js?v=4.3" defer></script>
+<script src="programs/arnold_split_2026_adapte.js?v=4.3" defer></script>
+<script src="programs/arnold_split_strict.js?v=4.3" defer></script>
+<script src="programs/hypertrophie_fesse_stephanie.js?v=4.3" defer></script>
+<script src="programs/config.js?v=4.3" defer></script>
+<script src="programs/workouts.js?v=4.3" defer></script>
+<script src="programs/tutorials.js?v=4.3" defer></script>
+<script src="data/charges.js?v=4.3" defer></script><script src="data/equipment.js?v=4.3" defer></script><script src="scripts/app_helpers.js?v=4.3" defer></script>
+<script src="scripts/state/storage.js?v=4.3" defer></script>
+<script src="scripts/state/index.js?v=4.3" defer></script>
+<script src="scripts/charge/equipement.js?v=4.3" defer></script>
+<script src="scripts/charge/utilitaires.js?v=4.3" defer></script>
+<script src="scripts/charge/mouvements.js?v=4.3" defer></script>
+<script src="scripts/charge/historique.js?v=4.3" defer></script>
+<script src="scripts/charge/rpe.js?v=4.3" defer></script>
+<script src="scripts/charge/scaling.js?v=4.3" defer></script>
+<script src="scripts/charge/brain_stats.js?v=4.3" defer></script>
+<script src="scripts/charge/brain_memory.js?v=4.3" defer></script>
+<script src="scripts/charge/movement_profiles.js?v=4.3" defer></script>
+<script src="scripts/charge/brain_explain.js?v=4.3" defer></script>
+<script src="scripts/charge/brain_journal.js?v=4.3" defer></script>
+<script src="scripts/ai/ai_export.js?v=4.3" defer></script>
+<script src="scripts/ai/ai_import.js?v=4.3" defer></script>
+<script src="scripts/ai/ai_influence.js?v=4.3" defer></script>
+<script src="scripts/charge/suggestion.js?v=4.3" defer></script>
+<script src="scripts/charge/ml_refinement.js?v=4.3" defer></script>
+<script src="scripts/history/index.js?v=4.3" defer></script>
+  <script src="scripts/progression/index.js?v=4.3" defer></script>
+  <script src="scripts/summary/index.js?v=4.3" defer></script>
   <!-- Brain.js — ML local ~100kb, collecte silencieuse uniquement en V1.12 -->
-<script src="scripts/charge/index.js?v=4.3"></script>
-<script src="scripts/view_pc.js?v=4.3"></script>
-<script src="scripts/charge_diagnostic_ui.js?v=4.3"></script>
-<script src="scripts/ui_modals.js?v=4.3"></script>
-<script src="scripts/ui/index.js?v=4.3"></script>
-<script src="scripts/app_navigation.js?v=4.3"></script>
-<script src="scripts/view_wodplus.js?v=4.3"></script>
-<script src="scripts/session/view.js?v=4.3"></script>
-<script src="scripts/session/timer.js?v=4.3"></script>
-<script src="scripts/session/results.js?v=4.3"></script>
-<script src="scripts/session/save.js?v=4.3"></script>
-<script src="scripts/session/index.js?v=4.3"></script>
-<script src="app.js?v=4.3"></script>
-<script src="scripts/tms_session.js?v=4.3"></script>
+<script src="scripts/charge/index.js?v=4.3" defer></script>
+<script src="scripts/view_pc.js?v=4.3" defer></script>
+<script src="scripts/charge_diagnostic_ui.js?v=4.3" defer></script>
+<script src="scripts/ui_modals.js?v=4.3" defer></script>
+<script src="scripts/ui/index.js?v=4.3" defer></script>
+<script src="scripts/app_navigation.js?v=4.3" defer></script>
+<script src="scripts/view_wodplus.js?v=4.3" defer></script>
+<script src="scripts/session/view.js?v=4.3" defer></script>
+<script src="scripts/session/timer.js?v=4.3" defer></script>
+<script src="scripts/session/results.js?v=4.3" defer></script>
+<script src="scripts/session/save.js?v=4.3" defer></script>
+<script src="scripts/session/index.js?v=4.3" defer></script>
+<script src="app.js?v=4.3" defer></script>
+<script src="scripts/tms_session.js?v=4.3" defer></script>
 <script>
 (function(){
   var splash = document.getElementById("racineSplash");
@@ -460,14 +460,23 @@
 })();
 </script>
 <script>
-  setTimeout(function(){
-    if (!window.APP_VERSION) {
-      var box = document.createElement("div");
-      box.style.cssText = "position:fixed;inset:16px;z-index:99999;background:#160b0b;color:#fff;border:1px solid #ff6b6b;border-radius:14px;padding:16px;font-family:system-ui;line-height:1.35";
-      box.innerHTML = "<strong>Erreur de chargement Racine</strong><br>app.js n’a pas démarré. Recharge la page ou efface le cache Safari.";
-      document.body.appendChild(box);
-    }
-  }, 1200);
+(function(){
+  // Les scripts sont en defer : attendre l'évènement load (qui suit leur
+  // exécution) avant de conclure qu'app.js n'a pas démarré, sinon un réseau
+  // lent afficherait une fausse erreur pendant le chargement normal.
+  function check(){
+    setTimeout(function(){
+      if (!window.APP_VERSION) {
+        var box = document.createElement("div");
+        box.style.cssText = "position:fixed;inset:16px;z-index:99999;background:#160b0b;color:#fff;border:1px solid #ff6b6b;border-radius:14px;padding:16px;font-family:system-ui;line-height:1.35";
+        box.innerHTML = "<strong>Erreur de chargement Racine</strong><br>app.js n’a pas démarré. Recharge la page ou efface le cache Safari.";
+        document.body.appendChild(box);
+      }
+    }, 300);
+  }
+  if(document.readyState === "complete") check();
+  else window.addEventListener("load", check);
+})();
 </script>
 </body>
 </html>

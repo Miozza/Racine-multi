@@ -1,6 +1,9 @@
 {
   "name": "Racine",
   "short_name": "Racine",
+  "description": "Coach d'entraînement local : programmes, charges calibrées par profil et progression, sans compte ni serveur.",
+  "lang": "fr",
+  "dir": "ltr",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#04060f",
@@ -23,6 +26,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

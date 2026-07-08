@@ -1,3 +1,14 @@
+## V4.3.1 — Hors ligne réel + démarrage plus rapide
+- Service worker : cache versionné `racine-v4.3` en mode réseau d'abord. En ligne, chaque fichier est revalidé auprès du serveur (304 si inchangé, plus de re-téléchargement complet de ~1,2 Mo à chaque ouverture). Hors ligne, l'app s'ouvre depuis le cache — utilisable au gym sans réseau.
+- Polices Inter et Orbitron auto-hébergées dans `assets/fonts/` (fontes variables, 145 Ko). Plus aucune requête vers Google Fonts ; suppression du double chargement (`@import` CSS + `<link>` HTML).
+- Tous les scripts chargés avec `defer` : le rendu HTML n'est plus bloqué par 67 requêtes JS séquentielles. Ordre d'exécution inchangé.
+- Détecteur « app.js n'a pas démarré » accroché à l'évènement `load` pour éviter un faux positif sur réseau lent avec `defer`.
+- Écriture `localStorage` protégée : quota plein ou stockage bloqué affiche maintenant une alerte et journalise l'erreur au lieu d'échouer en silence.
+- `navigator.storage.persist()` demandé au démarrage pour réduire le risque d'éviction des données locales par le navigateur.
+- Manifest PWA : `description`, `lang`, icône `maskable` ajoutés.
+- Accessibilité : `aria-label` sur les boutons symboles (⚙, ⎘, ⛶, flèches semaine/jour).
+- Aucune modification au moteur de charges ni aux données durables.
+
 ## V4.3 — Vue client allégée + panneau admin d'activation de programmes
 - Vue client (non-admin) : masque les outils coach — onglet PC, bouton TMS global, panneaux Diagnostic charges/app, gestion Avis IA dans le panneau (!), tableau de bord clients. Conserve recalibrage, changer/nouveau profil, export/import JSON, agressivité et « Réactiver écran actif ».
 - Helper admin centralisé `CoachProfiles.isActiveAdmin()` ; `pcIsAdmin()` y délègue ; `switchView` protège la vue PC.
