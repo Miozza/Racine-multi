@@ -33,8 +33,25 @@
     }
   }
 
+  var writeFailureNotified = false;
+
   function writeJson(key, value){
-    localStorage.setItem(key, JSON.stringify(value || {}));
+    try{
+      localStorage.setItem(key, JSON.stringify(value || {}));
+      return true;
+    }catch(e){
+      // Quota plein ou stockage indisponible (ex. mode privé) : sans ce garde,
+      // la sauvegarde échouait en silence et l'utilisateur croyait ses
+      // résultats enregistrés.
+      if(window.CoachLog && CoachLog.error){
+        CoachLog.error("storage_write_failed", {key:key, message:e && e.message ? e.message : String(e)});
+      }
+      if(!writeFailureNotified){
+        writeFailureNotified = true;
+        alert("⚠️ Sauvegarde impossible : le stockage local est plein ou bloqué.\nExporte tes données (Réglages → Sauvegarde locale) puis libère de l'espace.");
+      }
+      return false;
+    }
   }
 
   api.readState = function(){ return readJson([currentKeys().state]); };

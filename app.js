@@ -2137,6 +2137,13 @@ if(window.CoachProfiles && CoachProfiles.hasActiveOnboardedProfile()){
 
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){if(window.CoachLog)CoachLog.warn("service_worker_register_failed", {message:e&&e.message?e.message:String(e)});});});}
 
+// Demander au navigateur de ne pas purger le stockage local (Safari/Chrome
+// peuvent évincer les données d'un site jugé inactif). Refus silencieux :
+// c'est une protection en plus, jamais un blocage.
+if(navigator.storage && navigator.storage.persist){
+  navigator.storage.persist().catch(function(){});
+}
+
 // V50.51 : l’ancien mode iPhone devient la vue PC / inspection. IDs conservés pour éviter de casser le tronc.
 
 
