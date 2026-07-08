@@ -1,3 +1,9 @@
+## V4.3.3 — Durcissement admin + dédoublonnage
+- Le PIN admin n'apparaît plus en clair dans le source : vérification par empreinte SHA-256 (`verifyAdminPin` dans `scripts/profiles/ui.js`, commande pour changer le code en commentaire). Limite assumée : côté client, cela décourage la lecture casuelle, pas un utilisateur outillé.
+- La porte dérobée « profil nommé Bertin = admin » est fermée dans `isActiveAdmin()` et dans le fallback de `pcIsAdmin()`. Seuls comptent le flag `isAdmin` et le marqueur de migration ; le PIN pose maintenant `isAdmin: true` au passage, ce qui répare aussi les anciens profils Bertin sans flag.
+- `escHtml` (vue séance) délègue à l'implémentation canonique `escapeHtml` de `scripts/ui_modals.js`.
+- Testé en navigateur : mauvais PIN refusé, bon PIN → profil admin, profil homonyme sans flag → client normal.
+
 ## V4.3.2 — Intégrité des données : import, profils, dates
 - Import de sauvegarde sécurisé : validation de structure, confirmation affichant profil source/date/version de l'export, remplacement complet au lieu d'une fusion (plus d'état hybride), copie de secours de l'état écrasé (`racineImportRescue::<profil>` via `CoachState.writeImportRescue`), puis redémarrage propre de l'app.
 - Changement de profil : rechargement complet de la page quand l'app tournait déjà sur un autre profil. Évite qu'un timer ou une closure d'une séance active écrive les données de l'ancien profil sous les clés du nouveau.

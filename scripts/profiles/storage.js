@@ -148,12 +148,13 @@
   };
 
   // Admin (coach) vs client. Centralisé : toute vérification admin passe par ici.
-  // Admin = flag isAdmin, sinon marqueur propriétaire posé à la migration, sinon
-  // fallback nom "Bertin" (compat pcIsAdmin historique).
+  // Admin = flag isAdmin, sinon marqueur propriétaire posé à la migration.
+  // Le nom du profil ne donne plus l'admin : créer un profil « Bertin » via
+  // l'onboarding normal n'ouvre plus les outils coach — seul le PIN le fait.
   api.isActiveAdmin = function(){
     var p = api.getActive();
     if(!p) return false;
-    return !!(p.isAdmin || p.macrocycleOverrideKey === "BERTIN_MACROCYCLE_OVERRIDE" || p.name === "Bertin");
+    return !!(p.isAdmin || p.macrocycleOverrideKey === "BERTIN_MACROCYCLE_OVERRIDE");
   };
 
   // Active un programme comme cycle courant d'un profil (même non actif), sans

@@ -34,6 +34,21 @@
     if(g) g.remove();
   }
 
+  // Vérification du PIN admin par empreinte SHA-256 : le code n'apparaît plus
+  // en clair dans le source. Limite assumée : côté client, ça décourage la
+  // lecture casuelle, pas un utilisateur déterminé avec la console ouverte.
+  // Pour changer le code : node -e "console.log(require('crypto').createHash('sha256').update('NOUVEAU_CODE').digest('hex'))"
+  var ADMIN_PIN_SHA256 = "03aaef0fd45d47ee37afee60b41f0a80010f58f95d3d34e9b7dc253c8558bf2a";
+  function verifyAdminPin(pin){
+    if(!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.resolve(false);
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(pin)))
+      .then(function(buf){
+        var hex = Array.prototype.map.call(new Uint8Array(buf), function(b){ return ("0"+b.toString(16)).slice(-2); }).join("");
+        return hex === ADMIN_PIN_SHA256;
+      })
+      .catch(function(){ return false; });
+  }
+
   // Bascule de profil. Si l'app tournait déjà sur un autre profil, on recharge
   // la page au lieu de re-booter à chaud : des timers ou closures encore
   // vivants (mode séance, chrono) pourraient sinon écrire les données de
@@ -132,24 +147,29 @@
     if(pinBtn) pinBtn.onclick = function(){
       var pin = prompt("Code :");
       if(!pin) return;
-      if(pin.trim() !== "8989"){ return; }
-      // PIN correct — chercher ou créer le profil Bertin
-      var existing = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.name === "Bertin"; }) : [];
-      if(existing.length){
-        switchToProfile(existing[0].id);
-        return;
-      }
-      if(window.migrateBertin){
-        var prevBooted = !!(CoachProfiles.getActiveId() && CoachProfiles.hasActiveOnboardedProfile());
-        var id = window.migrateBertin();
-        if(id){
-          closeGate();
-          if(prevBooted){ location.reload(); return; }
-          window.coachFullBoot();
+      verifyAdminPin(pin.trim()).then(function(ok){
+        if(!ok) return;
+        // PIN correct — chercher ou créer le profil Bertin. Le PIN est la seule
+        // porte admin : il pose le flag isAdmin sur le profil au passage.
+        var existing = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.name === "Bertin"; }) : [];
+        if(existing.length){
+          CoachProfiles.update(existing[0].id, { isAdmin: true });
+          switchToProfile(existing[0].id);
           return;
         }
-      }
-      alert("Profil Bertin introuvable.");
+        if(window.migrateBertin){
+          var prevBooted = !!(CoachProfiles.getActiveId() && CoachProfiles.hasActiveOnboardedProfile());
+          var id = window.migrateBertin();
+          if(id){
+            CoachProfiles.update(id, { isAdmin: true });
+            closeGate();
+            if(prevBooted){ location.reload(); return; }
+            window.coachFullBoot();
+            return;
+          }
+        }
+        alert("Profil Bertin introuvable.");
+      });
     };
     var closeBtn = card.querySelector("#racineCloseGateBtn");
     if(closeBtn){
