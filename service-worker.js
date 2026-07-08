@@ -44,11 +44,14 @@ self.addEventListener("fetch", event => {
         return response;
       })
       .catch(() =>
-        caches.match(request).then(cached => {
+        caches.match(request, { ignoreSearch: true }).then(cached => {
           if(cached) return cached;
-          // Navigation hors ligne sans entrée exacte : servir la coquille.
+          // Navigation hors ligne sans entrée exacte : servir la coquille,
+          // que l'entrée en cache soit "/" ou "/index.html".
           if(request.mode === "navigate"){
-            return caches.match("./index.html");
+            return caches.match("./index.html")
+              .then(shell => shell || caches.match("./"))
+              .then(shell => shell || Response.error());
           }
           return Response.error();
         })
