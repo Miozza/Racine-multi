@@ -50,36 +50,40 @@
     ]
   };
 
+  // Convention V4.5 : BASE_LOADS = 1RM ESTIMÉ DE L'ATHLÈTE DE RÉFÉRENCE
+  // (reference.js ; ratios olympiques standards depuis le power clean 225).
+  // Les multiplicateurs des schémas sont des %1RM réels ; le scaling par profil
+  // ramène chaque client à son niveau.
   var BASE_LOADS = {
-    "Back Squat":185,
-    "Front Squat":165,
-    "Overhead Squat":95,
-    "Deadlift":245,
-    "Bench Press":205,
-    "Strict Press":125,
-    "Push Press":145,
-    "Push Jerk":135,
-    "Split Jerk":145,
-    "Thruster":95,
-    "Power Clean":155,
-    "Clean and Jerk":135,
-    "Hang Power Clean":145,
-    "Clean Pull":185,
-    "Clean Deadlift":205,
-    "Power Snatch":105,
-    "Hang Power Snatch":95,
-    "Snatch Pull":135,
-    "Barbell Row":135,
-    "Weighted Pull-up":10,
-    "DB RDL":65,
-    "DB Snatch":50,
-    "DB Thruster":35,
-    "Goblet Squat":70,
-    "KB Swing":53,
-    "Farmer Carry":55,
-    "Wall Ball":20,
-    "Walking Lunge DB":35,
-    "Sumo Deadlift High Pull":75
+    "Back Squat":275,
+    "Front Squat":215,
+    "Overhead Squat":180,
+    "Deadlift":330,
+    "Bench Press":300,
+    "Strict Press":185,
+    "Push Press":215,
+    "Push Jerk":225,
+    "Split Jerk":235,
+    "Thruster":170,
+    "Power Clean":225,
+    "Clean and Jerk":215,
+    "Hang Power Clean":205,
+    "Clean Pull":250,
+    "Clean Deadlift":275,
+    "Power Snatch":170,
+    "Hang Power Snatch":155,
+    "Snatch Pull":190,
+    "Barbell Row":235,
+    "Weighted Pull-up":0,
+    "DB RDL":90,
+    "DB Snatch":80,
+    "DB Thruster":55,
+    "Goblet Squat":100,
+    "KB Swing":70,
+    "Farmer Carry":90,
+    "Wall Ball":30,
+    "Walking Lunge DB":60,
+    "Sumo Deadlift High Pull":115
   };
 
   var DAY_NAMES = {lundi:"Lundi", mardi:"Mardi", mercredi:"Mercredi", jeudi:"Jeudi", vendredi:"Vendredi", samedi:"Samedi", dimanche:"Dimanche"};

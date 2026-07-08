@@ -45,6 +45,14 @@ function gfWeekPlan(week){
   })[week] || {label:"S1 Base", rir:"3 RIR", mainSets:"3", supportSets:"2", pumpSets:"2", repMain:"8-10", repSupport:"10-12", repPump:"15-25", intensity:"RPE 6-7", note:"Base technique."};
 }
 
+
+// Charges numériques des mouvements principaux (V4.5) : %1RM de l'athlète de
+// référence par semaine — le scaling par profil ramène chaque client à son
+// niveau, puis le moteur RPE ajuste séance après séance.
+function gfMainLoad(week, oneRm){
+  var pct = {1:0.68, 2:0.71, 3:0.77, 4:0.55}[week] || 0.68;
+  return Math.round(oneRm * pct / 5) * 5 + " lb";
+}
 function gfEx(name, format, load, rest, note){
   return { name:name, format:format, load:load || "—", rest:rest || "—", note:note || "" };
 }
@@ -58,7 +66,7 @@ function gfBlocks(day, week){
       text:"Bike 3 min + 90/90 hip switch 8/côté + glute bridge 2×12 avec pause + lateral band walk 2×10/côté + 2-3 ramp-up sets du hip thrust." },
 
     { time:"18 min", title:"A. Hip Thrust — stimulus principal", tag:"Principal", kind:"main",
-      exercises:[gfEx("Barbell Hip Thrust", p.mainSets + "×" + p.repMain, "charge du jour selon " + p.intensity, "2:00-2:30", "Pause 1 sec en haut. Côtes basses, menton rentré. Arrête la série si le bas du dos compense. " + p.rir)] },
+      exercises:[gfEx("Barbell Hip Thrust", p.mainSets + "×" + p.repMain, gfMainLoad(week, 400) + " (" + p.intensity + ")", "2:00-2:30", "Pause 1 sec en haut. Côtes basses, menton rentré. Arrête la série si le bas du dos compense. " + p.rir)] },
 
     { time:"13 min", title:"B. Amplitude longue sans ego", tag:"Hypertrophie", kind:"accessory",
       exercises:[
@@ -104,7 +112,7 @@ function gfBlocks(day, week){
       text:"Bike 3 min + hamstring sweep 8/côté + hip airplane assisté 5/côté + KB RDL léger 2×10 + ramp-up RDL." },
 
     { time:"17 min", title:"A. Hinge — tension longue", tag:"Principal", kind:"main",
-      exercises:[gfEx("Romanian Deadlift", p.mainSets + "×" + p.repMain, "charge du jour selon " + p.intensity, "2:00-2:30", "Descente lente 2-3 sec. Étirement ischios/fessiers. Stop si le dos devient le moteur. " + p.rir)] },
+      exercises:[gfEx("Romanian Deadlift", p.mainSets + "×" + p.repMain, gfMainLoad(week, 285) + " (" + p.intensity + ")", "2:00-2:30", "Descente lente 2-3 sec. Étirement ischios/fessiers. Stop si le dos devient le moteur. " + p.rir)] },
 
     { time:"13 min", title:"B. Unilatéral contrôlé", tag:"Hypertrophie", kind:"accessory",
       exercises:[

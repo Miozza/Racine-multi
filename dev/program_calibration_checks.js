@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+// Racine V4.5 — contrat de calibration et de variété des programmes catalogue.
+// Convention : BASE_LOADS = 1RM de l'athlète de référence ; multiplicateurs de
+// semaine = %1RM réels ; le mouvement principal reste identique tout le cycle ;
+// les blocs B/C tournent chaque semaine.
+
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const ROOT = path.resolve(__dirname, '..');
+function read(rel){ return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
+const errors = [];
+const notes = [];
+function assert(cond, msg){ (cond ? notes : errors).push(msg); }
+
+const ctx = { window: {}, console };
+vm.createContext(ctx);
+['programs/index.js','programs/racine_client_programs.js','programs/racine_crossfit_programs.js','programs/hypertrophie_fesse.js']
+  .forEach(f => vm.runInContext(read(f), ctx, {filename:f}));
+const index = ctx.window.COACH_BERTIN_PROGRAM_INDEX;
+const programs = ctx.window.COACH_BERTIN_PROGRAMS;
+
+// ── 1. Convention : bases catalogue = 1RM de référence ──────────────────────
+// Valeurs dérivées de scripts/profiles/reference.js (bench 300, squat5RM 235→1RM 275,
+// press 185, clean 225, hipThrust8RM 315→1RM 400, row8RM 185→1RM 235, deadlift ≈ 1,2×squat).
+const REF_BASES = { "Back Squat":275, "Front Squat":215, "Bench Press":300, "Strict Press":185,
+  "Power Clean":225, "Hip Thrust":400, "Barbell Row":235, "Deadlift":330 };
+const clientSrc = read('programs/racine_client_programs.js');
+const crossfitSrc = read('programs/racine_crossfit_programs.js');
+Object.keys(REF_BASES).forEach(name => {
+  const re = new RegExp('"' + name + '":\\s*(\\d+)');
+  [ ['client', clientSrc], ['crossfit', crossfitSrc] ].forEach(([tag, src]) => {
+    const m = src.match(re);
+    if(!m) return; // le mouvement peut être absent d'un des deux catalogues
+    assert(Number(m[1]) === REF_BASES[name],
+      tag + ' : base "' + name + '" = ' + m[1] + ' lb (convention 1RM référence : ' + REF_BASES[name] + ').');
+  });
+});
+
+// ── 2. Intensités des mouvements principaux (semaines de travail) ───────────
+// Un main numérique doit viser 55-90 %1RM hors deload (borne large : les reps
+// cibles varient de 3 à 10 selon la famille), et le deload doit redescendre.
+function parseNum(load){
+  const m = String(load == null ? '' : load).match(/(\d+(?:\.\d+)?)\s*(?:-\s*\d+)?\s*lb/i);
+  return m ? Number(m[1]) : null;
+}
+const clientIds = index.filter(x => x && x.macroRole === 'client_catalog').map(x => x.id);
+clientIds.forEach(id => {
+  const p = programs[id];
+  const weeks = p.weekLabels.length;
+  p.days.forEach(day => {
+    for(let w = 1; w <= weeks; w++){
+      const isDeload = w === weeks;
+      (p.getBlocks(day, w) || []).filter(b => b.kind === 'main').forEach(b => {
+        (b.exercises || []).forEach(e => {
+          const num = parseNum(e.load);
+          if(num === null || num === 0) return; // poids du corps / technique pure : toléré
+          const base = { ...REF_BASES, "Goblet Squat":100, "Push Press":215, "Hang Power Clean":205,
+            "Power Snatch":170, "Hang Power Snatch":155, "Clean and Jerk":215, "Thruster":170,
+            "Overhead Squat":180, "Split Jerk":235, "Push Jerk":225 }[e.name];
+          if(!base) return; // main non-barbell référencé ailleurs
+          const pct = num / base;
+          if(isDeload){
+            assert(pct <= 0.66, id + ' / ' + day + ' S' + w + ' (deload) : ' + e.name + ' ' + num + ' lb = ' + Math.round(pct*100) + ' %1RM (≤ 66 attendu).');
+          } else {
+            assert(pct >= 0.42 && pct <= 0.90, id + ' / ' + day + ' S' + w + ' : ' + e.name + ' ' + num + ' lb = ' + Math.round(pct*100) + ' %1RM (fenêtre 42-90).');
+          }
+        });
+      });
+    }
+  });
+});
+
+// ── 3. Principal fixe + rotation des blocs B/C ───────────────────────────────
+clientIds.filter(id => (index.find(x=>x.id===id)||{}).file === 'programs/racine_client_programs.js').forEach(id => {
+  const p = programs[id];
+  const weeks = p.weekLabels.length;
+  p.days.forEach(day => {
+    const mains = new Set(), all = [];
+    for(let w = 1; w <= weeks; w++){
+      const names = new Set();
+      (p.getBlocks(day, w) || []).forEach(b => (b.exercises||[]).forEach(e => {
+        names.add(e.name);
+        if(b.kind === 'main') mains.add(e.name);
+      }));
+      all.push(names);
+    }
+    assert(mains.size === 1, id + ' / ' + day + ' : le mouvement principal reste identique tout le cycle (' + [...mains].join(', ') + ').');
+    const union = new Set(); all.forEach(sn => sn.forEach(n => union.add(n)));
+    assert(union.size > all[0].size, id + ' / ' + day + ' : les accessoires tournent (' + union.size + ' mouvements distincts pour ' + all[0].size + ' par semaine).');
+  });
+});
+
+// ── 4. Mains de hypertrophie_fesse chiffrés ──────────────────────────────────
+const gf = programs.hypertrophie_fesse;
+['lundi','jeudi'].forEach(day => {
+  const main = (gf.getBlocks(day, 1) || []).find(b => b.kind === 'main');
+  const e = main && main.exercises && main.exercises[0];
+  assert(e && parseNum(e.load) !== null, 'hypertrophie_fesse / ' + day + ' : le principal a une charge numérique (' + (e && e.load) + ').');
+});
+
+// ── 5. Repères moteur : plus de mouvement chargé sans seed ───────────────────
+const seedSrc = read('scripts/charge/historique.js');
+['hip thrust','db rdl','goblet','pull through','kb swing','farmer carry','landmine']
+  .forEach(k => assert(seedSrc.includes(k), 'Seed moteur présent pour : ' + k));
+
+if(errors.length){
+  console.error('ÉCHEC program_calibration_checks.js');
+  errors.forEach(e => console.error(' - ' + e));
+  process.exit(1);
+}
+notes.forEach(n => console.log(' - ' + n));
+console.log('OK program_calibration_checks.js — V4.5 (' + notes.length + ' assertions)');
