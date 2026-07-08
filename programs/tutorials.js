@@ -154,422 +154,62 @@ window.COACH_BERTIN_TUTORIALS = {
   },
   "PVC Pass Through": {
     "goal": "Ouvrir les épaules et préparer l’overhead sans forcer.",
-    "setup": [
-      "Prise large sur PVC ou bâton.",
-      "Côtes basses, fessiers légèrement serrés.",
-      "Bras longs, épaules basses."
-    ],
-    "execution": [
-      "Passe le bâton de l’avant vers l’arrière lentement.",
-      "Garde les coudes droits.",
-      "Élargis la prise si ça pince."
-    ],
-    "mistakes": [
-      "Cambrer le bas du dos.",
-      "Plier les coudes.",
-      "Forcer dans une douleur d’épaule."
-    ],
+    "setup": ["Prise large sur PVC ou bâton.", "Côtes basses, fessiers légèrement serrés.", "Bras longs, épaules basses."],
+    "execution": ["Passe le bâton de l’avant vers l’arrière lentement.", "Garde les coudes droits.", "Élargis la prise si ça pince."],
+    "mistakes": ["Cambrer le bas du dos.", "Plier les coudes.", "Forcer dans une douleur d’épaule."],
     "cue": "Amplitude facile, pas combat."
   },
-  "Band Pull Apart": {
-    "goal": "Activer haut du dos et arrière d’épaule.",
-    "setup": [
-      "Élastique devant toi à hauteur de poitrine.",
-      "Bras presque longs.",
-      "Épaules basses."
-    ],
-    "execution": [
-      "Ouvre les bras jusqu’à amener l’élastique vers la poitrine.",
-      "Serre légèrement les omoplates.",
-      "Retour lent."
-    ],
-    "mistakes": [
-      "Hausser les épaules.",
-      "Plier trop les coudes.",
-      "Aller trop vite."
-    ],
-    "cue": "Haut du dos, pas trap supérieur."
-  },
-  "Scap Push-up": {
-    "goal": "Activer le serratus et contrôler les omoplates.",
-    "setup": [
-      "Position push-up ou genoux au sol.",
-      "Coudes verrouillés.",
-      "Corps gainé."
-    ],
-    "execution": [
-      "Laisse les omoplates se rapprocher légèrement.",
-      "Repousse le sol pour les éloigner.",
-      "Ne plie pas les coudes."
-    ],
-    "mistakes": [
-      "Transformer en push-up.",
-      "Creuser le bas du dos.",
-      "Hausser les épaules."
-    ],
-    "cue": "Pousse le sol loin de toi."
-  },
-  "Wall Slide": {
-    "goal": "Améliorer rotation supérieure de l’omoplate et mobilité overhead.",
-    "setup": [
-      "Dos ou avant-bras contre le mur selon variation.",
-      "Côtes basses.",
-      "Cou détendu."
-    ],
-    "execution": [
-      "Glisse lentement vers le haut.",
-      "Garde les épaules basses.",
-      "Redescends contrôlé."
-    ],
-    "mistakes": [
-      "Cambrer pour gagner de l’amplitude.",
-      "Hausser les trapèzes.",
-      "Forcer une douleur."
-    ],
-    "cue": "Monte avec l’omoplate, pas avec le cou."
-  },
-  "Dead Hang": {
-    "goal": "Décompression douce et préparation du tirage.",
-    "setup": [
-      "Prise confortable sur la barre.",
-      "Pieds au sol si nécessaire.",
-      "Respiration calme."
-    ],
-    "execution": [
-      "Laisse le corps s’allonger sans perdre le contrôle.",
-      "Garde une légère activité des épaules si sensible.",
-      "Sors avant la douleur."
-    ],
-    "mistakes": [
-      "Rester trop longtemps.",
-      "Relâcher complètement si l’épaule pince.",
-      "Se balancer."
-    ],
-    "cue": "Long, calme, sans pincement."
-  },
-  "Scap Pull-up": {
-    "goal": "Apprendre à bouger les omoplates avant les pull-ups.",
-    "setup": [
-      "Suspendu à la barre.",
-      "Coudes droits.",
-      "Gainage léger."
-    ],
-    "execution": [
-      "Abaisse les épaules pour monter légèrement le corps.",
-      "Contrôle le retour.",
-      "Amplitude petite mais propre."
-    ],
-    "mistakes": [
-      "Plier les coudes.",
-      "Balancer.",
-      "Hausser le cou."
-    ],
-    "cue": "Épaules dans les poches arrière."
-  },
-  "Open Book": {
-    "goal": "Mobilité thoracique en rotation.",
-    "setup": [
-      "Couché sur le côté.",
-      "Genoux pliés.",
-      "Main du dessus ouverte."
-    ],
-    "execution": [
-      "Ouvre lentement le bras vers l’arrière.",
-      "Suis la main avec le regard.",
-      "Respire en fin d’amplitude."
-    ],
-    "mistakes": [
-      "Forcer avec l’épaule.",
-      "Laisser les genoux partir.",
-      "Aller trop vite."
-    ],
-    "cue": "Tourne le haut du dos, pas juste le bras."
-  },
-  "Cat-Cow": {
-    "goal": "Réveiller la colonne et la respiration.",
-    "setup": [
-      "À quatre pattes.",
-      "Mains sous épaules, genoux sous hanches.",
-      "Mouvement lent."
-    ],
-    "execution": [
-      "Arrondis la colonne.",
-      "Puis ouvre doucement la poitrine.",
-      "Synchronise avec la respiration."
-    ],
-    "mistakes": [
-      "Aller vite.",
-      "Forcer le cou.",
-      "Transformer en étirement agressif."
-    ],
-    "cue": "Segment par segment."
-  },
-  "World's Greatest Stretch": {
-    "goal": "Préparer hanches, thorax et flexeurs de hanche.",
-    "setup": [
-      "Grande fente avant.",
-      "Main au sol si possible.",
-      "Respiration lente."
-    ],
-    "execution": [
-      "Ouvre le coude vers le pied.",
-      "Tourne le thorax vers le plafond.",
-      "Change de côté sans précipitation."
-    ],
-    "mistakes": [
-      "S’effondrer dans le bas du dos.",
-      "Forcer l’épaule.",
-      "Aller trop vite."
-    ],
-    "cue": "Hanche ouverte, thorax qui tourne."
-  },
-  "Glute Bridge": {
-    "goal": "Activer les fessiers sans charger le dos.",
-    "setup": [
-      "Dos au sol, genoux pliés.",
-      "Pieds sous les genoux.",
-      "Côtes basses."
-    ],
-    "execution": [
-      "Pousse dans les talons.",
-      "Monte les hanches jusqu’à aligner genoux-hanches-épaules.",
-      "Pause en haut."
-    ],
-    "mistakes": [
-      "Cambrer en haut.",
-      "Pousser avec les lombaires.",
-      "Pieds trop loin."
-    ],
-    "cue": "Fessiers en haut, pas lombaires."
-  },
-  "Goblet Squat": {
-    "goal": "Préparer squat, hanches et posture.",
-    "setup": [
-      "Charge tenue contre la poitrine.",
-      "Pieds stance squat.",
-      "Torse haut."
-    ],
-    "execution": [
-      "Descends entre les jambes.",
-      "Garde les genoux alignés.",
-      "Remonte en poussant le sol."
-    ],
-    "mistakes": [
-      "Arrondir le dos.",
-      "Genoux qui rentrent.",
-      "Talons qui décollent."
-    ],
-    "cue": "Torse fier, genoux propres."
-  },
-  "Ankle Rocks": {
-    "goal": "Préparer la cheville pour squat et step-ups.",
-    "setup": [
-      "Position fente ou genou près du mur.",
-      "Talon au sol.",
-      "Pied droit."
-    ],
-    "execution": [
-      "Avance le genou vers les orteils.",
-      "Garde le talon collé.",
-      "Retour contrôlé."
-    ],
-    "mistakes": [
-      "Talon qui lève.",
-      "Pied qui s’écrase vers l’intérieur.",
-      "Forcer une douleur."
-    ],
-    "cue": "Genou avance, talon reste."
-  },
-  "Front Rack Stretch": {
-    "goal": "Préparer rack de front squat, clean et thruster.",
-    "setup": [
-      "Main sur barre ou rig.",
-      "Coude haut.",
-      "Cage basse."
-    ],
-    "execution": [
-      "Amène doucement le coude vers le haut/avant.",
-      "Respire sans cambrer.",
-      "Garde l’étirement tolérable."
-    ],
-    "mistakes": [
-      "Cambrer lombaire.",
-      "Forcer le poignet.",
-      "Étirer dans une douleur vive."
-    ],
-    "cue": "Coude haut, côtes basses."
-  },
-  "Tall Muscle Clean": {
-    "goal": "Pratiquer turnover rapide du clean sans fatigue.",
-    "setup": [
-      "Debout haut, barre aux hanches.",
-      "Charge légère.",
-      "Pieds sous les hanches."
-    ],
-    "execution": [
-      "Guide la barre proche du corps.",
-      "Tourne les coudes vite.",
-      "Reçois en rack haut."
-    ],
-    "mistakes": [
-      "Tirer loin du corps.",
-      "Réception molle.",
-      "Charger trop lourd."
-    ],
-    "cue": "Coudes rapides, barre proche."
-  },
-  "Clean Pull": {
-    "goal": "Renforcer trajectoire et extension du clean.",
-    "setup": [
-      "Barre proche.",
-      "Dos gainé.",
-      "Lats engagés."
-    ],
-    "execution": [
-      "Pousse le sol.",
-      "Garde la barre proche.",
-      "Termine grand sans tirer avec les bras trop tôt."
-    ],
-    "mistakes": [
-      "Barre qui s’éloigne.",
-      "Tirer avec les bras.",
-      "Perdre le dos."
-    ],
-    "cue": "Jambes d’abord, barre collée."
-  },
-  "Dead Bug": {
-    "goal": "Gainage anti-extension et contrôle des côtes.",
-    "setup": [
-      "Dos au sol.",
-      "Genoux et bras en l’air.",
-      "Bas du dos contrôlé."
-    ],
-    "execution": [
-      "Allonge bras/jambe opposés lentement.",
-      "Expire en gardant les côtes basses.",
-      "Reviens sans perdre le bas du dos."
-    ],
-    "mistakes": [
-      "Cambrer.",
-      "Aller trop vite.",
-      "Perdre la respiration."
-    ],
-    "cue": "Côtes basses, mouvement lent."
-  },
-  "Hollow Hold": {
-    "goal": "Gainage gym/CrossFit.",
-    "setup": [
-      "Dos au sol.",
-      "Côtes basses.",
-      "Jambes et bras selon niveau."
-    ],
-    "execution": [
-      "Garde le bas du dos collé.",
-      "Respire court mais contrôlé.",
-      "Réduis le levier si ça cambre."
-    ],
-    "mistakes": [
-      "Cambrer.",
-      "Monter les épaules au cou.",
-      "Tenir trop longtemps laid."
-    ],
-    "cue": "Qualité avant durée."
-  },
-  "Pallof Press": {
-    "goal": "Gainage anti-rotation.",
-    "setup": [
-      "Câble ou élastique de côté.",
-      "Pieds stables.",
-      "Cage basse."
-    ],
-    "execution": [
-      "Presse les mains devant toi.",
-      "Résiste à la rotation.",
-      "Retour contrôlé."
-    ],
-    "mistakes": [
-      "Tourner le bassin.",
-      "Hausser les épaules.",
-      "Aller trop lourd."
-    ],
-    "cue": "Ton tronc refuse de tourner."
-  },
-  "Serratus Cable Punch": {
-    "goal": "Serratus, stabilité scapulaire et épaule plus saine.",
-    "setup": [
-      "Câble à hauteur confortable.",
-      "Cage basse.",
-      "Épaule basse."
-    ],
-    "execution": [
-      "Pousse loin devant en protraction.",
-      "Garde le cou détendu.",
-      "Retour lent sans perdre la cage."
-    ],
-    "mistakes": [
-      "Hausser l’épaule.",
-      "Cambrer.",
-      "Transformer en press lourd."
-    ],
-    "cue": "Pousse l’omoplate autour de la cage."
-  },
-  "DB Curl": {
-    "goal": "Biceps sans voler la récupération du pull.",
-    "setup": [
-      "Coudes près du corps.",
-      "Épaules basses.",
-      "Poignets neutres ou supination."
-    ],
-    "execution": [
-      "Monte sans balancer.",
-      "Serre en haut.",
-      "Descends contrôlé."
-    ],
-    "mistakes": [
-      "Balancer le dos.",
-      "Avancer les coudes.",
-      "Couper la descente."
-    ],
-    "cue": "Coude fixe, biceps travaille."
-  },
-  "DB Shoulder Press": {
-    "goal": "Volume épaules plus contrôlé que la barre.",
-    "setup": [
-      "Haltères aux épaules.",
-      "Cage basse.",
-      "Poignets empilés."
-    ],
-    "execution": [
-      "Presse verticalement.",
-      "Contrôle la descente.",
-      "Garde les épaules loin des oreilles."
-    ],
-    "mistakes": [
-      "Cambrer.",
-      "Cogner les haltères.",
-      "Raccourcir l’amplitude."
-    ],
-    "cue": "Presse propre, pas ego."
-  },
-  "Landmine Press": {
-    "goal": "Press angle plus doux pour épaule et cage.",
-    "setup": [
-      "Barre en landmine.",
-      "Position demi-genou ou debout.",
-      "Cage basse."
-    ],
-    "execution": [
-      "Presse vers l’avant/haut.",
-      "Laisse l’omoplate bouger proprement.",
-      "Retour contrôlé."
-    ],
-    "mistakes": [
-      "Cambrer.",
-      "Hausser l’épaule.",
-      "Tourner le tronc."
-    ],
-    "cue": "Angle naturel, épaule qui glisse."
-  }
+  "Band Pull Apart": {"goal":"Activer haut du dos et arrière d’épaule.","setup":["Élastique devant toi à hauteur de poitrine.","Bras presque longs.","Épaules basses."],"execution":["Ouvre les bras jusqu’à amener l’élastique vers la poitrine.","Serre légèrement les omoplates.","Retour lent."],"mistakes":["Hausser les épaules.","Plier trop les coudes.","Aller trop vite."],"cue":"Haut du dos, pas trap supérieur."},
+  "Scap Push-up": {"goal":"Activer le serratus et contrôler les omoplates.","setup":["Position push-up ou genoux au sol.","Coudes verrouillés.","Corps gainé."],"execution":["Laisse les omoplates se rapprocher légèrement.","Repousse le sol pour les éloigner.","Ne plie pas les coudes."],"mistakes":["Transformer en push-up.","Creuser le bas du dos.","Hausser les épaules."],"cue":"Pousse le sol loin de toi."},
+  "Wall Slide": {"goal":"Améliorer rotation supérieure de l’omoplate et mobilité overhead.","setup":["Dos ou avant-bras contre le mur selon variation.","Côtes basses.","Cou détendu."],"execution":["Glisse lentement vers le haut.","Garde les épaules basses.","Redescends contrôlé."],"mistakes":["Cambrer pour gagner de l’amplitude.","Hausser les trapèzes.","Forcer une douleur."],"cue":"Monte avec l’omoplate, pas avec le cou."},
+  "Dead Hang": {"goal":"Décompression douce et préparation du tirage.","setup":["Prise confortable sur la barre.","Pieds au sol si nécessaire.","Respiration calme."],"execution":["Laisse le corps s’allonger sans perdre le contrôle.","Garde une légère activité des épaules si sensible.","Sors avant la douleur."],"mistakes":["Rester trop longtemps.","Relâcher complètement si l’épaule pince.","Se balancer."],"cue":"Long, calme, sans pincement."},
+  "Scap Pull-up": {"goal":"Apprendre à bouger les omoplates avant les pull-ups.","setup":["Suspendu à la barre.","Coudes droits.","Gainage léger."],"execution":["Abaisse les épaules pour monter légèrement le corps.","Contrôle le retour.","Amplitude petite mais propre."],"mistakes":["Plier les coudes.","Balancer.","Hausser le cou."],"cue":"Épaules dans les poches arrière."},
+  "Open Book": {"goal":"Mobilité thoracique en rotation.","setup":["Couché sur le côté.","Genoux pliés.","Main du dessus ouverte."],"execution":["Ouvre lentement le bras vers l’arrière.","Suis la main avec le regard.","Respire en fin d’amplitude."],"mistakes":["Forcer avec l’épaule.","Laisser les genoux partir.","Aller trop vite."],"cue":"Tourne le haut du dos, pas juste le bras."},
+  "Cat-Cow": {"goal":"Réveiller la colonne et la respiration.","setup":["À quatre pattes.","Mains sous épaules, genoux sous hanches.","Mouvement lent."],"execution":["Arrondis la colonne.","Puis ouvre doucement la poitrine.","Synchronise avec la respiration."],"mistakes":["Aller vite.","Forcer le cou.","Transformer en étirement agressif."],"cue":"Segment par segment."},
+  "World's Greatest Stretch": {"goal":"Préparer hanches, thorax et flexeurs de hanche.","setup":["Grande fente avant.","Main au sol si possible.","Respiration lente."],"execution":["Ouvre le coude vers le pied.","Tourne le thorax vers le plafond.","Change de côté sans précipitation."],"mistakes":["S’effondrer dans le bas du dos.","Forcer l’épaule.","Aller trop vite."],"cue":"Hanche ouverte, thorax qui tourne."},
+  "Glute Bridge": {"goal":"Activer les fessiers sans charger le dos.","setup":["Dos au sol, genoux pliés.","Pieds sous les genoux.","Côtes basses."],"execution":["Pousse dans les talons.","Monte les hanches jusqu’à aligner genoux-hanches-épaules.","Pause en haut."],"mistakes":["Cambrer en haut.","Pousser avec les lombaires.","Pieds trop loin."],"cue":"Fessiers en haut, pas lombaires."},
+  "Goblet Squat": {"goal":"Préparer squat, hanches et posture.","setup":["Charge tenue contre la poitrine.","Pieds stance squat.","Torse haut."],"execution":["Descends entre les jambes.","Garde les genoux alignés.","Remonte en poussant le sol."],"mistakes":["Arrondir le dos.","Genoux qui rentrent.","Talons qui décollent."],"cue":"Torse fier, genoux propres."},
+  "Ankle Rocks": {"goal":"Préparer la cheville pour squat et step-ups.","setup":["Position fente ou genou près du mur.","Talon au sol.","Pied droit."],"execution":["Avance le genou vers les orteils.","Garde le talon collé.","Retour contrôlé."],"mistakes":["Talon qui lève.","Pied qui s’écrase vers l’intérieur.","Forcer une douleur."],"cue":"Genou avance, talon reste."},
+  "Front Rack Stretch": {"goal":"Préparer rack de front squat, clean et thruster.","setup":["Main sur barre ou rig.","Coude haut.","Cage basse."],"execution":["Amène doucement le coude vers le haut/avant.","Respire sans cambrer.","Garde l’étirement tolérable."],"mistakes":["Cambrer lombaire.","Forcer le poignet.","Étirer dans une douleur vive."],"cue":"Coude haut, côtes basses."},
+  "Tall Muscle Clean": {"goal":"Pratiquer turnover rapide du clean sans fatigue.","setup":["Debout haut, barre aux hanches.","Charge légère.","Pieds sous les hanches."],"execution":["Guide la barre proche du corps.","Tourne les coudes vite.","Reçois en rack haut."],"mistakes":["Tirer loin du corps.","Réception molle.","Charger trop lourd."],"cue":"Coudes rapides, barre proche."},
+  "Clean Pull": {"goal":"Renforcer trajectoire et extension du clean.","setup":["Barre proche.","Dos gainé.","Lats engagés."],"execution":["Pousse le sol.","Garde la barre proche.","Termine grand sans tirer avec les bras trop tôt."],"mistakes":["Barre qui s’éloigne.","Tirer avec les bras.","Perdre le dos."],"cue":"Jambes d’abord, barre collée."},
+  "Dead Bug": {"goal":"Gainage anti-extension et contrôle des côtes.","setup":["Dos au sol.","Genoux et bras en l’air.","Bas du dos contrôlé."],"execution":["Allonge bras/jambe opposés lentement.","Expire en gardant les côtes basses.","Reviens sans perdre le bas du dos."],"mistakes":["Cambrer.","Aller trop vite.","Perdre la respiration."],"cue":"Côtes basses, mouvement lent."},
+  "Hollow Hold": {"goal":"Gainage gym/CrossFit.","setup":["Dos au sol.","Côtes basses.","Jambes et bras selon niveau."],"execution":["Garde le bas du dos collé.","Respire court mais contrôlé.","Réduis le levier si ça cambre."],"mistakes":["Cambrer.","Monter les épaules au cou.","Tenir trop longtemps laid."],"cue":"Qualité avant durée."},
+  "Pallof Press": {"goal":"Gainage anti-rotation.","setup":["Câble ou élastique de côté.","Pieds stables.","Cage basse."],"execution":["Presse les mains devant toi.","Résiste à la rotation.","Retour contrôlé."],"mistakes":["Tourner le bassin.","Hausser les épaules.","Aller trop lourd."],"cue":"Ton tronc refuse de tourner."},
+  "Serratus Cable Punch": {"goal":"Serratus, stabilité scapulaire et épaule plus saine.","setup":["Câble à hauteur confortable.","Cage basse.","Épaule basse."],"execution":["Pousse loin devant en protraction.","Garde le cou détendu.","Retour lent sans perdre la cage."],"mistakes":["Hausser l’épaule.","Cambrer.","Transformer en press lourd."],"cue":"Pousse l’omoplate autour de la cage."},
+  "DB Curl": {"goal":"Biceps sans voler la récupération du pull.","setup":["Coudes près du corps.","Épaules basses.","Poignets neutres ou supination."],"execution":["Monte sans balancer.","Serre en haut.","Descends contrôlé."],"mistakes":["Balancer le dos.","Avancer les coudes.","Couper la descente."],"cue":"Coude fixe, biceps travaille."},
+  "DB Shoulder Press": {"goal":"Volume épaules plus contrôlé que la barre.","setup":["Haltères aux épaules.","Cage basse.","Poignets empilés."],"execution":["Presse verticalement.","Contrôle la descente.","Garde les épaules loin des oreilles."],"mistakes":["Cambrer.","Cogner les haltères.","Raccourcir l’amplitude."],"cue":"Presse propre, pas ego."},
+  "Landmine Press": {"goal":"Press angle plus doux pour épaule et cage.","setup":["Barre en landmine.","Position demi-genou ou debout.","Cage basse."],"execution":["Presse vers l’avant/haut.","Laisse l’omoplate bouger proprement.","Retour contrôlé."],"mistakes":["Cambrer.","Hausser l’épaule.","Tourner le tronc."],"cue":"Angle naturel, épaule qui glisse."},
+
+  "Bench Press": {goal:"Pecs, triceps et stabilité scapulaire avec barre.",setup:["Pieds solides au sol.","Omoplates serrées et abaissées.","Barre au-dessus du bas des pecs.","Poignets empilés sous la barre."],execution:["Descends la barre sous contrôle.","Garde les omoplates serrées.","Pousse fort sans rebondir.","Termine bras verrouillés sans perdre les épaules."],mistakes:["Rebondir sur la poitrine.","Décoller les épaules du banc.","Laisser les coudes partir trop large.","Lever les pieds."],cue:"Omoplates serrées, barre contrôlée."},
+  "Incline DB Press": {goal:"Haut de pec et deltoïde antérieur avec amplitude contrôlée.",setup:["Banc incliné modéré.","Haltères aux épaules.","Pieds stables.","Omoplates fixées au banc."],execution:["Descends lentement.","Garde les avant-bras presque verticaux.","Pousse les haltères vers le haut sans les cogner.","Garde 1-2 reps en réserve."],mistakes:["Inclinaison trop haute qui transforme en shoulder press.","Descente trop courte.","Cogner les haltères.","Cambrer fort."],cue:"Haut de pec, contrôle complet."},
+  "Pull-Up": {goal:"Tirage vertical au poids du corps, dos et biceps.",setup:["Prise solide sur la barre.","Corps gainé.","Épaules actives avant de tirer.","Jambes contrôlées."],execution:["Tire les coudes vers les côtes.","Monte le menton au-dessus de la barre si possible.","Descends complet sans tomber.","Arrête avant de perdre la forme."],mistakes:["Kipper ou balancer.","Raccourcir l’amplitude.","Hausser les épaules aux oreilles.","Tourner le corps."],cue:"Coudes vers les côtes, corps solide."},
+  "Barbell Row": {goal:"Épaisseur du dos avec charnière solide.",setup:["Buste penché, dos neutre.","Barre proche du corps.","Gainage actif.","Poids au milieu du pied."],execution:["Tire les coudes vers les hanches.","Garde le buste stable.","Pause courte en haut.","Redescends contrôlé."],mistakes:["Donner de l’élan avec le bas du dos.","Arrondir la colonne.","Tirer seulement avec les bras.","Monter les épaules."],cue:"Dos gainé, coudes vers les hanches."},
+  "DB Fly": {goal:"Étirement et contraction des pecs sans charger les épaules.",setup:["Haltères légers à modérés.","Omoplates posées au banc.","Coudes légèrement fléchis.","Poignets neutres."],execution:["Ouvre les bras lentement.","Arrête avant toute douleur d’épaule.","Ramène les haltères en serrant les pecs.","Garde la même flexion de coude."],mistakes:["Descendre trop bas.","Transformer en press.","Prendre trop lourd.","Perdre les omoplates."],cue:"Grand étirement, zéro pincement."},
+  "Weighted Pull-up": {goal:"Force et hypertrophie du tirage vertical avec charge additionnelle.",setup:["Charge stable à la ceinture ou entre les pieds.","Prise ferme.","Épaules actives.","Corps gainé."],execution:["Tire en gardant la charge silencieuse.","Monte proprement sans torsion.","Descends sous contrôle.","Coupe la série avant le grind laid."],mistakes:["Ajouter du poids trop tôt.","Perdre l’amplitude.","Balancer la charge.","Hausser les épaules."],cue:"Même forme que poids du corps, juste plus lourd."},
+  "Seated DB Press": {goal:"Deltoïdes avec haltères et tronc stabilisé par le banc.",setup:["Assis, dos appuyé si possible.","Haltères aux épaules.","Cage basse.","Poignets empilés."],execution:["Presse verticalement.","Contrôle la descente aux épaules.","Garde les épaules loin des oreilles.","Ne cogne pas les haltères."],mistakes:["Cambrer pour finir les reps.","Raccourcir la descente.","Cogner en haut.","Tourner les poignets."],cue:"Presse propre, cage basse."},
+  "Cable Lateral Raise": {goal:"Deltoïde latéral avec tension constante au câble.",setup:["Câble au plus bas.","Épaule basse.","Poignet neutre.","Légère inclinaison possible."],execution:["Monte dans le plan de l’omoplate.","Arrête autour de la hauteur d’épaule.","Contrôle la descente.","Garde la tension en bas."],mistakes:["Hausser le trapèze.","Balancer le corps.","Monter trop haut.","Plier le bras pour tricher."],cue:"Côté de l’épaule, pas le cou."},
+  "Barbell Curl": {goal:"Biceps avec barre, charge stable et amplitude complète.",setup:["Debout grand.","Coudes près du corps.","Poignets neutres.","Barre tenue sans casser les poignets."],execution:["Monte la barre sans balancer.","Serre les biceps en haut.","Descends contrôlé jusqu’en bas.","Garde les coudes fixes."],mistakes:["Swing du dos.","Coudes qui avancent.","Demi-reps.","Poignets cassés."],cue:"Coudes fixes, pas de swing."},
+  "Dips": {goal:"Pecs, triceps et épaules avec poids du corps.",setup:["Mains solides sur les barres.","Épaules basses.","Corps gainé.","Amplitude adaptée aux épaules."],execution:["Descends sous contrôle.","Garde les épaules basses.","Pousse jusqu’à extension solide.","Arrête avant la douleur."],mistakes:["Descendre trop bas si ça pince.","Épaules aux oreilles.","Rebondir en bas.","Tordre les coudes."],cue:"Bas contrôlé, épaules basses."},
+  "Hammer Curls": {goal:"Brachial, brachio-radial et biceps avec prise neutre.",setup:["Haltères de chaque côté.","Pouces vers le haut.","Coudes près du corps.","Tronc stable."],execution:["Monte sans tourner le poignet.","Garde les coudes fixes.","Serre en haut.","Descends lentement."],mistakes:["Balancer le dos.","Avancer les coudes.","Tourner en curl classique.","Couper la descente."],cue:"Prise marteau, coude fixe."},
+  "Skull Crusher": {goal:"Triceps, surtout longue portion, avec contrôle des coudes.",setup:["Allongé sur banc.","Barre ou haltères au-dessus des épaules.","Coudes pointés vers le plafond.","Charge modérée."],execution:["Descends vers le front ou derrière la tête.","Garde les coudes stables.","Étends sans verrouiller brutalement.","Contrôle chaque rep."],mistakes:["Écarter les coudes.","Aller trop lourd.","Cogner en bas.","Bouger les épaules à chaque rep."],cue:"Coudes stables, triceps travaille."},
+  "Back Squat": {goal:"Jambes complètes et gainage sous barre.",setup:["Barre stable sur le haut du dos.","Pieds stance squat.","Respiration et gainage avant descente.","Regard stable."],execution:["Descends entre les jambes.","Garde les genoux alignés.","Maintiens le tronc fort.","Remonte en poussant le sol."],mistakes:["S’effondrer en bas.","Genoux qui rentrent.","Dos qui arrondit.","Chercher l’échec."],cue:"Gainage fort, profondeur propre."},
+  "Lunges": {goal:"Jambes unilatérales, stabilité genou et fessiers.",setup:["Pas assez long pour rester stable.","Torse haut.","Pied avant bien ancré.","Charge contrôlée."],execution:["Descends droit et contrôlé.","Garde le genou aligné.","Pousse dans le pied avant.","Change de jambe sans précipiter."],mistakes:["Pas trop court.","Genou qui rentre.","Rebondir au sol.","Perdre l’équilibre."],cue:"Pas stable, genou propre."},
+  "Stiff-Leg Deadlift": {goal:"Ischios et chaîne postérieure avec genoux peu fléchis.",setup:["Pieds sous les hanches.","Genoux légèrement fléchis.","Dos neutre.","Barre proche des jambes."],execution:["Pousse les hanches vers l’arrière.","Descends jusqu’à l’étirement ischios.","Garde la barre proche.","Remonte en serrant fessiers/ischios."],mistakes:["Arrondir le dos.","Descendre trop bas.","Plier comme un squat.","Éloigner la barre."],cue:"Hanches arrière, ischios tendus."},
+  "Deadlift": {goal:"Force chaîne postérieure avec technique stricte.",setup:["Barre au-dessus du milieu du pied.","Dos gainé.","Lats engagés.","Hanches placées sans s’asseoir trop bas."],execution:["Pousse le sol.","Garde la barre proche.","Monte épaules et hanches ensemble.","Verrouille debout sans hyperextension."],mistakes:["Arrondir le dos.","Tirer avec les bras.","Barre qui s’éloigne.","Grinder à l’échec."],cue:"Pousse le sol, barre collée."},
+  "Decline Bench Press": {goal:"Pecs avec angle décliné, charge contrôlée.",setup:["Banc décliné sécurisé.","Omoplates serrées.","Pieds ou jambes verrouillés.","Barre au-dessus du bas des pecs."],execution:["Descends en contrôle.","Touche sans rebond.","Pousse fort en gardant les épaules fixées.","Garde la trajectoire stable."],mistakes:["Rebondir.","Perdre les omoplates.","Descendre trop haut sur la poitrine.","Surcambrer."],cue:"Angle décliné, même contrôle que bench."},
+  "Chest Dips": {goal:"Pecs avec dips inclinés légèrement vers l’avant.",setup:["Mains solides.","Torse légèrement penché.","Épaules basses.","Jambes contrôlées."],execution:["Descends jusqu’à amplitude tolérée.","Garde le torse orienté pecs.","Pousse sans rebond.","Arrête avant pincement."],mistakes:["Descente douloureuse.","Épaules qui montent.","Rebondir.","Transformer en ego AMRAP."],cue:"Torse légèrement penché, pecs actifs."},
+  "One-Arm DB Row": {goal:"Dos unilatéral avec coude vers la hanche.",setup:["Main ou genou appuyé si possible.","Dos neutre.","Haltère sous l’épaule.","Épaule basse."],execution:["Tire le coude vers la hanche.","Pause courte en haut.","Garde le buste stable.","Descends jusqu’à étirement contrôlé."],mistakes:["Tourner tout le tronc.","Hausser l’épaule.","Tirer avec le biceps seulement.","Donner de l’élan."],cue:"Coude à la hanche, dos stable."},
+  "Seated Cable Row": {goal:"Tirage horizontal contrôlé, milieu du dos.",setup:["Assis grand.","Pieds calés.","Poitrine ouverte.","Épaules basses."],execution:["Tire vers le bas des côtes.","Serre les omoplates.","Garde le buste stable.","Retour lent jusqu’à étirement."],mistakes:["Balancer le tronc.","Arrondir le dos.","Hausser les épaules.","Tirer trop haut."],cue:"Dos droit, omoplates serrées."},
+  "Cable Fly": {goal:"Contraction des pecs avec tension continue au câble.",setup:["Câbles réglés selon angle voulu.","Un pied légèrement devant.","Coudes souples.","Épaules basses."],execution:["Ramène les mains devant toi.","Serre les pecs sans cogner les poignées.","Retour lent jusqu’à étirement.","Garde la cage stable."],mistakes:["Prendre trop lourd.","Transformer en press.","Épaules qui roulent vers l’avant.","Perdre la tension."],cue:"Pecs serrent, épaules calmes."},
+  "Arnold Press": {goal:"Deltoïdes avec rotation contrôlée des haltères.",setup:["Haltères devant les épaules.","Cage basse.","Tronc solide.","Charge modérée."],execution:["Ouvre progressivement en pressant.","Termine au-dessus de la tête.","Redescends en contrôlant la rotation.","Réduis l’amplitude si ça pince."],mistakes:["Forcer la rotation.","Cambrer.","Cogner en haut.","Aller trop lourd."],cue:"Rotation fluide, aucune douleur."},
+  "Front Raise": {goal:"Deltoïde antérieur avec mouvement strict.",setup:["Charge légère à modérée.","Bras presque longs.","Cage basse.","Épaules basses."],execution:["Monte jusqu’à hauteur d’épaule.","Garde le tronc immobile.","Pause courte.","Descends lentement."],mistakes:["Balancer le dos.","Monter trop haut.","Hausser les épaules.","Plier les bras pour tricher."],cue:"Hauteur épaule, pas d’élan."},
+  "Reverse Curl": {goal:"Avant-bras, brachio-radial et biceps avec prise pronation.",setup:["Barre tenue paumes vers le bas.","Coudes près du corps.","Poignets neutres.","Charge contrôlée."],execution:["Monte sans casser les poignets.","Garde les coudes fixes.","Serre en haut.","Descends lentement."],mistakes:["Poignets qui plient.","Swing du dos.","Coudes qui avancent.","Charge trop lourde."],cue:"Poignets solides, coudes fixes."},
+  "Overhead Tricep Extension": {goal:"Longue portion du triceps avec étirement overhead.",setup:["Charge tenue au-dessus/derrière la tête.","Coudes serrés.","Cage basse.","Tronc gainé."],execution:["Descends derrière la tête.","Sens l’étirement triceps.","Étends les coudes sans cambrer.","Contrôle le retour."],mistakes:["Coudes trop ouverts.","Cambrer.","Descendre dans une douleur coude/épaule.","Aller trop lourd."],cue:"Étirement triceps, côtes basses."},
+  "Concentration Curl": {goal:"Biceps strict avec isolement maximal.",setup:["Assis ou penché stable.","Coude appuyé contre l’intérieur de la cuisse ou fixe.","Épaule basse.","Charge modérée."],execution:["Monte sans bouger le bras.","Serre fort en haut.","Descends complet et lent.","Garde le poignet solide."],mistakes:["Balancer l’épaule.","Demi-amplitude.","Tourner le tronc.","Prendre trop lourd."],cue:"Strict, contraction en haut."},
+  "Tricep Pushdown": {goal:"Triceps au câble avec coudes fixes.",setup:["Câble haut.","Coudes collés au corps.","Poitrine stable.","Poignets neutres."],execution:["Pousse jusqu’à extension complète.","Garde les coudes immobiles.","Contrôle la remontée.","Ne perds pas la posture."],mistakes:["Avancer les coudes.","Balancer le torse.","Couper l’amplitude.","Casser les poignets."],cue:"Coudes collés, extension complète."},
+  "Romanian Deadlift": {goal:"Ischios/fessiers avec charnière de hanche contrôlée.",setup:["Pieds sous les hanches.","Genoux légèrement fléchis.","Dos neutre.","Barre ou haltères proches des jambes."],execution:["Pousse les hanches loin derrière.","Descends jusqu’à étirement ischios.","Garde les lats engagés.","Remonte en serrant les fessiers."],mistakes:["Arrondir le dos.","Squatter le mouvement.","Descendre trop bas.","Éloigner la charge."],cue:"Hanches arrière, dos neutre."},
+  "Hamstring Walkout": {goal:"Ischios au poids du corps avec hanches hautes.",setup:["Dos au sol.","Pont fessier haut.","Talons au sol.","Côtes basses."],execution:["Marche les talons lentement vers l’avant.","Garde les hanches hautes.","Reviens talon par talon.","Arrête avant de cambrer."],mistakes:["Laisser tomber les hanches.","Aller trop vite.","Cambrer.","Perdre la tension ischios."],cue:"Hanches hautes, talons contrôlés."}
 };
 
 window.findCoachBertinTutorial = function(name){
