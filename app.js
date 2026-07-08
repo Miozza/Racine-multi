@@ -1494,6 +1494,7 @@ function saveCycle(){
   var todayDay=dayFromDateIfProgramDay(todayIsoDate());
   var dayText=todayDay?dayLabel(todayDay):"premier jour du programme";
   if(!confirm("Démarrer “"+focusConfigs[selected].label+"” comme cycle actif?\n\nDate de départ : "+startDate+"\nPosition calculée : S"+wk+" · "+dayText+"\n\nLe cycle actuel sera mis en pause. Les charges et l’historique réel ne seront pas modifiés."))return;
+  if(window.CoachSeason)CoachSeason.recordCycleEnd(state, todayIsoDate());
   pauseCurrentCycle("Remplacé par "+focusConfigs[selected].label);
   state.cycle.goal=selected;previewCycleGoal=selected;state.week=1;state.day=(focusConfigs[selected].days||DEFAULT_PROGRAM_DAYS)[0]||"lundi";state.completedDays=[];state.missedDays=[];state.deloadAlert=false;state.activeCycleStartDate=startDate;
   applyCycleStartDate(startDate,{setDayFromToday:true,resetWeekTracking:true});
@@ -1502,6 +1503,7 @@ function saveCycle(){
 function newCycle(){ archiveActiveCycle(); }
 function archiveActiveCycle(){
   if(!confirm("Archiver le cycle actif actuel?"))return;
+  if(window.CoachSeason)CoachSeason.recordCycleEnd(state, todayIsoDate());
   state.archivedCycles=state.archivedCycles||[];
   state.archivedCycles.push(Object.assign(snapshotCurrentCycle("Archivé"),{archivedAt:nowIso(),status:"archived"}));
   state.completedDays=[];state.missedDays=[];state.cycleState=buildCycleStatePayload();save();renderCycle();}
@@ -2160,6 +2162,7 @@ function coachFullBoot(){
   coachSanitizeImplausibleLoads();
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
+  if(window.CoachSeason)CoachSeason.ensure(state);
   ensureCurrentDay();
   loadCustomCharges();
   bind();
