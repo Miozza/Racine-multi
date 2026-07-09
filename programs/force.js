@@ -41,11 +41,11 @@ window.COACH_BERTIN_PROGRAMS.strength = {
 
 function strengthWeekPlan(week){
   return({
-    1:{label:"S1 Base",note:"Repères de force. RPE 7-8. Technique parfaite.",bench:"5×5",benchLoad:"235 lb",squat:"5×5",squatLoad:"205 lb",clean:"6×2",cleanLoad:"165 lb",press:"5×5",pressLoad:"120 lb",dead:"4×5",deadLoad:"225 lb"},
-    2:{label:"S2 Charge",note:"Charge plus sérieuse. Même propreté. Repos complet.",bench:"5×4",benchLoad:"250 lb",squat:"5×4",squatLoad:"220 lb",clean:"7×2",cleanLoad:"175 lb",press:"5×4",pressLoad:"130 lb",dead:"5×4",deadLoad:"245 lb"},
-    3:{label:"S3 Intensité",note:"Semaine lourde. Peu de reps. Aucune série ratée.",bench:"6×3",benchLoad:"265 lb",squat:"6×3",squatLoad:"235 lb",clean:"8×1",cleanLoad:"185-195 lb",press:"6×3",pressLoad:"140 lb",dead:"6×3",deadLoad:"265 lb"},
-    4:{label:"S4 Deload",note:"Baisser la charge, garder le mouvement. Tu dois sortir plus frais.",bench:"3×5 léger",benchLoad:"205 lb",squat:"3×5 léger",squatLoad:"165 lb",clean:"5×2 léger",cleanLoad:"135 lb",press:"3×5 léger",pressLoad:"95 lb",dead:"3×5 léger",deadLoad:"185 lb"}
-  })[week] || {label:"S1",note:"",bench:"5×5",benchLoad:"235 lb",squat:"5×5",squatLoad:"205 lb",clean:"6×2",cleanLoad:"165 lb",press:"5×5",pressLoad:"120 lb",dead:"4×5",deadLoad:"225 lb"};
+    1:{label:"S1 Base",note:"Repères de force. RPE 7-8. Technique parfaite.",bench:"5×5",benchLoad:"190 lb",squat:"5×5",squatLoad:"235 lb",clean:"6×2",cleanLoad:"150 lb",press:"5×5",pressLoad:"110 lb",dead:"4×5",deadLoad:"250 lb"},
+    2:{label:"S2 Charge",note:"Charge plus sérieuse. Même propreté. Repos complet.",bench:"5×4",benchLoad:"205 lb",squat:"5×4",squatLoad:"255 lb",clean:"7×2",cleanLoad:"160 lb",press:"5×4",pressLoad:"120 lb",dead:"5×4",deadLoad:"270 lb"},
+    3:{label:"S3 Intensité",note:"Semaine lourde. Peu de reps. Aucune série ratée.",bench:"6×3",benchLoad:"215 lb",squat:"6×3",squatLoad:"270 lb",clean:"8×1",cleanLoad:"170-180 lb",press:"6×3",pressLoad:"125 lb",dead:"6×3",deadLoad:"290 lb"},
+    4:{label:"S4 Deload",note:"Baisser la charge, garder le mouvement. Tu dois sortir plus frais.",bench:"3×5 léger",benchLoad:"165 lb",squat:"3×5 léger",squatLoad:"190 lb",clean:"5×2 léger",cleanLoad:"125 lb",press:"3×5 léger",pressLoad:"90 lb",dead:"3×5 léger",deadLoad:"205 lb"}
+  })[week] || {label:"S1",note:"",bench:"5×5",benchLoad:"190 lb",squat:"5×5",squatLoad:"235 lb",clean:"6×2",cleanLoad:"150 lb",press:"5×5",pressLoad:"110 lb",dead:"4×5",deadLoad:"250 lb"};
 }
 function stEx(name,format,load,rest,note){return {name:name,format:format,load:load||"—",rest:rest||"—",note:note||""};}
 
@@ -77,7 +77,7 @@ function strengthBlocks(day,week){
     {time:"13 min",title:"B. Chaîne postérieure",tag:"Force",kind:"accessory",
      exercises:[
        stEx("Hip Thrust",deload?"2×8 léger":heavy?"4×5 lourd":"4×6-8",deload?"225 lb":heavy?"315 lb":"275-305 lb","1:30","Pause en haut. Fessiers."),
-       stEx("DB RDL",deload?"2×8 léger":"3×8","60-70 lb / main","1:30","Ischios, dos neutre.")
+       stEx("DB RDL",deload?"2×8 léger":"3×8","65-75 lb / main","1:30","Ischios, dos neutre.")
      ]},
     {time:"5 min",title:"C. Mobilité",tag:"Mobilité",kind:"mobility",text:"Couch stretch 1 min/côté + hamstring stretch 1 min/côté + respiration 1 min."}
   ];
