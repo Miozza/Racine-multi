@@ -21,11 +21,13 @@ vm.createContext(ctx);
 const index = ctx.window.COACH_BERTIN_PROGRAM_INDEX;
 const programs = ctx.window.COACH_BERTIN_PROGRAMS;
 
-// ── 1. Convention : bases catalogue = 1RM de référence ──────────────────────
-// Valeurs dérivées de scripts/profiles/reference.js (bench 300, squat5RM 235→1RM 275,
-// press 185, clean 225, hipThrust8RM 315→1RM 400, row8RM 185→1RM 235, deadlift ≈ 1,2×squat).
-const REF_BASES = { "Back Squat":275, "Front Squat":215, "Bench Press":300, "Strict Press":185,
-  "Power Clean":225, "Hip Thrust":400, "Barbell Row":235, "Deadlift":330 };
+// ── 1. Convention : bases catalogue = 1RM de l'Athlète X ────────────────────
+// Référence V2 « versatile » (scripts/profiles/reference.js) : squat 1RM 315,
+// bench = squat/1,3 ≈ 245, press = 0,63×bench ≈ 155, clean = 0,65×squat ≈ 205,
+// front squat = 0,85×squat ≈ 265, row 8RM 155→1RM 195, hipThrust 8RM 315→1RM 400,
+// deadlift ≈ 1,2×squat ≈ 375.
+const REF_BASES = { "Back Squat":315, "Front Squat":265, "Bench Press":245, "Strict Press":155,
+  "Power Clean":205, "Hip Thrust":400, "Barbell Row":195, "Deadlift":375 };
 const clientSrc = read('programs/racine_client_programs.js');
 const crossfitSrc = read('programs/racine_crossfit_programs.js');
 Object.keys(REF_BASES).forEach(name => {
@@ -56,9 +58,9 @@ clientIds.forEach(id => {
         (b.exercises || []).forEach(e => {
           const num = parseNum(e.load);
           if(num === null || num === 0) return; // poids du corps / technique pure : toléré
-          const base = { ...REF_BASES, "Goblet Squat":100, "Push Press":215, "Hang Power Clean":205,
-            "Power Snatch":170, "Hang Power Snatch":155, "Clean and Jerk":215, "Thruster":170,
-            "Overhead Squat":180, "Split Jerk":235, "Push Jerk":225 }[e.name];
+          const base = { ...REF_BASES, "Goblet Squat":100, "Push Press":180, "Hang Power Clean":185,
+            "Power Snatch":155, "Hang Power Snatch":140, "Clean and Jerk":195, "Thruster":160,
+            "Overhead Squat":170, "Split Jerk":200, "Push Jerk":190 }[e.name];
           if(!base) return; // main non-barbell référencé ailleurs
           const pct = num / base;
           if(isDeload){

@@ -59,25 +59,26 @@
     ]
   };
 
-  // Convention V4.5 : BASE_LOADS = 1RM ESTIMÉ DE L'ATHLÈTE DE RÉFÉRENCE
+  // Convention V4.5 : BASE_LOADS = 1RM ESTIMÉ DE L'ATHLÈTE DE RÉFÉRENCE « X »
+  // (versatile, ratios équilibrés haut/bas — voir scripts/profiles/reference.js V2)
   // (scripts/profiles/reference.js). Les multiplicateurs de WEEK_SCHEMES sont
   // des %1RM réels. Le scaling par profil (scripts/charge/scaling.js) ramène
   // ensuite chaque client à son niveau. Ne jamais écrire ici une « charge de
   // travail » : c'est la double réduction qui rendait les poids ridicules.
   var BASE_LOADS = {
-    "Back Squat": 275,
-    "Front Squat": 215,
-    "Bench Press": 300,
-    "Strict Press": 185,
-    "Push Press": 215,
-    "Barbell Row": 235,
+    "Back Squat": 315,
+    "Front Squat": 265,
+    "Bench Press": 245,
+    "Strict Press": 155,
+    "Push Press": 180,
+    "Barbell Row": 195,
     "Hip Thrust": 400,
-    "DB RDL": 90,
-    "Bulgarian Split Squat": 65,
+    "DB RDL": 95,
+    "Bulgarian Split Squat": 70,
     "Weighted Pull-up": 0,
-    "Incline DB Press": 75,
-    "Power Clean": 225,
-    "Deadlift": 330,
+    "Incline DB Press": 65,
+    "Power Clean": 205,
+    "Deadlift": 375,
     "Landmine Press": 100,
     "Goblet Squat": 100,
     "Farmer Carry": 90,
