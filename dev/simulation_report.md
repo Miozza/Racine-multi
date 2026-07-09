@@ -1,6 +1,6 @@
 # Rapport simulation multi-utilisateurs — Racine V1.16-multi
 
-Généré: 2026-07-08T23:13:06.257Z
+Généré: 2026-07-09T04:51:41.458Z
 
 ## Verdict global
 
@@ -31,14 +31,14 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_beginner_foundation_2d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 75 lb · front squat 75 lb · strict press 45 lb · row 70 lb · hinge 405 lb
+- Charges de départ clés: bench 75 lb · front squat 75 lb · strict press 45 lb · row 70 lb · hinge 380 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Goblet Squat | 25×9 | 20×11 | 8.4 | stable (0%) |
 | Incline DB Press | 8×10 | 8×10 | 8.4 | stable (0%) |
 | Ring Row | 40×8 | 35×10 | 8.4 | stable (2.6%) |
-| Hip Thrust | 225×8 | 185×8 | 8.3 | stable (2.9%) |
+| Hip Thrust | 210×8 | 175×8 | 8.3 | stable (2.8%) |
 | Strict Press | 25×9 | 20×8 | 8.3 | stable (2.6%) |
 
 ### WARN — Recomposition 3j irrégulier
@@ -47,18 +47,18 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_recomposition_3d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 135 lb · front squat 100 lb · strict press 70 lb · row 90 lb · hinge 565 lb
+- Charges de départ clés: bench 110 lb · front squat 100 lb · strict press 70 lb · row 90 lb · hinge 525 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Front Squat | 60×4 | 45×8 | 8.3 | stable (2.5%) |
-| Incline DB Press | 18×8 | 20×9 | 8.6 | progression propre (25.2%) |
-| Hip Thrust | 365×10 | 280×11 | 8.4 | baisse suspecte (-10%) |
+| Incline DB Press | 13×8 | 10×10 | 8.3 | stable (-2.6%) |
+| Hip Thrust | 340×10 | 260×11 | 8.4 | baisse suspecte (-7.8%) |
 | Ring Row | 55×10 | 45×9 | 8.4 | stable (-2.5%) |
 | DB RDL | 80×9 | 75×10 | 8.5 | stable (0.5%) |
 
 **Alertes**
-- Hip Thrust: saut possiblement agressif 30 lb
+- Hip Thrust: saut possiblement agressif 25 lb
 - Hip Thrust: baisse suspecte non attendue
 
 ### WARN — Profil fessiers privé
@@ -67,11 +67,11 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `hypertrophie_fesse_stephanie`
 - Programmes visibles: 33, blocs S1: 7
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 100 lb · front squat 115 lb · strict press 60 lb · row 95 lb · hinge 745 lb
+- Charges de départ clés: bench 100 lb · front squat 115 lb · strict press 60 lb · row 95 lb · hinge 695 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Hip Thrust | 550×7 | 520×10 | 8.4 | progression propre (9.1%) |
+| Hip Thrust | 515×7 | 485×10 | 8.4 | progression propre (8.7%) |
 | DB RDL | 123×8 | 110×9 | 8.3 | stable (4.7%) |
 | Bulgarian Split Squat | 18×9 | 15×10 | 8.3 | stable (0%) |
 | Goblet Squat | 35×8 | 30×10 | 8.5 | stable (2.6%) |
@@ -80,7 +80,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 **Alertes**
 - Hip Thrust: saut possiblement agressif 15 lb
 - Hip Thrust: saut possiblement agressif 15 lb
-- Hip Thrust: saut possiblement agressif 20 lb
+- Hip Thrust: saut possiblement agressif 15 lb
 
 ### WARN — Force 2j emploi chargé
 
@@ -88,13 +88,13 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_strength_2d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 185 lb · front squat 165 lb · strict press 115 lb · row 155 lb · hinge 1015 lb
+- Charges de départ clés: bench 185 lb · front squat 165 lb · strict press 115 lb · row 155 lb · hinge 945 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Back Squat | 150×7 | 135×7 | 8.4 | stable (1.1%) |
 | Bench Press | 150×7 | 130×6 | 8.4 | stable (3.8%) |
-| Deadlift | 865×4 | 730×5 | 8.5 | progression propre (11.3%) |
+| Deadlift | 805×4 | 685×5 | 8.5 | progression propre (12.2%) |
 | Strict Press | 95×6 | 75×7 | 8.1 | baisse suspecte (-5.3%) |
 | Barbell Row | 120×9 | 105×11 | 8.3 | stable (1.5%) |
 
@@ -109,20 +109,20 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_strength_4d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 280 lb · front squat 260 lb · strict press 175 lb · row 215 lb · hinge 1420 lb
+- Charges de départ clés: bench 280 lb · front squat 260 lb · strict press 175 lb · row 215 lb · hinge 1325 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Back Squat | 215×7 | 175×5 | 8.4 | baisse suspecte (-4.5%) |
 | Bench Press | 225×7 | 205×6 | 8.3 | stable (0.9%) |
-| Deadlift | 1135×4 | 1035×5 | 8.3 | progression propre (7%) |
+| Deadlift | 1055×4 | 955×5 | 8.3 | progression propre (6.4%) |
 | Strict Press | 150×5 | 115×6 | 8.5 | stable (-1.3%) |
 | Barbell Row | 170×9 | 135×11 | 8.2 | baisse suspecte (-11.2%) |
 
 **Alertes**
 - Back Squat: baisse suspecte non attendue
-- Deadlift: saut possiblement agressif 35 lb
-- Deadlift: saut possiblement agressif 35 lb
+- Deadlift: saut possiblement agressif 30 lb
+- Deadlift: saut possiblement agressif 30 lb
 - Barbell Row: baisse suspecte non attendue
 
 ### WARN — CrossFit RX 5j
@@ -131,21 +131,21 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_rx_crossfit_5d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 245 lb · front squat 230 lb · strict press 150 lb · row 195 lb · hinge 1285 lb
+- Charges de départ clés: bench 245 lb · front squat 230 lb · strict press 150 lb · row 195 lb · hinge 1195 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Power Clean | 120×5 | 90×4 | 8.1 | baisse suspecte (-13.6%) |
 | Front Squat | 160×4 | 145×7 | 8.8 | monte cher (9.2%) |
 | Push Press | 100×7 | 70×6 | 8.3 | baisse suspecte (-10%) |
-| Deadlift | 875×6 | 705×7 | 8.3 | stable (2.3%) |
+| Deadlift | 815×6 | 660×7 | 8.3 | stable (2.5%) |
 | Pull-Up | 6 reps | 5 reps | 8 | progression propre (16.7%) |
 
 **Alertes**
 - Power Clean: baisse suspecte non attendue
 - Front Squat: progresse mais RPE coûteux (9.2%)
 - Push Press: baisse suspecte non attendue
-- Deadlift: saut possiblement agressif 45 lb
+- Deadlift: saut possiblement agressif 40 lb
 
 ### WARN — Préparation Metcon 3j
 
@@ -153,21 +153,21 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_metcon_prep_3d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 175 lb · front squat 165 lb · strict press 110 lb · row 140 lb · hinge 970 lb
+- Charges de départ clés: bench 175 lb · front squat 165 lb · strict press 110 lb · row 140 lb · hinge 905 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Power Clean | 90×2 | 80×4 | 8.5 | stable (3.1%) |
 | Front Squat | 110×6 | 80×7 | 8.3 | baisse suspecte (-11.2%) |
 | Push Press | 70×6 | 70×6 | 8.2 | progression propre (11.1%) |
-| Deadlift | 635×7 | 640×4 | 8.5 | progression propre (7.8%) |
+| Deadlift | 595×7 | 600×4 | 8.5 | progression propre (8.1%) |
 | Pull-Up | 5 reps | 8 reps | 8.3 | stable (0%) |
 
 **Alertes**
 - Front Squat: baisse suspecte non attendue
 - Deadlift: saut possiblement agressif 35 lb
 - Deadlift: saut possiblement agressif 20 lb
-- Deadlift: saut possiblement agressif 30 lb
+- Deadlift: saut possiblement agressif 25 lb
 - Deadlift: saut possiblement agressif 25 lb
 
 ### WARN — Candidat strict muscle-up
@@ -176,7 +176,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `strict_muscle_up_10w`
 - Programmes visibles: 32, blocs S1: 5
 - Points Progression après dédup: 50
-- Charges de départ clés: bench 220 lb · front squat 190 lb · strict press 135 lb · row 185 lb · hinge 1170 lb
+- Charges de départ clés: bench 220 lb · front squat 190 lb · strict press 135 lb · row 185 lb · hinge 1090 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
@@ -197,7 +197,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_hybrid_performance_3d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 30
-- Charges de départ clés: bench 175 lb · front squat 150 lb · strict press 110 lb · row 140 lb · hinge 880 lb
+- Charges de départ clés: bench 175 lb · front squat 150 lb · strict press 110 lb · row 140 lb · hinge 820 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
@@ -217,14 +217,14 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 - Programme: `client_hypertrophy_5d`
 - Programmes visibles: 32, blocs S1: 6
 - Points Progression après dédup: 36
-- Charges de départ clés: bench 45 lb · front squat 200 lb · strict press 140 lb · row 320 lb · hinge 360 lb
+- Charges de départ clés: bench 45 lb · front squat 200 lb · strict press 115 lb · row 320 lb · hinge 335 lb
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Bench Press | 45×9 | 75×5 | 9.6 | monte cher (29.6%) |
 | Front Squat | 95×10 | 15×12 | 7.2 | baisse suspecte (-66.8%) |
 | Barbell Row | 300×9 | 475×5 | 9.5 | monte cher (98.9%) |
-| Hip Thrust | 300×9 | 210×10 | 9.2 | baisse suspecte (-20%) |
+| Hip Thrust | 275×9 | 190×10 | 9.2 | baisse suspecte (-20%) |
 | DB RDL | 88×8 | 28×8 | 8.5 | baisse suspecte (-73.6%) |
 | Incline DB Press | 8×8 | 5×8 | 8.7 | monte cher (5.3%) |
 

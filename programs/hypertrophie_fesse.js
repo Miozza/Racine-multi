@@ -112,7 +112,7 @@ function gfBlocks(day, week){
       text:"Bike 3 min + hamstring sweep 8/côté + hip airplane assisté 5/côté + KB RDL léger 2×10 + ramp-up RDL." },
 
     { time:"17 min", title:"A. Hinge — tension longue", tag:"Principal", kind:"main",
-      exercises:[gfEx("Romanian Deadlift", p.mainSets + "×" + p.repMain, gfMainLoad(week, 285) + " (" + p.intensity + ")", "2:00-2:30", "Descente lente 2-3 sec. Étirement ischios/fessiers. Stop si le dos devient le moteur. " + p.rir)] },
+      exercises:[gfEx("Romanian Deadlift", p.mainSets + "×" + p.repMain, gfMainLoad(week, 320) + " (" + p.intensity + ")", "2:00-2:30", "Descente lente 2-3 sec. Étirement ischios/fessiers. Stop si le dos devient le moteur. " + p.rir)] },
 
     { time:"13 min", title:"B. Unilatéral contrôlé", tag:"Hypertrophie", kind:"accessory",
       exercises:[

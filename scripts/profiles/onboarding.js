@@ -260,6 +260,39 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     return ratios;
   };
 
+  // Migration référence V2 « Athlète X » : les scaleRatios stockés ont été
+  // calculés contre l'ancienne référence (dominante haut du corps). On les
+  // recalcule contre la nouvelle à partir des valeurs de mouvement du profil —
+  // ses valeurs à LUI ne changent pas, seule l'ancre de comparaison change.
+  // Couvre aussi les profils sans ratios (ex. migration legacy Bertin) : leurs
+  // valeurs existent, leurs ratios sont enfin calculés.
+  api.migrateReferenceVersion = function(){
+    try{
+      if(typeof state !== "object" || !state.profile) return false;
+      var target = (window.RacineProfileReference && RacineProfileReference.REFERENCE_VERSION) || 2;
+      if(state.profile.referenceVersion === target) return false;
+      var ref = RacineProfileReference.profile();
+      var values = {};
+      var found = 0;
+      Object.keys(ref).forEach(function(k){
+        var v = Number(state.profile[k]);
+        if(isFinite(v) && v > 0){ values[k] = v; found++; }
+      });
+      // Au moins 3 repères connus, sinon on ne fabrique pas de ratios (le
+      // fallback par niveau reste plus honnête qu'un calcul sur rien).
+      if(found >= 3){
+        state.profile.scaleRatios = api.ratiosFromValues(values, state.profile.experienceLevel);
+      }
+      state.profile.referenceVersion = target;
+      if(typeof save === "function") save();
+      if(window.CoachLog && CoachLog.info) CoachLog.info("reference_migration", {version: target, movementsFound: found});
+      return true;
+    }catch(e){
+      if(window.CoachLog && CoachLog.error) CoachLog.error("reference_migration_failed", e, {});
+      return false;
+    }
+  };
+
   // Applique un résultat calculé (computeFromAnswers) au profil ACTUELLEMENT
   // actif dans CoachProfiles. Doit être appelé uniquement depuis un gestionnaire
   // d'événement (jamais au chargement du script) car elle dépend d'app.js.
@@ -274,6 +307,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     state.profile.competitionDateIso = meta.competitionDateIso || null;
     state.profile.trainingGoal = (window.CoachSeasonGoals ? CoachSeasonGoals.normalize(meta.trainingGoal) : meta.trainingGoal) || null;
     state.profile.scaleRatios = computed.ratios;
+    state.profile.referenceVersion = (window.RacineProfileReference && RacineProfileReference.REFERENCE_VERSION) || 2;
 
     // Ensemence movementRefs (référence de charge utilisée pour le scaling et
     // l'affichage), MAIS PLUS l'historique d'entraînement (athleteState.history).

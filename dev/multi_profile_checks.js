@@ -58,7 +58,10 @@ try{
   // → 1RM ≈ 125). La borne haute suit, l'intention reste : proche du test
   // réel, jamais le bench de référence avancé (~275).
   assert(computed.values.bench > 90 && computed.values.bench < 135, 'Bench débutant reste proche du test réel, pas du bench de référence avancé.');
-  assert(computed.ratios.bench > 0.25 && computed.ratios.bench < 0.45, 'Ratio bench débutant cohérent.');
+  // V4.5 « Athlète X » : référence équilibrée (bench 1RM 245 au lieu de 300).
+  // Un débutant à 95×8 @ RPE 8 (e1RM ≈ 125) vaut ~0,51 de la référence — la
+  // bande suit, l'intention reste : nettement sous la référence, jamais ≥ 1.
+  assert(computed.ratios.bench > 0.35 && computed.ratios.bench < 0.62, 'Ratio bench débutant cohérent.');
   assert(computed.values.inclineDb10RM < 30, 'Incline DB dérivé reste débutant.');
 }catch(e){
   errors.push('Simulation onboarding débutant impossible : ' + (e && e.stack ? e.stack : e));

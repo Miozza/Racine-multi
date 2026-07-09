@@ -2163,6 +2163,7 @@ function coachFullBoot(){
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   if(window.CoachSeason)CoachSeason.ensure(state);
+  if(window.CoachOnboarding&&CoachOnboarding.migrateReferenceVersion)CoachOnboarding.migrateReferenceVersion();
   ensureCurrentDay();
   loadCustomCharges();
   bind();
