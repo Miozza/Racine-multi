@@ -27,6 +27,10 @@ function canonicalMovementLabel(nameOrKey){
   var n=coachNormalizeMoveText(raw);
   if(!n)return "Mouvement";
   // Séparer les mouvements ambigus : aucun mapping partiel entre deux options.
+  // TEMPORAIRE (V4.5) — pont pour l'historique déjà loggé sous les anciens noms
+  // ambigus. Les programmes n'émettent plus ces noms (contrat « Règle des noms
+  // de mouvements ») ; retirer ces deux lignes quand plus aucun historique actif
+  // ne les contient.
   if(n.indexOf("weighted pull up ring row lourd")>=0 || n.indexOf("weighted pull up ring row")>=0)return "Weighted Pull-up / Ring Row lourd";
   if(n.indexOf("ring row lourd")>=0)return "Ring Row lourd";
   if(n.indexOf("ring row strict")>=0 || n.indexOf("ring rows strict")>=0)return "Ring Row";
@@ -38,6 +42,8 @@ function canonicalMovementLabel(nameOrKey){
   if(n.indexOf("db shoulder press landmine press")>=0)return "DB Shoulder Press";
   if(n.indexOf("landmine press")>=0)return "Landmine Press";
   if(n.indexOf("db shoulder press")>=0)return "DB Shoulder Press";
+  // TEMPORAIRE (V4.5) — même pont : les nouvelles séances loggent "Power Clean"
+  // (l'intention technique vit dans format/note/contexte, plus dans le nom).
   if(n.indexOf("power clean technique")>=0 || n.indexOf("clean technique")>=0)return "Power Clean technique";
   if(n.indexOf("power clean wod")>=0)return "Power Clean WOD";
   if(n.indexOf("power clean")>=0)return "Power Clean";

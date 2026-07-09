@@ -129,7 +129,7 @@ function hypertrophyBlocks(day,week){
 
     {time:"13 min",title:"B. Tirage vertical + biceps",tag:"Superset",kind:"accessory",
      exercises:[
-       hbEx("Weighted Pull-Up",p.pull,deload?"poids du corps":week>=4?"+15 à +30 lb":"+0 à +20 lb","0:30 avant B2","Strict. Si les coudes tirent : ring rows lourds."),
+       hbEx("Weighted Pull-Up",p.pull,deload?"poids du corps":week>=4?"+15 à +30 lb":"+0 à +20 lb","0:30 avant B2","Strict. Si les coudes tirent : Ring Row avec angle plus difficile."),
        hbEx("DB Curl",p.curl,deload?"léger":"modéré","1:15 après B2","Contrôle complet, pas d'élan du dos.")
      ]},
 

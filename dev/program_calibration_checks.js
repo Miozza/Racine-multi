@@ -16,7 +16,10 @@ function assert(cond, msg){ (cond ? notes : errors).push(msg); }
 
 const ctx = { window: {}, console };
 vm.createContext(ctx);
-['programs/index.js','programs/racine_client_programs.js','programs/racine_crossfit_programs.js','programs/hypertrophie_fesse.js']
+['programs/index.js','programs/racine_client_programs.js','programs/racine_crossfit_programs.js','programs/hypertrophie_fesse.js',
+ 'programs/competition_peak.js','programs/force_performance.js','programs/hypertrophy_base.js','programs/force.js',
+ 'programs/general_strength_3d.js','programs/general_hypertrophy_2d.js','programs/general_hypertrophy_3d.js',
+ 'programs/transition_weeks.js','programs/strict_muscle_up_cycle.js','programs/epaules_3d.js']
   .forEach(f => vm.runInContext(read(f), ctx, {filename:f}));
 const index = ctx.window.COACH_BERTIN_PROGRAM_INDEX;
 const programs = ctx.window.COACH_BERTIN_PROGRAMS;
@@ -101,6 +104,29 @@ const gf = programs.hypertrophie_fesse;
   const e = main && main.exercises && main.exercises[0];
   assert(e && parseNum(e.load) !== null, 'hypertrophie_fesse / ' + day + ' : le principal a une charge numérique (' + (e && e.load) + ').');
 });
+
+// ── 5b. Règle des noms de mouvements (docs/STRUCTURE_CONTRACT.md) ────────────
+// name = vrai mouvement stable. Pas de « / », « ou », « + » combinant deux
+// mouvements, pas de faux qualificatif (lourd, léger, technique, facile,
+// contrôlé, progression, WOD). Deux mouvements possibles = deux entrées.
+const NAME_BANNED = /(\/| ou | \+ )|\b(lourd|lourds|léger|légers|technique|facile|faciles|contrôlé|progression|wod)\b/i;
+const badNames = new Set();
+Object.keys(programs).forEach(id => {
+  const p = programs[id];
+  if(!p || typeof p.getBlocks !== 'function' || !Array.isArray(p.days)) return;
+  const weeks = (p.weekLabels && p.weekLabels.length) || 4;
+  for(let w = 1; w <= weeks; w++){
+    p.days.forEach(day => {
+      let blocks; try { blocks = p.getBlocks(day, w) || []; } catch(e){ return; }
+      blocks.forEach(b => (b.exercises || []).forEach(e => {
+        if(e && e.name && NAME_BANNED.test(String(e.name))) badNames.add(id + ' : « ' + e.name + ' »');
+      }));
+    });
+  }
+});
+assert(badNames.size === 0, badNames.size === 0
+  ? 'Règle des noms : aucun nom de mouvement ambigu ou qualifié dans les programmes chargés.'
+  : 'Règle des noms violée — ' + [...badNames].slice(0, 6).join(' | '));
 
 // ── 5. Repères moteur : plus de mouvement chargé sans seed ───────────────────
 const seedSrc = read('scripts/charge/historique.js');

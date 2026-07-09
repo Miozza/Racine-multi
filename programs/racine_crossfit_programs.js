@@ -179,7 +179,7 @@
       format:"3 rounds for time",
       prescription:"400 m Run + 21 KB Swings 53/35 lb + 12 Pull-Ups.",
       cap:"16 min",
-      prep:["Run/Row", "KB Swing", "Pull-Up"],
+      prep:["Run", "Row", "KB Swing", "Pull-Up"],
       stimulus:"Seuil + transitions. Rester capable d'accélérer au 3e round.",
       scale:"Row 500 m ou bike 30/24 cal; ring rows si besoin."
     },
@@ -284,10 +284,10 @@
   var RX_VARIANTS = {
     squat:[
       {main:"Front Squat", skill:"Toes-to-Bar", support:"Wall Ball", wod:"AMRAP 11 : 10 Wall Balls + 8 Toes-to-Bar + 6 Front Squats légers."},
-      {main:"Back Squat", skill:"Pistol Progression", support:"Double-under", wod:"For Time cap 12 : 4 rounds 30 double-unders + 12 pistols/box step-down + 8 burpees."},
+      {main:"Back Squat", skill:"Pistol", support:"Double-under", wod:"For Time cap 12 : 4 rounds 30 double-unders + 12 pistols/box step-down + 8 burpees."},
       {main:"Overhead Squat", skill:"Chest-to-Bar Pull-Up", support:"GHD Sit-Up", wod:"AMRAP 10 : 6 Overhead Squats légers + 8 Chest-to-Bar + 10 GHD/sit-ups."},
       {main:"Deadlift", skill:"Rope Climb", support:"Box Jump", wod:"Every 3:00 × 4 : 12 Deadlifts modérés + 1 Rope Climb + 12 Box Jumps."},
-      {main:"Front Squat", skill:"Bar Muscle-up Progression", support:"Farmer Carry", wod:"AMRAP 9 : 5 Front Squats lourds-propres + 3 Bar Muscle-ups/progression + 30 m carry."},
+      {main:"Front Squat", skill:"Bar Muscle-up", support:"Farmer Carry", wod:"AMRAP 9 : 5 Front Squats lourds-propres + 3 Bar Muscle-ups/progression + 30 m carry."},
       {main:"Back Squat", skill:"Strict Pull-Up", support:"Hollow Hold", wod:"AMRAP 12 facile : 5 Pull-Ups + 10 Push-Ups + 15 Air Squats, RPE 7."}
     ],
     barbell:[
@@ -302,7 +302,7 @@
       {main:"Strict Press", skill:"Chest-to-Bar Pull-Up", support:"Ring Dip", wod:"AMRAP 10 : 5 Chest-to-Bar + 10 Push-Ups + 15 Air Squats."},
       {main:"Push Press", skill:"Toes-to-Bar", support:"Double-under", wod:"AMRAP 12 : 8 Toes-to-Bar + 12 Push Press légers + 40 Double-Unders."},
       {main:"Strict Press", skill:"Handstand Push-up", support:"Barbell Row", wod:"Every 90 sec × 8 : 5 HSPU/progression + 8 cal bike."},
-      {main:"Weighted Pull-up", skill:"Ring Muscle-up Progression", support:"DB Thruster", wod:"AMRAP 10 : 2 Ring Muscle-ups/progression + 8 DB Thrusters + 12 cal row."},
+      {main:"Weighted Pull-up", skill:"Ring Muscle-up", support:"DB Thruster", wod:"AMRAP 10 : 2 Ring Muscle-ups/progression + 8 DB Thrusters + 12 cal row."},
       {main:"Push Jerk", skill:"Handstand Walk", support:"Toes-to-Bar", wod:"For Time cap 12 : 5 rounds 25 ft Handstand Walk/progression + 10 Toes-to-Bar."},
       {main:"Strict Press", skill:"Strict Pull-Up", support:"Face Pull", wod:"EMOM 12 facile : strict pull + push-up + hollow, qualité."}
     ],
