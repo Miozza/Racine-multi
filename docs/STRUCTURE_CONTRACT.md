@@ -154,7 +154,17 @@ node dev/structure_checks.js
 
 ## Règle des noms de mouvements
 
-Nom de mouvement = nom simple + équipement seulement si utile à la charge.
+Dans `programs/*.js`, le champ `name` doit contenir uniquement le nom réel, stable et distinct du mouvement. Cette règle protège les tutos, l’historique, les charges automatiques, les PR et l’analyse du matériel disponible au gym.
+
+Règles obligatoires :
+
+- Un mouvement = une entrée `name`.
+- Aucun `/` dans `name`.
+- Aucun `ou` dans `name` pour fusionner deux mouvements.
+- Aucun qualificatif de programmation dans `name` : `lourd`, `léger`, `technique`, `facile`, `contrôlé`, `progression`, `rappel`, `WOD`, etc.
+- Si deux mouvements sont possibles, ils doivent être écrits comme deux exercices séparés.
+- Les variantes, intensités, contraintes de matériel et consignes doivent vivre dans `format`, `load`, `rest`, `note` ou le contexte du bloc.
+- Les alias permanents ne doivent pas servir à compenser des noms ambigus. Un ancien historique ambigu peut rester historique, mais les nouveaux programmes doivent utiliser des noms propres.
 
 Autorisé :
 
@@ -166,6 +176,14 @@ Lateral Raise câble
 Rear Delt Fly DB
 Power Clean
 Knee Raise
+DB Shoulder Press
+Landmine Press
+Weighted Pull-up
+Ring Row
+Dead Bug
+Hollow Hold
+Bike
+Row
 ```
 
 Interdit :
@@ -176,10 +194,24 @@ Power Clean technique
 Pull-Up progression
 Overhead Rope Extension — rappel vendredi
 DB Shoulder Press / Landmine Press
+Weighted Pull-up / Ring Row lourd
+Dead Bug / Hollow Hold
+Bike / Row Zone 3
 DB RDL ou Barbell RDL
 ```
 
-Les intentions (`technique`, `progression`, `léger`, `rappel`, `WOD`) doivent vivre dans le contexte, la note ou le bloc, pas dans le nom du mouvement.
+Exemple correct lorsque deux options existent :
+
+```js
+{name:"DB Shoulder Press", format:"3x10", load:"léger à modéré", rest:"1:15", note:"Press contrôlé."}
+{name:"Landmine Press", format:"3x10", load:"léger à modéré", rest:"1:15", note:"Option séparée, pas fusionnée dans le nom."}
+```
+
+Exemple interdit :
+
+```js
+{name:"DB Shoulder Press / Landmine Press", format:"3x10", load:"léger à modéré", rest:"1:15", note:""}
+```
 
 ## Règle de communication entre fichiers
 
