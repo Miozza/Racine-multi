@@ -35,15 +35,15 @@ window.COACH_BERTIN_PROGRAMS.competition_peak = {
 
 function cpWeekPlan(week){
   return ({
-    1:{label:"S1 Pacing",note:"Rythme contrôlé. Finir en contrôle, pas mort.",clean:"6×2",cleanLoad:"155-165 lb",front:"4×4",frontLoad:"165-175 lb",skill:"base",long:"AMRAP 20",wodNote:"pacing nasal le plus longtemps possible"},
-    2:{label:"S2 Volume Open",note:"Volume compétitif. Transitions plus rapides, technique stable.",clean:"7×2",cleanLoad:"165-175 lb",front:"5×3",frontLoad:"175-185 lb",skill:"volume",long:"AMRAP 24",wodNote:"volume Open, pas de sprint au départ"},
-    3:{label:"S3 Intensité",note:"Plus intense, moins de bavardage entre les mouvements. Push sans exploser.",clean:"8×1",cleanLoad:"175-190 lb",front:"5×3",frontLoad:"185-195 lb",skill:"intensity",long:"For time",wodNote:"intense avec cassures planifiées"},
-    4:{label:"S4 Chipper",note:"Grosse semaine endurance musculaire. Stratégie de cassure obligatoire.",clean:"6×1",cleanLoad:"185-195 lb",front:"4×3",frontLoad:"185-195 lb",skill:"chipper",long:"Chipper 30",wodNote:"long effort, aucune panique"},
-    5:{label:"S5 Benchmarks",note:"Benchmarks adaptés. Mesurer, pas prouver ton ego.",clean:"5×1",cleanLoad:"190-205 lb",front:"3×3",frontLoad:"190-200 lb",skill:"benchmark",long:"Benchmark",wodNote:"tester proprement"},
-    6:{label:"S6 Simulation",note:"Simulation compétition. Gestion de deux efforts. Récupération active importante.",clean:"4×1",cleanLoad:"185-200 lb",front:"3×2",frontLoad:"185-195 lb",skill:"simulation",long:"Simulation 35",wodNote:"compétition simulée, stratégie avant intensité"},
-    7:{label:"S7 Taper",note:"Volume réduit. Garder vitesse et timing. Sortir plus frais que tu es entré.",clean:"5×1 facile",cleanLoad:"155-175 lb",front:"3×2 léger",frontLoad:"155-165 lb",skill:"taper",long:"AMRAP 15",wodNote:"court et vif, jamais destructeur"},
-    8:{label:"S8 Compétition",note:"Aucun nouveau stimulus. Activer, respirer, performer.",clean:"3×1 facile",cleanLoad:"135-155 lb",front:"2×2 léger",frontLoad:"135-155 lb",skill:"comp",long:"Test",wodNote:"effort choisi, fraîcheur prioritaire"}
-  })[week] || {label:"S1 Pacing",note:"",clean:"6×2",cleanLoad:"155 lb",front:"4×4",frontLoad:"165 lb",skill:"base",long:"AMRAP 20",wodNote:"contrôlé"};
+    1:{label:"S1 Pacing",note:"Rythme contrôlé. Finir en contrôle, pas mort.",clean:"6×2",cleanLoad:"140-150 lb",front:"4×4",frontLoad:"205-215 lb",skill:"base",long:"AMRAP 20",wodNote:"pacing nasal le plus longtemps possible"},
+    2:{label:"S2 Volume Open",note:"Volume compétitif. Transitions plus rapides, technique stable.",clean:"7×2",cleanLoad:"150-160 lb",front:"5×3",frontLoad:"215-230 lb",skill:"volume",long:"AMRAP 24",wodNote:"volume Open, pas de sprint au départ"},
+    3:{label:"S3 Intensité",note:"Plus intense, moins de bavardage entre les mouvements. Push sans exploser.",clean:"8×1",cleanLoad:"160-175 lb",front:"5×3",frontLoad:"230-240 lb",skill:"intensity",long:"For time",wodNote:"intense avec cassures planifiées"},
+    4:{label:"S4 Chipper",note:"Grosse semaine endurance musculaire. Stratégie de cassure obligatoire.",clean:"6×1",cleanLoad:"170-180 lb",front:"4×3",frontLoad:"230-240 lb",skill:"chipper",long:"Chipper 30",wodNote:"long effort, aucune panique"},
+    5:{label:"S5 Benchmarks",note:"Benchmarks adaptés. Mesurer, pas prouver ton ego.",clean:"5×1",cleanLoad:"175-185 lb",front:"3×3",frontLoad:"235-245 lb",skill:"benchmark",long:"Benchmark",wodNote:"tester proprement"},
+    6:{label:"S6 Simulation",note:"Simulation compétition. Gestion de deux efforts. Récupération active importante.",clean:"4×1",cleanLoad:"170-180 lb",front:"3×2",frontLoad:"230-240 lb",skill:"simulation",long:"Simulation 35",wodNote:"compétition simulée, stratégie avant intensité"},
+    7:{label:"S7 Taper",note:"Volume réduit. Garder vitesse et timing. Sortir plus frais que tu es entré.",clean:"5×1 facile",cleanLoad:"140-160 lb",front:"3×2 léger",frontLoad:"190-205 lb",skill:"taper",long:"AMRAP 15",wodNote:"court et vif, jamais destructeur"},
+    8:{label:"S8 Compétition",note:"Aucun nouveau stimulus. Activer, respirer, performer.",clean:"3×1 facile",cleanLoad:"125-140 lb",front:"2×2 léger",frontLoad:"165-190 lb",skill:"comp",long:"Test",wodNote:"effort choisi, fraîcheur prioritaire"}
+  })[week] || {label:"S1 Pacing",note:"",clean:"6×2",cleanLoad:"140 lb",front:"4×4",frontLoad:"205 lb",skill:"base",long:"AMRAP 20",wodNote:"contrôlé"};
 }
 
 function cpEx(name,format,load,rest,note){return {name:name,format:format,load:load||"—",rest:rest||"—",note:note||""};}

@@ -105,6 +105,33 @@ const gf = programs.hypertrophie_fesse;
   assert(e && parseNum(e.load) !== null, 'hypertrophie_fesse / ' + day + ' : le principal a une charge numérique (' + (e && e.load) + ').');
 });
 
+// ── 4b. Legacy publics : plancher d'intensité (échelle Athlète X) ────────────
+// Les programmes manuels recalibrés ne doivent jamais retomber sous ~52 %1RM
+// sur un main barbell hors deload/taper (les 2 dernières semaines sont
+// exemptées : deload ou taper de pic).
+const LEGACY_IDS = ['hypertrophy_base','force_performance','competition_peak','strength',
+  'general_strength_3d','general_hypertrophy_2d','general_hypertrophy_3d'];
+const LEGACY_BASES = { "Back Squat":315, "Front Squat":265, "Bench Press":245, "Strict Press":155,
+  "Power Clean":205, "Barbell Row":195, "Hip Thrust":400, "Deadlift":375 };
+LEGACY_IDS.forEach(id => {
+  const p = programs[id];
+  if(!p || typeof p.getBlocks !== 'function'){ assert(false, id + ' : programme legacy chargeable.'); return; }
+  const weeks = (p.weekLabels && p.weekLabels.length) || 4;
+  let lows = [];
+  for(let w = 1; w <= Math.max(1, weeks - 2); w++){
+    p.days.forEach(day => {
+      let blocks; try { blocks = p.getBlocks(day, w) || []; } catch(e){ return; }
+      blocks.filter(b => b.kind === 'main').forEach(b => (b.exercises || []).forEach(e => {
+        const base = LEGACY_BASES[e.name];
+        const num = parseNum(e.load);
+        if(!base || num === null || num === 0) return;
+        if(num / base < 0.52) lows.push(e.name + ' S' + w + ' ' + num + ' lb (' + Math.round(num/base*100) + ' %)');
+      }));
+    });
+  }
+  assert(lows.length === 0, id + ' : mains barbell ≥ 52 %1RM hors deload/taper' + (lows.length ? ' — ' + lows.slice(0,3).join(' | ') : '') + '.');
+});
+
 // ── 5b. Règle des noms de mouvements (docs/STRUCTURE_CONTRACT.md) ────────────
 // name = vrai mouvement stable. Pas de « / », « ou », « + » combinant deux
 // mouvements, pas de faux qualificatif (lourd, léger, technique, facile,
