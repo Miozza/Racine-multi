@@ -36,7 +36,7 @@ function hypertrophyWeekPlan(week){
       label:"S1 Base",note:"Reprendre les repères. RPE 7-8. Aucun échec.",
       bench:"5×5",benchLoad:"185 lb",incline:"3×10",inclineLoad:"50-55 lb / main",lat:"3×15-20",dips:"3×6-10",pushdown:"3×12-15",
       row:"4×10",rowLoad:"120 lb",pull:"3×6-8",curl:"3×10-12",rear:"3×15-20",face:"3×15-20",
-      squat:"4×6",squatLoad:"215 lb",bulgarian:"3×8/jambe",hip:"3×10",hinge:"3×10",
+      squat:"4×6",squatLoad:"205 lb",bulgarian:"3×8/jambe",hip:"3×10",hinge:"3×10",
       clean:"6×3",cleanLoad:"140-150 lb",dbBench:"3×10",dbBenchLoad:"50 lb / main",carry:"4×40 m",hammer:"3×10-12",triOh:"3×12-15",
       wodNote:"facile à modéré"
     },
@@ -44,7 +44,7 @@ function hypertrophyWeekPlan(week){
       label:"S2 Volume",note:"Augmenter légèrement le volume. Charges solides, technique propre.",
       bench:"5×5",benchLoad:"190 lb",incline:"4×8-10",inclineLoad:"55 lb / main",lat:"4×12-20",dips:"3×8-10",pushdown:"3×12-15",
       row:"5×8-10",rowLoad:"125 lb",pull:"4×6-8",curl:"3×10-12",rear:"4×15-20",face:"3×15-20",
-      squat:"5×5",squatLoad:"225 lb",bulgarian:"3×8-10/jambe",hip:"3×10",hinge:"4×10",
+      squat:"5×5",squatLoad:"215 lb",bulgarian:"3×8-10/jambe",hip:"3×10",hinge:"4×10",
       clean:"6×3",cleanLoad:"145-155 lb",dbBench:"3×10-12",dbBenchLoad:"50-55 lb / main",carry:"4×40 m",hammer:"3×10-12",triOh:"3×12-15",
       wodNote:"modéré"
     },
@@ -52,7 +52,7 @@ function hypertrophyWeekPlan(week){
       label:"S3 Volume+",note:"Plus gros volume utile. Densité musculaire, pas de grind.",
       bench:"4×6",benchLoad:"190 lb",incline:"4×8-10",inclineLoad:"55-60 lb / main",lat:"4×15-20",dips:"4×6-10",pushdown:"3×12-15",
       row:"4×8",rowLoad:"130 lb",pull:"4×6-8",curl:"4×10-12",rear:"4×15-20",face:"3×15-20",
-      squat:"5×5",squatLoad:"235 lb",bulgarian:"4×8/jambe",hip:"4×8-10",hinge:"4×8-10",
+      squat:"5×5",squatLoad:"220 lb",bulgarian:"4×8/jambe",hip:"4×8-10",hinge:"4×8-10",
       clean:"6×2-3",cleanLoad:"150-160 lb",dbBench:"4×8-10",dbBenchLoad:"55 lb / main",carry:"5×40 m",hammer:"4×10",triOh:"3×12-15",
       wodNote:"contrôlé"
     },
@@ -60,7 +60,7 @@ function hypertrophyWeekPlan(week){
       label:"S4 Surcharge",note:"Charges les plus sérieuses avant l'intensité. RPE 8-9 max.",
       bench:"5×4",benchLoad:"200 lb",incline:"4×8",inclineLoad:"60 lb / main",lat:"4×12-18",dips:"4×6-8",pushdown:"3×10-15",
       row:"5×6-8",rowLoad:"140 lb",pull:"4×5-6",curl:"3×8-12",rear:"4×12-20",face:"3×15-20",
-      squat:"5×4",squatLoad:"245 lb",bulgarian:"3×8/jambe",hip:"4×8",hinge:"3×8-10",
+      squat:"5×4",squatLoad:"225 lb",bulgarian:"3×8/jambe",hip:"4×8",hinge:"3×8-10",
       clean:"7×2",cleanLoad:"160-170 lb",dbBench:"3×8-10",dbBenchLoad:"55 lb / main",carry:"5×40 m lourd",hammer:"3×8-12",triOh:"3×10-12",
       wodNote:"court, pas destructeur"
     },
@@ -68,7 +68,7 @@ function hypertrophyWeekPlan(week){
       label:"S5 Intensité",note:"Intensité maximale du cycle. Moins de volume, plus lourd.",
       bench:"6×3",benchLoad:"210 lb",incline:"3×8",inclineLoad:"60-65 lb / main",lat:"3×12-18",dips:"3×6-8",pushdown:"2×12-15",
       row:"4×6",rowLoad:"140 lb",pull:"4×5-6",curl:"3×8-10",rear:"3×12-20",face:"2×15-20",
-      squat:"5×3",squatLoad:"260 lb",bulgarian:"3×8/jambe",hip:"3×8",hinge:"3×8",
+      squat:"5×3",squatLoad:"235 lb",bulgarian:"3×8/jambe",hip:"3×8",hinge:"3×8",
       clean:"7×2",cleanLoad:"165-175 lb",dbBench:"3×8",dbBenchLoad:"55 lb / main",carry:"4×40 m lourd",hammer:"3×8-10",triOh:"2×10-12",
       wodNote:"très court"
     },
@@ -76,11 +76,11 @@ function hypertrophyWeekPlan(week){
       label:"S6 Deload",note:"Baisser le volume et garder le mouvement. Préparer la phase force.",
       bench:"3×5 léger",benchLoad:"165 lb",incline:"2×10",inclineLoad:"40-45 lb / main",lat:"2×15",dips:"2×6 facile",pushdown:"2×12",
       row:"3×8 léger",rowLoad:"100-110 lb",pull:"2×6 facile",curl:"2×12",rear:"2×15",face:"2×15",
-      squat:"3×5 léger",squatLoad:"190 lb",bulgarian:"2×8/jambe",hip:"2×10 léger",hinge:"2×10 léger",
+      squat:"3×5 léger",squatLoad:"170 lb",bulgarian:"2×8/jambe",hip:"2×10 léger",hinge:"2×10 léger",
       clean:"5×2 léger",cleanLoad:"125 lb",dbBench:"2×10",dbBenchLoad:"40 lb / main",carry:"2×30 m",hammer:"2×12",triOh:"2×12",
       wodNote:"flush seulement"
     }
-  })[week] || {label:"S1",note:"",bench:"5×5",benchLoad:"185 lb",incline:"3×10",inclineLoad:"50-55 lb / main",lat:"3×15-20",dips:"3×6-10",pushdown:"3×12-15",row:"4×10",rowLoad:"120 lb",pull:"3×6-8",curl:"3×10-12",rear:"3×15-20",face:"3×15-20",squat:"4×6",squatLoad:"215 lb",bulgarian:"3×8/jambe",hip:"3×10",hinge:"3×10",clean:"6×3",cleanLoad:"140-150 lb",dbBench:"3×10",dbBenchLoad:"50 lb / main",carry:"4×40 m",hammer:"3×10-12",triOh:"3×12-15",wodNote:"modéré"};
+  })[week] || {label:"S1",note:"",bench:"5×5",benchLoad:"185 lb",incline:"3×10",inclineLoad:"50-55 lb / main",lat:"3×15-20",dips:"3×6-10",pushdown:"3×12-15",row:"4×10",rowLoad:"120 lb",pull:"3×6-8",curl:"3×10-12",rear:"3×15-20",face:"3×15-20",squat:"4×6",squatLoad:"205 lb",bulgarian:"3×8/jambe",hip:"3×10",hinge:"3×10",clean:"6×3",cleanLoad:"140-150 lb",dbBench:"3×10",dbBenchLoad:"50 lb / main",carry:"4×40 m",hammer:"3×10-12",triOh:"3×12-15",wodNote:"modéré"};
 }
 
 function hbEx(name,format,load,rest,note){return {name:name,format:format,load:load||"—",rest:rest||"—",note:note||""};}

@@ -75,7 +75,7 @@ function forceWeekPlan(week){
       clean:"8×1",cleanLoad:"170 lb",
       press:"5×3",pressLoad:"115 lb",
       dip:"5×4-5",dipLoad:"+20 à +35 lb",ctb:"5×4-5",
-      front:"5×3",frontLoad:"230-240 lb",
+      front:"5×3",frontLoad:"225-235 lb",
       dbBench:"4×8",dbBenchLoad:"55 lb / main",carry:"5×40 m lourd",
       wodNote:"dense mais contrôlé"
     },
@@ -90,7 +90,7 @@ function forceWeekPlan(week){
       clean:"6×1",cleanLoad:"180 lb",
       press:"5×3",pressLoad:"115 lb",
       dip:"4×3-5",dipLoad:"+25 à +40 lb",ctb:"4×3-5",
-      front:"5×3",frontLoad:"240 lb",
+      front:"5×3",frontLoad:"235 lb",
       dbBench:"3×8",dbBenchLoad:"55 lb / main",carry:"4×40 m très lourd",
       wodNote:"très court"
     },
@@ -105,7 +105,7 @@ function forceWeekPlan(week){
       clean:"5×1 lourd",cleanLoad:"180-190 lb",
       press:"3×2",pressLoad:"120-125 lb",
       dip:"4×3 lourd",dipLoad:"+30 à +45 lb",ctb:"4×3",
-      front:"4×2 lourd",frontLoad:"240-255 lb",
+      front:"4×2 lourd",frontLoad:"235-245 lb",
       dbBench:"3×6-8",dbBenchLoad:"55 lb / main",carry:"4×30-40 m lourd",
       wodNote:"minimal"
     },

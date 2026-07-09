@@ -1,4 +1,6 @@
 ## V4.5.1 — Legacy publics recalibrés à l'échelle Athlète X
+- Correctif post-revue coach : les Front Squats d'`hypertrophy_base` avaient reçu le facteur back squat (jusqu'à 98 %1RM pour 5×3 — RPE impossible). Recalés sur le 1RM front 265 à RPE ≤ 8 (S1 205 → S5 235, deload 170). Cas limites `force_performance`/`general_strength_3d` redescendus sous la ligne.
+- **Plafond RPE gravé dans le check 4b** : à r reps, aucune charge legacy ne peut dépasser la limite Epley RPE 9,5 (`1RM/(1+(r+0,5)/30)`) hors deload/taper. Le plancher 52 %1RM et ce plafond encadrent désormais chaque prescription.
 - Les 7 programmes manuels publics (`hypertrophy_base`, `force_performance`, `competition_peak`, `strength`, `general_strength_3d`, `general_hypertrophy_2d/3d`) passent à l'échelle Athlète X : ~280 conversions de charges (squat ×1,15, bench ×0,82, press ×0,84, clean ×0,91, row ×0,83-1,25, front squat ×1,23, deadlift ×1,10, hip thrust ajusté). Deux passes : facteur de famille, puis correction ciblée des rows/hip thrusts/press encore bas.
 - Résultat mesuré : mains barbell à 65-90 %1RM en semaines de travail (avant : 45-70 %). Cleans volontairement à 57-75 % (technique olympique), deloads/tapers sous 66 %.
 - Nouveau plancher permanent dans `program_calibration_checks` (section 4b) : aucun main barbell legacy sous 52 %1RM hors deload/taper (2 dernières semaines exemptées).

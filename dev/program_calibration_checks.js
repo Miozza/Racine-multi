@@ -126,10 +126,18 @@ LEGACY_IDS.forEach(id => {
         const num = parseNum(e.load);
         if(!base || num === null || num === 0) return;
         if(num / base < 0.52) lows.push(e.name + ' S' + w + ' ' + num + ' lb (' + Math.round(num/base*100) + ' %)');
+        // Plafond : à r reps, la charge ne doit pas impliquer un RPE > ~9,5
+        // (limite Epley : charge max propre à r reps + 0,5 rep de réserve).
+        const rm = String(e.format || '').match(/×\s*(\d+)/);
+        if(rm){
+          const r = Number(rm[1]);
+          const cap = base / (1 + (r + 0.5) / 30);
+          if(num > cap) lows.push(e.name + ' S' + w + ' ' + num + ' lb TROP LOURD pour ' + r + ' reps (max RPE 9,5 ≈ ' + Math.round(cap) + ' lb)');
+        }
       }));
     });
   }
-  assert(lows.length === 0, id + ' : mains barbell ≥ 52 %1RM hors deload/taper' + (lows.length ? ' — ' + lows.slice(0,3).join(' | ') : '') + '.');
+  assert(lows.length === 0, id + ' : mains barbell dans la fenêtre 52 %1RM → RPE 9,5 hors deload/taper' + (lows.length ? ' — ' + lows.slice(0,3).join(' | ') : '') + '.');
 });
 
 // ── 5b. Règle des noms de mouvements (docs/STRUCTURE_CONTRACT.md) ────────────
