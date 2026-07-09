@@ -110,7 +110,7 @@ function gh3Blocks(day,week){
 
     {time:"14 min",title:"B. Tirage vertical + biceps",tag:"Superset",kind:"hypertrophy",
      exercises:[
-       gh3Ex("Weighted Pull-up",p.pull,deload?"poids du corps":week>=4?"+10 à +20 lb":"+0 à +15 lb","0:20 avant B2","Strict. Remplaçable par Ring Row lourd si besoin."),
+       gh3Ex("Weighted Pull-up",p.pull,deload?"poids du corps":week>=4?"+10 à +20 lb":"+0 à +15 lb","0:20 avant B2","Strict. Remplaçable par Ring Row (angle plus difficile) si besoin."),
        gh3Ex("DB Curl",p.curl,deload?"léger":"modéré","1:00 après B2","Contrôle complet, pas d'élan.")
      ]},
 

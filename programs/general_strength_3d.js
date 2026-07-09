@@ -106,7 +106,7 @@ function gsBlocks(day,week){
 
     {time:"13 min",title:"B. Tirage vertical + biceps",tag:"Superset",kind:"accessory",
      exercises:[
-       gsEx("Weighted Pull-up",p.pull,deload?"poids du corps":week>=4?"+10 à +20 lb":"+0 à +15 lb","0:30 avant B2","Strict. Remplaçable par Ring Row lourd si besoin."),
+       gsEx("Weighted Pull-up",p.pull,deload?"poids du corps":week>=4?"+10 à +20 lb":"+0 à +15 lb","0:30 avant B2","Strict. Remplaçable par Ring Row (angle plus difficile) si besoin."),
        gsEx("DB Curl",p.curl,deload?"léger":"modéré","1:15 après B2","Contrôle complet, pas d'élan.")
      ]},
 

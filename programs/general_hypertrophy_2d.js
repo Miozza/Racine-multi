@@ -114,7 +114,7 @@ function gh2Blocks(day,week){
     {time:"14 min",title:"B. Overhead + tirage vertical",tag:"Superset",kind:"hypertrophy",
      exercises:[
        gh2Ex("Strict Press",p.press,p.pressLoad,"0:20 avant B2","Push overhead, complément du bench de lundi."),
-       gh2Ex("Weighted Pull-up",p.pull,deload?"poids du corps":week>=4?"+10 à +20 lb":"+0 à +15 lb","1:00 après B2","Strict. Remplaçable par Ring Row lourd si besoin.")
+       gh2Ex("Weighted Pull-up",p.pull,deload?"poids du corps":week>=4?"+10 à +20 lb":"+0 à +15 lb","1:00 après B2","Strict. Remplaçable par Ring Row (angle plus difficile) si besoin.")
      ]},
 
     {time:"10 min",title:"C. Bras",tag:"Accessoire",kind:"accessory",

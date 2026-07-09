@@ -147,7 +147,7 @@ function forcePerformanceBlocks(day,week){
      text:"Tirage lourd utile pour soutenir le bench, sans Chest Supported Row.",
      exercises:[
        fpEx("Barbell Row",p.row,p.rowLoad,"0:45 avant B2","Dos fort, buste solide, pas de swing."),
-       fpEx("Weighted Pull-Up",p.pull,p.pullLoad,"1:45 après B2","Strict. Si les coudes chialent : ring rows lourds.")
+       fpEx("Weighted Pull-Up",p.pull,p.pullLoad,"1:45 après B2","Strict. Si les coudes chialent : Ring Row (angle plus difficile).")
      ]},
 
     {time:"9 min",title:"C. Assistance bench",tag:"Accessoire",kind:"accessory",

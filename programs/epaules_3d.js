@@ -110,7 +110,7 @@ function shouldersBlocks(day,week){
 
     {time:"12 min",title:"B. Superset tirage + biceps",tag:"Dos / Biceps",kind:"accessory",
      exercises:[
-       shouldersExFixed("B1. Weighted Pull-up",p.pull,week>=4&&!isDeload?"+15 à +30 lb":"poids du corps","0:20 avant B2","B1 du superset. Si remplacé, inscrire Ring Row lourd comme mouvement distinct, pas comme Weighted Pull-up."),
+       shouldersExFixed("B1. Weighted Pull-up",p.pull,week>=4&&!isDeload?"+15 à +30 lb":"poids du corps","0:20 avant B2","B1 du superset. Si remplacé, inscrire Ring Row comme mouvement distinct (angle plus difficile), pas comme Weighted Pull-up."),
        shouldersExFixed("B2. Cable Curl",p.curl,"modéré","1:30 après B2","B2 du superset. Contrôle complet, pas d'élan du dos.")
      ]},
 
@@ -140,7 +140,8 @@ function shouldersBlocks(day,week){
      text:"Structure terrain : Bulgarian Split Squat jumelé avec core pour récupérer les jambes sans courir entre deux stations lourdes.",
      exercises:[
        shouldersEx("Bulgarian Split Squat",isDeload?"2×8/jambe":"3×8-10/jambe","45-55 lb / main","0:45 avant B2","Amplitude propre, genou stable."),
-       shouldersExFixed("Dead Bug / Hollow Hold",isDeload?"2 séries faciles":"3 séries","poids du corps","0:45 après B2","Côtes basses, respiration contrôlée.")
+       shouldersExFixed("Dead Bug",isDeload?"1 série facile":"2 séries","poids du corps","0:30 après B2","Côtes basses, respiration contrôlée."),
+       shouldersExFixed("Hollow Hold",isDeload?"1 tenue facile":"1 tenue max propre","poids du corps","0:45 après B2","Gainage global, lombaires collés au sol.")
      ]},
 
     {time:"10 min",title:"C. Chaîne postérieure",tag:"Fessiers / Ischios",kind:"accessory",
@@ -181,7 +182,7 @@ function shouldersBlocks(day,week){
      ]},
 
     {time:"6 min",title:"D. Power Clean technique",tag:"Haltéro",kind:"accessory",
-     exercises:[shouldersExFixed("Power Clean technique",p.clean,p.cleanLoad,"1:00-1:30","Après les épaules : maintien du pattern seulement. Léger/modéré, vitesse propre, aucune rep grindée.")]},
+     exercises:[shouldersExFixed("Power Clean",p.clean,p.cleanLoad,"1:00-1:30","Travail technique — après les épaules : maintien du pattern seulement. Léger/modéré, vitesse propre, aucune rep grindée.")]},
 
     {time:"8 min",title:"E. WOD full body court",tag:"Conditioning",kind:"wod",
      text:"AMRAP 8 : 5 power cleans légers + 8 wall balls 14 lb + 10 cal row. "+p.wodNote+". Modéré, pas redline."},

@@ -88,7 +88,8 @@ function coachDefaultLoadSeedForMovement(label, targetReps){
   // Mouvements au poids du corps : seed 0 = pas de charge externe.
   if(/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang/.test(n))return 0;
   if(/pull up|pullup|chin up|chest to bar|toes to bar|knee raise|muscle up/.test(n))return 0;
-  if(/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap/.test(n))return 0;
+  if(/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap|muscle up/.test(n))return 0;
+  if(n === "run" || n === "row" || n === "bike")return 0; // cardio : pas de charge externe
   return null;
 }
 

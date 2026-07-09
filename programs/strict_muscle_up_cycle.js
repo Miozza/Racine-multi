@@ -158,7 +158,9 @@
     return [
       textBlock("7 min", "Warm-up intégration", "Préparation", "warmup", warmupText(week, "intégration")),
       exerciseBlock("12 min", "A. Complexe strict", "Principal", "main", [
-        ex("False Grip Pull-Up + Transition Drill + Ring Dip", s.integration, "assisté au besoin", "2:00", "Une répétition = tirage strict, transition propre, dip solide. Pas de vitesse sale."),
+        ex("False Grip Pull-Up", s.integration, "assisté au besoin", "0:15 avant la transition", "Complexe strict, partie 1/3 : tirage strict en false grip, menton au-dessus des anneaux."),
+        ex("Transition Drill", s.integration, "assisté au besoin", "0:15 avant le dip", "Complexe strict, partie 2/3 : transition propre, coudes qui passent devant. Pas de vitesse sale."),
+        ex("Ring Dip", s.integration, "assisté au besoin", "2:00 après le complexe", "Complexe strict, partie 3/3 : dip solide jusqu'au lockout."),
         ex("Slow Negative Muscle-Up", "3-5×1 à 5 sec", "assisté", "2:00", "Seulement si épaules/coudes vont bien. Descente contrôlée, pas de chute.")
       ]),
       exerciseBlock("12 min", "B. Renforcement du maillon faible", "Accessoire", "accessory", [
