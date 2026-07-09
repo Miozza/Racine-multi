@@ -61,7 +61,10 @@ function competitionPeakBlocks(day,week){
     cpWarmup("Row facile 3 min + air squats 2×10 + inchworm 6 reps + wall ball léger 2×8 + burpees step-down 2×5 + montée rythme 2 min."),
 
     {time:"8 min",title:"A. Skill transitions",tag:"Skill",kind:"main",
-     exercises:[cpEx("Wall Ball + Burpee",taper?"5×30 sec":"6×40 sec","Wall Ball 14 lb","0:40-1:00","Objectif : cycle régulier, respiration, pas de précipitation.")]},
+     exercises:[
+       cpEx("Wall Ball",taper?"5×30 sec":"6×40 sec","14 lb","0:40-1:00","Objectif : cycle régulier, respiration, pas de précipitation."),
+       cpEx("Burpee",taper?"5×30 sec":"6×40 sec","poids du corps","0:40-1:00","Objectif : transition régulière et respiration stable.")
+     ]},
 
     {time:taper?"12 min":week>=3?"16 min":"15 min",title:"B. WOD Open court",tag:"Conditioning",kind:"wod",
      text:(week===1?"AMRAP 15 : 12 wall balls 14 lb + 10 cal row + 8 burpees." :
