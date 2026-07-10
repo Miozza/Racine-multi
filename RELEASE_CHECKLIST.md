@@ -1,4 +1,3 @@
-V4.2 — Correctif DOM Avis IA
 
 # Release checklist — Racine
 

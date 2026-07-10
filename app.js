@@ -1,5 +1,5 @@
-// Racine V4.5 — La Saison + catalogue recalibré (convention 1RM référence, rotation hebdo)
-var APP_VERSION = "V4.5";
+// Racine V4.5.1 — La Saison + catalogue recalibré (convention 1RM référence, rotation hebdo)
+var APP_VERSION = "V4.5.1";
 
 // Architecture stable
 // programs/*.js = plan prévu
