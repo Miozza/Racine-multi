@@ -1,3 +1,9 @@
+## V4.5.2 — Guide rapide + bannière d'installation iPhone
+- Nouveau module `scripts/ui/help_guide.js` : modale « Guide rapide » (installer sur iPhone, séance du jour, noter ses résultats, comprendre les charges proposées, suivre sa progression, données locales). Accessible depuis un panneau dans Réglages.
+- Bannière d'installation : sur iOS, quand Racine tourne dans Safari sans être installée sur l'écran d'accueil, une bannière propose les 3 étapes d'installation. Masquable définitivement, jamais affichée en mode installé ni sur desktop.
+- Marqueurs de version alignés (le CHANGELOG était en V4.5.1, l'app affichait encore V4.5) ; les checks de version acceptent maintenant un niveau patch (Vx.y.z). Service worker et manifest restent déversionnés, conformément au contrat.
+- Aucune donnée durable modifiée, aucun programme touché.
+
 ## V4.5.1 — Legacy publics recalibrés à l'échelle Athlète X
 - Correctif post-revue coach : les Front Squats d'`hypertrophy_base` avaient reçu le facteur back squat (jusqu'à 98 %1RM pour 5×3 — RPE impossible). Recalés sur le 1RM front 265 à RPE ≤ 8 (S1 205 → S5 235, deload 170). Cas limites `force_performance`/`general_strength_3d` redescendus sous la ligne.
 - **Plafond RPE gravé dans le check 4b** : à r reps, aucune charge legacy ne peut dépasser la limite Epley RPE 9,5 (`1RM/(1+(r+0,5)/30)`) hors deload/taper. Le plancher 52 %1RM et ce plafond encadrent désormais chaque prescription.
