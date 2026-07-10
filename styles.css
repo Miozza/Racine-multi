@@ -6227,3 +6227,32 @@ body.is-client [data-ai-clear]{display:none!important}
   line-height: 1.5;
 }
 .help-steps li { margin-bottom: 6px; }
+.help-section {
+  border: 1px solid var(--line, #333);
+  border-radius: 10px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+.help-section summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.help-section summary::-webkit-details-marker { display: none; }
+.help-section summary::after {
+  content: "＋";
+  float: right;
+  color: var(--muted, #888);
+}
+.help-section[open] summary::after { content: "−"; }
+.help-section-body { padding: 0 12px 10px; }
+.help-list {
+  margin: 6px 0 8px;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.help-list li { margin-bottom: 4px; }

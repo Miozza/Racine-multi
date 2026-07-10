@@ -34,24 +34,50 @@
     '</ol>'+
     '<p class="muted">Racine aura ensuite sa propre icône et fonctionnera même sans réseau.</p>';
 
+  function section(title, bodyHtml, open){
+    return '<details class="help-section"'+(open?' open':'')+'>'+
+      '<summary>'+title+'</summary>'+
+      '<div class="help-section-body">'+bodyHtml+'</div>'+
+    '</details>';
+  }
+
   function guideHtml(showInstall){
     var install = showInstall
-      ? '<h3>📲 Installer sur ton iPhone</h3>' + INSTALL_STEPS_HTML
+      ? section('📲 Installer sur ton iPhone', INSTALL_STEPS_HTML, true)
       : '';
     return '<div class="tuto-modal-inner help-guide-inner">'+
       '<h2>Guide rapide</h2>'+
+      '<p class="muted">Touche une section pour l’ouvrir. Tu peux revenir ici en tout temps : ⚙ Réglages → Guide rapide.</p>'+
       install+
-      '<h3>🏋️ Ta séance du jour</h3>'+
-      '<p>Ouvre l’onglet <strong>WOD</strong> : c’est ta séance du jour, avec les charges déjà proposées. '+
-      'Touche <strong>Mode Séance</strong> pour t’entraîner écran par écran : un bloc à la fois, le timer intégré, et les champs pour noter <strong>poids · reps · RPE</strong> au fur et à mesure.</p>'+
-      '<h3>✍️ Noter tes résultats</h3>'+
-      '<p>Note ce que tu as vraiment fait, pas ce qui était prévu. Le RPE, c’est l’effort ressenti sur 10 : sois honnête, c’est ce qui permet à l’app d’ajuster tes prochaines charges. Sauvegarde à la fin de la séance.</p>'+
-      '<h3>🧠 Les charges proposées</h3>'+
-      '<p>L’app apprend de tes séances : plus tu enregistres, plus les suggestions deviennent justes. Une charge te semble trop lourde ou trop légère ? Change-la simplement pendant la séance — c’est prévu pour. Le bouton <strong>(!)</strong> à côté d’une charge explique pourquoi elle est proposée, et le <strong>?</strong> à côté d’un mouvement montre la technique.</p>'+
-      '<h3>📈 Suivre ta progression</h3>'+
-      '<p><strong>PR</strong> : tes records personnels. <strong>Historique</strong> : toutes tes séances passées. <strong>Cycle</strong> : où tu en es dans ton programme (semaine, jours faits, jours manqués).</p>'+
-      '<h3>🔒 Tes données</h3>'+
-      '<p>Tout reste sur ton téléphone. Rien n’est envoyé nulle part. Dans <strong>⚙ Réglages</strong>, tu peux sauvegarder tes données dans un fichier au besoin.</p>'+
+      section('🏋️ Ta séance du jour',
+        '<p>L’onglet <strong>WOD</strong> montre ta séance du jour, avec les charges déjà proposées. En haut : les semaines de ton cycle (S1, S2…) et les jours de la semaine — les flèches te déplacent, mais l’app se place déjà au bon endroit toute seule.</p>'+
+        '<p>Touche <strong>▶ Séance</strong> pour passer en mode entraînement : un bloc à la fois, en gros, lisible même fatigué. Le <strong>timer</strong> est intégré quand le bloc en demande un, et l’écran reste allumé pendant la séance.</p>'+
+        '<p>Chaque mouvement affiche : le format (ex. 4×8 = 4 séries de 8 répétitions), la charge proposée, et le repos suggéré.</p>')+
+      section('✍️ Noter tes résultats',
+        '<p>Pendant la séance (ou à la fin, dans l’écran Résultats), note pour chaque mouvement : le <strong>poids</strong> réellement utilisé, les <strong>reps</strong> faites, et ton <strong>RPE</strong>.</p>'+
+        '<p><strong>Le RPE, c’est l’effort ressenti sur 10 :</strong></p>'+
+        '<ul class="help-list">'+
+          '<li><strong>6 et moins</strong> — facile, tu avais encore beaucoup de réserve.</li>'+
+          '<li><strong>7</strong> — solide mais confortable, ~3 reps en réserve.</li>'+
+          '<li><strong>8</strong> — exigeant, ~2 reps en réserve.</li>'+
+          '<li><strong>9</strong> — très dur, 1 rep en réserve au mieux.</li>'+
+          '<li><strong>10</strong> — maximum absolu, rien dans le réservoir.</li>'+
+        '</ul>'+
+        '<p>Sois honnête : c’est ce chiffre qui permet à l’app d’ajuster tes prochaines charges. Note ce que tu as <em>vraiment</em> fait, pas ce qui était prévu — et laisse vide ce que tu n’as pas fait.</p>'+
+        '<p>Termine par <strong>💾 Sauvegarder la séance</strong>. C’est ce qui alimente ton historique et ta progression.</p>')+
+      section('🧠 Les charges proposées',
+        '<p>L’app apprend de tes séances : plus tu en enregistres, plus les suggestions deviennent justes. Les premières semaines, elles peuvent être prudentes — c’est normal, elles se calent sur toi.</p>'+
+        '<p>Une charge te semble trop lourde ou trop légère ? <strong>Change-la simplement</strong> pendant la séance, c’est prévu pour. L’app tiendra compte de ce que tu as réellement fait.</p>'+
+        '<p>Le bouton <strong>(!)</strong> à côté d’une charge explique pourquoi elle est proposée. Le <strong>?</strong> à côté d’un mouvement ouvre sa fiche technique : placement, exécution, erreurs à éviter.</p>')+
+      section('📈 PR, Historique et Cycle',
+        '<p><strong>PR</strong> : inscris tes records personnels (ton meilleur bench, squat…). Ils servent de point de départ aux suggestions et se sauvegardent avec la date.</p>'+
+        '<p><strong>Réfs</strong> : tes charges de référence par mouvement, celles que l’app utilise au quotidien. Tu peux les consulter et les corriger.</p>'+
+        '<p><strong>Historique</strong> : toutes tes séances passées, avec des graphiques de progression. C’est ta preuve que ça avance.</p>'+
+        '<p><strong>Cycle</strong> : où tu en es dans ton programme — semaine courante, jours faits, jours manqués. Un programme dure en général 6 semaines ; la dernière est souvent plus légère (deload) : c’est voulu, c’est là que le corps encaisse les gains. À la fin d’un cycle, l’app te propose la suite logique.</p>')+
+      section('🔒 Tes données',
+        '<p>Tout reste sur ton téléphone. Rien n’est envoyé nulle part, pas de compte, pas d’abonnement.</p>'+
+        '<p>Dans <strong>⚙ Réglages</strong>, « Sauvegarder mes données » crée un fichier de secours ; « Restaurer » le recharge. Fais-en une de temps en temps.</p>'+
+        '<p><strong>⚠️ Important :</strong> ne supprime pas les « données de sites web » de Safari pour Racine — c’est là que vivent ton historique et tes réglages. En cas de doute, fais une sauvegarde d’abord.</p>')+
       '<button type="button" class="btn-accent" data-help-close style="width:100%;margin-top:12px">Fermer</button>'+
     '</div>';
   }
