@@ -29,7 +29,8 @@
   var INSTALL_STEPS_HTML =
     '<ol class="help-steps">'+
       '<li>Ouvre Racine dans <strong>Safari</strong> (pas Chrome, pas le navigateur de Messenger).</li>'+
-      '<li>Touche le bouton <strong>Partager</strong> — le carré avec la flèche vers le haut, en bas de l’écran.</li>'+
+      '<li>Touche les <strong>trois petits points (⋯)</strong> en bas de l’écran, à droite de la barre d’adresse.</li>'+
+      '<li>Touche le bouton <strong>Partager</strong> — le carré avec la flèche vers le haut. (Sur certains iPhone, ce bouton est directement en bas de l’écran, sans passer par les ⋯.)</li>'+
       '<li>Descends dans la liste et touche <strong>« Sur l’écran d’accueil »</strong>, puis <strong>Ajouter</strong>.</li>'+
     '</ol>'+
     '<p class="muted">Racine aura ensuite sa propre icône et fonctionnera même sans réseau.</p>';
