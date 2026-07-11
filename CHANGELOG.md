@@ -1,3 +1,9 @@
+## V4.5.4 — Vidéos tuto : 2e passe (40 mouvements)
+- `data/movements_media.js` passe de 26 à 66 entrées : polyarticulaires chargés (presses, tirages, dips, squats goblet), tirages unilatéraux et jambes, épaules ciblées (lateral/rear delt/front raise, face pull), isolation bras/pecs (curls, extensions triceps, flys), échauffement/gainage (Dead Hang, Cat-Cow, Hollow Hold).
+- Liste validée par le coach : Bench Press, Chest Supported Row, PVC Pass Through, Band Pull Apart, Wall Ball et Burpees contrôlés volontairement exclus de cette passe.
+- Mêmes sources prioritaires que la 1re passe (Central Athlete, Marcus Filly — y compris sa chaîne Functional Bodybuilding) ; fallback génériques de qualité (Renaissance Periodization, OPEX, PureGym, Buff Dudes…) quand aucune ne couvrait le mouvement. Les 40 IDs vérifiés un à un via l'API oEmbed YouTube (titre + chaîne).
+- Aucun autre fichier touché : le lien « ▶ Voir la vidéo » apparaît automatiquement dans les fiches concernées.
+
 ## V4.5.3 — Lien vidéo YouTube dans les fiches tuto
 - Portage depuis Coach-Beurt (PR #17, V51.96) : nouveau fichier `data/movements_media.js` — mapping mouvement → ID YouTube (26 mouvements : technique/olympique, mobilité kyphose, moins communs). Sources prioritaires Central Athlete / Marcus Filly / Le Box La Sarre, fallback Catalyst Athletics ou CrossFit officiel.
 - La fiche tuto (`showTutorialModal`) affiche un lien « ▶ Voir la vidéo » quand le mouvement a une vidéo — lien externe `target="_blank"` volontaire, pas d'iframe : le PWA reste offline-first et la fiche ne dépend jamais de la vidéo. Aucun bloc si le mouvement n'est pas mappé.
