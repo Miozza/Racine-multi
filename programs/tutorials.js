@@ -82,13 +82,6 @@ window.COACH_BERTIN_TUTORIALS = {
     mistakes: ["Cambrer lombaire.", "Transformer en push press.", "Trajectoire en arc.", "Perdre le gainage."],
     cue: "Presse avec le corps verrouillé, pas avec le dos."
   },
-  "Chest Supported Row": {
-    goal: "Haut du dos fort sans tricher avec le bas du dos.",
-    setup: ["Poitrine appuyée au banc.", "Cou long.", "Pieds stables.", "Prise confortable."],
-    execution: ["Tire les coudes vers l’arrière.", "Serre les omoplates en haut.", "Pause courte, retour contrôlé."],
-    mistakes: ["Décoller la poitrine.", "Hausser les épaules.", "Tirer avec les biceps seulement.", "Donner un élan."],
-    cue: "Poitrine collée, omoplates fortes."
-  },
   "Trap-3 Raise": {
     goal: "Trap inférieur et contrôle scapulaire.",
     setup: ["Charge légère.", "Pouce vers le haut.", "Épaule basse.", "Mouvement lent."],
@@ -181,6 +174,8 @@ window.COACH_BERTIN_TUTORIALS = {
   "DB Shoulder Press": {"goal":"Volume épaules plus contrôlé que la barre.","setup":["Haltères aux épaules.","Cage basse.","Poignets empilés."],"execution":["Presse verticalement.","Contrôle la descente.","Garde les épaules loin des oreilles."],"mistakes":["Cambrer.","Cogner les haltères.","Raccourcir l’amplitude."],"cue":"Presse propre, pas ego."},
   "Landmine Press": {"goal":"Press angle plus doux pour épaule et cage.","setup":["Barre en landmine.","Position demi-genou ou debout.","Cage basse."],"execution":["Presse vers l’avant/haut.","Laisse l’omoplate bouger proprement.","Retour contrôlé."],"mistakes":["Cambrer.","Hausser l’épaule.","Tourner le tronc."],"cue":"Angle naturel, épaule qui glisse."},
 
+  "Close-Grip Bench Press": {goal:"Triceps et pecs internes avec prise serrée, coudes protégés.",setup:["Prise à largeur des épaules, pas plus serrée.","Omoplates serrées et abaissées.","Barre au-dessus du bas des pecs.","Poignets empilés sous la barre."],execution:["Descends la barre vers le bas des pecs.","Garde les coudes proches du corps.","Pousse fort sans rebondir.","Verrouille avec les triceps."],mistakes:["Serrer la prise à l’extrême (poignets).","Laisser les coudes s’écarter.","Rebondir sur la poitrine.","Perdre les omoplates."],cue:"Coudes proches, poussée triceps."},
+  "DB Bench Press": {goal:"Pecs et triceps avec haltères, amplitude et stabilité par bras.",setup:["Assis, haltères sur les cuisses.","Allonge-toi en montant les haltères.","Omoplates serrées et abaissées.","Pieds solides au sol."],execution:["Descends les haltères sous contrôle de chaque côté.","Amplitude complète sans perdre les épaules.","Pousse sans cogner les haltères en haut.","Garde les poignets empilés."],mistakes:["Cogner les haltères en haut.","Descendre trop vite.","Perdre un côté (asymétrie).","Décoller les épaules du banc."],cue:"Chaque bras travaille, amplitude contrôlée."},
   "Bench Press": {goal:"Pecs, triceps et stabilité scapulaire avec barre.",setup:["Pieds solides au sol.","Omoplates serrées et abaissées.","Barre au-dessus du bas des pecs.","Poignets empilés sous la barre."],execution:["Descends la barre sous contrôle.","Garde les omoplates serrées.","Pousse fort sans rebondir.","Termine bras verrouillés sans perdre les épaules."],mistakes:["Rebondir sur la poitrine.","Décoller les épaules du banc.","Laisser les coudes partir trop large.","Lever les pieds."],cue:"Omoplates serrées, barre contrôlée."},
   "Incline DB Press": {goal:"Haut de pec et deltoïde antérieur avec amplitude contrôlée.",setup:["Banc incliné modéré.","Haltères aux épaules.","Pieds stables.","Omoplates fixées au banc."],execution:["Descends lentement.","Garde les avant-bras presque verticaux.","Pousse les haltères vers le haut sans les cogner.","Garde 1-2 reps en réserve."],mistakes:["Inclinaison trop haute qui transforme en shoulder press.","Descente trop courte.","Cogner les haltères.","Cambrer fort."],cue:"Haut de pec, contrôle complet."},
   "Pull-Up": {goal:"Tirage vertical au poids du corps, dos et biceps.",setup:["Prise solide sur la barre.","Corps gainé.","Épaules actives avant de tirer.","Jambes contrôlées."],execution:["Tire les coudes vers les côtes.","Monte le menton au-dessus de la barre si possible.","Descends complet sans tomber.","Arrête avant de perdre la forme."],mistakes:["Kipper ou balancer.","Raccourcir l’amplitude.","Hausser les épaules aux oreilles.","Tourner le corps."],cue:"Coudes vers les côtes, corps solide."},
@@ -214,6 +209,9 @@ window.COACH_BERTIN_TUTORIALS = {
 
 window.findCoachBertinTutorial = function(name){
   var key = String(name||"").replace(/^[A-Z][0-9]?\.\s*/,"").trim();
+  // Cardio machines : jamais de fiche tuto (« Row » = rameur, pas un rowing haltères —
+  // sans ce garde-fou le matching par sous-chaîne renverrait une fiche de tirage).
+  if(/^(row|run|bike|ski erg|swim)$/i.test(key)) return null;
   var db = window.COACH_BERTIN_TUTORIALS || {};
   if(db[key]) return {key:key, item:db[key]};
   var lower = key.toLowerCase();

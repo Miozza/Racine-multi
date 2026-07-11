@@ -94,7 +94,7 @@
         ex("False Grip Pull to Sternum", s.high, "poids du corps", "1:00", "Si la hauteur n'est pas là, ne forcer aucune transition.")
       ]),
       exerciseBlock("8 min", "C. Core position", "Support", "accessory", [
-        ex("Hollow Body Hold", "4×20-30 sec", "poids du corps", "0:30", "Côtes basses, fessiers serrés."),
+        ex("Hollow Hold", "4×20-30 sec", "poids du corps", "0:30", "Côtes basses, fessiers serrés."),
         ex("Arch Hold", "3×20 sec", "poids du corps", "0:30", "Contrôle, pas lombaire écrasé.")
       ]),
       textBlock("4 min", "Critère du jour", "Sécurité", "mobility", "La transition doit devenir plus propre, pas plus violente. Si les épaules pincent en bas du dip, réduire amplitude et renforcer jeudi.")
