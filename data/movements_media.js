@@ -90,4 +90,8 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Dead Hang": "XwryUTVQNIU",                 // Functional Bodybuilding (Passive Hang)
   "Cat-Cow": "1Y0YjXS9sKI",                   // Hinge Health (fallback) — physio
   "Hollow Hold": "4xRpGgttca8",               // Marcus Filly (Hollow Hold)
+
+  // ══ Correctifs anomalies (V4.5.5) — fiches Close-Grip / DB Bench séparées ══
+  "Close-Grip Bench Press": "XEFDMwmrLAM",    // Marcus Filly (Close Grip Bench Press)
+  "DB Bench Press": "hm_TrCkhJgo",            // Marcus Filly (Dumbbell Bench Press)
 };

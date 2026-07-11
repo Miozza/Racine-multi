@@ -1,3 +1,10 @@
+## V4.5.5 — Correctifs fiches tuto : anomalies du matching
+- « Row » (le rameur) affichait la fiche « Chest Supported Row » via le matching par sous-chaîne : `findCoachBertinTutorial` exclut maintenant les machines cardio (Row, Run, Bike, Ski Erg, Swim) — plus jamais de bouton (?) sur du cardio.
+- Fiche « Chest Supported Row » supprimée à la demande du coach (le mouvement reste dans les programmes, il n'a simplement plus de fiche).
+- « Hollow Body Hold » (cycle strict muscle-up) renommé « Hollow Hold » : le drill utilise maintenant la fiche existante et sa vidéo.
+- « Close-Grip Bench Press » et « DB Bench Press » retombaient sur la fiche générique « Bench Press » : deux vraies fiches distinctes créées, chacune avec sa vidéo Marcus Filly (mapping passe à 68 entrées).
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.4 — Vidéos tuto : 2e passe (40 mouvements)
 - `data/movements_media.js` passe de 26 à 66 entrées : polyarticulaires chargés (presses, tirages, dips, squats goblet), tirages unilatéraux et jambes, épaules ciblées (lateral/rear delt/front raise, face pull), isolation bras/pecs (curls, extensions triceps, flys), échauffement/gainage (Dead Hang, Cat-Cow, Hollow Hold).
 - Liste validée par le coach : Bench Press, Chest Supported Row, PVC Pass Through, Band Pull Apart, Wall Ball et Burpees contrôlés volontairement exclus de cette passe.
