@@ -1,3 +1,10 @@
+## V4.5.3 — Lien vidéo YouTube dans les fiches tuto
+- Portage depuis Coach-Beurt (PR #17, V51.96) : nouveau fichier `data/movements_media.js` — mapping mouvement → ID YouTube (26 mouvements : technique/olympique, mobilité kyphose, moins communs). Sources prioritaires Central Athlete / Marcus Filly / Le Box La Sarre, fallback Catalyst Athletics ou CrossFit officiel.
+- La fiche tuto (`showTutorialModal`) affiche un lien « ▶ Voir la vidéo » quand le mouvement a une vidéo — lien externe `target="_blank"` volontaire, pas d'iframe : le PWA reste offline-first et la fiche ne dépend jamais de la vidéo. Aucun bloc si le mouvement n'est pas mappé.
+- Adaptation à la divergence Racine : la clé du lookup est la clé canonique de la fiche (`found.key`) et le mapping utilise `"Romanian Deadlift"` (clé de `tutorials.js` ici, là où Coach-Beurt utilise `"RDL"`). Les 26 entrées du mapping ont toutes une fiche tuto dans ce dépôt.
+- Nouvelle classe `.tuto-video-link` dans `styles.css` (accent cyan, gabarit de `.tuto-cue`).
+- Aucune donnée durable modifiée, aucun programme touché.
+
 ## V4.5.2 — Guide rapide + bannière d'installation iPhone
 - Nouveau module `scripts/ui/help_guide.js` : modale « Guide rapide » (installer sur iPhone, séance du jour, noter ses résultats, comprendre les charges proposées, suivre sa progression, données locales). Accessible depuis un panneau dans Réglages.
 - Bannière d'installation : sur iOS, quand Racine tourne dans Safari sans être installée sur l'écran d'accueil, une bannière propose les 3 étapes d'installation. Masquable définitivement, jamais affichée en mode installé ni sur desktop.
