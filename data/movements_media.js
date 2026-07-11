@@ -38,4 +38,56 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Landmine Press": "ORoOn93dnh4",                        // Marcus Filly (Half Kneeling Landmine Press)
   "Hamstring Walkout": "OzdSDZZPtdE",                     // générique (fallback)
   "Ankle Rocks": "CbhPRzBZHgQ",                           // générique mobilité (fallback)
+
+  // ══ 2e passe (V4.5.4) — Functional Bodybuilding = chaîne secondaire de Marcus Filly ══
+
+  // ── Priorité haute — polyarticulaires chargés / technique ────────────────
+  "Decline Bench Press": "LfyQBUKR8SE",       // ScottHermanFitness (fallback) — barbell
+  "Incline DB Press": "wCrNcBhdfbE",          // Marcus Filly (Incline Dumbbell Bench Press)
+  "Strict Press": "_aISMzimYEA",              // Functional Bodybuilding (Strict Press)
+  "Seated DB Press": "3GFZpOYu0pQ",           // Marcus Filly (Seated Dumbbell Press)
+  "DB Shoulder Press": "22gQUcvcW1o",         // Marcus Filly (Dumbbell Strict Press, debout)
+  "Barbell Row": "UNyeMXO481I",               // Functional Bodybuilding (Bent Over Row Pronated)
+  "Pull-Up": "0wScGKPC5fA",                   // Central Athlete (Pronated Pull-Up)
+  "Weighted Pull-up": "_U5vqJocrbA",          // Central Athlete (Weighted Strict Pronated Pull-Up)
+  "Dips": "LXkp2QJ5ASo",                      // Marcus Filly (Strict Bar Dip)
+  "Chest Dips": "yN6Q1UI_xkE",                // Jeff Nippard (fallback) — dips version pecs
+  "Goblet Squat": "f-Vf2yRRqOg",              // Marcus Filly
+
+  // ── Priorité moyenne — tirages, unilatéral, jambes ───────────────────────
+  "Ring Row Strict": "EN6ubEkzMC0",           // Marcus Filly (Ring Row)
+  "One-Arm DB Row": "xl1YiqQY2vA",            // Marcus Filly (Single Arm Dumbbell Row)
+  "Seated Cable Row": "UCXxvVItLoM",          // Renaissance Periodization (fallback)
+  "Lunges": "ah4av3OEw-4",                    // Marcus Filly (Walking Lunge)
+  "Standing Calf Raise": "ADIDoYt_ko4",       // OPEX Fitness (fallback) — DB Standing Calf Raise
+  "Farmer Carry": "9539aIvAhm4",              // Functional Bodybuilding (DB Farmers Carry)
+  "Glute Bridge": "wMEoGwkk650",              // Marcus Filly (Glute Bridges)
+
+  // ── Priorité moyenne — épaules ciblées / posture ─────────────────────────
+  "Face Pull": "0Po47vvj9g4",                 // PureGym (fallback) — Cable Face Pulls
+  "Lateral Raise DB": "n_r-ROwHkdA",          // Functional Bodybuilding (Shoulder Lateral Raise)
+  "Lateral Raise câble bas": "fxy-NNoyt9E",   // Lifting Lindsay (fallback) — Low Pulley, Behind the Back
+  "Cable Lateral Raise": "BGw_YA3KiHs",       // Leo Fanner (fallback) — guide complet
+  "Rear Delt Fly DB": "hf7jnF45N_I",          // Functional Bodybuilding (Bent Over Reverse Dumbbell Fly)
+  "Rear Delt Fly câble bas": "Fsz8Up0Pp9w",   // Primal Strength (fallback) — Low Cable Rear Delt Fly
+  "Front Raise": "xagEKj2yDc8",               // Functional Bodybuilding (Dumbbell Shoulder Front Raise)
+
+  // ── Priorité basse — isolation bras/pecs ─────────────────────────────────
+  "DB Curl": "HnHuhf4hEWY",                   // Functional Bodybuilding (Dual Dumbbell Bicep Curl)
+  "Barbell Curl": "JnLFSFurrqQ",              // Renaissance Periodization (fallback) — Normal Grip
+  "Hammer Curls": "fM0TQLoesLs",              // Functional Bodybuilding (Hammer Curls)
+  "Concentration Curl": "Jvj2wV0vOYU",        // ScottHermanFitness (fallback)
+  "Reverse Curl": "ypfd1kaI1AU",              // Buff Dudes (fallback) — barbell, avant-bras
+  "Skull Crusher": "l3rHYPtMUo8",             // Renaissance Periodization (fallback) — Barbell Skullcrusher
+  "Overhead Tricep Extension": "4--u52sHZPs", // Functional Bodybuilding (Dumbbell Overhead Tricep Extension)
+  "Tricep Pushdown": "6Fzep104f0s",           // Renaissance Periodization (fallback) — Cable Triceps Pushdown
+  "Triceps Rope Pushdown": "qHDrQglWgS4",     // Buff Dudes (fallback) — Cable Rope Pushdown
+  "Overhead Rope Extension": "mRozZKkGIfg",   // Bodybuilding.com (fallback) — Cable Rope Overhead Extension
+  "DB Fly": "JFm8KbhjibM",                    // Renaissance Periodization (fallback) — Flat Dumbbell Flye
+  "Cable Fly": "taI4XduLpTk",                 // LIVESTRONG (fallback) — Cable Crossovers
+
+  // ── Priorité basse — échauffement / gainage ──────────────────────────────
+  "Dead Hang": "XwryUTVQNIU",                 // Functional Bodybuilding (Passive Hang)
+  "Cat-Cow": "1Y0YjXS9sKI",                   // Hinge Health (fallback) — physio
+  "Hollow Hold": "4xRpGgttca8",               // Marcus Filly (Hollow Hold)
 };
