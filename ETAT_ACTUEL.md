@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.2
+# ETAT ACTUEL — V4.5.3
 
-Version actuelle : V4.5.2
+Version actuelle : V4.5.3
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version recalibre le catalogue public (convention 1RM de référence, rotation hebdomadaire des accessoires, principal fixe) sur les fondations « La Saison » : catalogue avec graphe de succession, journal des cycles, rétention long terme, objectif d'entraînement par profil et écran de fin de cycle avec suggestions explicables. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version ajoute le lien vidéo YouTube dans les fiches tuto (`data/movements_media.js`, porté depuis Coach-Beurt), sur le catalogue public recalibré (convention 1RM de référence, rotation hebdomadaire des accessoires, principal fixe) et les fondations « La Saison » : catalogue avec graphe de succession, journal des cycles, rétention long terme, objectif d'entraînement par profil et écran de fin de cycle avec suggestions explicables. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

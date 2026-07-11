@@ -1,4 +1,3 @@
-// Coach Beurt V51.63
 // UI modals and small interactive buttons extracted from app.js.
 // No business logic here: tutorial modal + charge explanation modal only.
 // Loaded before app.js so existing global function names remain available.
@@ -646,6 +645,12 @@ function showTutorialModal(name){
     if(!arr || !arr.length) return "";
     return '<div class="tuto-section"><div class="tuto-section-title">'+escapeHtml(title)+'</div><ul>'+arr.map(function(x){return '<li>'+escapeHtml(x)+'</li>';}).join("")+'</ul></div>';
   }
+  // Lien externe volontaire (pas d'iframe embed) : le PWA reste offline-first,
+  // la vidéo ne doit jamais conditionner l'affichage de la fiche.
+  var videoId=(window.COACH_BERTIN_MOVEMENT_VIDEOS||{})[found.key];
+  var videoHtml=videoId
+    ? '<a class="tuto-video-link" href="https://www.youtube.com/watch?v='+encodeURIComponent(videoId)+'" target="_blank" rel="noopener">▶ Voir la vidéo</a>'
+    : "";
   var modal=document.createElement("div");
   modal.id="tutoModal";
   modal.className="tuto-modal";
@@ -658,6 +663,7 @@ function showTutorialModal(name){
       list("Exécution", t.execution)+
       list("Erreurs fréquentes", t.mistakes)+
       (t.cue?'<div class="tuto-cue">Repère : '+escapeHtml(t.cue)+'</div>':"")+
+      videoHtml+
       '<button id="closeTutoBtn" class="btn-accent" style="width:100%;margin-top:14px">Fermer</button>'+
     '</div>';
   document.body.appendChild(modal);
