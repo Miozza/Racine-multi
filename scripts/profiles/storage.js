@@ -236,6 +236,37 @@
     return api.storageKeysFor(id);
   };
 
+  // ─── Versionnage du format d'export ───────────────────────────────────────
+  // Tout export (mono et multi) porte un champ exportVersion. Un fichier sans
+  // exportVersion est un export historique : traité comme version 0 et migré
+  // silencieusement. Pour une future rupture de format : incrémenter
+  // EXPORT_VERSION et ajouter une fonction EXPORT_MIGRATIONS[n] qui fait
+  // passer un payload de la version n à n+1 — les migrations s'enchaînent
+  // jusqu'à la version courante, pas de if/else en cascade.
+  var EXPORT_VERSION = 1;
+  var EXPORT_MIGRATIONS = {
+    // v0 → v1 : les anciens exports mono-profil n'avaient pas d'exportVersion;
+    // la structure est identique, on pose seulement le champ.
+    0: function(payload){
+      payload.exportVersion = 1;
+      return payload;
+    }
+  };
+  function migrateExportPayload(payload){
+    if(!payload || typeof payload !== "object") return null;
+    var v = Number(payload.exportVersion) || 0;
+    if(v > EXPORT_VERSION) return null; // fichier d'une version future : refuser plutôt que corrompre
+    while(v < EXPORT_VERSION){
+      var step = EXPORT_MIGRATIONS[v];
+      if(typeof step !== "function") return null; // trou de migration = format inconnu
+      payload = step(payload);
+      if(!payload || typeof payload !== "object") return null;
+      v = Number(payload.exportVersion) || (v + 1);
+    }
+    return payload;
+  }
+  api.EXPORT_VERSION = EXPORT_VERSION;
+
   api.exportProfileBlob = function(id){
     var profile = api.get(id);
     if(!profile) return null;
@@ -243,7 +274,7 @@
     var state = null, charges = null;
     try{ state = JSON.parse(localStorage.getItem(keys.state) || "null"); }catch(e){}
     try{ charges = JSON.parse(localStorage.getItem(keys.charges) || "null"); }catch(e){}
-    return { schema:"racine-profile-export-v2", exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
+    return { schema:"racine-profile-export-v2", exportVersion: EXPORT_VERSION, exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
   };
 
   // Export multi-profils : un seul fichier JSON contenant tous les profils du
@@ -259,6 +290,7 @@
     if(!entries.length) return null;
     return {
       schema: "racine-profiles-export-multi-v1",
+      exportVersion: EXPORT_VERSION,
       exportedAt: new Date().toISOString(),
       appVersion: (window.APP_VERSION || null),
       profiles: entries
@@ -266,10 +298,12 @@
   };
 
   // Détecte le format d'un fichier d'export : mono-profil ({profile,...}) ou
-  // multi-profils ({profiles:[...]}). Retourne {kind, entries} ou null si le
-  // fichier n'est pas un export Racine reconnaissable.
+  // multi-profils ({profiles:[...]}). Migre d'abord le payload vers la version
+  // d'export courante. Retourne {kind, entries} ou null si le fichier n'est
+  // pas un export Racine reconnaissable (ou vient d'une version future).
   api.parseExportPayload = function(payload){
-    if(!payload || typeof payload !== "object") return null;
+    payload = migrateExportPayload(payload);
+    if(!payload) return null;
     if(Array.isArray(payload.profiles)){
       var entries = payload.profiles.filter(function(b){ return b && b.profile; });
       return entries.length ? { kind: "multi", entries: entries } : null;

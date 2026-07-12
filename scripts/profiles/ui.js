@@ -66,14 +66,26 @@
     var parsed = (window.CoachProfiles && CoachProfiles.parseExportPayload) ? CoachProfiles.parseExportPayload(payload) : null;
     if(!parsed) return { ok:false, error:"Fichier de profil invalide." };
     var single = parsed.kind === "single";
-    var imported = 0, firstId = null;
+    var prevActiveId = CoachProfiles.getActiveId();
+    var imported = 0, firstId = null, activeReplaced = false;
     parsed.entries.forEach(function(entry){
       var name = (entry.profile && entry.profile.name) || "profil";
       if(!single && !confirm("Importer le profil « "+name+" » ?")) return;
-      var id = importOneEntry(entry, single);
-      if(id){ imported++; if(!firstId) firstId = id; }
+      var res = importOneEntry(entry, single);
+      if(res.id){
+        imported++;
+        if(!firstId) firstId = res.id;
+        if(res.replacedId && res.replacedId === prevActiveId) activeReplaced = true;
+      }
     });
     if(!imported) return { ok:false, error:"Aucun profil importé." };
+    // Le profil actif a été remplacé pendant que l'app tourne : recharger la
+    // page pour que le state en mémoire ne réécrive pas les données importées.
+    if(activeReplaced){
+      closeGate();
+      location.reload();
+      return { ok:true };
+    }
     if(single || !CoachProfiles.hasActiveOnboardedProfile()){
       if(!single) CoachProfiles.setActive(firstId);
       closeGate();
@@ -85,8 +97,18 @@
     }
     return { ok:true };
   }
+  // Importe une entrée mono-profil. Si un profil du même nom existe déjà,
+  // demande une confirmation explicite avant de le remplacer; en cas de refus,
+  // l'import crée un profil séparé — un import n'écrase jamais rien sans accord.
   function importOneEntry(entry, setActive){
-    return CoachProfiles.importProfileBlob(entry, { setActive: !!setActive });
+    var name = (entry.profile && entry.profile.name) || "";
+    var existing = name ? CoachProfiles.list().filter(function(p){ return p.onboarded && p.name === name; })[0] : null;
+    var opts = { setActive: !!setActive };
+    if(existing && confirm("Un profil « "+name+" » existe déjà sur cet appareil.\n\nOK : le remplacer par la version importée (ses données locales actuelles seront perdues).\nAnnuler : garder les deux (import en profil séparé).")){
+      opts.replaceId = existing.id;
+    }
+    var id = CoachProfiles.importProfileBlob(entry, opts);
+    return { id: id, replacedId: (id && opts.replaceId) ? opts.replaceId : null };
   }
 
   function ensureGateEl(){
