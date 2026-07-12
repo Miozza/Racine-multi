@@ -113,4 +113,26 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Push Jerk": "Om7vLD6x8W0",                 // Catalyst Athletics (Exercise Library)
   "Overhead Squat": "m_fvfJi94D8",            // Catalyst Athletics (Exercise Library)
   "Thruster": "aea5BGj9a8Y",                  // CrossFit officiel (Foundational Movement)
+
+  // ══ 4e passe (V4.5.7) — skills gym RX + basiques metcon ══
+
+  // ── Skills gym CrossFit RX ───────────────────────────────────────────────
+  "Bar Muscle-up": "NjseWnHc3PM",             // CrossFit officiel (Gymnastics Course — Bar Muscle-Up Drill)
+  "Ring Muscle-up": "j-5Ubq3ZOds",            // Marcus Filly (Strict Ring Muscle Up Tutorial)
+  "Handstand Push-up": "0wDEO6shVjc",         // CrossFit officiel (The Strict Handstand Push-Up)
+  "Handstand Walk": "I5p2VVDupq8",            // CrossFit officiel (The Handstand Walk)
+  "Pistol": "7BJxe3R-IcY",                    // Marcus Filly (Pistol Strength Progressions)
+  "Toes-to-Bar": "DoQSjlaa9zc",               // Marcus Filly (Kipping Toes To Bar)
+  "Ring Dip": "4X9fFSTMDJ4",                  // Central Athlete (Strict Ring Dip)
+  "Rope Climb": "nI4MijQJ_No",                // CrossFit officiel (The Rope Climb, J-Hook)
+  "Double-under": "82jNjDS19lg",              // CrossFit officiel (The Double-Under)
+
+  // ── Basiques metcon ──────────────────────────────────────────────────────
+  "Air Squat": "C_VtOYc6j5c",                 // CrossFit officiel (Foundational Movement)
+  "Box Jump": "52r_Ul5k03g",                  // CrossFit officiel (The Box Jump)
+  "Sit-Up": "_HDZODOx7Zw",                    // CrossFit officiel (The AbMat Sit-up)
+  "GHD Sit-Up": "1pbZ8mX2D1U",                // CrossFit officiel (The GHD Sit-up)
+  "Side Plank": "_R389Jk0tIo",                // Marcus Filly (Side Plank)
+  "Push-Up lesté": "SYZ7ktqfL2Q",             // Marcus Filly (Weighted Push Ups)
+  "Walking Lunge DB": "eFWCn5iEbTU",          // Renaissance Periodization (fallback) — Dumbbell Walking Lunge
 };

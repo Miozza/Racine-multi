@@ -1,3 +1,10 @@
+## V4.5.7 — Fiches tuto : 4e passe (16 mouvements — skills gym RX + basiques metcon)
+- **Skills gym CrossFit RX** (9) : Bar Muscle-up, Ring Muscle-up, Handstand Push-up, Handstand Walk, Pistol, Toes-to-Bar, Ring Dip, Rope Climb, Double-under.
+- **Basiques metcon** (7) : Air Squat, Box Jump, Sit-Up, GHD Sit-Up, Side Plank, Push-Up lesté, Walking Lunge DB.
+- Vidéos : CrossFit officiel pour les skills et basiques, Marcus Filly (Ring Muscle-up, Pistol, Toes-to-Bar, Side Plank, Push-Up lesté), Central Athlete (Ring Dip), RP en fallback (Walking Lunge DB). Mapping à 97 entrées, IDs vérifiés via oEmbed.
+- Retombées du matching flou assumées : les variantes (Box Jump Over, Burpee Box Jump, Strict Ring Dip, Bar Muscle-up Transition Drill, Strict Ring Muscle-Up…) affichent la fiche générique correspondante.
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.6 — Fiches tuto : 3e passe (13 mouvements prioritaires, avec vidéos)
 - 13 nouvelles fiches dans `programs/tutorials.js`, chacune avec sa vidéo (mapping à 81 entrées) :
   - **Fort trafic catalogue client** : Hip Thrust (22 programmes), DB RDL (23), Push Press (20), KB Swing (19), Hanging Knee Raise (8).
