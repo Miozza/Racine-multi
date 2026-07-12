@@ -94,4 +94,23 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   // ══ Correctifs anomalies (V4.5.5) — fiches Close-Grip / DB Bench séparées ══
   "Close-Grip Bench Press": "XEFDMwmrLAM",    // Marcus Filly (Close Grip Bench Press)
   "DB Bench Press": "hm_TrCkhJgo",            // Marcus Filly (Dumbbell Bench Press)
+
+  // ══ 3e passe (V4.5.6) — fort trafic catalogue + haltéro technique ══
+
+  // ── Fort trafic catalogue client ─────────────────────────────────────────
+  "Hip Thrust": "hg9MMvd-MY8",                // Functional Bodybuilding (Barbell Hip Thrust)
+  "DB RDL": "UsOjCcxSJaI",                    // Functional Bodybuilding (Dumbbell Romanian Deadlift)
+  "Push Press": "yklSQG1_Ovc",                // Catalyst Athletics (Exercise Library)
+  "KB Swing": "KkYOW3jDhoM",                  // Marcus Filly (Russian Kettlebell Swing)
+  "Hanging Knee Raise": "RD_A-Z15ER4",        // Renaissance Periodization (fallback)
+
+  // ── Haltéro technique (catalogue haltéro/CrossFit) ───────────────────────
+  "Clean and Jerk": "bNCXgyosXlc",            // Catalyst Athletics (Exercise Library)
+  "Power Snatch": "ydHHsju1-Nc",              // Catalyst Athletics (Exercise Library)
+  "Hang Power Snatch": "SpDPcj0W3Yw",         // Catalyst Athletics (Exercise Library)
+  "Snatch Pull": "G1QygZ3Kd3w",               // Catalyst Athletics (Exercise Library)
+  "Split Jerk": "2GPA-cjUFnA",                // Catalyst Athletics (Exercise Library)
+  "Push Jerk": "Om7vLD6x8W0",                 // Catalyst Athletics (Exercise Library)
+  "Overhead Squat": "m_fvfJi94D8",            // Catalyst Athletics (Exercise Library)
+  "Thruster": "aea5BGj9a8Y",                  // CrossFit officiel (Foundational Movement)
 };
