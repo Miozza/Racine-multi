@@ -111,7 +111,7 @@
       ]),
       exerciseBlock("12 min", "B. Stabilité scapulaire", "Renforcement", "accessory", [
         ex("Ring Turnout Support", "4×10-20 sec", "poids du corps", "0:45", "Petit turnout propre, pas d'épaule qui remonte."),
-        ex("Push Up", "3×8-12", "poids du corps", "0:45", "Contrôle pec/épaule sans douleur.")
+        ex("Push-Up", "3×8-12", "poids du corps", "0:45", "Contrôle pec/épaule sans douleur.")
       ]),
       exerciseBlock("10 min", "C. Préhab obligatoire", "Préhab", "accessory", [
         ex("Cable External Rotation", "3×15/bras", "léger", "0:30", "Coude collé, lent."),
