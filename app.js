@@ -1,5 +1,5 @@
-// Racine V4.5.8 — La Saison + catalogue recalibré (convention 1RM référence, rotation hebdo)
-var APP_VERSION = "V4.5.8";
+// Racine V4.5.9 — Fiabilité des exports : rappel d'export, export multi-profils, versionnage du format
+var APP_VERSION = "V4.5.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

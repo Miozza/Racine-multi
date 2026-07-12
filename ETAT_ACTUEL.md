@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.8
+# ETAT ACTUEL — V4.5.9
 
-Version actuelle : V4.5.8
+Version actuelle : V4.5.9
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version ajoute le lien vidéo YouTube dans les fiches tuto (`data/movements_media.js`, porté depuis Coach-Beurt), sur le catalogue public recalibré (convention 1RM de référence, rotation hebdomadaire des accessoires, principal fixe) et les fondations « La Saison » : catalogue avec graphe de succession, journal des cycles, rétention long terme, objectif d'entraînement par profil et écran de fin de cycle avec suggestions explicables. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version renforce la fiabilité des exports (seule sauvegarde possible, Safari pouvant purger le localStorage) : rappel d'export par profil (`lastExportAt` + bannière discrète après 7 jours), export « tous les profils » en un seul fichier JSON avec import multi-profils, versionnage du format d'export (`exportVersion`, migration silencieuse des anciens exports) et confirmation explicite avant tout remplacement de profil à l'import. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

@@ -1,3 +1,11 @@
+## V4.5.9 — Fiabilité des exports (rappel, multi-profils, versionnage)
+- Rappel d'export : `lastExportAt` horodaté par profil dans le registre à chaque export réussi ; bannière discrète en haut de l'app (fermable pour la session, jamais bloquante) si le profil actif a de l'historique et n'a pas été exporté depuis plus de 7 jours (ou jamais).
+- Export « tous les profils » : un bouton (sélecteur de profils et panneau Profil des réglages) génère un seul fichier JSON contenant tous les profils du registre avec leurs données namespacées ; l'import détecte ce format et propose l'import de chaque profil un par un.
+- Versionnage du format d'export : champ `exportVersion` (= 1) dans tout export mono et multi ; un export sans `exportVersion` est traité comme version 0 et migré silencieusement (une fonction de migration par version, enchaînées) ; un fichier d'une version future est refusé.
+- Un import n'écrase plus jamais un profil existant sans confirmation explicite : même nom → proposer le remplacement ou l'import en profil séparé ; rechargement de la page si le profil actif est remplacé.
+- `docs/ARCHITECTURE.md` : listing complet de `scripts/charge/` (fichiers Brain inclus) et checklist de validation obligatoire alignée sur `dev/` et `RELEASE_CHECKLIST.md`.
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.8 — Fiches tuto : 5e passe (27 mouvements — couverture complète)
 - **Fessiers** (`hypertrophie_fesse`, 7) : Frog Bridge, Cable Pull-Through, Cable Hip Abduction, Mini-Band Lateral Walk, Hip Switch (90/90), Front-Foot Elevated Split Squat, Step-Up (couvre aussi Box Step-Up par matching).
 - **Famille front rack + divers** (8) : Front Rack Lunge/Hold/Carry, Overhead Hold (fiche sans vidéo — pas de bonne démo barre), Bar-Facing Burpee, Cable Curl, DB Pullover, Cable External Rotation.
