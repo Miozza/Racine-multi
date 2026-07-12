@@ -71,6 +71,23 @@ Ne jamais écraser :
 
 Le moteur de charges est regroupé dans `scripts/charge/` avec une porte d’entrée publique `scripts/charge/index.js` (`window.CoachCharge`). Aucun ES module, aucun build system. Voir `docs/PHASE_2_EXTRACTION_REPORT.md` et `docs/STRUCTURE_CONTRACT.md`.
 
+Fichiers du domaine :
+
+- `index.js` : porte d’entrée publique (`window.CoachCharge`).
+- `equipement.js` : équipement disponible et arrondis de charges.
+- `utilitaires.js` : helpers communs du moteur.
+- `mouvements.js` : familles, alias et correspondances de mouvements.
+- `historique.js` : historique et signaux du moteur de charges.
+- `rpe.js` : interprétation RPE et progression.
+- `scaling.js` : mise à l’échelle des charges par profil utilisateur (ratios, agressivité).
+- `suggestion.js` : moteur de suggestions de charges.
+- `ml_refinement.js` : CoachML, collecte silencieuse pour raffinement.
+- `movement_profiles.js` : profils de mouvements (famille, sensibilité, vocabulaire Brain Explain).
+- `brain_stats.js` : statistiques locales Brain par mouvement + intention.
+- `brain_memory.js` : mémoire Brain locale, isolée par profil actif.
+- `brain_explain.js` : moteur d’explication Brain (voir `docs/BRAIN.md`).
+- `brain_journal.js` : journal consultatif des apprentissages Brain, ne modifie jamais les charges.
+
 ## Domaine session
 
 La séance terrain est regroupée dans `scripts/session/` avec `scripts/session/index.js` comme porte d’entrée publique (`window.CoachSession`). `app.js` orchestre, mais ne doit plus appeler directement les fonctions internes de session hors domaine.
@@ -96,6 +113,32 @@ Règle de base :
 - `tools/` est interdit.
 
 Le script `dev/structure_checks.js` vérifie que les fichiers servent à quelque chose et que les frontières restent propres.
+
+### Validation obligatoire
+
+La liste de référence vit dans `RELEASE_CHECKLIST.md`. Suites `dev/` à faire passer avant toute livraison :
+
+```bash
+node dev/multi_profile_checks.js
+node dev/ai_import_fallback_smoke.js
+node dev/ai_cycle_movement_bridge_smoke.js
+node dev/ai_advice_clear_smoke.js
+node dev/ai_advice_modal_refresh_smoke.js
+node dev/ai_influence_smoke.js
+node dev/ai_export_movement_context_smoke.js
+node dev/simulate_multi_users.js
+node dev/simulate_users.js
+node dev/charge_engine_checks.js
+node dev/progression_contract_checks.js
+node dev/regression_checks.js --full
+node dev/structure_checks.js --full
+node dev/client_view_checks.js
+node dev/program_catalog_checks.js
+node dev/season_checks.js
+node dev/program_calibration_checks.js
+node dev/crossfit_quality_checks.js
+node dev/strict_muscle_up_checks.js
+```
 
 
 ### V51.50 — Domaine session
