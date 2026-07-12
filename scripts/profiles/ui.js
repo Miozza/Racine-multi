@@ -42,6 +42,52 @@
     removeExportReminder();
     return true;
   }
+  // Export "tous les profils" : un seul fichier JSON avec tout le registre.
+  // Horodate l'export de chaque profil inclus.
+  function exportAllProfiles(){
+    if(!(window.CoachProfiles && CoachProfiles.exportAllProfilesBlob)) return false;
+    var blob = CoachProfiles.exportAllProfilesBlob();
+    if(!blob) return false;
+    var date = new Date().toISOString().slice(0,10);
+    downloadJsonFile(blob, "racine-profils-"+date+".json");
+    if(CoachProfiles.markExported){
+      blob.profiles.forEach(function(entry){
+        if(entry.profile && entry.profile.id) CoachProfiles.markExported(entry.profile.id);
+      });
+    }
+    removeExportReminder();
+    return true;
+  }
+
+  // Import d'un fichier d'export (mono ou multi-profils). Retourne {ok, error}.
+  // Format multi : propose l'import de chaque profil, un par un. Aucun profil
+  // existant n'est écrasé implicitement (l'import crée toujours un profil).
+  function importExportPayload(payload){
+    var parsed = (window.CoachProfiles && CoachProfiles.parseExportPayload) ? CoachProfiles.parseExportPayload(payload) : null;
+    if(!parsed) return { ok:false, error:"Fichier de profil invalide." };
+    var single = parsed.kind === "single";
+    var imported = 0, firstId = null;
+    parsed.entries.forEach(function(entry){
+      var name = (entry.profile && entry.profile.name) || "profil";
+      if(!single && !confirm("Importer le profil « "+name+" » ?")) return;
+      var id = importOneEntry(entry, single);
+      if(id){ imported++; if(!firstId) firstId = id; }
+    });
+    if(!imported) return { ok:false, error:"Aucun profil importé." };
+    if(single || !CoachProfiles.hasActiveOnboardedProfile()){
+      if(!single) CoachProfiles.setActive(firstId);
+      closeGate();
+      window.coachFullBoot();
+    } else {
+      api.renderSettingsPanel();
+      var s = document.getElementById("profileSettingsStatus");
+      if(s){ s.textContent = "✅ "+imported+" profil(s) importé(s)."; s.className = "status-msg ok"; }
+    }
+    return { ok:true };
+  }
+  function importOneEntry(entry, setActive){
+    return CoachProfiles.importProfileBlob(entry, { setActive: !!setActive });
+  }
 
   function ensureGateEl(){
     var g = document.getElementById("racineGate");
@@ -152,6 +198,7 @@
         '<div class="racine-gate-sub">Chaque profil a ses propres charges, son propre historique et son propre rythme de progression. Tout reste sur cet appareil.</div>'+
         rows+
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
+        (list.length ? '<button class="btn-ghost" id="racineExportAllBtn" style="width:100%;margin-top:8px">Exporter tous les profils (JSON)</button>' : '')+
 
         '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
         '<div style="text-align:center;margin-top:20px"><button type="button" id="racineAdminPinBtn" style="background:none;border:none;cursor:pointer;opacity:.15;color:var(--text2);font-size:11px;padding:4px 8px">▪</button></div>'+
@@ -166,6 +213,8 @@
       wiz = { mode:"create", step:"welcome", answers:{} };
       render();
     };
+    var exportAllBtn = card.querySelector("#racineExportAllBtn");
+    if(exportAllBtn) exportAllBtn.onclick = function(){ exportAllProfiles(); };
 
     var pinBtn = card.querySelector("#racineAdminPinBtn");
     if(pinBtn) pinBtn.onclick = function(){
@@ -607,6 +656,9 @@
         '<label class="btn-ghost file-label">Importer un profil<input id="importProfileFile" type="file" accept="application/json"/></label>'+
       '</div>'+
       '<div class="btn-row">'+
+        '<button id="exportAllProfilesBtn" class="btn-ghost">Exporter tous les profils (JSON)</button>'+
+      '</div>'+
+      '<div class="btn-row">'+
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
 
@@ -658,21 +710,31 @@
         if(s){s.textContent="✅ Profil exporté.";s.className="status-msg ok";}
       }
     };
+    var exportAllBtn = document.getElementById("exportAllProfilesBtn");
+    if(exportAllBtn) exportAllBtn.onclick = function(){
+      if(exportAllProfiles()){
+        var s=document.getElementById("profileSettingsStatus");
+        if(s){s.textContent="✅ Tous les profils exportés.";s.className="status-msg ok";}
+      }
+    };
     var importFile = document.getElementById("importProfileFile");
     if(importFile) importFile.onchange = function(e){
       var file = e.target.files[0]; if(!file) return;
       var r = new FileReader();
       r.onload = function(ev){
+        var s = document.getElementById("profileSettingsStatus");
         try{
-          var blob = JSON.parse(ev.target.result);
-          var id = CoachProfiles.importProfileBlob(blob);
-          if(id){ closeGate(); window.coachFullBoot(); }
+          var payload = JSON.parse(ev.target.result);
+          var result = importExportPayload(payload);
+          if(!result.ok){
+            if(s){s.textContent=result.error||"Fichier de profil invalide.";s.className="status-msg err";}
+          }
         }catch(err){
-          var s=document.getElementById("profileSettingsStatus");
           if(s){s.textContent="Fichier de profil invalide.";s.className="status-msg err";}
         }
       };
       r.readAsText(file);
+      e.target.value = ""; // permet de resélectionner le même fichier plus tard
     };
     var delBtn = document.getElementById("deleteProfileBtn");
     if(delBtn) delBtn.onclick = function(){

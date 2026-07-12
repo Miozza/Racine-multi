@@ -246,12 +246,64 @@
     return { schema:"racine-profile-export-v2", exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
   };
 
-  api.importProfileBlob = function(blob){
+  // Export multi-profils : un seul fichier JSON contenant tous les profils du
+  // registre avec leurs données namespacées. Chaque entrée de `profiles`
+  // reprend exactement le format d'export mono-profil.
+  api.exportAllProfilesBlob = function(){
+    var reg = readRegistry();
+    var entries = [];
+    reg.profiles.forEach(function(p){
+      var blob = api.exportProfileBlob(p.id);
+      if(blob) entries.push(blob);
+    });
+    if(!entries.length) return null;
+    return {
+      schema: "racine-profiles-export-multi-v1",
+      exportedAt: new Date().toISOString(),
+      appVersion: (window.APP_VERSION || null),
+      profiles: entries
+    };
+  };
+
+  // Détecte le format d'un fichier d'export : mono-profil ({profile,...}) ou
+  // multi-profils ({profiles:[...]}). Retourne {kind, entries} ou null si le
+  // fichier n'est pas un export Racine reconnaissable.
+  api.parseExportPayload = function(payload){
+    if(!payload || typeof payload !== "object") return null;
+    if(Array.isArray(payload.profiles)){
+      var entries = payload.profiles.filter(function(b){ return b && b.profile; });
+      return entries.length ? { kind: "multi", entries: entries } : null;
+    }
+    if(payload.profile) return { kind: "single", entries: [payload] };
+    return null;
+  };
+
+  // Importe un blob mono-profil. Par défaut, crée toujours un nouveau profil
+  // (jamais d'écrasement implicite) et le rend actif.
+  // opts.setActive === false : n'active pas le profil importé (import multi).
+  // opts.replaceId : remplace ce profil existant (l'appelant doit avoir obtenu
+  // une confirmation explicite de l'utilisateur avant).
+  api.importProfileBlob = function(blob, opts){
+    opts = opts || {};
     if(!blob || !blob.profile) return null;
     var reg = readRegistry();
     var incoming = Object.assign({}, blob.profile, { id: uid(), importedAt:new Date().toISOString() });
-    reg.profiles.push(incoming);
-    reg.activeProfileId = incoming.id;
+    var replaced = false;
+    if(opts.replaceId){
+      var idx = findIndex(reg, opts.replaceId);
+      if(idx >= 0){
+        try{
+          var oldKeys = api.storageKeysFor(opts.replaceId);
+          localStorage.removeItem(oldKeys.state);
+          localStorage.removeItem(oldKeys.charges);
+        }catch(e){}
+        reg.profiles[idx] = incoming;
+        if(reg.activeProfileId === opts.replaceId) reg.activeProfileId = incoming.id;
+        replaced = true;
+      }
+    }
+    if(!replaced) reg.profiles.push(incoming);
+    if(opts.setActive !== false) reg.activeProfileId = incoming.id;
     writeRegistry(reg);
     var keys = api.storageKeysFor(incoming.id);
     try{ if(blob.state) localStorage.setItem(keys.state, JSON.stringify(blob.state)); }catch(e){}
