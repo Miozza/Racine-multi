@@ -103,6 +103,24 @@
     return api.update(id, Object.assign({onboarded:true}, payload||{}));
   };
 
+  // À appeler après chaque export réussi (mono ou multi) : horodate le dernier
+  // export du profil dans le registre. Sert au rappel d'export (Safari peut
+  // purger le localStorage d'une PWA peu visitée — l'export JSON est la seule
+  // sauvegarde).
+  api.markExported = function(id){
+    return api.update(id, { lastExportAt: new Date().toISOString() });
+  };
+
+  // Un profil "a de l'historique" si son state namespacé contient au moins une
+  // séance sauvegardée. Lecture seule, sans toucher au state en mémoire.
+  api.profileHasHistory = function(id){
+    try{
+      var keys = api.storageKeysFor(id);
+      var st = JSON.parse(localStorage.getItem(keys.state) || "null");
+      return !!(st && Array.isArray(st.history) && st.history.length);
+    }catch(e){ return false; }
+  };
+
   // ─── Permissions programmes privés ────────────────────────────────────────
   api.grantProgramPermission = function(profileId, programId){
     var p = api.get(profileId);

@@ -6225,6 +6225,40 @@ body.is-client [data-ai-clear]{display:none!important}
   padding: 6px;
   cursor: pointer;
 }
+
+/* ─── Rappel d'export profil (fiabilité localStorage Safari) ─────────────── */
+.export-reminder-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 12px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(0,212,255,.35);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0,212,255,.10), rgba(30,144,255,.06));
+}
+.export-reminder-text {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.export-reminder-text span { color: var(--muted); }
+.export-reminder-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.export-reminder-close {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  padding: 10px 8px;
+  cursor: pointer;
+}
 .help-guide-inner h3 {
   margin: 16px 0 6px;
   font-size: 16px;
