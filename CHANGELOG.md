@@ -1,3 +1,12 @@
+## V4.5.8 — Fiches tuto : 5e passe (27 mouvements — couverture complète)
+- **Fessiers** (`hypertrophie_fesse`, 7) : Frog Bridge, Cable Pull-Through, Cable Hip Abduction, Mini-Band Lateral Walk, Hip Switch (90/90), Front-Foot Elevated Split Squat, Step-Up (couvre aussi Box Step-Up par matching).
+- **Famille front rack + divers** (8) : Front Rack Lunge/Hold/Carry, Overhead Hold (fiche sans vidéo — pas de bonne démo barre), Bar-Facing Burpee, Cable Curl, DB Pullover, Cable External Rotation.
+- **Drills muscle-up** (cycle strict 10 semaines, 11) : Strict Muscle-Up (couvre les variantes assistées par matching), False Grip Hang / Ring Row / Pull to Sternum, Ring Support Hold, Ring Turnout Support, Arch Hold, Wrist Strength, Transition Drill, Low Ring Transition Pause, Slow Negative Muscle-Up.
+- **Push-Up** : fiche créée ; le drill « Push Up » du cycle muscle-up renommé « Push-Up ».
+- Vidéos Central Athlete (false grip/muscle-up), Marcus Filly/Functional Bodybuilding, CrossFit officiel, et fallback spécialisés (Bret Contreras/Glute Lab pour les fessiers, Antranik pour le RTO, GMB pour les poignets). Mapping à 123 entrées, IDs vérifiés via oEmbed.
+- **Couverture terminée** : tous les mouvements affichés par les 39 programmes ont maintenant une fiche (?), sauf exclusions volontaires (cardio Row/Run/Bike/Single-under, bloc « Transitions », Chest Supported Row).
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.7 — Fiches tuto : 4e passe (16 mouvements — skills gym RX + basiques metcon)
 - **Skills gym CrossFit RX** (9) : Bar Muscle-up, Ring Muscle-up, Handstand Push-up, Handstand Walk, Pistol, Toes-to-Bar, Ring Dip, Rope Climb, Double-under.
 - **Basiques metcon** (7) : Air Squat, Box Jump, Sit-Up, GHD Sit-Up, Side Plank, Push-Up lesté, Walking Lunge DB.

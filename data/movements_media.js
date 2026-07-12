@@ -135,4 +135,39 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Side Plank": "_R389Jk0tIo",                // Marcus Filly (Side Plank)
   "Push-Up lesté": "SYZ7ktqfL2Q",             // Marcus Filly (Weighted Push Ups)
   "Walking Lunge DB": "eFWCn5iEbTU",          // Renaissance Periodization (fallback) — Dumbbell Walking Lunge
+
+  // ══ 5e passe (V4.5.8) — fessiers, front rack, drills muscle-up, divers ══
+  // « Overhead Hold » a une fiche mais pas de vidéo (pas de bonne démo barre trouvée).
+
+  // ── Fessiers (hypertrophie_fesse) ────────────────────────────────────────
+  "Frog Bridge": "HyCiZVMMDW4",               // Bret Contreras (fallback) — Frog Pumps
+  "Cable Pull-Through": "pv8e6OSyETE",        // Renaissance Periodization (fallback)
+  "Cable Hip Abduction": "vSqhrbzZb7A",       // Glute Lab / Bret Contreras (fallback)
+  "Mini-Band Lateral Walk": "ReT_5fnUe6k",    // Nick Tumminello (fallback)
+  "Hip Switch": "m51AZSXMvEA",                // The Active Life (fallback) — 90/90 Hip Switch
+  "Front-Foot Elevated Split Squat": "bZN3q31j8ks", // Functional Bodybuilding
+  "Step-Up": "1F-tgZJkfiM",                   // Marcus Filly (Dumbbell Step Up)
+
+  // ── Famille front rack + divers ──────────────────────────────────────────
+  "Front Rack Lunge": "f3WLs_HutLw",          // CrossFit officiel (The Front Rack Lunge)
+  "Front Rack Hold": "duiT0_faFnE",           // The Active Life (fallback)
+  "Front Rack Carry": "ofwpNdE8yZU",          // Functional Bodybuilding (Barbell Front Rack Carry)
+  "Bar-Facing Burpee": "PCdMS9QLtaE",         // CrossFit Games (fallback) — efficiency tips
+  "Cable Curl": "NFzTWp2qpiE",                // Fit Father Project (fallback)
+  "DB Pullover": "owr5y-s6-Qk",               // Functional Bodybuilding (Dumbbell Pullover)
+  "Cable External Rotation": "PVdgjHqAes8",   // Muscle & Motion (fallback)
+  "Push-Up": "IIpHnPCkl7Q",                   // Marcus Filly (Push Ups)
+
+  // ── Drills muscle-up (cycle strict 10 semaines) ──────────────────────────
+  "Strict Muscle-Up": "721soPhMhs8",          // Central Athlete
+  "False Grip Hang": "6qgtI2XbmUc",           // Central Athlete (False Grip Passive Hang on Rings)
+  "False Grip Ring Row": "EtLL4QtQRHI",       // Central Athlete
+  "False Grip Pull to Sternum": "gpNkZWG_gFo",// Central Athlete (False Grip Ring Pull-Up)
+  "Ring Support Hold": "kONbxg4kzkE",         // Marcus Filly
+  "Ring Turnout Support": "9PKChU9Ozs8",      // Antranik (fallback) — RTO Support Hold
+  "Arch Hold": "TkrTjU-qf6U",                 // CrossFit officiel (Arch Holds)
+  "Wrist Strength": "1ljl0cMg5JI",            // GMB Fitness (fallback) — 5 Wrist Strength Exercises
+  "Transition Drill": "Pe_4RCi-PuQ",          // CrossFit officiel (Low-Ring Muscle-Up Tips)
+  "Low Ring Transition Pause": "rpEhhvq8S8k", // Jenny LaBaw (fallback)
+  "Slow Negative Muscle-Up": "Mx31PedEpTg",   // Functional Bodybuilding (Ring Muscle Up Negative)
 };
