@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.9
+# ETAT ACTUEL — V4.5.10
 
-Version actuelle : V4.5.9
+Version actuelle : V4.5.10
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version renforce la fiabilité des exports (seule sauvegarde possible, Safari pouvant purger le localStorage) : rappel d'export par profil (`lastExportAt` + bannière discrète après 7 jours), export « tous les profils » en un seul fichier JSON avec import multi-profils, versionnage du format d'export (`exportVersion`, migration silencieuse des anciens exports) et confirmation explicite avant tout remplacement de profil à l'import. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version ajoute le toggle mute 🔊/🔇 des signaux sonores du timer en vue séance, persisté dans le state du profil actif (muet = aucun nœud Web Audio créé). Le Wake Lock de la vue séance et les bips du timer (décompte, EMOM, fin) existaient déjà et sont inchangés. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

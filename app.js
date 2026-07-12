@@ -1,5 +1,5 @@
-// Racine V4.5.9 — Fiabilité des exports : rappel d'export, export multi-profils, versionnage du format
-var APP_VERSION = "V4.5.9";
+// Racine V4.5.10 — Vue séance : toggle mute des signaux sonores du timer, persisté par profil
+var APP_VERSION = "V4.5.10";
 
 // Architecture stable
 // programs/*.js = plan prévu
