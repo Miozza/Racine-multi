@@ -4,6 +4,27 @@
 
 var guidedTimer = {duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:"down",label:"",isEmom:false,countdownActive:false,countdownRemaining:10};
 
+// ── Signaux sonores du timer guidé ───────────────────────────────────────────
+// Muet = aucun helper audio appelé, donc aucun nœud Web Audio créé (pas un
+// volume à zéro) et aucun AudioContext créé/repris. L'état vit dans le state
+// du profil actif (state.guidedSoundMuted) : persisté par save(), il survit
+// au rechargement et reste isolé par profil.
+function guidedSoundMuted(){
+  try{ return !!(typeof state==="object" && state && state.guidedSoundMuted); }catch(e){ return false; }
+}
+function setGuidedSoundMuted(muted){
+  if(typeof state!=="object" || !state) return;
+  state.guidedSoundMuted = !!muted;
+  if(typeof save==="function") save();
+  // Réactivation des sons = geste utilisateur : c'est le moment de créer ou
+  // reprendre l'AudioContext (contrainte Safari iOS).
+  if(!state.guidedSoundMuted && typeof resumeAudio==="function") resumeAudio();
+}
+function guidedBipCountdown(){ if(!guidedSoundMuted() && typeof bipCountdown==="function") bipCountdown(); }
+function guidedBipStart(){ if(!guidedSoundMuted() && typeof bipStart==="function") bipStart(); }
+function guidedBipEmom(){ if(!guidedSoundMuted() && typeof bipEmom==="function") bipEmom(); }
+function guidedBipEnd(){ if(!guidedSoundMuted() && typeof bipEnd==="function") bipEnd(); }
+
 function resetGuidedTimerState(cfg){
   stopGuidedTimer();
   guidedTimer.duration=Number(cfg&&cfg.seconds)||0;
@@ -228,19 +249,21 @@ function startGuidedTimerCountdown(onDone){
   updateGuidedTimerDisplay();
   guidedTimer.interval=setInterval(function(){
     guidedTimer.countdownRemaining--;
-    if(guidedTimer.countdownRemaining<=3&&guidedTimer.countdownRemaining>0){bipCountdown();vibrate([60]);}
+    if(guidedTimer.countdownRemaining<=3&&guidedTimer.countdownRemaining>0){guidedBipCountdown();vibrate([60]);}
     if(guidedTimer.countdownRemaining<=0){
       clearInterval(guidedTimer.interval);
       guidedTimer.interval=null;
       guidedTimer.countdownActive=false;
-      bipStart();vibrate([200,80,200]);
+      guidedBipStart();vibrate([200,80,200]);
       onDone();
     }
     updateGuidedTimerDisplay();
   },1000);
 }
 function startGuidedTimer(){
-  resumeAudio();
+  // Geste utilisateur (tap ▶) : seul endroit légitime pour créer/reprendre
+  // l'AudioContext. En muet, on n'en crée aucun.
+  if(!guidedSoundMuted())resumeAudio();
   if(guidedTimer.running||guidedTimer.countdownActive)return;
   startGuidedTimerCountdown(function(){
     guidedTimer.running=true;
@@ -248,13 +271,13 @@ function startGuidedTimer(){
     guidedTimer.interval=setInterval(function(){
       if(guidedTimer.mode==="up"){
         guidedTimer.elapsed=Math.min(guidedTimer.duration,guidedTimer.elapsed+1);
-        if(guidedTimer.isEmom&&guidedTimer.elapsed>0&&guidedTimer.elapsed%60===0){bipEmom();vibrate([100,50,100]);}
-        if(guidedTimer.elapsed>=guidedTimer.duration){stopGuidedTimer();bipEnd();vibrate([300,100,300,100,300]);}
+        if(guidedTimer.isEmom&&guidedTimer.elapsed>0&&guidedTimer.elapsed%60===0){guidedBipEmom();vibrate([100,50,100]);}
+        if(guidedTimer.elapsed>=guidedTimer.duration){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
       } else {
         guidedTimer.remaining=Math.max(0,guidedTimer.remaining-1);
-        if(guidedTimer.remaining<=3&&guidedTimer.remaining>0){bipCountdown();vibrate([60]);}
-        if(guidedTimer.isEmom&&guidedTimer.remaining>0&&guidedTimer.remaining%60===0){bipEmom();vibrate([100,50,100]);}
-        if(guidedTimer.remaining<=0){stopGuidedTimer();bipEnd();vibrate([300,100,300,100,300]);}
+        if(guidedTimer.remaining<=3&&guidedTimer.remaining>0){guidedBipCountdown();vibrate([60]);}
+        if(guidedTimer.isEmom&&guidedTimer.remaining>0&&guidedTimer.remaining%60===0){guidedBipEmom();vibrate([100,50,100]);}
+        if(guidedTimer.remaining<=0){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
       }
       updateGuidedTimerDisplay();
     },1000);
