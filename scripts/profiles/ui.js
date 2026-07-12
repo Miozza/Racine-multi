@@ -19,6 +19,98 @@
     });
   }
 
+  // Téléchargement d'un objet JSON (exports de profil). Pattern <a download>
+  // + Blob URL, supporté par Safari iOS.
+  function downloadJsonFile(obj, name){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)],{type:"application/json"}));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function fileSlug(s){
+    return String(s||"profil").toLowerCase().replace(/[^a-z0-9]+/g,"-") || "profil";
+  }
+  // Export du profil actif : télécharge le JSON et horodate l'export dans le
+  // registre (utilisé par le bouton des réglages et par le rappel d'export).
+  function exportActiveProfile(){
+    if(!window.CoachProfiles) return false;
+    var id = CoachProfiles.getActiveId();
+    var blob = CoachProfiles.exportProfileBlob(id);
+    if(!blob) return false;
+    downloadJsonFile(blob, "racine-profil-"+fileSlug(blob.profile.name)+".json");
+    if(CoachProfiles.markExported) CoachProfiles.markExported(id);
+    removeExportReminder();
+    return true;
+  }
+  // Export "tous les profils" : un seul fichier JSON avec tout le registre.
+  // Horodate l'export de chaque profil inclus.
+  function exportAllProfiles(){
+    if(!(window.CoachProfiles && CoachProfiles.exportAllProfilesBlob)) return false;
+    var blob = CoachProfiles.exportAllProfilesBlob();
+    if(!blob) return false;
+    var date = new Date().toISOString().slice(0,10);
+    downloadJsonFile(blob, "racine-profils-"+date+".json");
+    if(CoachProfiles.markExported){
+      blob.profiles.forEach(function(entry){
+        if(entry.profile && entry.profile.id) CoachProfiles.markExported(entry.profile.id);
+      });
+    }
+    removeExportReminder();
+    return true;
+  }
+
+  // Import d'un fichier d'export (mono ou multi-profils). Retourne {ok, error}.
+  // Format multi : propose l'import de chaque profil, un par un. Aucun profil
+  // existant n'est écrasé implicitement (l'import crée toujours un profil).
+  function importExportPayload(payload){
+    var parsed = (window.CoachProfiles && CoachProfiles.parseExportPayload) ? CoachProfiles.parseExportPayload(payload) : null;
+    if(!parsed) return { ok:false, error:"Fichier de profil invalide." };
+    var single = parsed.kind === "single";
+    var prevActiveId = CoachProfiles.getActiveId();
+    var imported = 0, firstId = null, activeReplaced = false;
+    parsed.entries.forEach(function(entry){
+      var name = (entry.profile && entry.profile.name) || "profil";
+      if(!single && !confirm("Importer le profil « "+name+" » ?")) return;
+      var res = importOneEntry(entry, single);
+      if(res.id){
+        imported++;
+        if(!firstId) firstId = res.id;
+        if(res.replacedId && res.replacedId === prevActiveId) activeReplaced = true;
+      }
+    });
+    if(!imported) return { ok:false, error:"Aucun profil importé." };
+    // Le profil actif a été remplacé pendant que l'app tourne : recharger la
+    // page pour que le state en mémoire ne réécrive pas les données importées.
+    if(activeReplaced){
+      closeGate();
+      location.reload();
+      return { ok:true };
+    }
+    if(single || !CoachProfiles.hasActiveOnboardedProfile()){
+      if(!single) CoachProfiles.setActive(firstId);
+      closeGate();
+      window.coachFullBoot();
+    } else {
+      api.renderSettingsPanel();
+      var s = document.getElementById("profileSettingsStatus");
+      if(s){ s.textContent = "✅ "+imported+" profil(s) importé(s)."; s.className = "status-msg ok"; }
+    }
+    return { ok:true };
+  }
+  // Importe une entrée mono-profil. Si un profil du même nom existe déjà,
+  // demande une confirmation explicite avant de le remplacer; en cas de refus,
+  // l'import crée un profil séparé — un import n'écrase jamais rien sans accord.
+  function importOneEntry(entry, setActive){
+    var name = (entry.profile && entry.profile.name) || "";
+    var existing = name ? CoachProfiles.list().filter(function(p){ return p.onboarded && p.name === name; })[0] : null;
+    var opts = { setActive: !!setActive };
+    if(existing && confirm("Un profil « "+name+" » existe déjà sur cet appareil.\n\nOK : le remplacer par la version importée (ses données locales actuelles seront perdues).\nAnnuler : garder les deux (import en profil séparé).")){
+      opts.replaceId = existing.id;
+    }
+    var id = CoachProfiles.importProfileBlob(entry, opts);
+    return { id: id, replacedId: (id && opts.replaceId) ? opts.replaceId : null };
+  }
+
   function ensureGateEl(){
     var g = document.getElementById("racineGate");
     if(!g){
@@ -128,6 +220,7 @@
         '<div class="racine-gate-sub">Chaque profil a ses propres charges, son propre historique et son propre rythme de progression. Tout reste sur cet appareil.</div>'+
         rows+
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
+        (list.length ? '<button class="btn-ghost" id="racineExportAllBtn" style="width:100%;margin-top:8px">Exporter tous les profils (JSON)</button>' : '')+
 
         '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
         '<div style="text-align:center;margin-top:20px"><button type="button" id="racineAdminPinBtn" style="background:none;border:none;cursor:pointer;opacity:.15;color:var(--text2);font-size:11px;padding:4px 8px">▪</button></div>'+
@@ -142,6 +235,8 @@
       wiz = { mode:"create", step:"welcome", answers:{} };
       render();
     };
+    var exportAllBtn = card.querySelector("#racineExportAllBtn");
+    if(exportAllBtn) exportAllBtn.onclick = function(){ exportAllProfiles(); };
 
     var pinBtn = card.querySelector("#racineAdminPinBtn");
     if(pinBtn) pinBtn.onclick = function(){
@@ -583,6 +678,9 @@
         '<label class="btn-ghost file-label">Importer un profil<input id="importProfileFile" type="file" accept="application/json"/></label>'+
       '</div>'+
       '<div class="btn-row">'+
+        '<button id="exportAllProfilesBtn" class="btn-ghost">Exporter tous les profils (JSON)</button>'+
+      '</div>'+
+      '<div class="btn-row">'+
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
 
@@ -629,31 +727,36 @@
     if(dashBtn) dashBtn.onclick = function(){ api.openClientDashboard(); };
     var exportBtn = document.getElementById("exportProfileBtn");
     if(exportBtn) exportBtn.onclick = function(){
-      var id = CoachProfiles.getActiveId();
-      var blob = CoachProfiles.exportProfileBlob(id);
-      if(!blob) return;
-      var text = JSON.stringify(blob, null, 2);
-      var name = "racine-profil-"+(blob.profile.name||"profil").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".json";
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob([text],{type:"application/json"}));
-      a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
+      if(exportActiveProfile()){
+        var s=document.getElementById("profileSettingsStatus");
+        if(s){s.textContent="✅ Profil exporté.";s.className="status-msg ok";}
+      }
+    };
+    var exportAllBtn = document.getElementById("exportAllProfilesBtn");
+    if(exportAllBtn) exportAllBtn.onclick = function(){
+      if(exportAllProfiles()){
+        var s=document.getElementById("profileSettingsStatus");
+        if(s){s.textContent="✅ Tous les profils exportés.";s.className="status-msg ok";}
+      }
     };
     var importFile = document.getElementById("importProfileFile");
     if(importFile) importFile.onchange = function(e){
       var file = e.target.files[0]; if(!file) return;
       var r = new FileReader();
       r.onload = function(ev){
+        var s = document.getElementById("profileSettingsStatus");
         try{
-          var blob = JSON.parse(ev.target.result);
-          var id = CoachProfiles.importProfileBlob(blob);
-          if(id){ closeGate(); window.coachFullBoot(); }
+          var payload = JSON.parse(ev.target.result);
+          var result = importExportPayload(payload);
+          if(!result.ok){
+            if(s){s.textContent=result.error||"Fichier de profil invalide.";s.className="status-msg err";}
+          }
         }catch(err){
-          var s=document.getElementById("profileSettingsStatus");
           if(s){s.textContent="Fichier de profil invalide.";s.className="status-msg err";}
         }
       };
       r.readAsText(file);
+      e.target.value = ""; // permet de resélectionner le même fichier plus tard
     };
     var delBtn = document.getElementById("deleteProfileBtn");
     if(delBtn) delBtn.onclick = function(){
@@ -669,4 +772,53 @@
       }
     };
   };
+
+  // ── Rappel d'export ───────────────────────────────────────────────────────
+  // Safari peut purger le localStorage d'une web app peu visitée; sans serveur,
+  // l'export JSON est la seule sauvegarde. Bannière discrète en haut de l'app
+  // si le profil actif a de l'historique et n'a pas été exporté depuis 7 jours
+  // (ou jamais). Fermable pour la session (sessionStorage), jamais bloquante.
+  var EXPORT_REMINDER_DAYS = 7;
+  var EXPORT_REMINDER_DISMISS_KEY = "racineExportReminderDismissed";
+  function exportReminderDismissed(){
+    try{ return sessionStorage.getItem(EXPORT_REMINDER_DISMISS_KEY) === "1"; }catch(e){ return false; }
+  }
+  function dismissExportReminder(){
+    try{ sessionStorage.setItem(EXPORT_REMINDER_DISMISS_KEY, "1"); }catch(e){}
+  }
+  function removeExportReminder(){
+    var b = document.getElementById("exportReminderBanner");
+    if(b) b.remove();
+  }
+  function renderExportReminder(){
+    if(exportReminderDismissed()) return;
+    if(!(window.CoachProfiles && CoachProfiles.getActive)) return;
+    var p = CoachProfiles.getActive();
+    if(!p || !p.onboarded) return;
+    // Rien à protéger tant que le profil n'a aucune séance sauvegardée.
+    if(!(CoachProfiles.profileHasHistory && CoachProfiles.profileHasHistory(p.id))) return;
+    var last = p.lastExportAt ? Date.parse(p.lastExportAt) : NaN;
+    var ageDays = isNaN(last) ? null : Math.floor((Date.now() - last) / 86400000);
+    if(ageDays !== null && ageDays <= EXPORT_REMINDER_DAYS) return;
+    var app = document.querySelector(".app");
+    if(!app || document.getElementById("exportReminderBanner")) return;
+    var msg = (ageDays === null)
+      ? "Ce profil n'a jamais été exporté."
+      : "Dernier export il y a " + ageDays + " jours.";
+    var banner = el(
+      '<div id="exportReminderBanner" class="export-reminder-banner">'+
+        '<span class="export-reminder-text">💾 '+msg+' <span>Safari peut effacer les données locales — garde une copie JSON.</span></span>'+
+        '<button type="button" class="btn-accent export-reminder-btn" data-export-now>Exporter</button>'+
+        '<button type="button" class="export-reminder-close" data-export-dismiss aria-label="Masquer">✕</button>'+
+      '</div>'
+    );
+    app.insertBefore(banner, app.firstChild);
+    banner.querySelector("[data-export-now]").onclick = function(){ exportActiveProfile(); };
+    banner.querySelector("[data-export-dismiss]").onclick = function(){
+      dismissExportReminder();
+      removeExportReminder();
+    };
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderExportReminder);
+  else renderExportReminder();
 })();

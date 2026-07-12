@@ -103,6 +103,24 @@
     return api.update(id, Object.assign({onboarded:true}, payload||{}));
   };
 
+  // À appeler après chaque export réussi (mono ou multi) : horodate le dernier
+  // export du profil dans le registre. Sert au rappel d'export (Safari peut
+  // purger le localStorage d'une PWA peu visitée — l'export JSON est la seule
+  // sauvegarde).
+  api.markExported = function(id){
+    return api.update(id, { lastExportAt: new Date().toISOString() });
+  };
+
+  // Un profil "a de l'historique" si son state namespacé contient au moins une
+  // séance sauvegardée. Lecture seule, sans toucher au state en mémoire.
+  api.profileHasHistory = function(id){
+    try{
+      var keys = api.storageKeysFor(id);
+      var st = JSON.parse(localStorage.getItem(keys.state) || "null");
+      return !!(st && Array.isArray(st.history) && st.history.length);
+    }catch(e){ return false; }
+  };
+
   // ─── Permissions programmes privés ────────────────────────────────────────
   api.grantProgramPermission = function(profileId, programId){
     var p = api.get(profileId);
@@ -218,6 +236,37 @@
     return api.storageKeysFor(id);
   };
 
+  // ─── Versionnage du format d'export ───────────────────────────────────────
+  // Tout export (mono et multi) porte un champ exportVersion. Un fichier sans
+  // exportVersion est un export historique : traité comme version 0 et migré
+  // silencieusement. Pour une future rupture de format : incrémenter
+  // EXPORT_VERSION et ajouter une fonction EXPORT_MIGRATIONS[n] qui fait
+  // passer un payload de la version n à n+1 — les migrations s'enchaînent
+  // jusqu'à la version courante, pas de if/else en cascade.
+  var EXPORT_VERSION = 1;
+  var EXPORT_MIGRATIONS = {
+    // v0 → v1 : les anciens exports mono-profil n'avaient pas d'exportVersion;
+    // la structure est identique, on pose seulement le champ.
+    0: function(payload){
+      payload.exportVersion = 1;
+      return payload;
+    }
+  };
+  function migrateExportPayload(payload){
+    if(!payload || typeof payload !== "object") return null;
+    var v = Number(payload.exportVersion) || 0;
+    if(v > EXPORT_VERSION) return null; // fichier d'une version future : refuser plutôt que corrompre
+    while(v < EXPORT_VERSION){
+      var step = EXPORT_MIGRATIONS[v];
+      if(typeof step !== "function") return null; // trou de migration = format inconnu
+      payload = step(payload);
+      if(!payload || typeof payload !== "object") return null;
+      v = Number(payload.exportVersion) || (v + 1);
+    }
+    return payload;
+  }
+  api.EXPORT_VERSION = EXPORT_VERSION;
+
   api.exportProfileBlob = function(id){
     var profile = api.get(id);
     if(!profile) return null;
@@ -225,15 +274,70 @@
     var state = null, charges = null;
     try{ state = JSON.parse(localStorage.getItem(keys.state) || "null"); }catch(e){}
     try{ charges = JSON.parse(localStorage.getItem(keys.charges) || "null"); }catch(e){}
-    return { schema:"racine-profile-export-v2", exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
+    return { schema:"racine-profile-export-v2", exportVersion: EXPORT_VERSION, exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
   };
 
-  api.importProfileBlob = function(blob){
+  // Export multi-profils : un seul fichier JSON contenant tous les profils du
+  // registre avec leurs données namespacées. Chaque entrée de `profiles`
+  // reprend exactement le format d'export mono-profil.
+  api.exportAllProfilesBlob = function(){
+    var reg = readRegistry();
+    var entries = [];
+    reg.profiles.forEach(function(p){
+      var blob = api.exportProfileBlob(p.id);
+      if(blob) entries.push(blob);
+    });
+    if(!entries.length) return null;
+    return {
+      schema: "racine-profiles-export-multi-v1",
+      exportVersion: EXPORT_VERSION,
+      exportedAt: new Date().toISOString(),
+      appVersion: (window.APP_VERSION || null),
+      profiles: entries
+    };
+  };
+
+  // Détecte le format d'un fichier d'export : mono-profil ({profile,...}) ou
+  // multi-profils ({profiles:[...]}). Migre d'abord le payload vers la version
+  // d'export courante. Retourne {kind, entries} ou null si le fichier n'est
+  // pas un export Racine reconnaissable (ou vient d'une version future).
+  api.parseExportPayload = function(payload){
+    payload = migrateExportPayload(payload);
+    if(!payload) return null;
+    if(Array.isArray(payload.profiles)){
+      var entries = payload.profiles.filter(function(b){ return b && b.profile; });
+      return entries.length ? { kind: "multi", entries: entries } : null;
+    }
+    if(payload.profile) return { kind: "single", entries: [payload] };
+    return null;
+  };
+
+  // Importe un blob mono-profil. Par défaut, crée toujours un nouveau profil
+  // (jamais d'écrasement implicite) et le rend actif.
+  // opts.setActive === false : n'active pas le profil importé (import multi).
+  // opts.replaceId : remplace ce profil existant (l'appelant doit avoir obtenu
+  // une confirmation explicite de l'utilisateur avant).
+  api.importProfileBlob = function(blob, opts){
+    opts = opts || {};
     if(!blob || !blob.profile) return null;
     var reg = readRegistry();
     var incoming = Object.assign({}, blob.profile, { id: uid(), importedAt:new Date().toISOString() });
-    reg.profiles.push(incoming);
-    reg.activeProfileId = incoming.id;
+    var replaced = false;
+    if(opts.replaceId){
+      var idx = findIndex(reg, opts.replaceId);
+      if(idx >= 0){
+        try{
+          var oldKeys = api.storageKeysFor(opts.replaceId);
+          localStorage.removeItem(oldKeys.state);
+          localStorage.removeItem(oldKeys.charges);
+        }catch(e){}
+        reg.profiles[idx] = incoming;
+        if(reg.activeProfileId === opts.replaceId) reg.activeProfileId = incoming.id;
+        replaced = true;
+      }
+    }
+    if(!replaced) reg.profiles.push(incoming);
+    if(opts.setActive !== false) reg.activeProfileId = incoming.id;
     writeRegistry(reg);
     var keys = api.storageKeysFor(incoming.id);
     try{ if(blob.state) localStorage.setItem(keys.state, JSON.stringify(blob.state)); }catch(e){}
