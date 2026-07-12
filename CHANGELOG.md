@@ -1,3 +1,11 @@
+## V4.5.6 — Fiches tuto : 3e passe (13 mouvements prioritaires, avec vidéos)
+- 13 nouvelles fiches dans `programs/tutorials.js`, chacune avec sa vidéo (mapping à 81 entrées) :
+  - **Fort trafic catalogue client** : Hip Thrust (22 programmes), DB RDL (23), Push Press (20), KB Swing (19), Hanging Knee Raise (8).
+  - **Haltéro technique** (catalogue haltéro/CrossFit, priorité sécurité) : Clean and Jerk, Power Snatch, Hang Power Snatch, Snatch Pull, Split Jerk, Push Jerk, Overhead Squat, Thruster.
+- Vidéos : Catalyst Athletics (Exercise Library) pour toute l'haltéro, Marcus Filly/Functional Bodybuilding pour le reste, CrossFit officiel pour le Thruster, Renaissance Periodization en fallback (Hanging Knee Raise). IDs vérifiés via oEmbed.
+- Effet de bord assumé : « Barbell Hip Thrust » et « Single-Leg Hip Thrust » (hypertrophie_fesse) retombent par matching flou sur la fiche générique « Hip Thrust ».
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.5 — Correctifs fiches tuto : anomalies du matching
 - « Row » (le rameur) affichait la fiche « Chest Supported Row » via le matching par sous-chaîne : `findCoachBertinTutorial` exclut maintenant les machines cardio (Row, Run, Bike, Ski Erg, Swim) — plus jamais de bouton (?) sur du cardio.
 - Fiche « Chest Supported Row » supprimée à la demande du coach (le mouvement reste dans les programmes, il n'a simplement plus de fiche).
