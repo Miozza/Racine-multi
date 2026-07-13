@@ -1,5 +1,5 @@
-// Racine V4.5.10 — Vue séance : toggle mute des signaux sonores du timer, persisté par profil
-var APP_VERSION = "V4.5.10";
+// Racine V4.5.11 — Remplacements de mouvements par client + import depuis l'accueil des profils
+var APP_VERSION = "V4.5.11";
 
 // Architecture stable
 // programs/*.js = plan prévu

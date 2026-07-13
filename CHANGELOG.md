@@ -1,3 +1,12 @@
+## V4.5.11 — Remplacements de mouvements par client + restauration facilitée
+- **Remplacements de mouvements par client** (idée 1 de `docs/IDEES_FUTURES.md`) : le coach pose « Bench Press → DB Bench Press » (+ note optionnelle) sur UN profil, sans toucher le programme template ni les autres clients. Partout où la séance affiche le mouvement d'origine, l'app montre le remplaçant, et le moteur de charges suit le nouveau nom. Retirer la ligne = retour au programme original.
+  - Nouveau module `scripts/profiles/swaps.js` (`window.RacineMovementSwaps`), stockage dans le state du profil (isolation par construction), application par un hook unique dans `buildWorkout()` — les templates ne sont jamais mutés.
+  - Écran admin : section « Remplacements de mouvements » dans Réglages → Programmes clients (choisir le client, voir les remplacements actifs, Retirer, + Ajouter).
+  - Garde-fou `dev/movement_swaps_checks.js` ajouté à la checklist de release.
+- Import JSON depuis l'écran d'accueil des profils : restaurer un export sur un appareil vierge (après purge Safari) sans créer de profil temporaire.
+- Le bouton Sauvegarde de la vue Résultats horodate maintenant `lastExportAt` (rappel d'export cohérent).
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.10 — Vue séance : toggle mute des signaux sonores du timer
 - Bouton 🔊/🔇 dans la carte timer de la vue séance (coin gauche, en absolu — le badge EMOM garde le coin droit ; aucun contrôle existant déplacé ni rétréci). État persisté dans le state du profil actif (`state.guidedSoundMuted`) : il survit au rechargement et reste isolé par profil.
 - Muet = aucun nœud Web Audio créé (les helpers audio ne sont pas appelés), et aucun AudioContext créé ni repris. L'AudioContext n'est créé/repris que sur geste utilisateur (tap ▶ du timer, ouverture de séance ou réactivation du son) — contrainte Safari iOS.

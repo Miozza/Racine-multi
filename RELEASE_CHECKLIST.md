@@ -23,6 +23,7 @@ node dev/season_checks.js
 node dev/program_calibration_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
+node dev/movement_swaps_checks.js
 ```
 
 Contrôles manuels minimum :

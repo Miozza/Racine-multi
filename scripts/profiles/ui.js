@@ -221,6 +221,11 @@
         rows+
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
         (list.length ? '<button class="btn-ghost" id="racineExportAllBtn" style="width:100%;margin-top:8px">Exporter tous les profils (JSON)</button>' : '')+
+        // Import disponible dès l'écran d'accueil : indispensable pour restaurer
+        // un export sur un appareil vierge (après purge Safari), sans devoir
+        // créer un profil temporaire pour atteindre les Réglages.
+        '<label class="btn-ghost file-label" style="width:100%;margin-top:8px;display:block;text-align:center">Importer un profil (JSON)<input id="racinePickerImportFile" type="file" accept="application/json"/></label>'+
+        '<p id="racinePickerStatus" class="status-msg"></p>'+
 
         '<button class="btn-ghost" id="racineCloseGateBtn" style="width:100%;margin-top:8px">Fermer</button>'+
         '<div style="text-align:center;margin-top:20px"><button type="button" id="racineAdminPinBtn" style="background:none;border:none;cursor:pointer;opacity:.15;color:var(--text2);font-size:11px;padding:4px 8px">▪</button></div>'+
@@ -237,6 +242,29 @@
     };
     var exportAllBtn = card.querySelector("#racineExportAllBtn");
     if(exportAllBtn) exportAllBtn.onclick = function(){ exportAllProfiles(); };
+    var pickerImport = card.querySelector("#racinePickerImportFile");
+    if(pickerImport) pickerImport.onchange = function(e){
+      var file = e.target.files[0]; if(!file) return;
+      var r = new FileReader();
+      r.onload = function(ev){
+        var s = card.querySelector("#racinePickerStatus");
+        try{
+          var payload = JSON.parse(ev.target.result);
+          var result = importExportPayload(payload);
+          if(!result.ok){
+            if(s){ s.textContent = result.error || "Fichier de profil invalide."; s.className = "status-msg err"; }
+            return;
+          }
+          // Import multi sans bascule de profil : le gate est encore ouvert,
+          // on re-rend le sélecteur pour montrer les profils ajoutés.
+          if(document.getElementById("racineGate")) render();
+        }catch(err){
+          if(s){ s.textContent = "Fichier de profil invalide."; s.className = "status-msg err"; }
+        }
+      };
+      r.readAsText(file);
+      e.target.value = "";
+    };
 
     var pinBtn = card.querySelector("#racineAdminPinBtn");
     if(pinBtn) pinBtn.onclick = function(){
