@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.11
+# ETAT ACTUEL — V4.5.12
 
-Version actuelle : V4.5.11
+Version actuelle : V4.5.12
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version livre les remplacements de mouvements par client (`scripts/profiles/swaps.js` : le coach pose « Bench Press → DB Bench Press » sur un profil sans toucher le template ni les autres clients, écran admin dans Programmes clients, garde-fou `dev/movement_swaps_checks.js`), l'import JSON depuis l'écran d'accueil des profils (restauration sur appareil vierge) et l'horodatage `lastExportAt` sur l'export Sauvegarde de la vue Résultats. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version livre la prescription coach → client par lien (`scripts/profiles/prescription.js`) : le coach compose programme + remplacements dans Réglages → Programmes clients, partage un lien `#rx=` par texto (aucun serveur, le fragment ne quitte pas le navigateur), et le client accepte ou refuse sur son propre téléphone — plus besoin du PIN admin chez lui. Secours : coller le lien dans Réglages → Profil. Garde-fou `dev/prescription_checks.js`. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 
