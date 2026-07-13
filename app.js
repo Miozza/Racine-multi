@@ -1,5 +1,5 @@
-// Racine V4.5.14 — Correctif : catalogue de programmes reconstruit au boot (permissions du profil actif)
-var APP_VERSION = "V4.5.14";
+// Racine V4.5.15 — Programme Stéphanie enregistré au runtime : il tourne dans le WOD
+var APP_VERSION = "V4.5.15";
 
 // Architecture stable
 // programs/*.js = plan prévu

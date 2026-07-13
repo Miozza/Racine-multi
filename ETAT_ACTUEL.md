@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.14
+# ETAT ACTUEL — V4.5.15
 
-Version actuelle : V4.5.14
+Version actuelle : V4.5.15
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version corrige le faux « programme absent » sur les programmes privés : le catalogue filtré par permissions (`focusConfigs`) est maintenant reconstruit à chaque boot avec le profil réellement actif (prescription acceptée, activation admin ou bascule de profil ne déclenchent plus le fallback), et un cycle forcé par un ancien fallback est restauré automatiquement quand son programme redevient disponible. S'appuie sur les remplacements de mouvements par sélecteur avec recherche et la prescription coach → client par lien `#rx=`. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version rend le programme privé « Hypertrophie Fessiers — Stéphanie » réellement exécutable : sa bibliothèque de 10 séances est maintenant enregistrée au runtime (`COACH_BERTIN_PROGRAMS` + `getBlocks`) en plan 4 jours/semaine avec rotation hebdomadaire des séances — l'activer affiche bien la séance dans le WOD. Complète le correctif du catalogue reconstruit au boot avec les permissions du profil actif (plus de faux « programme absent », auto-restauration du cycle tracé par un ancien fallback). Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 
