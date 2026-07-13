@@ -484,6 +484,10 @@ function downloadProfileBackup(){
   a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
   a.download=name;
   document.body.appendChild(a);a.click();a.remove();
+  // Cet export compte comme sauvegarde : horodater pour le rappel d'export.
+  if(CoachProfiles.markExported)CoachProfiles.markExported(id);
+  var reminder=document.getElementById("exportReminderBanner");
+  if(reminder)reminder.remove();
 }
 
 function showSessionSummaryModal(summary){
