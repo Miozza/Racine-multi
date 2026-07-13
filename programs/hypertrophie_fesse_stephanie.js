@@ -253,4 +253,58 @@
     Object.keys(details).forEach(function(key){ session[key] = details[key]; });
   });
 
+  // ── Enregistrement runtime standard ────────────────────────────────────────
+  // Ce programme est déclaré dans programs/index.js : il doit donc exister dans
+  // COACH_BERTIN_PROGRAMS avec un getBlocks(day, week), sinon le moteur de
+  // séances ne peut pas le faire tourner (le boot le déclarait « absent » et
+  // retombait sur le premier programme public). La bibliothèque de séances
+  // devient un plan 4 jours/semaine : les 10 séances tournent de semaine en
+  // semaine dans l'ordre du tableau (lourdes en tête de semaine).
+  var STEPH_DAYS = ["lundi", "mardi", "jeudi", "vendredi"];
+
+  function stephSessionForDay(day, week){
+    var di = STEPH_DAYS.indexOf(day);
+    var sessions = program.sessions || [];
+    if(di < 0 || !sessions.length) return null;
+    var wk = Math.max(1, Number(week) || 1);
+    return sessions[((wk - 1) * STEPH_DAYS.length + di) % sessions.length];
+  }
+
+  function stephKindFor(block){
+    var t = String(block.title || "");
+    var txt = String(block.text || "");
+    if(/retour au calme|hip switch|mobilit/i.test(t)) return "mobility";
+    if(/warm-up|activation|cardio facile/i.test(t)) return "warmup";
+    if(/AMRAP|EMOM|for time/i.test(txt)) return "wod";
+    if(/core/i.test(t)) return "core";
+    if(block.exercises && block.exercises.length) return /^A\./.test(t) ? "main" : "accessory";
+    return "accessory";
+  }
+
+  window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
+  window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie = {
+    label: "Hypertrophie Fessiers — Stéphanie",
+    days: STEPH_DAYS,
+    getBlocks: function(day, week){
+      var s = stephSessionForDay(day, week);
+      if(!s) return [];
+      var blocks = [{
+        kind: "technique",
+        title: "Séance : " + s.title,
+        time: s.duration || "—",
+        text: (s.goal || "") + (s.caution ? " Prudence : " + s.caution : "")
+      }];
+      (s.blocks || []).forEach(function(b){
+        blocks.push({
+          kind: stephKindFor(b),
+          title: b.title,
+          time: b.time || "—",
+          text: b.text || "",
+          exercises: (b.exercises && b.exercises.length) ? b.exercises.slice() : undefined
+        });
+      });
+      return blocks;
+    }
+  };
+
 })();

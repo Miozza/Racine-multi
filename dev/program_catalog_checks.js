@@ -60,6 +60,27 @@ const catalogText = read('programs/racine_client_programs.js') + '\n' + read('pr
 assert(!/resultats\.json|athlete_state\.json|cycle_state\.json/.test(catalogText), 'Le catalogue ne référence pas de données durables historiques.');
 assert(!/Miozza|GitHub|github/i.test(catalogText), 'Le catalogue client ne dépend pas de GitHub.');
 
+// Programme privé Stéphanie : déclaré dans index.js, il doit être exécutable
+// (enregistré dans COACH_BERTIN_PROGRAMS avec getBlocks). Bug historique : la
+// bibliothèque de séances existait sans enregistrement runtime — l'activer
+// déclenchait « programme absent » et la vue WOD restait vide.
+vm.runInContext(read('programs/hypertrophie_fesse_stephanie.js'), context, {filename:'programs/hypertrophie_fesse_stephanie.js'});
+const steph = programs['hypertrophie_fesse_stephanie'];
+assert(!!steph, 'hypertrophie_fesse_stephanie est enregistré dans COACH_BERTIN_PROGRAMS.');
+assert(typeof steph.getBlocks === 'function', 'hypertrophie_fesse_stephanie fournit getBlocks().');
+assert(Array.isArray(steph.days) && steph.days.length >= 2, 'hypertrophie_fesse_stephanie déclare ses jours.');
+const stephEntry = index.find(x => x && x.id === 'hypertrophie_fesse_stephanie') || {};
+for(let wk = 1; wk <= (Number(stephEntry.durationWeeks) || 4); wk++){
+  steph.days.forEach(day => {
+    const blocks = steph.getBlocks(day, wk) || [];
+    assert(blocks.length >= 5, 'hypertrophie_fesse_stephanie / S' + wk + ' ' + day + ' retourne une séance complète.');
+    assert(blocks.every(b => b && b.title && b.kind), 'hypertrophie_fesse_stephanie / S' + wk + ' ' + day + ' : blocs avec titre et kind.');
+    blocks.forEach(b => {
+      if(Array.isArray(b.exercises)) assert(b.exercises.every(e => e && e.name), 'hypertrophie_fesse_stephanie / S' + wk + ' ' + day + ' : exercices nommés.');
+    });
+  });
+}
+
 // ─── V4.4 — Métadonnées de suggestion (La Saison) ───────────────────────────
 // Tout programme public doit porter les champs dont le moteur de suggestion
 // dépend : objective, frequency et le graphe suggestedNext.
