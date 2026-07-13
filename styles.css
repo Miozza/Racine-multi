@@ -2318,6 +2318,7 @@ label {
 .guided-wod-move.mv3 .guided-wod-reps { color: #3dd68c; }
 .guided-wod-move.mv4 .guided-wod-reps { color: #c77dff; }
 .guided-wod-timer {
+  position: relative; /* ancre le toggle 🔊/🔇 absolu, ne déplace rien */
   background: radial-gradient(circle at top, rgba(30,144,255,.16), rgba(8,13,26,.96));
   border: 1px solid var(--blue);
   border-radius: 12px;
@@ -2326,6 +2327,25 @@ label {
   text-align: center;
   box-shadow: 0 0 18px rgba(30,144,255,.18);
 }
+/* Toggle sons du timer (🔊/🔇) — vue séance. Positionné en absolu dans le
+   coin gauche de la carte timer (le badge EMOM occupe le coin droit) :
+   aucun contrôle existant n'est déplacé ni rétréci. */
+.guided-sound-toggle {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  min-width: 44px;
+  min-height: 38px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.30);
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1;
+}
+.guided-sound-toggle.muted { opacity: .55; }
+.guided-sound-toggle:active { background: var(--panel2); }
 .guided-timer-label {
   font-family: var(--font-hud);
   color: var(--orange);

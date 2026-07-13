@@ -1,3 +1,9 @@
+## V4.5.10 — Vue séance : toggle mute des signaux sonores du timer
+- Bouton 🔊/🔇 dans la carte timer de la vue séance (coin gauche, en absolu — le badge EMOM garde le coin droit ; aucun contrôle existant déplacé ni rétréci). État persisté dans le state du profil actif (`state.guidedSoundMuted`) : il survit au rechargement et reste isolé par profil.
+- Muet = aucun nœud Web Audio créé (les helpers audio ne sont pas appelés), et aucun AudioContext créé ni repris. L'AudioContext n'est créé/repris que sur geste utilisateur (tap ▶ du timer, ouverture de séance ou réactivation du son) — contrainte Safari iOS.
+- Constat d'audit : le Screen Wake Lock de la vue séance (acquisition à l'entrée, libération à la sortie, ré-acquisition sur visibilitychange, détection `'wakeLock' in navigator`) et les signaux sonores du timer (décompte 3-2-1 + bip de départ, bip EMOM chaque minute, bip de fin AMRAP/For Time, oscillateurs sans fichier audio) existaient déjà — inchangés.
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.9 — Fiabilité des exports (rappel, multi-profils, versionnage)
 - Rappel d'export : `lastExportAt` horodaté par profil dans le registre à chaque export réussi ; bannière discrète en haut de l'app (fermable pour la session, jamais bloquante) si le profil actif a de l'historique et n'a pas été exporté depuis plus de 7 jours (ou jamais).
 - Export « tous les profils » : un bouton (sélecteur de profils et panneau Profil des réglages) génère un seul fichier JSON contenant tous les profils du registre avec leurs données namespacées ; l'import détecte ce format et propose l'import de chaque profil un par un.

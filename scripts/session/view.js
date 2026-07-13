@@ -298,7 +298,9 @@ function openGuidedSessionFrom(source){
 }
 
 function openGuidedSession(){
-  resumeAudio();
+  // Ouverture = geste utilisateur : bon moment pour préparer l'AudioContext.
+  // En muet, on ne crée aucun contexte audio.
+  if(typeof guidedSoundMuted!=="function" || !guidedSoundMuted()) resumeAudio();
   // Démarrer une séance active automatiquement le maintien de l’écran.
   // Comme l’ouverture vient d’un clic utilisateur, iOS/PWA a les meilleures chances d’accepter le Wake Lock.
   guidedWakeLockAuto = !wakeLockWanted;
@@ -521,7 +523,11 @@ function renderGuidedSession(){
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
           "</div>";
     html+=renderGuidedWodMoves(st.moves);
+    var soundMuted=(typeof guidedSoundMuted==="function")&&guidedSoundMuted();
     html+="<div class='guided-wod-timer' data-duration='"+(cfg?cfg.seconds:0)+"' data-mode='"+(cfg?cfg.mode:"down")+"'>"+
+          // Toggle sons : absolu dans le coin gauche de la carte timer (le badge
+          // EMOM occupe le coin droit) — ne déplace aucun contrôle existant.
+          "<button type='button' class='guided-sound-toggle"+(soundMuted?" muted":"")+"' id='guidedSoundToggle' aria-label='"+(soundMuted?"Activer les sons du timer":"Couper les sons du timer")+"'>"+(soundMuted?"🔇":"🔊")+"</button>"+
           "<div class='guided-timer-label'>"+escHtml((cfg&&cfg.label)||"Timer")+(cfg&&cfg.isEmom?" · bip/min":"")+"</div>"+
           "<div class='guided-timer-display' id='guidedTimerDisplay'>"+formatGuidedTimerClock(cfg&&cfg.mode==="up"?0:(cfg?cfg.seconds:0))+"</div>"+
           "<div class='guided-timer-buttons'>"+
@@ -577,6 +583,15 @@ function renderGuidedSession(){
     if(start)start.onclick=startGuidedTimer;
     if(pause)pause.onclick=pauseGuidedTimer;
     if(reset)reset.onclick=function(){ resetGuidedTimerState(cfg); };
+    var soundBtn=$("guidedSoundToggle");
+    if(soundBtn)soundBtn.onclick=function(){
+      if(typeof setGuidedSoundMuted!=="function")return;
+      setGuidedSoundMuted(!guidedSoundMuted());
+      var m=guidedSoundMuted();
+      soundBtn.textContent=m?"🔇":"🔊";
+      soundBtn.classList.toggle("muted",m);
+      soundBtn.setAttribute("aria-label",m?"Activer les sons du timer":"Couper les sons du timer");
+    };
   }
 }
 
