@@ -1,5 +1,5 @@
-// Racine V4.5.13 — Remplacements : sélection des mouvements par liste avec recherche (nom exact)
-var APP_VERSION = "V4.5.13";
+// Racine V4.5.14 — Correctif : catalogue de programmes reconstruit au boot (permissions du profil actif)
+var APP_VERSION = "V4.5.14";
 
 // Architecture stable
 // programs/*.js = plan prévu

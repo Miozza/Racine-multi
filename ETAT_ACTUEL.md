@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.13
+# ETAT ACTUEL — V4.5.14
 
-Version actuelle : V4.5.13
+Version actuelle : V4.5.14
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version remplace les champs libres des remplacements de mouvements par des sélecteurs avec recherche (`RacineMovementSwaps.movementCatalog` : mouvements du programme actif du profil ciblé en premier, puis catalogue complet des fiches vidéo/tuto et mouvements de config) — le nom exact est exigé pour que le moteur de charges reconnaisse le mouvement. S'ajoute à la prescription coach → client par lien `#rx=` (sans serveur, Accepter/Refuser côté client). Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version corrige le faux « programme absent » sur les programmes privés : le catalogue filtré par permissions (`focusConfigs`) est maintenant reconstruit à chaque boot avec le profil réellement actif (prescription acceptée, activation admin ou bascule de profil ne déclenchent plus le fallback), et un cycle forcé par un ancien fallback est restauré automatiquement quand son programme redevient disponible. S'appuie sur les remplacements de mouvements par sélecteur avec recherche et la prescription coach → client par lien `#rx=`. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

@@ -1,3 +1,10 @@
+## V4.5.14 — Correctif : faux « programme absent » sur les programmes privés
+- Le catalogue de programmes filtré par permissions (`focusConfigs`) n'était construit qu'une fois, au chargement de la page : un programme privé accordé ensuite (prescription acceptée, activation via le panneau admin, bascule de profil sans rechargement) restait invisible et le boot affichait à tort « ⚠️ Programme absent détecté » en forçant le retour au premier programme disponible.
+- `coachFullBoot()` reconstruit maintenant le catalogue avec les permissions du profil réellement actif avant de vérifier le cycle.
+- Auto-guérison : la trace laissée par un ancien fallback (`state.missingCycle`, jamais nettoyée jusqu'ici) restaure le cycle dès que son programme redevient disponible — sauf si un autre programme a été activé entre-temps — puis s'efface.
+- Garde-fous statiques ajoutés à `dev/prescription_checks.js`.
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.13 — Remplacements : sélection des mouvements par liste avec recherche
 - Les champs « Mouvement d'origine » et « Remplaçant » du panneau admin deviennent des sélecteurs avec recherche : taper filtre la liste, taper une option la choisit. Le nom exact du catalogue est exigé (le moteur de charges reconnaît un mouvement par sa syntaxe) — un texte libre est refusé avec message.
 - La liste montre d'abord « Programme actuel de <client> » (mouvements réellement présents dans son cycle, toutes les semaines balayées — la rotation hebdo est couverte), puis « Tous les mouvements » (fiches vidéo, fiches tuto, mouvements de config), dédupliqué et trié.
