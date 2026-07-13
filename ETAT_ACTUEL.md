@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.13
+# ETAT ACTUEL — V4.5.15
 
-Version actuelle : V4.5.13
+Version actuelle : V4.5.15
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version remplace les champs libres des remplacements de mouvements par des sélecteurs avec recherche (`RacineMovementSwaps.movementCatalog` : mouvements du programme actif du profil ciblé en premier, puis catalogue complet des fiches vidéo/tuto et mouvements de config) — le nom exact est exigé pour que le moteur de charges reconnaisse le mouvement. S'ajoute à la prescription coach → client par lien `#rx=` (sans serveur, Accepter/Refuser côté client). Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version rend le programme privé « Hypertrophie Fessiers — Stéphanie » réellement exécutable : sa bibliothèque de 10 séances est maintenant enregistrée au runtime (`COACH_BERTIN_PROGRAMS` + `getBlocks`) en plan 4 jours/semaine avec rotation hebdomadaire des séances — l'activer affiche bien la séance dans le WOD. Complète le correctif du catalogue reconstruit au boot avec les permissions du profil actif (plus de faux « programme absent », auto-restauration du cycle tracé par un ancien fallback). Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

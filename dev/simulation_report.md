@@ -1,6 +1,6 @@
 # Rapport simulation multi-utilisateurs — Racine V1.16-multi
 
-Généré: 2026-07-10T01:24:26.843Z
+Généré: 2026-07-13T15:05:01.346Z
 
 ## Verdict global
 
@@ -65,7 +65,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `steph_glutes`, niveau `intermediaire`, agressivité `0.9`
 - Programme: `hypertrophie_fesse_stephanie`
-- Programmes visibles: 33, blocs S1: 7
+- Programmes visibles: 33, blocs S1: 8
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 100 lb · front squat 115 lb · strict press 60 lb · row 95 lb · hinge 695 lb
 
