@@ -2158,8 +2158,24 @@ function applyAdminVisibility(){
 }
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
+  // Reconstruire le catalogue avec les permissions du profil actif MAINTENANT.
+  // focusConfigs était construit une seule fois au chargement de la page : un
+  // programme privé accordé ensuite (prescription acceptée, activation admin,
+  // bascule de profil) restait invisible et déclenchait à tort le fallback
+  // « programme absent ».
+  registerProgramsFromIndex();
   load();
   coachSanitizeImplausibleLoads();
+  // Auto-guérison : si le programme tracé par un ancien fallback est redevenu
+  // disponible (permission accordée, app mise à jour), restaurer le cycle —
+  // sauf si l'utilisateur a activé un autre programme entre-temps.
+  if(state.missingCycle && focusConfigs[state.missingCycle.id]){
+    if(!state.cycle.goal || state.cycle.goal === defaultProgramId() || !focusConfigs[state.cycle.goal]){
+      state.cycle.goal = state.missingCycle.id;
+    }
+    state.missingCycle = null;
+    save();
+  }
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   if(window.CoachSeason)CoachSeason.ensure(state);
