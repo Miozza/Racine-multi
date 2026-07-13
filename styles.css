@@ -6140,6 +6140,40 @@ body.is-client [data-ai-clear]{display:none!important}
 .admin-prog-btn{min-height:44px}
 .admin-prog-group-title{font-size:12px;text-transform:uppercase;opacity:.6;margin:14px 0 4px}
 
+/* Sélecteur de mouvements avec recherche (remplacements, panneau admin) */
+.admin-swap-list{
+  max-height:220px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin:-4px 0 10px;
+  background:var(--panel2);
+}
+.admin-swap-list.hidden{display:none;}
+.admin-swap-option{
+  display:block;
+  width:100%;
+  text-align:left;
+  min-height:44px;
+  padding:11px 12px;
+  background:none;
+  border:none;
+  border-top:1px solid var(--border);
+  color:var(--text);
+  font-size:14px;
+}
+.admin-swap-option:first-of-type{border-top:none;}
+.admin-swap-option:active{background:rgba(30,144,255,.15);color:var(--cyan);}
+.admin-swap-group{
+  padding:8px 12px 4px;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--muted);
+  font-family:var(--font-hud);
+}
+
 /* ═══ La Saison (V4.4) — bandeau fin de cycle, écran, frise ═══ */
 .season-banner {
   display: flex; align-items: center; gap: 12px;

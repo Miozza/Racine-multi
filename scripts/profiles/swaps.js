@@ -67,6 +67,70 @@
     return writeFor(profileId, list) ? { ok:true } : { ok:false, error:"Écriture impossible." };
   };
 
+  // ── Catalogue de noms de mouvements ────────────────────────────────────────
+  // La syntaxe exacte compte : le moteur de charges reconnaît un mouvement par
+  // son nom. L'UI admin doit donc proposer une liste, pas un champ libre.
+  // Sources réunies : mouvements du programme actif du profil ciblé (les
+  // candidats naturels au remplacement), fiches vidéo/tuto (noms canoniques)
+  // et mouvements principaux de config.
+  function profileStateFor(profileId){
+    var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
+    if(profileId === activeId && typeof state === "object" && state) return state;
+    try{
+      var keys = CoachProfiles.storageKeysFor(profileId);
+      return JSON.parse(localStorage.getItem(keys.state) || "{}") || {};
+    }catch(e){ return {}; }
+  }
+  function programMovementNames(profileId){
+    var names = [], seen = {};
+    try{
+      var st = profileStateFor(profileId);
+      var goal = st.cycle && st.cycle.goal;
+      var cfg = goal && window.focusConfigs && window.focusConfigs[goal];
+      if(!cfg || typeof cfg.getBlocks !== "function") return names;
+      var progs = window.COACH_BERTIN_PROGRAMS || {};
+      var days = (progs[goal] && progs[goal].days) ||
+                 ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+      var entry = (window.COACH_BERTIN_PROGRAM_INDEX || []).filter(function(p){ return p.id === goal; })[0];
+      // Rotation hebdomadaire des accessoires : balayer toutes les semaines du cycle.
+      var weeks = Math.min(Math.max(Number(entry && entry.durationWeeks) || 4, 1), 12);
+      for(var wk = 1; wk <= weeks; wk++){
+        days.forEach(function(day){
+          var blocks = [];
+          try{ blocks = cfg.getBlocks(day, wk) || []; }catch(e){}
+          blocks.forEach(function(b){
+            ((b && b.exercises) || []).forEach(function(e){
+              var n = e && e.name ? String(e.name).trim() : "";
+              if(n && !seen[norm(n)]){ seen[norm(n)] = true; names.push(n); }
+            });
+          });
+        });
+      }
+    }catch(e){}
+    return names;
+  }
+  // Retourne { program: [...], others: [...] }, chaque liste triée. `program`
+  // = mouvements réellement présents dans le programme actif du profil.
+  api.movementCatalog = function(profileId){
+    var program = programMovementNames(profileId);
+    var seen = {}, others = [];
+    program.forEach(function(n){ seen[norm(n)] = true; });
+    function push(n){
+      n = String(n||"").trim();
+      if(!n || seen[norm(n)]) return;
+      seen[norm(n)] = true;
+      others.push(n);
+    }
+    try{ Object.keys(window.COACH_BERTIN_MOVEMENT_VIDEOS || {}).forEach(push); }catch(e){}
+    try{ Object.keys(window.COACH_BERTIN_TUTORIALS || {}).forEach(push); }catch(e){}
+    try{
+      var mv = (typeof movements === "object" && movements) || {};
+      Object.keys(mv).forEach(function(k){ push(mv[k] && mv[k].name); });
+    }catch(e){}
+    function cmp(a,b){ return a.localeCompare(b, "fr"); }
+    return { program: program.slice().sort(cmp), others: others.sort(cmp) };
+  };
+
   // ── Application runtime (profil actif) ─────────────────────────────────────
   function escapeRegExp(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 

@@ -81,6 +81,26 @@ try{
   assert(!r.ok, 'Refus si champ manquant.');
   api.remove('p_client', 'back squat');
   assert(api.listFor('p_client').length === 0, 'Retrait insensible à la casse — retour au programme.');
+
+  // Catalogue de mouvements : programme du profil ciblé en premier, puis
+  // sources canoniques (vidéos/tutos/config), dédupliqué.
+  ctx.window.focusConfigs = {
+    prog_test: { getBlocks: function(day, week){
+      return day === 'lundi' ? [{exercises:[{name:'Bench Press'}, {name: week === 2 ? 'Pendlay Row' : 'Barbell Row'}]}] : [];
+    }}
+  };
+  ctx.window.COACH_BERTIN_PROGRAMS = { prog_test: { days:['lundi'] } };
+  ctx.window.COACH_BERTIN_PROGRAM_INDEX = [{ id:'prog_test', durationWeeks:2 }];
+  ctx.window.COACH_BERTIN_MOVEMENT_VIDEOS = { 'Front Squat':'x', 'Bench Press':'y' };
+  ctx.window.COACH_BERTIN_TUTORIALS = { 'Ring Row': {} };
+  store['racineState::p_client'] = JSON.stringify({ cycle:{ goal:'prog_test' } });
+  const cat = api.movementCatalog('p_client');
+  assert(cat.program.indexOf('Bench Press') !== -1 && cat.program.indexOf('Barbell Row') !== -1, 'Catalogue : mouvements du programme du profil présents.');
+  assert(cat.program.indexOf('Pendlay Row') !== -1, 'Catalogue : rotation hebdo couverte (toutes les semaines balayées).');
+  assert(cat.others.indexOf('Front Squat') !== -1 && cat.others.indexOf('Ring Row') !== -1, 'Catalogue : sources vidéos/tutos incluses.');
+  assert(cat.others.indexOf('Bench Press') === -1, 'Catalogue : pas de doublon programme/catalogue.');
+  assert(read('scripts/profiles/admin_programs.js').indexOf('movementCatalog') !== -1, 'UI admin : sélection par liste branchée sur le catalogue.');
+  assert(read('scripts/profiles/admin_programs.js').indexOf('canonicalMovement') !== -1, 'UI admin : nom exact exigé avant ajout.');
 }catch(e){
   errors.push('Simulation remplacements impossible : ' + (e && e.stack ? e.stack : e));
 }

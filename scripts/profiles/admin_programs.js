@@ -91,9 +91,16 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       '<div class="admin-prog-group"><div class="admin-prog-group-title">Remplacements de mouvements</div>'+
       '<p class="muted" style="margin:4px 0 8px">Propre à ce profil : partout où sa séance affiche le mouvement d\'origine, l\'app montre le remplaçant (le moteur de charges suit le nouveau nom). Retirer la ligne = retour au programme original.</p>'+
       (swaps.length ? swaps.map(swapRow).join("") : '<p class="muted">Aucun remplacement actif.</p>')+
-      '<input id="adminSwapFrom" class="input-field" type="text" placeholder="Mouvement d\'origine (ex. Bench Press)"/>'+
-      '<input id="adminSwapTo" class="input-field" type="text" placeholder="Remplaçant (ex. DB Bench Press)"/>'+
-      '<input id="adminSwapNote" class="input-field" type="text" placeholder="Note pour le client (optionnel)"/>'+
+      // Sélection par liste avec recherche : la syntaxe exacte du nom est
+      // requise pour que le moteur de charges reconnaisse le mouvement.
+      '<label style="margin-top:6px">Mouvement d\'origine</label>'+
+      '<input id="adminSwapFrom" class="input-field" type="text" placeholder="Rechercher un mouvement…" autocomplete="off"/>'+
+      '<div id="adminSwapFromList" class="admin-swap-list hidden"></div>'+
+      '<label>Remplaçant</label>'+
+      '<input id="adminSwapTo" class="input-field" type="text" placeholder="Rechercher un mouvement…" autocomplete="off"/>'+
+      '<div id="adminSwapToList" class="admin-swap-list hidden"></div>'+
+      '<label>Note pour le client (optionnel)</label>'+
+      '<input id="adminSwapNote" class="input-field" type="text" placeholder="ex. épaule sensible — 4 semaines"/>'+
       '<button type="button" class="btn-accent admin-prog-btn" id="adminSwapAdd">+ Ajouter le remplacement</button>'+
       (window.RacinePrescription && swaps.length ? '<button type="button" class="btn-ghost admin-prog-btn" id="adminSwapsShare" style="margin-top:8px">Partager les remplacements (lien)</button>' : '')+
       '</div>';
@@ -150,12 +157,56 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     });
     var swapsShare = document.getElementById("adminSwapsShare");
     if(swapsShare) swapsShare.onclick = function(){ sharePrescription(null); };
+    // Sélecteurs de mouvements avec recherche. Le groupe « Programme actuel »
+    // liste les mouvements réellement présents dans le cycle du profil ciblé
+    // (les candidats naturels), puis le catalogue complet.
+    var moveCat = (window.RacineMovementSwaps && RacineMovementSwaps.movementCatalog)
+      ? RacineMovementSwaps.movementCatalog(target.id) : { program:[], others:[] };
+    function canonicalMovement(v){
+      var n = String(v||"").trim().toLowerCase();
+      if(!n) return null;
+      var pool = moveCat.program.concat(moveCat.others);
+      for(var i=0;i<pool.length;i++) if(pool[i].toLowerCase() === n) return pool[i];
+      return null;
+    }
+    function bindMovementPicker(inputId, listId){
+      var inp = document.getElementById(inputId), listEl = document.getElementById(listId);
+      if(!inp || !listEl) return;
+      function optBtn(n){ return '<button type="button" class="admin-swap-option" data-pick="'+esc(n)+'">'+esc(n)+'</button>'; }
+      function openList(){
+        var q = String(inp.value||"").trim().toLowerCase();
+        function match(n){ return !q || n.toLowerCase().indexOf(q) !== -1; }
+        var prog = moveCat.program.filter(match);
+        var rest = moveCat.others.filter(match);
+        var html = "";
+        if(prog.length) html += '<div class="admin-swap-group">Programme actuel de '+esc(target.name)+'</div>'+prog.slice(0,30).map(optBtn).join("");
+        if(rest.length) html += '<div class="admin-swap-group">Tous les mouvements</div>'+rest.slice(0,30).map(optBtn).join("");
+        listEl.innerHTML = html || '<div class="admin-swap-group">Aucun mouvement trouvé</div>';
+        listEl.classList.remove("hidden");
+        Array.prototype.forEach.call(listEl.querySelectorAll("[data-pick]"), function(b){
+          b.onclick = function(){
+            inp.value = b.getAttribute("data-pick");
+            listEl.classList.add("hidden");
+          };
+        });
+      }
+      inp.oninput = openList;
+      inp.onfocus = openList;
+    }
+    bindMovementPicker("adminSwapFrom", "adminSwapFromList");
+    bindMovementPicker("adminSwapTo", "adminSwapToList");
     var swapAdd = document.getElementById("adminSwapAdd");
     if(swapAdd) swapAdd.onclick = function(){
       if(!(window.RacineMovementSwaps && RacineMovementSwaps.add)) return;
-      var res = RacineMovementSwaps.add(target.id,
-        (document.getElementById("adminSwapFrom")||{}).value,
-        (document.getElementById("adminSwapTo")||{}).value,
+      // Syntaxe exacte obligatoire : on ne pose que des noms du catalogue,
+      // sinon le moteur de charges ne reconnaîtrait pas le mouvement.
+      var fromC = canonicalMovement((document.getElementById("adminSwapFrom")||{}).value);
+      var toC = canonicalMovement((document.getElementById("adminSwapTo")||{}).value);
+      if(!fromC || !toC){
+        status("Choisis les deux mouvements dans la liste (le moteur de charges exige le nom exact).", false);
+        return;
+      }
+      var res = RacineMovementSwaps.add(target.id, fromC, toC,
         (document.getElementById("adminSwapNote")||{}).value);
       if(res.ok){ api.render(); status("✅ Remplacement ajouté pour "+target.name+".", true); }
       else{ status(res.error || "Ajout impossible.", false); }
