@@ -75,6 +75,25 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       '</div>';
     }
 
+    // Remplacements de mouvements du profil ciblé (scripts/profiles/swaps.js).
+    var swaps = (window.RacineMovementSwaps && RacineMovementSwaps.listFor) ? RacineMovementSwaps.listFor(target.id) : [];
+    function swapRow(s){
+      return '<div class="admin-prog-card">'+
+        '<div class="admin-prog-head"><strong>'+esc(s.from)+'</strong> → <strong>'+esc(s.to)+'</strong>'+
+        (s.note?' <span class="muted">('+esc(s.note)+')</span>':'')+'</div>'+
+        '<div class="admin-prog-actions"><button type="button" class="btn-ghost admin-prog-btn" data-swap-remove="'+esc(s.from)+'">Retirer</button></div>'+
+      '</div>';
+    }
+    var swapsHtml =
+      '<div class="admin-prog-group"><div class="admin-prog-group-title">Remplacements de mouvements</div>'+
+      '<p class="muted" style="margin:4px 0 8px">Propre à ce profil : partout où sa séance affiche le mouvement d\'origine, l\'app montre le remplaçant (le moteur de charges suit le nouveau nom). Retirer la ligne = retour au programme original.</p>'+
+      (swaps.length ? swaps.map(swapRow).join("") : '<p class="muted">Aucun remplacement actif.</p>')+
+      '<input id="adminSwapFrom" class="input-field" type="text" placeholder="Mouvement d\'origine (ex. Bench Press)"/>'+
+      '<input id="adminSwapTo" class="input-field" type="text" placeholder="Remplaçant (ex. DB Bench Press)"/>'+
+      '<input id="adminSwapNote" class="input-field" type="text" placeholder="Note pour le client (optionnel)"/>'+
+      '<button type="button" class="btn-accent admin-prog-btn" id="adminSwapAdd">+ Ajouter le remplacement</button>'+
+      '</div>';
+
     var html =
       '<label for="adminProgSelectProfile">Profil</label>'+
       '<select id="adminProgSelectProfile" class="input-field">'+
@@ -86,6 +105,7 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       '<input id="adminProgFilter" class="input-field" type="text" placeholder="Filtrer par nom…" value="'+esc(filterText)+'"/>'+
       '<div class="admin-prog-group"><div class="admin-prog-group-title">Publics</div>'+ (publics.length?publics.map(card).join(""):'<p class="muted">—</p>') +'</div>'+
       '<div class="admin-prog-group"><div class="admin-prog-group-title">Privés</div>'+ (privates.length?privates.map(card).join(""):'<p class="muted">—</p>') +'</div>'+
+      swapsHtml+
       '<p id="adminProgStatus" class="status-msg"></p>';
     h.innerHTML = html;
 
@@ -99,6 +119,24 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     });
     Array.prototype.forEach.call(h.querySelectorAll("[data-revoke]"), function(b){
       b.onclick = function(){ CoachProfiles.revokeProgramPermission(target.id, b.getAttribute("data-revoke")); status("Permission retirée.", true); api.render(); };
+    });
+    var swapAdd = document.getElementById("adminSwapAdd");
+    if(swapAdd) swapAdd.onclick = function(){
+      if(!(window.RacineMovementSwaps && RacineMovementSwaps.add)) return;
+      var res = RacineMovementSwaps.add(target.id,
+        (document.getElementById("adminSwapFrom")||{}).value,
+        (document.getElementById("adminSwapTo")||{}).value,
+        (document.getElementById("adminSwapNote")||{}).value);
+      if(res.ok){ api.render(); status("✅ Remplacement ajouté pour "+target.name+".", true); }
+      else{ status(res.error || "Ajout impossible.", false); }
+    };
+    Array.prototype.forEach.call(h.querySelectorAll("[data-swap-remove]"), function(b){
+      b.onclick = function(){
+        if(!(window.RacineMovementSwaps && RacineMovementSwaps.remove)) return;
+        RacineMovementSwaps.remove(target.id, b.getAttribute("data-swap-remove"));
+        api.render();
+        status("Remplacement retiré — retour au programme original.", true);
+      };
     });
     Array.prototype.forEach.call(h.querySelectorAll("[data-activate]"), function(b){
       b.onclick = function(){

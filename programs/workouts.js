@@ -29,7 +29,12 @@ function buildWorkout(day,week){
     if(!blocks.length){
       blocks = [{time:"—",title:"Programme vide",tag:"Erreur",kind:"error",text:"Aucun bloc retourné par le programme actif."}];
     }
-    return {day:d, blocks:blocks, progress:[]};
+    var w = {day:d, blocks:blocks, progress:[]};
+    // Remplacements de mouvements du profil actif (scripts/profiles/swaps.js),
+    // appliqués ici — l'entonnoir unique de toutes les vues. La logique vit
+    // dans le domaine profils, pas dans programs/.
+    if(window.RacineMovementSwaps && RacineMovementSwaps.applyToWorkout) w = RacineMovementSwaps.applyToWorkout(w);
+    return w;
   }
 
   return {

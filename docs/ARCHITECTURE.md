@@ -138,6 +138,7 @@ node dev/season_checks.js
 node dev/program_calibration_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
+node dev/movement_swaps_checks.js
 ```
 
 
@@ -158,6 +159,7 @@ node dev/strict_muscle_up_checks.js
 - `scripts/profiles/onboarding.js` porte l'évaluation initiale en 5 mouvements qui calibre `profile.scaleRatios` (ratios de charge par famille de mouvement) et `profile.aggressiveness` (facteur de progression, borné 0.4–1.8).
 - `scripts/profiles/ui.js` rend la sélection/gestion de profil ; il ne possède aucune logique de charge.
 - Le profil actif (`state.profile`) est lu par `scripts/charge/scaling.js` (`coachUserLoadRatio`, `coachApplyUserLoadScale`, `coachAggressivenessFactor`), branché dans `scripts/charge/suggestion.js` et `scripts/charge/historique.js` — jamais dans `app.js` ni dans `programs/`.
+- `scripts/profiles/swaps.js` (`window.RacineMovementSwaps`) porte les remplacements de mouvements par profil (coach → client) : stockés dans le state du profil (`movementSwaps`), appliqués par `buildWorkout()` via un hook de délégation unique — les templates de `programs/` ne sont jamais mutés. Écran admin dans le panneau « Programmes clients ». Garde-fou : `dev/movement_swaps_checks.js`.
 - La synchronisation distante (GitHub) a été retirée : Racine fonctionne en local uniquement, un profil ne voyage pas (encore) entre appareils.
 
 

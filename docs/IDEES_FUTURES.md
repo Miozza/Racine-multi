@@ -3,7 +3,12 @@
 Idées discutées mais volontairement pas encore construites. À relire avant
 d'entamer un nouveau chantier. Aucune n'est un engagement.
 
-## 1. Remplacements de mouvements par client (priorité naturelle)
+## 1. Remplacements de mouvements par client — LIVRÉ (V4.5.11)
+
+**Statut : construit.** `scripts/profiles/swaps.js` (`window.RacineMovementSwaps`),
+hook de délégation dans `buildWorkout()`, écran admin dans le panneau
+« Programmes clients », garde-fou `dev/movement_swaps_checks.js`. Le design
+ci-dessous reste la référence de ce qui a été retenu et pourquoi.
 
 **Besoin d'origine** : un client dit « mon Bench Press va mal, je veux le faire
 aux haltères ». Le coach doit pouvoir ajuster SON app sans toucher le programme
