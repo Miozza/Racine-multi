@@ -69,6 +69,9 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
           : '<button type="button" class="btn-ghost admin-prog-btn" data-grant="'+esc(p.id)+'">Accorder</button>';
       }
       if(!isActive) actions += '<button type="button" class="btn-accent admin-prog-btn" data-activate="'+esc(p.id)+'">Activer comme cycle</button>';
+      // Prescription par lien : à envoyer au client (texto/WhatsApp) pour
+      // appliquer sur SON appareil, sans PIN admin chez lui.
+      if(window.RacinePrescription) actions += '<button type="button" class="btn-ghost admin-prog-btn" data-share="'+esc(p.id)+'">Partager le lien</button>';
       return '<div class="admin-prog-card'+(isActive?' is-active':'')+'">'+
         '<div class="admin-prog-head"><strong>'+esc(p.name)+'</strong> '+badge+' '+stat+'</div>'+
         '<div class="admin-prog-actions">'+actions+'</div>'+
@@ -92,6 +95,7 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       '<input id="adminSwapTo" class="input-field" type="text" placeholder="Remplaçant (ex. DB Bench Press)"/>'+
       '<input id="adminSwapNote" class="input-field" type="text" placeholder="Note pour le client (optionnel)"/>'+
       '<button type="button" class="btn-accent admin-prog-btn" id="adminSwapAdd">+ Ajouter le remplacement</button>'+
+      (window.RacinePrescription && swaps.length ? '<button type="button" class="btn-ghost admin-prog-btn" id="adminSwapsShare" style="margin-top:8px">Partager les remplacements (lien)</button>' : '')+
       '</div>';
 
     var html =
@@ -120,6 +124,32 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     Array.prototype.forEach.call(h.querySelectorAll("[data-revoke]"), function(b){
       b.onclick = function(){ CoachProfiles.revokeProgramPermission(target.id, b.getAttribute("data-revoke")); status("Permission retirée.", true); api.render(); };
     });
+    // Génère et copie le lien de prescription (programme optionnel + les
+    // remplacements actifs du profil ciblé). Fallback : prompt avec le lien
+    // si le presse-papier est refusé.
+    function sharePrescription(programId){
+      if(!window.RacinePrescription) return;
+      var me = (window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive()) || {};
+      var patch = RacinePrescription.buildPatch({
+        coach: me.name || null,
+        clientName: target.name,
+        programId: programId || null,
+        swaps: (window.RacineMovementSwaps && RacineMovementSwaps.listFor) ? RacineMovementSwaps.listFor(target.id) : []
+      });
+      var link = patch && RacinePrescription.buildLink(patch);
+      if(!link){ status("Rien à partager (aucun programme ni remplacement).", false); return; }
+      function fallback(){ try{ prompt("Copie ce lien et envoie-le à "+target.name+" :", link); }catch(e){} }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(link).then(function(){
+          status("✅ Lien copié — envoie-le à "+target.name+" (texto/WhatsApp). Il proposera Accepter/Refuser sur son téléphone.", true);
+        }, fallback);
+      } else { fallback(); }
+    }
+    Array.prototype.forEach.call(h.querySelectorAll("[data-share]"), function(b){
+      b.onclick = function(){ sharePrescription(b.getAttribute("data-share")); };
+    });
+    var swapsShare = document.getElementById("adminSwapsShare");
+    if(swapsShare) swapsShare.onclick = function(){ sharePrescription(null); };
     var swapAdd = document.getElementById("adminSwapAdd");
     if(swapAdd) swapAdd.onclick = function(){
       if(!(window.RacineMovementSwaps && RacineMovementSwaps.add)) return;

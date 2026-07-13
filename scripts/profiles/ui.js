@@ -709,6 +709,9 @@
         '<button id="exportAllProfilesBtn" class="btn-ghost">Exporter tous les profils (JSON)</button>'+
       '</div>'+
       '<div class="btn-row">'+
+        '<button id="coachRxBtn" class="btn-ghost">J\'ai reçu un lien du coach</button>'+
+      '</div>'+
+      '<div class="btn-row">'+
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
 
@@ -758,6 +761,18 @@
       if(exportActiveProfile()){
         var s=document.getElementById("profileSettingsStatus");
         if(s){s.textContent="✅ Profil exporté.";s.className="status-msg ok";}
+      }
+    };
+    // Prescription du coach reçue par texto : coller le lien (ou le code)
+    // ici si le lien s'est ouvert dans Safari au lieu de l'app installée.
+    var rxBtn = document.getElementById("coachRxBtn");
+    if(rxBtn) rxBtn.onclick = function(){
+      if(!(window.RacinePrescription && RacinePrescription.propose)) return;
+      var text = prompt("Colle ici le lien (ou le code) reçu de ton coach :");
+      if(!text) return;
+      if(!RacinePrescription.propose(text)){
+        var s = document.getElementById("profileSettingsStatus");
+        if(s){ s.textContent = "Lien non reconnu. Recopie le lien complet du message."; s.className = "status-msg err"; }
       }
     };
     var exportAllBtn = document.getElementById("exportAllProfilesBtn");
