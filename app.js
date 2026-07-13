@@ -1,5 +1,5 @@
-// Racine V4.5.11 — Remplacements de mouvements par client + import depuis l'accueil des profils
-var APP_VERSION = "V4.5.11";
+// Racine V4.5.13 — Remplacements : sélection des mouvements par liste avec recherche (nom exact)
+var APP_VERSION = "V4.5.13";
 
 // Architecture stable
 // programs/*.js = plan prévu

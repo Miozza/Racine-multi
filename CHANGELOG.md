@@ -1,3 +1,17 @@
+## V4.5.13 — Remplacements : sélection des mouvements par liste avec recherche
+- Les champs « Mouvement d'origine » et « Remplaçant » du panneau admin deviennent des sélecteurs avec recherche : taper filtre la liste, taper une option la choisit. Le nom exact du catalogue est exigé (le moteur de charges reconnaît un mouvement par sa syntaxe) — un texte libre est refusé avec message.
+- La liste montre d'abord « Programme actuel de <client> » (mouvements réellement présents dans son cycle, toutes les semaines balayées — la rotation hebdo est couverte), puis « Tous les mouvements » (fiches vidéo, fiches tuto, mouvements de config), dédupliqué et trié.
+- `dev/movement_swaps_checks.js` étendu (catalogue, rotation hebdo, nom exact exigé côté UI).
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
+## V4.5.12 — Prescription coach → client par lien (sans serveur)
+- **Fini le geste « prendre le cell du client + PIN admin »** : dans Réglages → Programmes clients, chaque programme a un bouton « Partager le lien » (et « Partager les remplacements (lien) » sous la section remplacements). Le lien copié s'envoie par texto/WhatsApp.
+- Le client tape sur le lien : son app affiche « Ton coach te propose : … » avec **Accepter / Refuser**. Rien ne s'applique sans son accord ; son historique et ses résultats sont toujours conservés. Avertissement si la prescription vise un autre prénom que le profil actif.
+- La prescription (programme + remplacements de mouvements) voyage dans le fragment `#rx=` de l'URL, encodée en base64url — aucun serveur, aucune donnée envoyée. Expiration 30 jours, format versionné (v1) avec refus clair des versions futures et des programmes inconnus (app pas à jour).
+- Secours iPhone : si le lien s'ouvre dans Safari alors que l'app installée a son propre stockage, bouton « J'ai reçu un lien du coach » dans Réglages → Profil pour coller le lien ou le code.
+- Indépendant d'Avis IA : rien à réactiver côté client. Nouveau module `scripts/profiles/prescription.js`, garde-fou `dev/prescription_checks.js` ajouté à la checklist.
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.11 — Remplacements de mouvements par client + restauration facilitée
 - **Remplacements de mouvements par client** (idée 1 de `docs/IDEES_FUTURES.md`) : le coach pose « Bench Press → DB Bench Press » (+ note optionnelle) sur UN profil, sans toucher le programme template ni les autres clients. Partout où la séance affiche le mouvement d'origine, l'app montre le remplaçant, et le moteur de charges suit le nouveau nom. Retirer la ligne = retour au programme original.
   - Nouveau module `scripts/profiles/swaps.js` (`window.RacineMovementSwaps`), stockage dans le state du profil (isolation par construction), application par un hook unique dans `buildWorkout()` — les templates ne sont jamais mutés.

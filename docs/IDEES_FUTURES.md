@@ -41,7 +41,16 @@ ajustement verbal à ses clients. En attendant, solution à zéro code : le dire
 en personne, le client loggue le mouvement de remplacement et le moteur suggère
 une charge via les seeds.
 
-## 2. Communication coach → client complète (plus tard, seulement si besoin)
+## 2. Communication coach → client complète — V1 LIVRÉE (V4.5.12)
+
+**Statut : v1 minimale construite** — prescription par lien
+(`scripts/profiles/prescription.js`) : programme + remplacements encodés dans
+le fragment `#rx=` de l'URL, bouton « Partager le lien » dans le panneau admin
+Programmes clients, carte Accepter/Refuser côté client, secours « coller le
+lien » dans Réglages → Profil (l'app installée iOS a un stockage séparé de
+Safari). Garde-fou `dev/prescription_checks.js`. Le reste du brainstorm
+ci-dessous (adjust_entry, remove_entry, portées, historique des modifications)
+reste à construire seulement si besoin.
 
 Le brainstorm complet existe dans l'historique de session (2026-07-10) :
 patchs déclaratifs (`replace_movement`, `adjust_entry`, `remove_entry`,

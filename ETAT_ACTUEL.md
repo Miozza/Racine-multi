@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.11
+# ETAT ACTUEL — V4.5.13
 
-Version actuelle : V4.5.11
+Version actuelle : V4.5.13
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version livre les remplacements de mouvements par client (`scripts/profiles/swaps.js` : le coach pose « Bench Press → DB Bench Press » sur un profil sans toucher le template ni les autres clients, écran admin dans Programmes clients, garde-fou `dev/movement_swaps_checks.js`), l'import JSON depuis l'écran d'accueil des profils (restauration sur appareil vierge) et l'horodatage `lastExportAt` sur l'export Sauvegarde de la vue Résultats. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version remplace les champs libres des remplacements de mouvements par des sélecteurs avec recherche (`RacineMovementSwaps.movementCatalog` : mouvements du programme actif du profil ciblé en premier, puis catalogue complet des fiches vidéo/tuto et mouvements de config) — le nom exact est exigé pour que le moteur de charges reconnaisse le mouvement. S'ajoute à la prescription coach → client par lien `#rx=` (sans serveur, Accepter/Refuser côté client). Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 
