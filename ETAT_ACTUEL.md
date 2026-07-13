@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.12
+# ETAT ACTUEL — V4.5.13
 
-Version actuelle : V4.5.12
+Version actuelle : V4.5.13
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version livre la prescription coach → client par lien (`scripts/profiles/prescription.js`) : le coach compose programme + remplacements dans Réglages → Programmes clients, partage un lien `#rx=` par texto (aucun serveur, le fragment ne quitte pas le navigateur), et le client accepte ou refuse sur son propre téléphone — plus besoin du PIN admin chez lui. Secours : coller le lien dans Réglages → Profil. Garde-fou `dev/prescription_checks.js`. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version remplace les champs libres des remplacements de mouvements par des sélecteurs avec recherche (`RacineMovementSwaps.movementCatalog` : mouvements du programme actif du profil ciblé en premier, puis catalogue complet des fiches vidéo/tuto et mouvements de config) — le nom exact est exigé pour que le moteur de charges reconnaisse le mouvement. S'ajoute à la prescription coach → client par lien `#rx=` (sans serveur, Accepter/Refuser côté client). Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

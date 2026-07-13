@@ -1,5 +1,5 @@
-// Racine V4.5.12 — Prescription coach → client par lien (programme + remplacements, sans serveur)
-var APP_VERSION = "V4.5.12";
+// Racine V4.5.13 — Remplacements : sélection des mouvements par liste avec recherche (nom exact)
+var APP_VERSION = "V4.5.13";
 
 // Architecture stable
 // programs/*.js = plan prévu

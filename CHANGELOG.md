@@ -1,3 +1,9 @@
+## V4.5.13 — Remplacements : sélection des mouvements par liste avec recherche
+- Les champs « Mouvement d'origine » et « Remplaçant » du panneau admin deviennent des sélecteurs avec recherche : taper filtre la liste, taper une option la choisit. Le nom exact du catalogue est exigé (le moteur de charges reconnaît un mouvement par sa syntaxe) — un texte libre est refusé avec message.
+- La liste montre d'abord « Programme actuel de <client> » (mouvements réellement présents dans son cycle, toutes les semaines balayées — la rotation hebdo est couverte), puis « Tous les mouvements » (fiches vidéo, fiches tuto, mouvements de config), dédupliqué et trié.
+- `dev/movement_swaps_checks.js` étendu (catalogue, rotation hebdo, nom exact exigé côté UI).
+- Aucune donnée durable modifiée, moteur de charges intouché.
+
 ## V4.5.12 — Prescription coach → client par lien (sans serveur)
 - **Fini le geste « prendre le cell du client + PIN admin »** : dans Réglages → Programmes clients, chaque programme a un bouton « Partager le lien » (et « Partager les remplacements (lien) » sous la section remplacements). Le lien copié s'envoie par texto/WhatsApp.
 - Le client tape sur le lien : son app affiche « Ton coach te propose : … » avec **Accepter / Refuser**. Rien ne s'applique sans son accord ; son historique et ses résultats sont toujours conservés. Avertissement si la prescription vise un autre prénom que le profil actif.
