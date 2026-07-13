@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.10
+# ETAT ACTUEL — V4.5.11
 
-Version actuelle : V4.5.10
+Version actuelle : V4.5.11
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version ajoute le toggle mute 🔊/🔇 des signaux sonores du timer en vue séance, persisté dans le state du profil actif (muet = aucun nœud Web Audio créé). Le Wake Lock de la vue séance et les bips du timer (décompte, EMOM, fin) existaient déjà et sont inchangés. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version livre les remplacements de mouvements par client (`scripts/profiles/swaps.js` : le coach pose « Bench Press → DB Bench Press » sur un profil sans toucher le template ni les autres clients, écran admin dans Programmes clients, garde-fou `dev/movement_swaps_checks.js`), l'import JSON depuis l'écran d'accueil des profils (restauration sur appareil vierge) et l'horodatage `lastExportAt` sur l'export Sauvegarde de la vue Résultats. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 
