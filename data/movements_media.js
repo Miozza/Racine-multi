@@ -174,6 +174,17 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   // ── Fessiers femme (hypertrophie_fesse_stephanie) ────────────────────────
   // null = pas encore trouvé dans les sources curées ; ID à ajouter après revue.
   "Cable Kickback": null,
-  "DB Reverse Lunge": null,
-  "Slider Curl": null
+  "Reverse Lunge": null,
+  "Slider Curl": null,
+  "Hip Abduction": null,
+  "Hip CARs": null,
+  "Frog Pump": null,
+  "Clamshell": null,
+  "Bird Dog": null,
+  "Band Pull-Apart": null,
+  "Wall Sit": null,
+  "Couch Stretch": null,
+  "Figure-4 Stretch": null,
+  "Supine Hamstring Stretch": null,
+  "Box Breathing": null
 };
