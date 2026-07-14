@@ -1,5 +1,5 @@
-// Racine V4.5.15 — Programme Stéphanie enregistré au runtime : il tourne dans le WOD
-var APP_VERSION = "V4.5.15";
+// Racine V4.5.16 — Hypertrophie Fessier Femme : reconstruction sur le patron Arnold, public, charges/cycle/tutos corrigés
+var APP_VERSION = "V4.5.16";
 
 // Architecture stable
 // programs/*.js = plan prévu
