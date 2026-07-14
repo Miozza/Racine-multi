@@ -172,19 +172,20 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Slow Negative Muscle-Up": "Mx31PedEpTg",   // Functional Bodybuilding (Ring Muscle Up Negative)
 
   // ── Fessiers femme (hypertrophie_fesse_stephanie) ────────────────────────
-  // null = pas encore trouvé dans les sources curées ; ID à ajouter après revue.
-  "Cable Kickback": null,
-  "Reverse Lunge": null,
-  "Slider Curl": null,
-  "Hip Abduction": null,
-  "Hip CARs": null,
-  "Frog Pump": null,
-  "Clamshell": null,
-  "Bird Dog": null,
-  "Band Pull-Apart": null,
-  "Wall Sit": null,
-  "Couch Stretch": null,
-  "Figure-4 Stretch": null,
-  "Supine Hamstring Stretch": null,
-  "Box Breathing": null
+  // IDs trouvés automatiquement (recherche web) — à revoir/remplacer si une
+  // source colle mieux à la ligne éditoriale.
+  "Cable Kickback": "5jJNfIlKTmg",            // Coach Lauren (Cable Glute Kickback)
+  "Reverse Lunge": "mHkPgReOqUM",             // Reverse Lunges with Dumbbells — Proper Form
+  "Slider Curl": "AlTI3igOaLw",               // Exercise Tutorial: Hamstring Curl With Slider
+  "Hip Abduction": "HePuOF1v9-0",             // Exercise Tutorial: Side Lying Hip Abduction
+  "Hip CARs": "zbH4XmSREoc",                  // Hip CARS Movement Breakdown
+  "Frog Pump": "L0nEfiTMTBI",                 // Frog Pump Glute Bridge — Demonstration
+  "Clamshell": "aQVApsdOLSI",                 // Clamshell Exercise — Strengthen Gluteus Medius
+  "Bird Dog": "ZdAHe9_HeEw",                  // NASM — Bird Dog Proper Form
+  "Band Pull-Apart": "20rhTxoJVuw",           // Exercise Library — How To: Band Pull Aparts
+  "Wall Sit": "JaZNYM3zAP0",                  // Well+Good — How To Do a Wall Sit
+  "Couch Stretch": "nTJaGnjUkTY",             // A-Team Fitness — Couch Stretch
+  "Figure-4 Stretch": "eGqbnFII3J8",          // Supine Figure 4 Stretch
+  "Supine Hamstring Stretch": "Il1L75v6gq0",  // Ask Doctor Jo — Hamstring Stretch with Strap, Supine
+  "Box Breathing": "ruElUiVoQPQ"              // Box Breathing Technique
 };
