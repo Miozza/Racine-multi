@@ -170,4 +170,10 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Transition Drill": "Pe_4RCi-PuQ",          // CrossFit officiel (Low-Ring Muscle-Up Tips)
   "Low Ring Transition Pause": "rpEhhvq8S8k", // Jenny LaBaw (fallback)
   "Slow Negative Muscle-Up": "Mx31PedEpTg",   // Functional Bodybuilding (Ring Muscle Up Negative)
+
+  // ── Fessiers femme (hypertrophie_fesse_stephanie) ────────────────────────
+  // null = pas encore trouvé dans les sources curées ; ID à ajouter après revue.
+  "Cable Kickback": null,
+  "DB Reverse Lunge": null,
+  "Slider Curl": null
 };
