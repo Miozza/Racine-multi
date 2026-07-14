@@ -9,10 +9,14 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
   var api = window.RacineAdminPrograms;
   var selectedId = null;   // profil ciblé (persiste entre rendus)
   var filterText = "";
+  var moveCatCache = null; // { profileId, programGoal, cat } — évite de rebalayer tout le cycle à chaque frappe du filtre
 
+  // Délègue au helper global (scripts/ui_modals.js) — même convention que
+  // scripts/view_pc.js:pcEsc — pour ne pas faire diverger l'échappement HTML.
   function esc(s){
+    if(typeof escapeHtml === "function") return escapeHtml(s);
     return String(s==null?"":s).replace(/[&<>"']/g,function(c){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c];
     });
   }
   function host(){ return document.getElementById("adminProgramsBody"); }
@@ -35,6 +39,20 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
   function status(msg, ok){
     var s = document.getElementById("adminProgStatus");
     if(s){ s.textContent = msg || ""; s.className = "status-msg" + (ok ? " ok" : (msg ? " err" : "")); }
+  }
+  // movementCatalog() balaie tout le cycle actif du profil ciblé (semaines ×
+  // jours) : coûteux à refaire à chaque frappe dans le filtre de programmes,
+  // qui n'a pourtant aucun rapport avec ce catalogue. Mis en cache par
+  // (profil, programme actif) et invalidé seulement quand l'un des deux change.
+  function getMovementCatalog(target, st){
+    var goal = st.cycle && st.cycle.goal;
+    if(moveCatCache && moveCatCache.profileId === target.id && moveCatCache.programGoal === goal){
+      return moveCatCache.cat;
+    }
+    var cat = (window.RacineMovementSwaps && RacineMovementSwaps.movementCatalog)
+      ? RacineMovementSwaps.movementCatalog(target.id) : { program:[], others:[] };
+    moveCatCache = { profileId: target.id, programGoal: goal, cat: cat };
+    return cat;
   }
 
   api.render = function(){
@@ -160,8 +178,7 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     // Sélecteurs de mouvements avec recherche. Le groupe « Programme actuel »
     // liste les mouvements réellement présents dans le cycle du profil ciblé
     // (les candidats naturels), puis le catalogue complet.
-    var moveCat = (window.RacineMovementSwaps && RacineMovementSwaps.movementCatalog)
-      ? RacineMovementSwaps.movementCatalog(target.id) : { program:[], others:[] };
+    var moveCat = getMovementCatalog(target, st);
     function canonicalMovement(v){
       var n = String(v||"").trim().toLowerCase();
       if(!n) return null;
@@ -208,7 +225,14 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       }
       var res = RacineMovementSwaps.add(target.id, fromC, toC,
         (document.getElementById("adminSwapNote")||{}).value);
-      if(res.ok){ api.render(); status("✅ Remplacement ajouté pour "+target.name+".", true); }
+      // "fromC" hors du groupe "Programme actuel" n'est pas le nom exact d'un
+      // exercice structuré de ce cycle : le remplacement ne touchera que les
+      // mentions en texte libre (warm-up, circuits), pas la séance chargée.
+      var fromInProgram = moveCat.program.some(function(n){ return n.toLowerCase() === fromC.toLowerCase(); });
+      var warn = (res.ok && !fromInProgram)
+        ? " ⚠️ « "+fromC+" » n'est pas un exercice structuré du programme actuel de "+target.name+" : le remplacement ne s'appliquera qu'aux mentions en texte libre, pas à une séance chargée avec ce nom."
+        : "";
+      if(res.ok){ api.render(); status("✅ Remplacement ajouté pour "+target.name+"."+warn, true); }
       else{ status(res.error || "Ajout impossible.", false); }
     };
     Array.prototype.forEach.call(h.querySelectorAll("[data-swap-remove]"), function(b){

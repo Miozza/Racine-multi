@@ -98,7 +98,6 @@ function loadBrowserSandbox() {
 const sandbox = loadBrowserSandbox();
 const programIndex = Array.isArray(sandbox.COACH_BERTIN_PROGRAM_INDEX) ? sandbox.COACH_BERTIN_PROGRAM_INDEX : [];
 const programObjects = sandbox.COACH_BERTIN_PROGRAMS || {};
-const stephaniePrograms = sandbox.COACH_STEPHANIE_PROGRAMS || {};
 const privateIds = new Set((sandbox.BERTIN_PRIVATE_PROGRAM_IDS || []).slice());
 const onboarding = sandbox.CoachOnboarding;
 
@@ -390,7 +389,7 @@ function validateProgram(profile, persona) {
   const visibleIds = new Set(visible.map(p => p.id));
   const selectedVisible = visibleIds.has(persona.programId);
   const leakedPrivate = visible.filter(p => p.visibility === 'private' && !(profile.programPermissions || []).includes(p.id)).map(p => p.id);
-  const obj = programObjects[persona.programId] || stephaniePrograms[persona.programId];
+  const obj = programObjects[persona.programId];
   let blocksOk = false;
   let blockCount = 0;
   let blockError = null;

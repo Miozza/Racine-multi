@@ -7,16 +7,26 @@
 function ex(name,format,load,rest,note){return{name:name,format:format,load:charge(name,load||"—"),rest:rest||"—",note:note||""};}
 function exFixed(name,format,load,rest,note){return{name:name,format:format,load:load||"—",rest:rest||"—",note:note||""};}
 
+// Libellé de jour variable par semaine (cycles où un même jour porte une
+// séance différente selon la semaine) : le programme peut fournir
+// getDayLabel(day, week). Point d'accès unique — app.js (currentDayMeta,
+// previewDayMeta, programDetailsHtml) et buildWorkout() partagent cette
+// résolution pour ne pas diverger sur ce qu'affiche chaque vue.
+function resolveDayLabel(cfg, day, week, fallbackLabel){
+  if(cfg && typeof cfg.getDayLabel === "function"){
+    var wl = cfg.getDayLabel(day, Number(week) || 1);
+    if(wl) return wl;
+  }
+  return fallbackLabel;
+}
+
 // ─── Construction WOD ────────────────────────────────────────────────────────
 
 function buildWorkout(day,week){
   var cfg=focus();
   var d=baseDays[day] || {label:day,base:"",focus:""};
   if(cfg && cfg.dayMeta && cfg.dayMeta[day]) d = Object.assign({}, d, cfg.dayMeta[day]);
-  if(cfg && typeof cfg.getDayLabel === "function"){
-    var wl = cfg.getDayLabel(day, week);
-    if(wl){ d = Object.assign({}, d, {label:wl}); }
-  }
+  d = Object.assign({}, d, {label: resolveDayLabel(cfg, day, week, d.label)});
 
   // aucun fallback PPL silencieux.
   // Si un programme actif ne fournit pas getBlocks(), on affiche une erreur claire

@@ -196,6 +196,7 @@
     try{ st = JSON.parse(localStorage.getItem(keys.state) || "{}") || {}; }catch(e){ st = {}; }
     st.cycle = st.cycle || {};
     st.cycle.goal = programId;
+    st.missingCycle = null;
     st.week = 1;
     st.day = (window.COACH_BERTIN_PROGRAMS && COACH_BERTIN_PROGRAMS[programId] && COACH_BERTIN_PROGRAMS[programId].days && COACH_BERTIN_PROGRAMS[programId].days[0]) || "lundi";
     st.activeCycleStartDate = new Date().toISOString();
