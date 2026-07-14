@@ -13,6 +13,10 @@ function buildWorkout(day,week){
   var cfg=focus();
   var d=baseDays[day] || {label:day,base:"",focus:""};
   if(cfg && cfg.dayMeta && cfg.dayMeta[day]) d = Object.assign({}, d, cfg.dayMeta[day]);
+  if(cfg && typeof cfg.getDayLabel === "function"){
+    var wl = cfg.getDayLabel(day, week);
+    if(wl){ d = Object.assign({}, d, {label:wl}); }
+  }
 
   // aucun fallback PPL silencieux.
   // Si un programme actif ne fournit pas getBlocks(), on affiche une erreur claire

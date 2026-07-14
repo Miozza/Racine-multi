@@ -187,5 +187,5 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Couch Stretch": "nTJaGnjUkTY",             // A-Team Fitness — Couch Stretch
   "Figure-4 Stretch": "eGqbnFII3J8",          // Supine Figure 4 Stretch
   "Supine Hamstring Stretch": "Il1L75v6gq0",  // Ask Doctor Jo — Hamstring Stretch with Strap, Supine
-  "Box Breathing": "ruElUiVoQPQ"              // Box Breathing Technique
+  "Box Breathing": "E9Pz3vpzp6c"              // Box Breathing (choix Bertin)
 };

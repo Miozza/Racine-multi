@@ -183,9 +183,31 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       lundi:    {label:"Fessiers — Extension de hanche", base:"Hip thrust / isolation câble", focus:"Hip thrust lourd et abduction (S1) ; cable kickback et abduction (S2)."},
       mardi:    {label:"Fessiers — Unilatéral",         base:"Step-up, lunge, séance courte", focus:"Step-up, reverse lunge, hip thrust (S1) ; séance complète courte (S2)."},
       mercredi: {label:"Fessiers — Volume & pump",      base:"Volume hypertrophie / circuits", focus:"Hip thrust volume, goblet, slider curl (S1) ; circuits pump long (S2)."},
-      jeudi:    {label:"Chaîne postérieure & récup",    base:"RDL / mobilité",              focus:"RDL, glute bridge, slider curl (S1) ; récupération active mobilité (S2)."},
+      jeudi:    {label:"Chaîne postérieure — RDL",       base:"RDL / mobilité",              focus:"RDL, glute bridge, slider curl (S1) ; récupération active mobilité (S2)."},
       vendredi: {label:"Fessiers + jambes",             base:"Squat pattern / moteur doux", focus:"Goblet squat, hip thrust, walking lunge (S1) ; fessiers + cardio doux (S2)."}
     }
+  };
+
+  // Libellé de jour variable par semaine : un même jour porte une séance
+  // différente en S1 et S2, donc le nom affiché change pour ne pas donner
+  // l'impression de deux semaines identiques.
+  var dayLabelsS1 = {
+    lundi:"Fessiers — Extension de hanche",
+    mardi:"Fessiers — Unilatéral",
+    mercredi:"Fessiers — Volume & pump",
+    jeudi:"Chaîne postérieure — RDL",
+    vendredi:"Fessiers + jambes"
+  };
+  var dayLabelsS2 = {
+    lundi:"Fessiers — Isolation câble",
+    mardi:"Fessiers — Séance express",
+    mercredi:"Fessiers — Pump long",
+    jeudi:"Récupération active",
+    vendredi:"Fessiers + cardio doux"
+  };
+  window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getDayLabel = function(day, week){
+    var even = (Number(week) || 1) % 2 === 0;
+    return (even ? dayLabelsS2 : dayLabelsS1)[day] || null;
   };
 
   window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getBlocks = function(day, week){ return stephBlocks(day, week); };
