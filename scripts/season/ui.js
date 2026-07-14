@@ -152,6 +152,7 @@
       {archivedAt: nowIso(), status: "archived"}
     ));
     state.cycle.goal = id;
+    state.missingCycle = null;
     if(typeof previewCycleGoal !== "undefined") previewCycleGoal = id;
     state.week = 1;
     state.day = (focusConfigs[id].days || DEFAULT_PROGRAM_DAYS)[0] || "lundi";

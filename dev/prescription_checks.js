@@ -80,9 +80,17 @@ try{
     getActive: function(){ return { id:'p1', name:'Stéphanie', onboarded:true }; },
     setProfileActiveProgram: function(id, pid){ activated = { id:id, pid:pid }; return { ok:true }; }
   };
+  const knownMovements = ['Bench Press', 'DB Bench Press'];
   ctx.window.RacineMovementSwaps = ctx.RacineMovementSwaps = {
     add: function(id, from, to, note){ swapsAdded.push({id:id, from:from, to:to, note:note}); return { ok:true }; },
-    listFor: function(){ return []; }
+    listFor: function(){ return []; },
+    // Même contrat que le vrai module (scripts/profiles/swaps.js) : un nom
+    // hors catalogue est rejeté plutôt que posé aveuglément.
+    canonicalMovement: function(id, name){
+      var n = String(name||'').trim().toLowerCase();
+      for(var i=0;i<knownMovements.length;i++) if(knownMovements[i].toLowerCase() === n) return knownMovements[i];
+      return null;
+    }
   };
   let r = api.applyToActiveProfile(parsed.patch);
   assert(r.ok, 'Application OK sur profil actif.');
@@ -91,6 +99,18 @@ try{
   const unknown = api.buildPatch({ programId:'programme_inexistant' });
   r = api.applyToActiveProfile(unknown);
   assert(!r.ok && r.error, 'Programme inconnu refusé (app pas à jour) au lieu d\'écrire un cycle cassé.');
+
+  // Remplacement dont le nom ne correspond plus au catalogue (programme mis à
+  // jour, mouvement renommé depuis que le lien a été créé) : ignoré plutôt
+  // que posé en silence avec un nom que le moteur de charges ne reconnaît pas.
+  swapsAdded.length = 0;
+  const staleSwapPatch = api.buildPatch({
+    programId: 'hypertrophie_fesse_stephanie',
+    swaps: [{from:'Mouvement Disparu', to:'Autre Mouvement Inconnu'}]
+  });
+  r = api.applyToActiveProfile(staleSwapPatch);
+  assert(r.ok && r.warning && swapsAdded.length === 0, 'Remplacement à nom obsolète ignoré, avertissement renvoyé au lieu d\'un ajout silencieux.');
+
   ctx.window.CoachProfiles.hasActiveOnboardedProfile = function(){ return false; };
   r = api.applyToActiveProfile(parsed.patch);
   assert(!r.ok, 'Refus sans profil actif onboardé.');

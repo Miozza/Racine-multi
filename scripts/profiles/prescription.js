@@ -13,11 +13,15 @@
   var api = window.RacinePrescription = window.RacinePrescription || {};
   var VERSION = 1;
   var MAX_AGE_DAYS = 30;
+  var CLOCK_SKEW_TOLERANCE_MS = 86400000; // 1 jour
 
   function norm(s){ return String(s||"").trim().toLowerCase(); }
+  // Délègue au helper global (scripts/ui_modals.js) — même convention que
+  // scripts/view_pc.js:pcEsc — pour ne pas faire diverger l'échappement HTML.
   function esc(s){
+    if(typeof escapeHtml === "function") return escapeHtml(s);
     return String(s==null?"":s).replace(/[&<>"']/g, function(c){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c];
     });
   }
 
@@ -70,8 +74,12 @@
     if(Number(patch.v) > VERSION){
       return { error: "Cette prescription vient d'une version plus récente de Racine. Recharge l'app pour la mettre à jour, puis rouvre le lien." };
     }
+    // Un léger décalage d'horloge entre le téléphone du coach (qui a horodaté
+    // createdAt) et celui du client peut rendre createdAt "dans le futur" :
+    // on tolère jusqu'à CLOCK_SKEW_TOLERANCE_MS d'écart avant de conclure à
+    // une expiration, plutôt que de rejeter un lien tout juste créé.
     var age = Date.now() - Date.parse(patch.createdAt || "");
-    if(!isFinite(age) || age < 0 || age > MAX_AGE_DAYS * 86400000){
+    if(!isFinite(age) || age < -CLOCK_SKEW_TOLERANCE_MS || age > MAX_AGE_DAYS * 86400000){
       return { error: "Cette prescription a expiré. Demande un nouveau lien à ton coach." };
     }
     if(!patch.programId && !(Array.isArray(patch.swaps) && patch.swaps.length)){
@@ -107,9 +115,17 @@
       return { ok:false, error:"Programme inconnu dans cette version de l'app. Recharge la page (mise à jour), puis rouvre le lien." };
     }
     // Remplacements d'abord : l'activation du programme re-boote l'UI.
+    // Même exigence que l'admin (admin_programs.js canonicalMovement) : on ne
+    // pose que des noms exacts du catalogue, sinon le moteur de charges ne
+    // reconnaîtrait pas le mouvement et le remplacement échouerait en silence.
+    var skippedSwaps = [];
     if(window.RacineMovementSwaps && Array.isArray(patch.swaps)){
       patch.swaps.forEach(function(s){
-        if(s && s.from && s.to) RacineMovementSwaps.add(id, s.from, s.to, s.note || "");
+        if(!s || !s.from || !s.to) return;
+        var fromC = RacineMovementSwaps.canonicalMovement(id, s.from, patch.programId);
+        var toC = RacineMovementSwaps.canonicalMovement(id, s.to, patch.programId);
+        if(!fromC || !toC){ skippedSwaps.push(s.from); return; }
+        RacineMovementSwaps.add(id, fromC, toC, s.note || "");
       });
     }
     if(patch.programId){
@@ -120,7 +136,9 @@
     } else if(typeof window.coachFullBoot === "function"){
       window.coachFullBoot();
     }
-    return { ok:true };
+    return skippedSwaps.length
+      ? { ok:true, warning:"Appliqué, mais "+skippedSwaps.length+" remplacement(s) ignoré(s) car le nom ne correspond plus au catalogue actuel : "+skippedSwaps.join(", ")+". Redemande un lien à jour à ton coach." }
+      : { ok:true };
   };
 
   // ── Carte Accepter / Refuser ───────────────────────────────────────────────
@@ -186,7 +204,7 @@
     card.querySelector("#rxAcceptBtn").onclick = function(){
       var res = api.applyToActiveProfile(patch);
       stripHash();
-      if(res.ok) showInfoCard("✅ Appliqué. Ta séance est à jour dans l'onglet WOD.");
+      if(res.ok) showInfoCard(res.warning ? "✅ Appliqué. "+res.warning : "✅ Appliqué. Ta séance est à jour dans l'onglet WOD.");
       else showInfoCard(res.error || "Application impossible.");
     };
     card.querySelector("#rxRefuseBtn").onclick = function(){

@@ -22,34 +22,39 @@
   // Profil actif : on passe par le state en mémoire + save(), sinon la
   // prochaine sauvegarde écraserait l'écriture directe. Autre profil :
   // écriture directe dans sa clé localStorage (même approche que
-  // CoachProfiles.setProfileActiveProgram).
-  api.listFor = function(profileId){
+  // CoachProfiles.setProfileActiveProgram). Point d'accès unique pour éviter
+  // que ce branchement actif/autre-profil diverge entre lecteurs.
+  function profileStateFor(profileId){
     var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
-    if(profileId === activeId && typeof state === "object" && state){
-      return sanitize(state.movementSwaps);
-    }
+    if(profileId === activeId && typeof state === "object" && state) return state;
     try{
       var keys = CoachProfiles.storageKeysFor(profileId);
-      var st = JSON.parse(localStorage.getItem(keys.state) || "{}") || {};
-      return sanitize(st.movementSwaps);
-    }catch(e){ return []; }
-  };
-
-  function writeFor(profileId, list){
-    list = sanitize(list);
+      return JSON.parse(localStorage.getItem(keys.state) || "{}") || {};
+    }catch(e){ return {}; }
+  }
+  function writeProfileState(profileId, mutate){
     var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
     if(profileId === activeId && typeof state === "object" && state){
-      state.movementSwaps = list;
+      mutate(state);
       if(typeof save === "function") save();
       return true;
     }
     try{
       var keys = CoachProfiles.storageKeysFor(profileId);
       var st = JSON.parse(localStorage.getItem(keys.state) || "{}") || {};
-      st.movementSwaps = list;
+      mutate(st);
       localStorage.setItem(keys.state, JSON.stringify(st));
       return true;
     }catch(e){ return false; }
+  }
+
+  api.listFor = function(profileId){
+    return sanitize(profileStateFor(profileId).movementSwaps);
+  };
+
+  function writeFor(profileId, list){
+    list = sanitize(list);
+    return writeProfileState(profileId, function(st){ st.movementSwaps = list; });
   }
 
   // Un seul remplacement par mouvement d'origine : ajouter remplace la ligne.
@@ -73,19 +78,11 @@
   // Sources réunies : mouvements du programme actif du profil ciblé (les
   // candidats naturels au remplacement), fiches vidéo/tuto (noms canoniques)
   // et mouvements principaux de config.
-  function profileStateFor(profileId){
-    var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
-    if(profileId === activeId && typeof state === "object" && state) return state;
-    try{
-      var keys = CoachProfiles.storageKeysFor(profileId);
-      return JSON.parse(localStorage.getItem(keys.state) || "{}") || {};
-    }catch(e){ return {}; }
-  }
-  function programMovementNames(profileId){
+  function programMovementNames(profileId, programIdOverride){
     var names = [], seen = {};
     try{
       var st = profileStateFor(profileId);
-      var goal = st.cycle && st.cycle.goal;
+      var goal = programIdOverride || (st.cycle && st.cycle.goal);
       var cfg = goal && window.focusConfigs && window.focusConfigs[goal];
       if(!cfg || typeof cfg.getBlocks !== "function") return names;
       var progs = window.COACH_BERTIN_PROGRAMS || {};
@@ -110,9 +107,11 @@
     return names;
   }
   // Retourne { program: [...], others: [...] }, chaque liste triée. `program`
-  // = mouvements réellement présents dans le programme actif du profil.
-  api.movementCatalog = function(profileId){
-    var program = programMovementNames(profileId);
+  // = mouvements réellement présents dans le programme actif du profil (ou
+  // dans programIdOverride si fourni — utile pour valider un remplacement
+  // ciblant un programme pas encore activé, ex. une prescription en attente).
+  api.movementCatalog = function(profileId, programIdOverride){
+    var program = programMovementNames(profileId, programIdOverride);
     var seen = {}, others = [];
     program.forEach(function(n){ seen[norm(n)] = true; });
     function push(n){
@@ -129,6 +128,18 @@
     }catch(e){}
     function cmp(a,b){ return a.localeCompare(b, "fr"); }
     return { program: program.slice().sort(cmp), others: others.sort(cmp) };
+  };
+
+  // Nom exact du catalogue (insensible à la casse) ou null. Même exigence que
+  // l'admin (scripts/profiles/admin_programs.js canonicalMovement) : le moteur
+  // de charges ne reconnaît un mouvement que par son nom exact.
+  api.canonicalMovement = function(profileId, name, programIdOverride){
+    var n = String(name||"").trim().toLowerCase();
+    if(!n) return null;
+    var cat = api.movementCatalog(profileId, programIdOverride);
+    var pool = cat.program.concat(cat.others);
+    for(var i=0;i<pool.length;i++) if(pool[i].toLowerCase() === n) return pool[i];
+    return null;
   };
 
   // ── Application runtime (profil actif) ─────────────────────────────────────
@@ -156,9 +167,24 @@
         });
       }
       if(nb.text){
-        swaps.forEach(function(s){
-          nb.text = String(nb.text).replace(new RegExp(escapeRegExp(s.from), "gi"), s.to);
-        });
+        // Une seule passe sur le texte ORIGINAL : appliquer les remplacements
+        // séquentiellement sur nb.text muterait le résultat d'un remplacement
+        // sous les yeux du suivant (ex. Hip Thrust→Barbell Hip Thrust puis
+        // Barbell Hip Thrust→Smith Machine Hip Thrust re-matcherait la sortie
+        // du premier). Chaque occurrence du texte d'origine n'est réécrite
+        // qu'une fois, avec des frontières de mot pour ne pas capturer un nom
+        // de mouvement à l'intérieur d'un mot plus long.
+        var src = String(nb.text);
+        var out = "";
+        var re = new RegExp("\\b(" + swaps.map(function(s){ return escapeRegExp(s.from); }).join("|") + ")\\b", "gi");
+        var lastIndex = 0, m;
+        while((m = re.exec(src))){
+          var hit = byFrom[norm(m[0])];
+          out += src.slice(lastIndex, m.index) + (hit ? hit.to : m[0]);
+          lastIndex = re.lastIndex;
+        }
+        out += src.slice(lastIndex);
+        nb.text = out;
       }
       return nb;
     });
