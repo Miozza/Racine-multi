@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.15
+# ETAT ACTUEL — V4.5.16
 
-Version actuelle : V4.5.15
+Version actuelle : V4.5.16
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version rend le programme privé « Hypertrophie Fessiers — Stéphanie » réellement exécutable : sa bibliothèque de 10 séances est maintenant enregistrée au runtime (`COACH_BERTIN_PROGRAMS` + `getBlocks`) en plan 4 jours/semaine avec rotation hebdomadaire des séances — l'activer affiche bien la séance dans le WOD. Complète le correctif du catalogue reconstruit au boot avec les permissions du profil actif (plus de faux « programme absent », auto-restauration du cycle tracé par un ancien fallback). Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. Cette version reconstruit `programs/hypertrophie_fesse_stephanie.js` (« Hypertrophie Fessier Femme ») sur le patron `arnold_split_strict.js` : séquence fixe en cycle de 2 semaines (5 jours réels, S1 lourd/volume, S2 isolation/pump/récup) au lieu de l'ancienne bibliothèque de cartes à rotation calculée. Programme rendu public (`visibility: "public"`). Corrige au passage : charges qui retombaient à ~5 lb (le moteur lisait le chiffre d'un « RPE 7 » textuel comme une charge — remplacé par des qualificatifs d'équipement sans chiffre), un finisher du jour 1 sans exercice reconnu par le parseur WOD, les fiches techniques/vidéos manquantes pour une douzaine de mouvements accessoires et d'échauffement. Nouveau point d'extension opt-in `getDayLabel(day, week)` (honoré par `currentDayMeta`, `previewDayMeta`, `buildWorkout`) permettant à un programme de nommer différemment un même jour selon la semaine — utilisé ici pour que la semaine 2 ne semble pas être une répétition de la semaine 1. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 
