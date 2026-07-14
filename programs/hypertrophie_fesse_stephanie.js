@@ -1,4 +1,4 @@
-// Racine Programme autonome : Hypertrophie Fessiers — Stéphanie
+// Racine Programme autonome : Hypertrophie Fessier Femme
 // 10 séances fessiers nommées par objectif (jamais par jour de semaine),
 // enchaînées en séquence fixe sur un cycle de 2 semaines. Les clés
 // lundi→vendredi sont des identifiants internes moteur uniquement ;
@@ -6,8 +6,8 @@
 // le bloc de 5 séances : semaines impaires = séances lourdes/volume,
 // semaines paires = isolation, pump et récupération.
 //
-// Charges : Stéphanie n'a pas encore de tests chiffrés (data/athlete_state.json
-// vide, data/charges.js ne couvre que 3 mouvements). Aucune charge de BASE
+// Charges : ce programme n'a pas encore de tests chiffrés de référence
+// (data/charges.js ne couvre que 3 de ses mouvements). Aucune charge de BASE
 // numérique n'est donc inventée ici : les prescriptions restent en RPE
 // textuel, exactement comme les mouvements au poids du corps / bande d'Arnold.
 // Dès que ses vrais maxes/tests existeront, remplacer le RPE par une charge
@@ -73,7 +73,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         {time:"5 min",title:"Retour au calme",tag:"Mobilité",kind:"mobility",text:"Box Breathing + Hip Switch."}
       ];
       return [
-        intro("Garder le rythme, mais ne pas sacrifier la technique. Si elle a plus de temps et beaucoup d’énergie, préférer une séance plus complète."),
+        intro("Garder le rythme, mais ne pas sacrifier la technique. Si tu as plus de temps et beaucoup d’énergie, préférer une séance plus complète."),
         {time:"6 min",title:"Warm-up",tag:"Activation",kind:"warmup",text:"Bike 4 min + glute bridge + side-lying hip abduction."},
         {time:"14 min",title:"A. Mouvement principal",tag:"Principal",kind:"main",exercises:[ex("Hip Thrust","4×8","RPE 7","90 sec","Pause en haut, stable.")]},
         {time:"10 min",title:"B. Unilatéral",tag:"Unilatéral",kind:"accessory",exercises:[ex("DB Reverse Lunge","3×10/jambe","RPE 7","90 sec","Choisir l’option la plus confortable.")]},
@@ -123,7 +123,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         {time:"10 min",title:"Activation",tag:"Activation",kind:"warmup",text:"2 rondes : 15 glute bridge + 12 side-lying clamshell/côté + 12 bird dog/côté."},
         {time:"12 min",title:"Hip Switch + Hip CARs",tag:"Mobilité",kind:"mobility",text:"90/90 hanches + couch stretch + pigeon modifié + respiration lente."},
         {time:"8 min",title:"Core léger",tag:"Core",kind:"core",text:"2 rondes : 8 dead bug/côté + 20 sec side plank/côté + 8 pallof press/côté si câble disponible."},
-        {time:"5 min",title:"Option pump",tag:"Finisher",kind:"wod",text:"Banded seated hip abduction légère 2×20 si elle veut finir avec une activation."}
+        {time:"5 min",title:"Option pump",tag:"Finisher",kind:"wod",text:"Banded seated hip abduction légère 2×20 si tu veux finir avec une activation."}
       ];
     }
 
@@ -150,7 +150,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
 
   window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie = {
     id: "hypertrophie_fesse_stephanie",
-    label: "Hypertrophie Fessiers — Stéphanie",
+    label: "Hypertrophie Fessier Femme",
     phase: 0,
     phaseName: "Hypertrophie fessiers",
     impact: "10 séances fessiers nommées par objectif, enchaînées en cycle de 2 semaines à fréquence réelle libre. Semaines impaires lourdes/volume, semaines paires isolation/pump/récupération. RPE contrôlé, aucun échec, épaule ménagée.",
