@@ -127,6 +127,12 @@ function currentDayMeta(day){
   var cfg = focus ? focus() : {};
   var d = Object.assign({}, baseDays[day] || {label:day, base:"", focus:""});
   if(cfg && cfg.dayMeta && cfg.dayMeta[day]) d = Object.assign(d, cfg.dayMeta[day]);
+  // Libellé variable par semaine (cycles où un même jour porte une séance
+  // différente selon la semaine) : le programme peut fournir getDayLabel.
+  if(cfg && typeof cfg.getDayLabel === 'function'){
+    var wl = cfg.getDayLabel(day, Number(state && state.week) || 1);
+    if(wl) d.label = wl;
+  }
   return d;
 }
 function ensureCurrentDay(){
@@ -1283,6 +1289,10 @@ function previewDayMeta(day){
   var cfg=previewCfg()||{};
   var d=Object.assign({}, baseDays[day] || {label:day,base:"",focus:""});
   if(cfg.dayMeta&&cfg.dayMeta[day])d=Object.assign(d,cfg.dayMeta[day]);
+  if(cfg && typeof cfg.getDayLabel === 'function'){
+    var wl=cfg.getDayLabel(day, Number(previewCycleWeek) || 1);
+    if(wl) d.label=wl;
+  }
   return d;
 }
 function previewDayLabel(day){var m=previewDayMeta(day);return (m&&m.label)||day;}
