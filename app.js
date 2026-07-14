@@ -1368,7 +1368,12 @@ function programDetailsHtml(cfg){
     '<span style="color:var(--muted)">'+target.note+'</span></div>';}
   var days=(cfg.days||DEFAULT_PROGRAM_DAYS).map(function(d){
     var m=(cfg.dayMeta&&cfg.dayMeta[d])||baseDays[d]||{label:d};
-    return m.label||d;
+    var label=m.label||d;
+    if(typeof cfg.getDayLabel === 'function'){
+      var wl=cfg.getDayLabel(d, Number(previewCycleWeek) || 1);
+      if(wl) label=wl;
+    }
+    return label;
   }).join(' · ');
   var draftHtml = cfg.draft ? '<div class="draft-cycle-warning">⚠️ Brouillon futur — À retravailler lorsque le projet sera activé.</div>' : '';
   return '<strong>'+CoachUI.escapeHtml(cfg.label)+'</strong>'+(cfg.status?' <span class="draft-pill">'+CoachUI.escapeHtml(cfg.status)+'</span>':'')+'<br>'+CoachUI.escapeHtml(cfg.impact||'')+draftHtml+

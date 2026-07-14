@@ -98,8 +98,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       return [
         intro("Séance longue et légère orientée congestion. La brûlure musculaire est correcte ; la douleur articulaire ne l’est pas."),
         {time:"6 min",title:"Warm-up",tag:"Activation",kind:"warmup",text:"Bike + Hip Switch + Hip CARs."},
-        {time:"14 min",title:"A. Circuit 1",tag:"Finisher",kind:"wod",text:"3 rondes : 15 glute bridge + 12 step-up + 20 side-lying hip abduction."},
-        {time:"14 min",title:"B. Circuit 2",tag:"Finisher",kind:"wod",text:"3 rondes : 15 frog pump + 15 side-lying hip abduction + 12 reverse lunge."},
+        {time:"14 min",title:"A. Circuit 1",tag:"Circuit",kind:"accessory",text:"3 rondes : 15 glute bridge + 12 step-up + 20 side-lying hip abduction."},
+        {time:"14 min",title:"B. Circuit 2",tag:"Circuit",kind:"accessory",text:"3 rondes : 15 frog pump + 15 side-lying hip abduction + 12 reverse lunge."},
         {time:"8 min",title:"C. Finisher",tag:"Finisher",kind:"wod",text:"EMOM 8 : min 1 = 20 wall sit hold ; min 2 = 20 banded hip abduction."},
         {time:"6 min",title:"Core",tag:"Core",kind:"core",text:"2 rondes : 8 dead bug/côté + 20 sec side plank/côté."},
         {time:"5 min",title:"Retour au calme",tag:"Mobilité",kind:"mobility",text:"Hip Switch + Couch Stretch + Box Breathing."}
@@ -190,14 +190,9 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
 
   // Libellé de jour variable par semaine : un même jour porte une séance
   // différente en S1 et S2, donc le nom affiché change pour ne pas donner
-  // l'impression de deux semaines identiques.
-  var dayLabelsS1 = {
-    lundi:"Fessiers — Extension de hanche",
-    mardi:"Fessiers — Unilatéral",
-    mercredi:"Fessiers — Volume & pump",
-    jeudi:"Chaîne postérieure — RDL",
-    vendredi:"Fessiers + jambes"
-  };
+  // l'impression de deux semaines identiques. S1 utilise déjà dayMeta[day].label
+  // comme seule source ; seul le remplacement S2 est déclaré ici pour éviter
+  // de dupliquer les libellés S1 dans une deuxième table qui pourrait diverger.
   var dayLabelsS2 = {
     lundi:"Fessiers — Isolation câble",
     mardi:"Fessiers — Séance express",
@@ -207,7 +202,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
   };
   window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getDayLabel = function(day, week){
     var even = (Number(week) || 1) % 2 === 0;
-    return (even ? dayLabelsS2 : dayLabelsS1)[day] || null;
+    return even ? (dayLabelsS2[day] || null) : null;
   };
 
   window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getBlocks = function(day, week){ return stephBlocks(day, week); };
