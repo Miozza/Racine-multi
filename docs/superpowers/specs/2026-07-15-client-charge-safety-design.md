@@ -20,6 +20,12 @@ Empêcher qu'un profil client non calibré, une donnée invraisemblable ou un r�
 - Le chemin legacy `b.progress` est seulement recherché et documenté s'il n'alimente pas les programmes client. Une refonte n'est autorisée que s'il est effectivement utilisé et ne respecte pas les gardes de CoachCharge.
 - Les vues PC, WOD+, diagnostic, export et saisie réutilisent déjà `CoachCharge.suggestLoad`; la garde centrale évite des correctifs d'affichage dispersés. Les chemins legacy éventuels restent explicitement signalés par le test.
 
+## Ajustement approuvé du programme Arnold Split Strict
+
+- Dans `programs/arnold_split_strict.js`, le lundi `A. Pecs + Dos A` conserve le `Pull-Up` au poids du corps.
+- Son deuxième tirage vertical, `Weighted Pull-up`, est remplacé par `Lat Pulldown` avec l'instruction explicite `prise large`.
+- Ajouter ou ajuster un test de programme pour garantir que ce jour contient exactement un Pull-Up et un Lat Pulldown prise large, sans Weighted Pull-up.
+
 ## Vérification
 
 - Nouveau `node dev/client_charge_safety_checks.js` : profil non calibré, seed léger mis à l'échelle, données invraisemblables non détruites, override manuel exclu de Brain et neutralisé par reset, format DB `/ main`, périodisation client non écrasée.
