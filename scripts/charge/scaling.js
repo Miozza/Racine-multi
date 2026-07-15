@@ -8,6 +8,12 @@
 
 // Trouve le ratio personnel pour un mouvement donné. Retourne 1 si aucun
 // profil calibré n'est actif (ex. migration d'un ancien historique brut).
+function coachProfileNeedsCalibration(){
+  var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
+  if(!profile) return false;
+  return !profile.onboarded || !profile.scaleRatios;
+}
+
 function coachUserLoadRatio(label){
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
   var ratios = profile && profile.scaleRatios;
@@ -60,3 +66,4 @@ function coachAggressivenessFactor(){
   if(!a || isNaN(a)) return 1;
   return Math.max(0.4, Math.min(1.8, a));
 }
+
