@@ -1,6 +1,6 @@
-// Racine â€” configuration statique des programmes.
-// defaultProfile est une ancre de calibration mathÃ©matique, pas un profil utilisateur.
-// Les profils rÃ©els vivent dans scripts/profiles/ et dans le stockage local namespacÃ©.
+// Racine — configuration statique des programmes.
+// defaultProfile est une ancre de calibration mathématique, pas un profil utilisateur.
+// Les profils réels vivent dans scripts/profiles/ et dans le stockage local namespacé.
 
 var defaultProfile = (window.RacineProfileReference && RacineProfileReference.profile)
   ? RacineProfileReference.profile()
@@ -10,7 +10,7 @@ var movements = {
   bench:        {name:"Bench Press",           profile:"bench"},
   inclineDb:    {name:"Incline DB Press",       profile:"inclineDb10RM"},
   strictPress:  {name:"Strict press",           profile:"strictPress"},
-  // aucun Chest Supported Row dans l'app. Alias conservÃ© pour ne pas casser les anciennes donnÃ©es.
+  // aucun Chest Supported Row dans l'app. Alias conservé pour ne pas casser les anciennes données.
   chestRow:     {name:"Barbell Row",            profile:"row8RM"},
   barbellRow:   {name:"Barbell Row",            profile:"row8RM"},
   latPulldown:     {name:"Weighted pull-up",       profile:null},
@@ -32,20 +32,20 @@ var movements = {
 var estimatedDailyLoads = {lateralRaise:25,rearDeltFly:25,ropePushdown:70,facePull:70,latPulldown:20,dbSnatch:50,farmerCarry:50};
 
 var baseDays = {
-  lundi:   {label:"Lundi",   base:"Push",      focus:"Pectoraux, Ã©paules, triceps, serratus.", progress:["bench","inclineDb"],       warmup:"Bike 3 min + band pull-aparts + wall slides + activation serratus.", accessory:"Incline DB Press + lateral raise + serratus cable punch.", wod:"10 cal row + 10 DB push press lÃ©ger + 8 burpees"},
+  lundi:   {label:"Lundi",   base:"Push",      focus:"Pectoraux, épaules, triceps, serratus.", progress:["bench","inclineDb"],       warmup:"Bike 3 min + band pull-aparts + wall slides + activation serratus.", accessory:"Incline DB Press + lateral raise + serratus cable punch.", wod:"10 cal row + 10 DB push press léger + 8 burpees"},
   mardi:   {label:"Mardi",   base:"Pull",      focus:"Dos, biceps, scapula, posture.",         progress:["barbellRow","latPulldown"], warmup:"Row 3 min + dead hang + scap pull-ups + band rows.", accessory:"Weighted pull-up + face pull + DB curls.", wod:"12 cal SkiErg + 12 ring rows stricts"},
-  mercredi:{label:"Mercredi",base:"Jour optionnel", focus:"UtilisÃ© seulement par les programmes qui dÃ©clarent mercredi.", progress:[], warmup:"PrÃ©paration lÃ©gÃ¨re.", accessory:"Accessoires lÃ©gers.", wod:"Conditioning facile"},
-  jeudi:   {label:"Jeudi",   base:"Legs",      focus:"Jambes, fessiers, chaÃ®ne postÃ©rieure.",  progress:["frontSquat","bulgarian"], warmup:"Bike 3 min + air squats + glute bridge + mobilitÃ© hanches.", accessory:"Bulgarian Split Squat + DB RDL.", wod:"12 cal bike + 12 KB swings + 10 box step-ups"},
-  vendredi:{label:"Vendredi",base:"Full body", focus:"Moteur, transitions, puissance.",         progress:["powerClean","strictPress"],warmup:"Row 3 min + mobilitÃ© hanches/Ã©paules + ramp-up technique.", accessory:"Farmer carry + reverse fly + hollow hold.", wod:"30 wall balls + 30 cal row + 30 DB snatch alternÃ©s"},
-  samedi:  {label:"Samedi",  base:"Jour optionnel", focus:"UtilisÃ© seulement par les programmes qui dÃ©clarent samedi.", progress:[], warmup:"PrÃ©paration lÃ©gÃ¨re.", accessory:"Accessoires lÃ©gers.", wod:"Conditioning facile"},
-  dimanche:{label:"Dimanche",base:"Jour optionnel", focus:"UtilisÃ© seulement par les programmes qui dÃ©clarent dimanche.", progress:[], warmup:"PrÃ©paration lÃ©gÃ¨re.", accessory:"MobilitÃ© ou rÃ©cupÃ©ration.", wod:"RÃ©cupÃ©ration active"}
+  mercredi:{label:"Mercredi",base:"Jour optionnel", focus:"Utilisé seulement par les programmes qui déclarent mercredi.", progress:[], warmup:"Préparation légère.", accessory:"Accessoires légers.", wod:"Conditioning facile"},
+  jeudi:   {label:"Jeudi",   base:"Legs",      focus:"Jambes, fessiers, chaîne postérieure.",  progress:["frontSquat","bulgarian"], warmup:"Bike 3 min + air squats + glute bridge + mobilité hanches.", accessory:"Bulgarian Split Squat + DB RDL.", wod:"12 cal bike + 12 KB swings + 10 box step-ups"},
+  vendredi:{label:"Vendredi",base:"Full body", focus:"Moteur, transitions, puissance.",         progress:["powerClean","strictPress"],warmup:"Row 3 min + mobilité hanches/épaules + ramp-up technique.", accessory:"Farmer carry + reverse fly + hollow hold.", wod:"30 wall balls + 30 cal row + 30 DB snatch alternés"},
+  samedi:  {label:"Samedi",  base:"Jour optionnel", focus:"Utilisé seulement par les programmes qui déclarent samedi.", progress:[], warmup:"Préparation légère.", accessory:"Accessoires légers.", wod:"Conditioning facile"},
+  dimanche:{label:"Dimanche",base:"Jour optionnel", focus:"Utilisé seulement par les programmes qui déclarent dimanche.", progress:[], warmup:"Préparation légère.", accessory:"Mobilité ou récupération.", wod:"Récupération active"}
 };
 
 var wodBanks = {
   push:         ["10 cal row + 10 DB push press + 8 burpees","12 cal row + 10 push-ups + 12 sit-ups","10 cal bike + 8 DB thrusters + 8 burpees"],
   pull:         ["12 cal SkiErg + 12 ring rows","10 cal row + 10 KB high pulls + 10 ring rows","40 cal row + 30 ring rows + 20 DB snatch"],
   legs:         ["12 cal bike + 12 KB swings + 10 box step-ups","14 cal bike + 12 goblet squats","50 cal bike + 40 KB swings + 30 step-ups"],
-  weightlifting:["EMOM 10 : 2 power cleans lÃ©gers","10 min qualitÃ© : 3 hang power clean + 6 burpees","8 min technique : clean pull + front squat lÃ©ger"],
+  weightlifting:["EMOM 10 : 2 power cleans légers","10 min qualité : 3 hang power clean + 6 burpees","8 min technique : clean pull + front squat léger"],
   engine:       ["AMRAP 14 : 10 wall balls + 12 cal row + 8 DB snatch","EMOM 16 : row/bike/ski/bodyweight","12 min pacing : bike + step-ups + ring rows"],
   lowimpact:    ["10 min bike zone 2","10 min row zone 2","AMRAP facile : 8 cal row + 8 air squats + 8 ring rows"]
 };
