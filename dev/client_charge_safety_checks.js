@@ -101,6 +101,13 @@ try{
   const tutorials = read('programs/tutorials.js');
   assert(/"Lat Pulldown"\s*:\s*\{/.test(tutorials), 'Lat Pulldown possède un tutoriel exact partagé.');
 
+  const media = read('data/movements_media.js');
+  assert(/"Weighted Pull-up"\s*:\s*"[A-Za-z0-9_-]+"/.test(media), 'Weighted Pull-up conserve son média distinct.');
+  assert(/"Lat Pulldown"\s*:\s*"[A-Za-z0-9_-]+"/.test(media), 'Lat Pulldown possède un média distinct.');
+
+  const equipment = read('data/equipment.js');
+  assert(/match:\[[^\]]*"lat pulldown"/.test(equipment), 'Lat Pulldown reste classé comme équipement câble.');
+
   const profiles = loadMovementProfiles();
   assert(profiles.get('Lat Pulldown').family === 'cable_pull', 'Lat Pulldown utilise un profil Brain câble distinct.');
   assert(profiles.get('Weighted Pull-up').family === 'bodyweight_heavy', 'Weighted Pull-up conserve son profil poids du corps lesté.');
@@ -110,6 +117,10 @@ try{
 
 try{
   const engine = loadChargeEngine();
+  assert(engine.canonicalMovementLabel('Lat Pulldown') === 'Lat Pulldown', 'Le moteur normalise Lat Pulldown sous son nom stable.');
+  assert(engine.coachMovementEquipmentFamily('Lat Pulldown') === 'cable', 'Le moteur classe Lat Pulldown dans la famille câble.');
+  assert(engine.canonicalMovementLabel('Weighted Pull-up') === 'Weighted Pull-up', 'Weighted Pull-up garde son nom stable distinct.');
+  assert(engine.coachMovementEquipmentFamily('Weighted Pull-up') === 'bodyweight', 'Weighted Pull-up garde sa famille poids du corps distincte.');
   assert(typeof engine.coachProfileNeedsCalibration === 'function', 'Le moteur expose coachProfileNeedsCalibration.');
   engine.state.profile = {onboarded:false, scaleRatios:null};
   const blocked = engine.guardedSuggestedLoadDecision('Back Squat', '165 lb', 8, {});
@@ -227,4 +238,5 @@ if(errors.length){
 
 console.log('OK client_charge_safety_checks.js');
 notes.forEach(note => console.log(' - ' + note));
+
 
