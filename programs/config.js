@@ -52,4 +52,3 @@ var wodBanks = {
 
 // V51.39 : ce fichier doit rester une configuration statique.
 // La logique runtime de charges, d'alias, de modale ! et de patch programme vit maintenant dans scripts/*.
-
