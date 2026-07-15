@@ -62,7 +62,7 @@ loadOrder.forEach(f => vm.runInNewContext(read(f), ctx, {filename:f}));
 function resetState(profile){
   ctx.state.athleteState = { movements:{} };
   ctx.__coachLoadHints = {};
-  ctx.state.profile = profile || null;
+  ctx.state.profile = profile ? Object.assign({onboarded:true}, profile) : null;
   ctx.state.week = 3;
   ctx.state.day = 'lundi';
 }
@@ -266,3 +266,4 @@ if(failed === 0){
   console.log('Voir les cas ❌ ci-dessus — ajustement moteur possiblement requis.');
 }
 console.log('');
+
