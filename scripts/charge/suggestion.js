@@ -93,9 +93,29 @@ function coachRecentUnresolvedHighRpeBrake(history,label,context,target,suggeste
   return brake;
 }
 
+function coachFormatSuggestedLoad(label,value,fallbackText,suffix){
+  var fallback=String(fallbackText||'').trim();
+  if(!(value||value===0))return fallback||'—';
+  if(Number(value)===0&&/poids du corps/i.test(fallback))return fallback+(suffix||'');
+  var unit=/\bkg\b/i.test(fallback)?'kg':'lb';
+  var text=displayLoadForEquipment(label,String(value)+' '+unit);
+  if(unit==='lb'){
+    var family=(typeof coachMovementEquipmentFamily==='function')?coachMovementEquipmentFamily(label):'';
+    var perHand=/\/\s*main/i.test(fallback)||family==='db';
+    if(perHand&&!/\/\s*main/i.test(text))text+=' / main';
+  }
+  if(/⚠/.test(fallback)&&!/⚠/.test(text))text+=' ⚠';
+  if(suffix)text+=suffix;
+  return text;
+}
+
 function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var moveContext=(context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
   var label=moveContext&&moveContext.label?moveContext.label:canonicalMovementLabel(nameOrKey);
+  if(typeof coachProfileNeedsCalibration==='function'&&coachProfileNeedsCalibration()){
+    var calibrationMessage='Profil non calibré : complète la calibration avant d’utiliser les charges suggérées.';
+    return {label:label,loadNum:null,loadText:calibrationMessage,blocked:true,severity:'watch',reason:'Profil client sans calibration.'};
+  }
   var target=Number(targetReps)||8;
   var mv=athleteMovementRecord(label);
   var range=repRange(target);
@@ -107,7 +127,10 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   // Une charge est invraisemblable si elle est < 20% du seed par défaut du mouvement
   // ET < 15 lb absolus (seuil universel haltères minimum réaliste).
   // Ça protège contre les erreurs de saisie (ex: 5 lb au lieu de 50 lb).
-  var genericSeedForFilter = coachDefaultLoadSeedForMovement(label, target);
+  var rawSeedForFilter = coachDefaultLoadSeedForMovement(label, target);
+  var genericSeedForFilter = (rawSeedForFilter || rawSeedForFilter === 0)
+    ? coachApplyUserLoadScale(label, rawSeedForFilter)
+    : rawSeedForFilter;
   hist = hist.filter(function(row){
     var load = coachHistoryLoadNumber(row);
     if(!load || load <= 0) return true; // pas de charge = garder (poids du corps, etc.)
@@ -360,11 +383,13 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     reason=contextLimitReason||reason;
     brainAdjusted=true;
   }
-  var text=(rounded===0||rounded)?rounded+" lb":originalText;
+  var text=coachFormatSuggestedLoad(label,rounded,originalText,'');
   if(severity==="warning"||severity==="critical")text += " ⚠";
   var decision={label:label,loadText:text,loadNum:rounded,severity:severity,reason:reason,last:last,cap:cap,historySignal:historySignal};
   if(typeof coachBrainApplyStatsGate==='function' && lastHasValidLoad && rounded>lastLoad && severity==='ok' && !contextLimited && !isDeload){
     decision=coachBrainApplyStatsGate(decision,label,hist,moveContext,target,lastLoad);
+    decision.loadText=coachFormatSuggestedLoad(label,decision.loadNum,originalText,'');
+    if((decision.severity==='warning'||decision.severity==='critical')&&decision.loadText.indexOf('⚠')<0)decision.loadText+=' ⚠';
     brainAdjusted=true;
   }
   // Source explicite : fait connu a cet endroit, plus fiable qu'une detection
@@ -541,7 +566,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     // calibrage (source "manual_recalibration" = 1RM/5RM semé à l'onboarding).
     // Un repère de calibrage n'est pas une charge de travail : le laisser piloter
     // la progression faisait suggérer ~1RM pour des sets de 8-12 reps.
-    function isCalibrationSeed(r){ return !!(r && r.planned && r.planned.source === 'manual_recalibration'); }
+    function isCalibrationSeed(r){ return (typeof coachIsNonPerformanceSeed==='function')?coachIsNonPerformanceSeed(r):!!(r&&r.planned&&(r.planned.source==='manual_recalibration'||r.planned.source==='manual_charge_override')); }
     var hist = histAll.filter(function(r){ return !isDeloadRow(r) && !isCalibrationSeed(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
     if(!hist.length) return base.loadText;
 
@@ -569,19 +594,19 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       var deloadPctLabel = Math.round((1-deloadPct)*100) + '%';
       var reason = 'Deload — réduction de ' + deloadPctLabel + ' vs dernière charge normale (' + lastNormalLoad + ' lb).';
       if(typeof storeLoadDecisionHint==='function'){
-        storeLoadDecisionHint(label, String(deloadRounded)+' lb', reason, 'ok', histAll, ctx, 'brain');
+        storeLoadDecisionHint(label, coachFormatSuggestedLoad(label,deloadRounded,base.loadText,''), reason, 'ok', histAll, ctx, 'brain');
       }
       try{
         if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
           var dk = coachNormalizeMoveText(label);
           if(dk && window.__coachLoadHints[dk]){
-            window.__coachLoadHints[dk].load=String(deloadRounded)+' lb';
+            window.__coachLoadHints[dk].load=coachFormatSuggestedLoad(label,deloadRounded,base.loadText,'');
             window.__coachLoadHints[dk].reason=reason;
             window.__coachLoadHints[dk].source='brain';
           }
         }
       }catch(e){}
-      return String(deloadRounded);
+      return coachFormatSuggestedLoad(label,deloadRounded,base.loadText,'');
     }
 
     // ── Données des dernières séances normales ────────────────────────────────
@@ -733,7 +758,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     // Plafond : jamais plus de 2× maxJump au-dessus de la dernière charge réelle
     newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
 
-    var safeDecision={label:label,loadNum:newLoad,loadText:String(newLoad)+' lb'+repsSuggestion,severity:(delta<0?'watch':'ok'),reason:reason};
+    var safeDecision={label:label,loadNum:newLoad,loadText:coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion),severity:(delta<0?'watch':'ok'),reason:reason};
     if(typeof coachBrainApplyStatsGate==='function' && newLoad>lastLoad && (safeDecision.severity==='ok') && !isDeload){
       // Fix : on passait histAll (brut, deload + seeds de calibrage inclus) au
       // gate de validations. `hist` (defini plus haut, ligne ~545) exclut deja
@@ -744,11 +769,12 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       newLoad=safeDecision.loadNum;
       reason=safeDecision.reason;
       repsSuggestion='';
+      safeDecision.loadText=coachFormatSuggestedLoad(label,newLoad,base.loadText,'');
     }
 
     if(newLoad === baseNum && !newReps && !(safeDecision&&safeDecision.brainStats)) return base.loadText;
 
-    var hintLoad = safeDecision.loadText || (String(newLoad) + ' lb' + repsSuggestion);
+    var hintLoad = safeDecision.loadText || coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion);
     var explicitSource = (safeDecision&&safeDecision.brainStats) || newLoad!==baseNum || newReps ? 'brain' : 'moteur';
     if(typeof storeLoadDecisionHint==='function'){
       storeLoadDecisionHint(label, hintLoad, reason, safeDecision.severity || (delta < 0 ? 'watch' : 'ok'), histAll, ctx, explicitSource);
@@ -765,9 +791,10 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       }
     }catch(e){}
 
-    return String(newLoad);
+    return safeDecision.loadText || coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion);
 
   }catch(e){ /* silencieux — fallback moteur */ }
 
   return base.loadText;
 };
+
