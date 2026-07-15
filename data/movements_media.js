@@ -50,6 +50,7 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Barbell Row": "UNyeMXO481I",               // Functional Bodybuilding (Bent Over Row Pronated)
   "Pull-Up": "0wScGKPC5fA",                   // Central Athlete (Pronated Pull-Up)
   "Weighted Pull-up": "_U5vqJocrbA",          // Central Athlete (Weighted Strict Pronated Pull-Up)
+  "Lat Pulldown": "Z_3xHwuO8Tk",              // ATHLEAN-X (fallback) — Lat Pulldowns with Perfect Form
   "Dips": "LXkp2QJ5ASo",                      // Marcus Filly (Strict Bar Dip)
   "Chest Dips": "yN6Q1UI_xkE",                // Jeff Nippard (fallback) — dips version pecs
   "Goblet Squat": "f-Vf2yRRqOg",              // Marcus Filly
@@ -189,3 +190,4 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Supine Hamstring Stretch": "Il1L75v6gq0",  // Ask Doctor Jo — Hamstring Stretch with Strap, Supine
   "Box Breathing": "E9Pz3vpzp6c"              // Box Breathing (choix Bertin)
 };
+
