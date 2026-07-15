@@ -11,7 +11,12 @@
 function coachProfileNeedsCalibration(){
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
   if(!profile) return false;
-  return !profile.onboarded || !profile.scaleRatios;
+  var registered = (typeof CoachProfiles !== 'undefined' && CoachProfiles && typeof CoachProfiles.getActive === 'function')
+    ? CoachProfiles.getActive()
+    : null;
+  if(registered && registered.onboarded === false) return true;
+  if(!registered && profile.onboarded === false) return true;
+  return !profile.scaleRatios;
 }
 
 function coachUserLoadRatio(label){
@@ -66,4 +71,5 @@ function coachAggressivenessFactor(){
   if(!a || isNaN(a)) return 1;
   return Math.max(0.4, Math.min(1.8, a));
 }
+
 
