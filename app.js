@@ -1,5 +1,5 @@
-// Racine V4.5 — La Saison + catalogue recalibré (convention 1RM référence, rotation hebdo)
-var APP_VERSION = "V4.5";
+// Racine V4.5.16 — Hypertrophie Fessier Femme : reconstruction sur le patron Arnold, public, charges/cycle/tutos corrigés
+var APP_VERSION = "V4.5.16";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -127,6 +127,7 @@ function currentDayMeta(day){
   var cfg = focus ? focus() : {};
   var d = Object.assign({}, baseDays[day] || {label:day, base:"", focus:""});
   if(cfg && cfg.dayMeta && cfg.dayMeta[day]) d = Object.assign(d, cfg.dayMeta[day]);
+  d.label = resolveDayLabel(cfg, day, state && state.week, d.label);
   return d;
 }
 function ensureCurrentDay(){
@@ -1283,6 +1284,7 @@ function previewDayMeta(day){
   var cfg=previewCfg()||{};
   var d=Object.assign({}, baseDays[day] || {label:day,base:"",focus:""});
   if(cfg.dayMeta&&cfg.dayMeta[day])d=Object.assign(d,cfg.dayMeta[day]);
+  d.label = resolveDayLabel(cfg, day, previewCycleWeek, d.label);
   return d;
 }
 function previewDayLabel(day){var m=previewDayMeta(day);return (m&&m.label)||day;}
@@ -1358,7 +1360,8 @@ function programDetailsHtml(cfg){
     '<span style="color:var(--muted)">'+target.note+'</span></div>';}
   var days=(cfg.days||DEFAULT_PROGRAM_DAYS).map(function(d){
     var m=(cfg.dayMeta&&cfg.dayMeta[d])||baseDays[d]||{label:d};
-    return m.label||d;
+    var label=m.label||d;
+    return resolveDayLabel(cfg, d, previewCycleWeek, label);
   }).join(' · ');
   var draftHtml = cfg.draft ? '<div class="draft-cycle-warning">⚠️ Brouillon futur — À retravailler lorsque le projet sera activé.</div>' : '';
   return '<strong>'+CoachUI.escapeHtml(cfg.label)+'</strong>'+(cfg.status?' <span class="draft-pill">'+CoachUI.escapeHtml(cfg.status)+'</span>':'')+'<br>'+CoachUI.escapeHtml(cfg.impact||'')+draftHtml+
@@ -1496,7 +1499,7 @@ function saveCycle(){
   if(!confirm("Démarrer “"+focusConfigs[selected].label+"” comme cycle actif?\n\nDate de départ : "+startDate+"\nPosition calculée : S"+wk+" · "+dayText+"\n\nLe cycle actuel sera mis en pause. Les charges et l’historique réel ne seront pas modifiés."))return;
   if(window.CoachSeason)CoachSeason.recordCycleEnd(state, todayIsoDate());
   pauseCurrentCycle("Remplacé par "+focusConfigs[selected].label);
-  state.cycle.goal=selected;previewCycleGoal=selected;state.week=1;state.day=(focusConfigs[selected].days||DEFAULT_PROGRAM_DAYS)[0]||"lundi";state.completedDays=[];state.missedDays=[];state.deloadAlert=false;state.activeCycleStartDate=startDate;
+  state.cycle.goal=selected;state.missingCycle=null;previewCycleGoal=selected;state.week=1;state.day=(focusConfigs[selected].days||DEFAULT_PROGRAM_DAYS)[0]||"lundi";state.completedDays=[];state.missedDays=[];state.deloadAlert=false;state.activeCycleStartDate=startDate;
   applyCycleStartDate(startDate,{setDayFromToday:true,resetWeekTracking:true});
   resetPreviewPosition(selected);
   save();render();renderCycle();}
@@ -1513,7 +1516,7 @@ function resumeSavedCycle(idx){
   if(!focusConfigs[c.id]){alert("Programme introuvable : "+c.id+". Restaure le fichier avant de reprendre ce cycle.");return;}
   if(!confirm("Reprendre “"+(c.label||c.id)+"” S"+c.week+" "+dayLabel(c.day)+"? Le cycle actuel sera mis en pause."))return;
   pauseCurrentCycle("Mis en pause par reprise d’un autre cycle");
-  saved.splice(idx,1);state.savedCycles=saved;state.cycle.goal=c.id;previewCycleGoal=c.id;state.week=Number(c.week)||1;state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();ensureCurrentDay();state.cycleState=buildCycleStatePayload();resetPreviewPosition(c.id);save();render();renderCycle();}
+  saved.splice(idx,1);state.savedCycles=saved;state.cycle.goal=c.id;state.missingCycle=null;previewCycleGoal=c.id;state.week=Number(c.week)||1;state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();ensureCurrentDay();state.cycleState=buildCycleStatePayload();resetPreviewPosition(c.id);save();render();renderCycle();}
 function archiveSavedCycle(idx){
   var saved=state.savedCycles||[], c=saved[idx];if(!c)return;
   if(!confirm("Archiver ce cycle en pause?"))return;
@@ -1531,7 +1534,7 @@ function resumeArchivedCycle(idx){
   if(!confirm("Reprendre ce cycle archivé? Le cycle actif actuel sera mis en pause."))return;
   pauseCurrentCycle("Mis en pause par reprise d’un cycle archivé");
   archived.splice(idx,1);state.archivedCycles=archived;
-  state.cycle.goal=c.id;previewCycleGoal=c.id;state.week=Number(c.week)||1;
+  state.cycle.goal=c.id;state.missingCycle=null;previewCycleGoal=c.id;state.week=Number(c.week)||1;
   state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);
   state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];
   state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();
@@ -2158,11 +2161,32 @@ function applyAdminVisibility(){
 }
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
+  // Reconstruire le catalogue avec les permissions du profil actif MAINTENANT.
+  // focusConfigs était construit une seule fois au chargement de la page : un
+  // programme privé accordé ensuite (prescription acceptée, activation admin,
+  // bascule de profil) restait invisible et déclenchait à tort le fallback
+  // « programme absent ».
+  registerProgramsFromIndex();
   load();
   coachSanitizeImplausibleLoads();
+  // Auto-guérison : si le programme tracé par un ancien fallback est redevenu
+  // disponible (permission accordée, app mise à jour), restaurer le cycle —
+  // sauf si l'utilisateur a activé un autre programme entre-temps.
+  // state.missingCycle n'est jamais effacé que par cette guérison ou par un
+  // changement délibéré de cycle (saveCycle, resumeSavedCycle,
+  // resumeArchivedCycle, CoachSeason.startProgram, setProfileActiveProgram
+  // — tous effacent la trace dès qu'ils écrivent state.cycle.goal). Sa seule
+  // présence ici garantit donc qu'aucun choix délibéré n'a eu lieu depuis le
+  // fallback : on peut restaurer sans comparer goal à defaultProgramId().
+  if(state.missingCycle && focusConfigs[state.missingCycle.id]){
+    state.cycle.goal = state.missingCycle.id;
+    state.missingCycle = null;
+    save();
+  }
   if(!focusConfigs[state.cycle.goal]){state.missingCycle={id:state.cycle.goal,date:nowIso()};state.cycle.goal=defaultProgramId();}
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   if(window.CoachSeason)CoachSeason.ensure(state);
+  if(window.CoachOnboarding&&CoachOnboarding.migrateReferenceVersion)CoachOnboarding.migrateReferenceVersion();
   ensureCurrentDay();
   loadCustomCharges();
   bind();
@@ -2206,4 +2230,3 @@ if(navigator.storage && navigator.storage.persist){
 
 
 // V50.51 : ménage structurel conservateur. Les IDs phone* sont conservés comme compatibilité interne de la vue PC.
-
