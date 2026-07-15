@@ -1,4 +1,3 @@
-V4.2 — Correctif DOM Avis IA
 
 # Release checklist — Racine
 
@@ -25,6 +24,8 @@ node dev/season_checks.js
 node dev/program_calibration_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
+node dev/movement_swaps_checks.js
+node dev/prescription_checks.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :
@@ -76,4 +77,3 @@ Règle de sécurité : les données vivantes d'un utilisateur réel doivent rest
 
 - Vérifier que le panneau `(!)` se met à jour immédiatement après effacement d’un avis mouvement ou cycle.
 - Vérifier qu’un avis cycle effacé ne reste pas affiché sous l’avis mouvement.
-
