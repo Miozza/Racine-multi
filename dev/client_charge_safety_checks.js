@@ -127,7 +127,14 @@ try{
   assert(blocked && blocked.blocked === true, 'Un profil client non calibré est bloqué.');
   assert(blocked && blocked.loadNum === null && !/\d+\s*lb/.test(blocked.loadText || ''), 'Le blocage ne présente aucune charge numérique comme fiable.');
   assert(blocked && /Profil non calibré/.test(blocked.loadText || ''), 'Le blocage explique que le profil doit être calibré.');
+
+  engine.state.profile = {scaleRatios:{_lowerBody:0.8,_overall:0.9}};
+  engine.CoachProfiles = {getActive(){ return {onboarded:true}; }};
+  const calibrated = engine.guardedSuggestedLoadDecision('Back Squat', '165 lb', 8, {});
+  assert(calibrated && calibrated.blocked !== true, 'Un profil calibré dans le registre n’est pas bloqué si state.profile ne répète pas onboarded.');
+
   engine.state.profile = null;
+  delete engine.CoachProfiles;
   assert(typeof engine.coachProfileNeedsCalibration === 'function' && engine.coachProfileNeedsCalibration() === false, 'Une migration ancienne sans profil garde le ratio neutre compatible.');
 }catch(error){
   errors.push('Test profil non calibré impossible : ' + (error && error.stack ? error.stack : error));
@@ -238,5 +245,6 @@ if(errors.length){
 
 console.log('OK client_charge_safety_checks.js');
 notes.forEach(note => console.log(' - ' + note));
+
 
 
