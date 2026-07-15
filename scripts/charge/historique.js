@@ -88,8 +88,7 @@ function coachDefaultLoadSeedForMovement(label, targetReps){
   // Mouvements au poids du corps : seed 0 = pas de charge externe.
   if(/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang/.test(n))return 0;
   if(/pull up|pullup|chin up|chest to bar|toes to bar|knee raise|muscle up/.test(n))return 0;
-  if(/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap|muscle up/.test(n))return 0;
-  if(n === "run" || n === "row" || n === "bike")return 0; // cardio : pas de charge externe
+  if(/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap/.test(n))return 0;
   return null;
 }
 
@@ -178,8 +177,43 @@ function coachContextMatches(rowCtx, currentCtx, label){
   return coachMovementContextKey(rowCtx)===coachMovementContextKey(currentCtx);
 }
 
+function coachIsNonPerformanceSeed(row){
+  var source=row&&row.planned&&row.planned.source;
+  return source==='manual_recalibration'||source==='manual_charge_override';
+}
+
+function resetManualChargeOverridesFromAthleteState(){
+  var ast=state&&state.athleteState;
+  var movements=ast&&ast.movements;
+  if(!movements||typeof movements!=='object')return 0;
+  var removed=0;
+  Object.keys(movements).forEach(function(label){
+    var movement=movements[label];
+    if(!movement)return;
+    if(Array.isArray(movement.history)){
+      var before=movement.history.length;
+      movement.history=movement.history.filter(function(row){return !(row&&row.planned&&row.planned.source==='manual_charge_override');});
+      removed+=before-movement.history.length;
+    }
+    if(movement.ranges&&typeof movement.ranges==='object'){
+      Object.keys(movement.ranges).forEach(function(range){
+        var capacity=movement.ranges[range];
+        if(capacity&&capacity.planned&&capacity.planned.source==='manual_charge_override'){
+          delete movement.ranges[range];
+          removed++;
+        }
+      });
+    }
+    if(movement.planned&&movement.planned.source==='manual_charge_override')delete movement.planned;
+  });
+  if(removed){
+    ast.updatedAt=(typeof nowIso==='function')?nowIso():new Date().toISOString();
+  }
+  return removed;
+}
+
 function coachFilterHistoryForProgression(history, context){
-  var rows=Array.isArray(history)?history:[];
+  var rows=(Array.isArray(history)?history:[]).filter(function(row){return !(row&&row.implausible)&&!coachIsNonPerformanceSeed(row);});
   if(!context || typeof coachIsLimitedProgressionContext!=='function')return rows;
   var label=context&&context.label?context.label:'';
   var limited=coachIsLimitedProgressionContext(context);
@@ -333,3 +367,4 @@ function storeLoadDecisionHint(name,loadText,reason,severity,history,context,exp
   var aliases=(typeof coachMovementLookupLabels==='function')?coachMovementLookupLabels(label):[label];
   aliases.forEach(function(a){ window.__coachLoadHints[coachNormalizeMoveText(a)]=payload; });
 }
+

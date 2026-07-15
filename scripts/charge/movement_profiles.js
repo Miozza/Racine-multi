@@ -7,6 +7,26 @@
 
   var PROFILES = [
     {
+      match:/lat\s*pull\s*down/i,
+      profile:{
+        family:'cable_pull',
+        sensitivity:'low',
+        progressionStyle:'reps_first',
+        confidenceBias:3,
+        ambitionBias:-3,
+        defaultDecision:'reps_quality_first',
+        vocabulary:{
+          base:'tirage vertical au câble',
+          progression:'qualité et reps avant charge',
+          risk:'la charge ne doit pas transformer le tirage en mouvement de bras ou de tronc'
+        },
+        explain:{
+          validation:'Je privilégie une amplitude complète et un torse stable avant une hausse.',
+          next:'Je veux confirmer les répétitions propres avant de monter la pile.'
+        }
+      }
+    },
+    {
       match:/weighted\s*pull|pull[- ]?up|chin[- ]?up|muscle[- ]?up/i,
       profile:{
         family:'bodyweight_heavy',
@@ -212,3 +232,4 @@
 
   window.CoachMovementProfiles={get:get, normalizeSensitivity:normalizeSensitivity, labelSensitivity:labelSensitivity};
 })();
+

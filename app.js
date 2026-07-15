@@ -1997,7 +1997,7 @@ function renderChargeSettings(){
     });
   });
 }
-function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalisées?")){customCharges={};saveCustomCharges();renderChargeSettings();renderWorkout();}}
+function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalisées?")){customCharges={};if(typeof resetManualChargeOverridesFromAthleteState==="function")resetManualChargeOverridesFromAthleteState();saveCustomCharges();save();renderChargeSettings();renderWorkout();}}
 
 // ─── Paramètres locaux ──────────────────────────────────────────────────────
 

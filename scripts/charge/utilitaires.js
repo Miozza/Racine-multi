@@ -49,11 +49,18 @@ function coachSanitizeImplausibleLoads(){
         var r = results[key];
         var load = Number(r && r.load) || 0;
         if(!load || load <= 0) return;
-        var seed = (typeof coachDefaultLoadSeedForMovement === 'function')
+        var rawSeed = (typeof coachDefaultLoadSeedForMovement === 'function')
           ? coachDefaultLoadSeedForMovement(key, 8) : null;
+        var seed = (rawSeed || rawSeed === 0) && typeof coachApplyUserLoadScale === 'function'
+          ? coachApplyUserLoadScale(key, rawSeed) : rawSeed;
         if(load < 15 && seed && load < seed * 0.20){
-          if(typeof coachLogWarn === 'function') coachLogWarn('sanitize', key + ' : ' + load + ' lb supprime (seed=' + seed + ')');
-          delete r.load;
+          if(typeof coachLogWarn === 'function') coachLogWarn('sanitize', key + ' : ' + load + ' lb marquee invraisemblable (seed=' + seed + ')');
+          r.implausible = true;
+          r.implausibleReason = 'Charge ' + load + ' lb sous 20% du seed profil ' + seed + ' lb.';
+          cleaned++;
+        }else if(r.implausible){
+          delete r.implausible;
+          delete r.implausibleReason;
           cleaned++;
         }
       });
@@ -67,19 +74,27 @@ function coachSanitizeImplausibleLoads(){
       var load = Number(ref && ref.load) || 0;
       if(!load || load <= 0) return;
       var movName = (ref && ref.movement) || refKey;
-      var seed = (typeof coachDefaultLoadSeedForMovement === 'function')
-        ? coachDefaultLoadSeedForMovement(movName, 8) : null;
-      if(load < 15 && seed && load < seed * 0.20){
-        if(typeof coachLogWarn === 'function') coachLogWarn('sanitize_ref', movName + ' ref : ' + load + ' lb supprimee (seed=' + seed + ')');
-        delete state.movementRefs[refKey];
-        cleaned++;
-      }
+        var rawSeed = (typeof coachDefaultLoadSeedForMovement === 'function')
+          ? coachDefaultLoadSeedForMovement(movName, 8) : null;
+        var seed = (rawSeed || rawSeed === 0) && typeof coachApplyUserLoadScale === 'function'
+          ? coachApplyUserLoadScale(movName, rawSeed) : rawSeed;
+        if(load < 15 && seed && load < seed * 0.20){
+          if(typeof coachLogWarn === 'function') coachLogWarn('sanitize_ref', movName + ' ref : ' + load + ' lb marquee invraisemblable (seed=' + seed + ')');
+          ref.implausible = true;
+          ref.implausibleReason = 'Charge ' + load + ' lb sous 20% du seed profil ' + seed + ' lb.';
+          cleaned++;
+        }else if(ref.implausible){
+          delete ref.implausible;
+          delete ref.implausibleReason;
+          cleaned++;
+        }
     });
   }
 
   if(cleaned > 0){
     if(typeof save === 'function') save();
-    if(typeof coachLogWarn === 'function') coachLogWarn('sanitize_total', cleaned + ' entree(s) invraisemblable(s) nettoyee(s) au boot.');
+    if(typeof coachLogWarn === 'function') coachLogWarn('sanitize_total', cleaned + ' marquage(s) de vraisemblance ajuste(s) au boot.');
   }
 }
 window.coachSanitizeImplausibleLoads = coachSanitizeImplausibleLoads;
+

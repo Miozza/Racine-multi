@@ -28,7 +28,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Pull-Up","4×AMRAP propre","Poids du corps","90-150 sec","Option : Ring Row si les pull-ups ne sont pas propres. Arrête avant de perdre la forme."),
         ex("Barbell Row","4×8-12","165 lb","90-150 sec","Dos gainé, tire les coudes vers les hanches."),
         ex("DB Fly","3×10-15","35 lb","60-90 sec","Grand étirement, aucune douleur d’épaule."),
-        ex("Weighted Pull-up","4×10-12","25 lb","60-90 sec","Prise large, cible le dos. Commence au poids du corps si besoin ; ajoute du poids (ceinture/haltère) quand 12 reps propres deviennent faciles.")
+        ex("Lat Pulldown","4×10-12","140 lb","60-90 sec","Prise large, tire les coudes vers le bas et garde le torse stable.")
       ]},
       {time:"5–8 min",title:"Sortie",tag:"Mobilité",kind:"mobility",text:"Mobilité pecs/lats légère + respiration. Stopper si épaules irritées."}
     ];

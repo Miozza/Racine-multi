@@ -266,7 +266,7 @@ try {
   assert(bulgarianRecentDecision.loadNum === 45, 'Bulgarian Split Squat garde 45 lb quand 45 lb RPE 9 reste non resolu malgre un retour a 40 lb.');
   assert(/Frein RPE recent/.test(bulgarianRecentDecision.reason), 'Bulgarian Split Squat explique le frein RPE recent non resolu.');
   const bulgarianHintKey = ctx.coachNormalizeMoveText('Bulgarian Split Squat');
-  assert(ctx.__coachLoadHints[bulgarianHintKey] && ctx.__coachLoadHints[bulgarianHintKey].load === '45 lb ⚠', 'La modale ! lit la charge finale gardee 45 lb, pas la charge brute 50 lb.');
+  assert(ctx.__coachLoadHints[bulgarianHintKey] && ctx.__coachLoadHints[bulgarianHintKey].load === '45 lb / main ⚠', 'La modale ! lit la charge DB finale gardee 45 lb / main, pas la charge brute 50 lb.');
 
   // 8c. Plancher historique : un dernier set reussi a RPE eleve (reps atteintes,
   // pas un echec) ne doit pas etre sous-suggere par le programme, meme avec un
@@ -469,3 +469,4 @@ if(errors.length){
 
 console.log('OK charge_engine_checks.js');
 notes.forEach(n => console.log(' - ' + n));
+

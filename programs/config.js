@@ -13,7 +13,8 @@ var movements = {
   // aucun Chest Supported Row dans l'app. Alias conservé pour ne pas casser les anciennes données.
   chestRow:     {name:"Barbell Row",            profile:"row8RM"},
   barbellRow:   {name:"Barbell Row",            profile:"row8RM"},
-  latPulldown:  {name:"Weighted pull-up",       profile:null},
+  latPulldown:     {name:"Weighted pull-up",       profile:null},
+  latPulldownWide: {name:"Lat Pulldown",           profile:null},
   frontSquat:   {name:"Front Squat",            profile:"frontSquat"},
   backSquat:    {name:"Back Squat",             profile:"backSquat5RM"},
   hipThrust:    {name:"Hip Thrust",             profile:"hipThrust8RM"},
