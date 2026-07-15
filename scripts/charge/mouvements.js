@@ -8,7 +8,7 @@ function coachNormalizeMoveText(s){return String(s||"").toLowerCase().normalize(
 function coachMovementEquipmentFamily(nameOrKey){
   var n=coachNormalizeMoveText(chargeKeyFromName(nameOrKey||''));
   if(!n)return '';
-  if(/cable|poulie|rope|face pull|pushdown/.test(n))return 'cable';
+  if(/cable|poulie|rope|face pull|pushdown|pulldown|pull down/.test(n))return 'cable';
   if(/machine/.test(n))return 'machine';
   if(/haltere|halteres|dumbbell|db|bulgarian|db rdl|db reverse lunge|farmer carry/.test(n))return 'db';
   if(/landmine/.test(n))return 'landmine';
@@ -34,6 +34,7 @@ function canonicalMovementLabel(nameOrKey){
   if(n.indexOf("weighted pull up ring row lourd")>=0 || n.indexOf("weighted pull up ring row")>=0)return "Weighted Pull-up / Ring Row lourd";
   if(n.indexOf("ring row lourd")>=0)return "Ring Row lourd";
   if(n.indexOf("ring row strict")>=0 || n.indexOf("ring rows strict")>=0)return "Ring Row";
+  if(n.indexOf("lat pulldown")>=0 || n.indexOf("lat pull down")>=0)return "Lat Pulldown";
   if(n.indexOf("pull up technique")>=0)return "Pull-Up";
   if(n.indexOf("pull up")>=0 && n.indexOf("weighted")<0 && n.indexOf("chest to bar")<0)return "Pull-Up";
   if(n.indexOf("hanging knee raise progression")>=0 || n.indexOf("hanging knee raise")>=0 || n.indexOf("knee raise progression")>=0)return "Knee Raise";
@@ -111,6 +112,7 @@ function coachMovementLookupLabels(nameOrKey){
     add("Pull-Up");
     add("Pull-Up technique"); // ancien nom possible dans historique, jamais affiché.
   }
+  if(/lat pull ?down/.test(n))add("Lat Pulldown");
   if(/knee raise/.test(n)){
     add("Knee Raise");
     add("Hanging Knee Raise progression"); // ancien nom possible dans historique, jamais affiché.
@@ -303,3 +305,4 @@ function coachGetMovementProgressionCap(label) {
   }
   return null;
 }
+
