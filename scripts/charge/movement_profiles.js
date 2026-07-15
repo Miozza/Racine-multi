@@ -1,4 +1,4 @@
-// Racine V2.9 — Brain Movement Profiles
+// Racine V2.9 â€” Brain Movement Profiles
 (function(){
   "use strict";
 
@@ -6,6 +6,26 @@
   function n(v){ return s(v).toLowerCase(); }
 
   var PROFILES = [
+    {
+      match:/lat\s*pull\s*down/i,
+      profile:{
+        family:'cable_pull',
+        sensitivity:'low',
+        progressionStyle:'reps_first',
+        confidenceBias:3,
+        ambitionBias:-3,
+        defaultDecision:'reps_quality_first',
+        vocabulary:{
+          base:'tirage vertical au cÃ¢ble',
+          progression:'qualitÃ© et reps avant charge',
+          risk:'la charge ne doit pas transformer le tirage en mouvement de bras ou de tronc'
+        },
+        explain:{
+          validation:'Je privilÃ©gie une amplitude complÃ¨te et un torse stable avant une hausse.',
+          next:'Je veux confirmer les rÃ©pÃ©titions propres avant de monter la pile.'
+        }
+      }
+    },
     {
       match:/weighted\s*pull|pull[- ]?up|chin[- ]?up|muscle[- ]?up/i,
       profile:{
@@ -18,11 +38,11 @@
         vocabulary:{
           base:'poids de corps',
           progression:'consolidation avant hausse',
-          risk:'très sensible aux petites hausses et au poids corporel'
+          risk:'trÃ¨s sensible aux petites hausses et au poids corporel'
         },
         explain:{
-          highRpe:'Dernier signal RPE élevé : la charge est validée, mais pas encore confortable.',
-          validation:'Une charge lestée doit être confirmée avant d’ajouter du poids.',
+          highRpe:'Dernier signal RPE Ã©levÃ© : la charge est validÃ©e, mais pas encore confortable.',
+          validation:'Une charge lestÃ©e doit Ãªtre confirmÃ©e avant dâ€™ajouter du poids.',
           next:'Je veux confirmer que la charge devient plus confortable avant une hausse.'
         }
       }
@@ -39,11 +59,11 @@
         vocabulary:{
           base:'poids de corps',
           progression:'consolidation avant lest',
-          risk:'très sensible à l’amplitude et à la fatigue des épaules/triceps'
+          risk:'trÃ¨s sensible Ã  lâ€™amplitude et Ã  la fatigue des Ã©paules/triceps'
         },
         explain:{
-          highRpe:'Effort élevé sur un mouvement au poids du corps.',
-          validation:'Le poids du corps doit être maîtrisé avant d’ajouter du lest.',
+          highRpe:'Effort Ã©levÃ© sur un mouvement au poids du corps.',
+          validation:'Le poids du corps doit Ãªtre maÃ®trisÃ© avant dâ€™ajouter du lest.',
           next:'Je veux confirmer la charge avec des reps propres avant une hausse.'
         }
       }
@@ -60,10 +80,10 @@
         vocabulary:{
           base:'force bas du corps',
           progression:'validation avant hausse',
-          risk:'sensible au plafond et à la fatigue systémique'
+          risk:'sensible au plafond et Ã  la fatigue systÃ©mique'
         },
         explain:{
-          validation:'Une nouvelle charge de force doit être validée au moins deux fois.',
+          validation:'Une nouvelle charge de force doit Ãªtre validÃ©e au moins deux fois.',
           next:'Je veux une validation solide avant de proposer la prochaine hausse.'
         }
       }
@@ -78,12 +98,12 @@
         ambitionBias:-7,
         defaultDecision:'validate',
         vocabulary:{
-          base:'poussée verticale',
+          base:'poussÃ©e verticale',
           progression:'petites hausses et validations',
-          risk:'les hausses deviennent vite coûteuses'
+          risk:'les hausses deviennent vite coÃ»teuses'
         },
         explain:{
-          validation:'La poussée verticale progresse lentement : confirmation recommandée.',
+          validation:'La poussÃ©e verticale progresse lentement : confirmation recommandÃ©e.',
           next:'Je veux confirmer la charge sans compensation avant de monter.'
         }
       }
@@ -98,12 +118,12 @@
         ambitionBias:10,
         defaultDecision:'normal_progression',
         vocabulary:{
-          base:'chaîne postérieure',
+          base:'chaÃ®ne postÃ©rieure',
           progression:'progression normale si les reps restent propres',
           risk:'moins sensible que les mouvements de force technique'
         },
         explain:{
-          progression:'La progression récente est le facteur dominant sur ce mouvement.',
+          progression:'La progression rÃ©cente est le facteur dominant sur ce mouvement.',
           next:'Je veux confirmer la nouvelle charge; si elle passe proprement, la progression peut continuer.'
         }
       }
@@ -119,7 +139,7 @@
         defaultDecision:'normal_or_validate',
         vocabulary:{
           base:'tirage lourd',
-          progression:'progression régulière avec contrôle technique',
+          progression:'progression rÃ©guliÃ¨re avec contrÃ´le technique',
           risk:'la charge peut monter si le buste reste solide'
         },
         explain:{
@@ -138,13 +158,13 @@
         ambitionBias:-2,
         defaultDecision:'equipment_aware',
         vocabulary:{
-          base:'charnière hanche',
-          progression:'progression limitée par les haltères disponibles et la technique',
-          risk:'risque de surestimation si l’incrément DB est trop grand'
+          base:'charniÃ¨re hanche',
+          progression:'progression limitÃ©e par les haltÃ¨res disponibles et la technique',
+          risk:'risque de surestimation si lâ€™incrÃ©ment DB est trop grand'
         },
         explain:{
-          validation:'Je vérifie surtout si la charge réelle suit la charge proposée.',
-          next:'Je veux voir si la charge prévue est réellement utilisée et validée.'
+          validation:'Je vÃ©rifie surtout si la charge rÃ©elle suit la charge proposÃ©e.',
+          next:'Je veux voir si la charge prÃ©vue est rÃ©ellement utilisÃ©e et validÃ©e.'
         }
       }
     },
@@ -159,11 +179,11 @@
         defaultDecision:'reps_quality_first',
         vocabulary:{
           base:'accessoire',
-          progression:'qualité et reps avant charge',
-          risk:'la charge ne doit pas dégrader la forme'
+          progression:'qualitÃ© et reps avant charge',
+          risk:'la charge ne doit pas dÃ©grader la forme'
         },
         explain:{
-          validation:'Je privilégie la qualité des reps avant une hausse.',
+          validation:'Je privilÃ©gie la qualitÃ© des reps avant une hausse.',
           next:'Je veux confirmer les reps propres avant de monter.'
         }
       }
@@ -188,15 +208,15 @@
       ambitionBias:0,
       defaultDecision:'standard',
       matched:false,
-      vocabulary:{base:'mouvement général', progression:'progression standard', risk:'sensibilité moyenne'},
-      explain:{next:'Je veux confirmer la charge avec des répétitions stables.'}
+      vocabulary:{base:'mouvement gÃ©nÃ©ral', progression:'progression standard', risk:'sensibilitÃ© moyenne'},
+      explain:{next:'Je veux confirmer la charge avec des rÃ©pÃ©titions stables.'}
     };
   }
 
   function normalizeSensitivity(value){
     value=n(value);
-    if(value==='very_high'||value==='very high'||value==='très élevée'||value==='tres elevee') return 'very_high';
-    if(value==='high'||value==='élevée'||value==='elevee') return 'high';
+    if(value==='very_high'||value==='very high'||value==='trÃ¨s Ã©levÃ©e'||value==='tres elevee') return 'very_high';
+    if(value==='high'||value==='Ã©levÃ©e'||value==='elevee') return 'high';
     if(value==='low'||value==='faible') return 'low';
     if(value==='medium'||value==='moyenne') return 'medium';
     return value||'medium';
@@ -204,11 +224,12 @@
 
   function labelSensitivity(value){
     value=normalizeSensitivity(value);
-    if(value==='very_high') return 'très élevée';
-    if(value==='high') return 'élevée';
+    if(value==='very_high') return 'trÃ¨s Ã©levÃ©e';
+    if(value==='high') return 'Ã©levÃ©e';
     if(value==='low') return 'faible';
     return 'moyenne';
   }
 
   window.CoachMovementProfiles={get:get, normalizeSensitivity:normalizeSensitivity, labelSensitivity:labelSensitivity};
 })();
+
