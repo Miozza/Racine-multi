@@ -138,4 +138,3 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return b ? b.text : "Aucun WOD — bloc hypertrophie.";
   };
 })();
-
