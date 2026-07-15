@@ -141,6 +141,25 @@ try{
 }
 
 try{
+  // Régression : un profil réel onboardé (registre ET state.profile.onboarded)
+  // peut perdre sa copie locale de scaleRatios (migration partielle, state
+  // namespacé désynchronisé) sans jamais avoir été « non calibré ». Le
+  // registre garde sa copie de scaleRatios (écrite en parallèle par
+  // applyToActiveProfile) : elle doit resynchroniser au lieu de bloquer.
+  const engine = loadChargeEngine();
+  engine.state.profile = {onboarded:true, scaleRatios:null};
+  engine.CoachProfiles = {getActive(){ return {onboarded:true, scaleRatios:{_lowerBody:0.95,_overall:0.97}}; }};
+  let saved = 0;
+  engine.save = function(){ saved++; };
+  const decision = engine.guardedSuggestedLoadDecision('Back Squat', '165 lb', 8, {});
+  assert(decision && decision.blocked !== true, 'Un profil onboardé dont seul le registre garde scaleRatios n’est pas bloqué.');
+  assert(engine.state.profile.scaleRatios && engine.state.profile.scaleRatios._overall === 0.97, 'Le state.profile local est resynchronisé depuis le registre.');
+  assert(saved === 1, 'La resynchronisation est sauvegardée une seule fois, pas à chaque appel.');
+}catch(error){
+  errors.push('Test resynchronisation scaleRatios impossible : ' + (error && error.stack ? error.stack : error));
+}
+
+try{
   const engine = loadChargeEngine();
   engine.state.profile = {onboarded:true,scaleRatios:{_upperPush:0.2,_lowerBody:1,_overall:1}};
   const lightRow = {load:10,reps:10,rpe:8};
@@ -161,6 +180,28 @@ try{
   assert(!warnings.includes('plausibility_filter'), 'Le filtre de suggestion compare aussi l’historique au seed scalé.');
 }catch(error){
   errors.push('Test plausibilité non destructive impossible : ' + (error && error.stack ? error.stack : error));
+}
+
+try{
+  // Régression : une charge invraisemblable dans athleteState.movements[...].history
+  // (typo de saisie, ex. 5 lb au lieu de 205 lb) ne doit pas seulement être
+  // ignorée par guardedSuggestedLoadDecision ; elle doit aussi être ignorée par
+  // le moteur Brain V1.16 (coachSafeSuggestedLoad, celui réellement affiché
+  // dans l'app via CoachCharge.suggestLoad), sinon la typo redevient la base
+  // de la moyenne mobile / tendance affichée à l'utilisateur.
+  const engine = loadChargeEngine();
+  engine.state.profile = {onboarded:true, scaleRatios:{_lowerBody:1,_overall:1}};
+  engine.state.athleteState = {movements:{'Back Squat':{ranges:{}, history:[
+    {date:'2026-06-01', load:195, reps:8, rpe:7, range:'hypertrophy', status:'success', planned:{source:'session'}},
+    {date:'2026-06-08', load:200, reps:8, rpe:7, range:'hypertrophy', status:'success', planned:{source:'session'}},
+    {date:'2026-06-15', load:205, reps:8, rpe:7, range:'hypertrophy', status:'success', planned:{source:'session'}},
+    {date:'2026-06-22', load:5,   reps:8, rpe:7, range:'hypertrophy', status:'success', planned:{source:'session'}}
+  ]}}};
+  const brainShown = engine.coachSafeSuggestedLoad('Back Squat', '205 lb', 8, {});
+  assert(!/^5\s*lb/.test(brainShown), 'coachSafeSuggestedLoad n’affiche pas la typo (5 lb) comme suggestion.');
+  assert(/2\d\d\s*lb/.test(brainShown), 'coachSafeSuggestedLoad se base sur les vraies séances (~205-210 lb), pas sur la typo.');
+}catch(error){
+  errors.push('Test vraisemblance moteur Brain impossible : ' + (error && error.stack ? error.stack : error));
 }
 
 try{

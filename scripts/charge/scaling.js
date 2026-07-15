@@ -16,6 +16,14 @@ function coachProfileNeedsCalibration(){
     : null;
   if(registered && registered.onboarded === false) return true;
   if(!registered && profile.onboarded === false) return true;
+  // Un profil onboardé (registre ou state) peut avoir perdu sa copie locale de
+  // scaleRatios (migration partielle, state namespacé désynchronisé du registre).
+  // Le registre reste la source qui a survécu à l'onboarding réel : on
+  // resynchronise au lieu de bloquer un profil déjà calibré une fois.
+  if(!profile.scaleRatios && registered && registered.scaleRatios){
+    profile.scaleRatios = registered.scaleRatios;
+    if(typeof save === 'function'){ try{ save(); }catch(e){} }
+  }
   return !profile.scaleRatios;
 }
 

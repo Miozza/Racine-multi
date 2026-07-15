@@ -109,6 +109,25 @@ function coachFormatSuggestedLoad(label,value,fallbackText,suffix){
   return text;
 }
 
+// ── Filtre de vraisemblance partagé ─────────────────────────────────────────
+// Une charge est invraisemblable si elle est < 20% du seed par défaut du
+// mouvement (mis à l'échelle du profil) ET < 15 lb absolus (seuil universel
+// haltères minimum réaliste). Ça protège contre les erreurs de saisie
+// (ex: 5 lb au lieu de 50 lb). Partagé entre guardedSuggestedLoadDecision et
+// coachSafeSuggestedLoad : les deux lisent le même historique et doivent
+// ignorer les mêmes lignes aberrantes, sinon une typo peut encore corrompre
+// la moyenne mobile / tendance du moteur Brain même si la décision gardée
+// l'ignore correctement.
+function coachIsImplausibleLoadRow(label,row,targetReps){
+  var load=(typeof coachHistoryLoadNumber==='function')?coachHistoryLoadNumber(row):(Number(row&&row.load)||0);
+  if(!load||load<=0)return false; // pas de charge = plausible (poids du corps, etc.)
+  var rawSeed=(typeof coachDefaultLoadSeedForMovement==='function')?coachDefaultLoadSeedForMovement(label,targetReps):null;
+  var seed=(rawSeed||rawSeed===0)&&typeof coachApplyUserLoadScale==='function'
+    ? coachApplyUserLoadScale(label,rawSeed)
+    : rawSeed;
+  return load<15 && !!seed && load<(seed*0.20);
+}
+
 function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var moveContext=(context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
   var label=moveContext&&moveContext.label?moveContext.label:canonicalMovementLabel(nameOrKey);
@@ -124,20 +143,9 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var hist=(typeof coachFilterHistoryForProgression==='function')?coachFilterHistoryForProgression(histAll,moveContext):histAll;
 
   // ── Filtre de vraisemblance : retire les charges invraisemblables de l'historique ──
-  // Une charge est invraisemblable si elle est < 20% du seed par défaut du mouvement
-  // ET < 15 lb absolus (seuil universel haltères minimum réaliste).
-  // Ça protège contre les erreurs de saisie (ex: 5 lb au lieu de 50 lb).
-  var rawSeedForFilter = coachDefaultLoadSeedForMovement(label, target);
-  var genericSeedForFilter = (rawSeedForFilter || rawSeedForFilter === 0)
-    ? coachApplyUserLoadScale(label, rawSeedForFilter)
-    : rawSeedForFilter;
   hist = hist.filter(function(row){
-    var load = coachHistoryLoadNumber(row);
-    if(!load || load <= 0) return true; // pas de charge = garder (poids du corps, etc.)
-    var tooLow = load < 15;
-    var farBelowSeed = genericSeedForFilter && load < (genericSeedForFilter * 0.20);
-    if(tooLow && farBelowSeed){
-      if(typeof coachLogWarn === 'function') coachLogWarn('plausibility_filter', label + ' : charge ignoree (' + load + ' lb) — invraisemblable vs seed ' + genericSeedForFilter + ' lb');
+    if(coachIsImplausibleLoadRow(label,row,target)){
+      if(typeof coachLogWarn === 'function') coachLogWarn('plausibility_filter', label + ' : charge ignoree (' + coachHistoryLoadNumber(row) + ' lb) — invraisemblable vs seed profil');
       return false;
     }
     return true;
@@ -567,7 +575,12 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     // Un repère de calibrage n'est pas une charge de travail : le laisser piloter
     // la progression faisait suggérer ~1RM pour des sets de 8-12 reps.
     function isCalibrationSeed(r){ return (typeof coachIsNonPerformanceSeed==='function')?coachIsNonPerformanceSeed(r):!!(r&&r.planned&&(r.planned.source==='manual_recalibration'||r.planned.source==='manual_charge_override')); }
-    var hist = histAll.filter(function(r){ return !isDeloadRow(r) && !isCalibrationSeed(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
+    // Même filtre de vraisemblance que guardedSuggestedLoadDecision : sans ça,
+    // une charge invraisemblable (typo de saisie) reste dans l'historique lu
+    // ici et corrompt la moyenne mobile / tendance du moteur Brain V1.16
+    // ci-dessous, même si `base` (guardedSuggestedLoadDecision) l'ignore.
+    function isImplausible(r){ return (typeof coachIsImplausibleLoadRow==='function') && coachIsImplausibleLoadRow(label,r,Number(targetReps)||8); }
+    var hist = histAll.filter(function(r){ return !isDeloadRow(r) && !isCalibrationSeed(r) && !isImplausible(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
     if(!hist.length) return base.loadText;
 
     var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, rowLoad(hist[hist.length-1])) : 5;
