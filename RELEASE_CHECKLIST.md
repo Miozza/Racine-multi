@@ -1,3 +1,4 @@
+V4.2 — Correctif DOM Avis IA
 
 # Release checklist — Racine
 
@@ -14,6 +15,7 @@ node dev/ai_export_movement_context_smoke.js
 node dev/simulate_multi_users.js
 node dev/simulate_users.js
 node dev/charge_engine_checks.js
+node dev/client_charge_safety_checks.js
 node dev/progression_contract_checks.js
 node dev/regression_checks.js --full
 node dev/structure_checks.js --full
@@ -23,9 +25,12 @@ node dev/season_checks.js
 node dev/program_calibration_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
-node dev/movement_swaps_checks.js
-node dev/prescription_checks.js
 ```
+
+Documents d’implémentation associés à la sécurité des charges client :
+
+- `docs/superpowers/specs/2026-07-15-client-charge-safety-design.md`
+- `docs/superpowers/plans/2026-07-15-client-charge-safety.md`
 
 Contrôles manuels minimum :
 
@@ -71,3 +76,4 @@ Règle de sécurité : les données vivantes d'un utilisateur réel doivent rest
 
 - Vérifier que le panneau `(!)` se met à jour immédiatement après effacement d’un avis mouvement ou cycle.
 - Vérifier qu’un avis cycle effacé ne reste pas affiché sous l’avis mouvement.
+
