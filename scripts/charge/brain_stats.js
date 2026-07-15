@@ -134,7 +134,7 @@ function coachBrainValidationCount(rows,lastLoad,targetReps){
   return count;
 }
 function coachBrainIsDeloadRow(r){ return !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
-function coachBrainIsCalibrationSeed(r){ return !!(r && r.planned && r.planned.source === 'manual_recalibration'); }
+function coachBrainIsCalibrationSeed(r){ return (typeof coachIsNonPerformanceSeed==='function')?coachIsNonPerformanceSeed(r):!!(r&&r.planned&&(r.planned.source==='manual_recalibration'||r.planned.source==='manual_charge_override')); }
 function coachBrainBuildStats(label,history,context,targetReps,proposedLoad,lastLoad){
   // Exclut les séances deload et les seeds de calibrage (1RM/5RM d'onboarding) :
   // ce ne sont pas des charges de travail normales. Sans ce filtre, une semaine
@@ -260,3 +260,4 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   }catch(e){}
   return decision;
 }
+
