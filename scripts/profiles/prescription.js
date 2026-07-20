@@ -164,6 +164,25 @@
   function stripHash(){
     try{ history.replaceState(null, "", location.pathname + location.search); }catch(e){}
   }
+  // ── Aide installation iOS ──────────────────────────────────────────────────
+  // Un lien de prescription arrive par texto/WhatsApp : sur iPhone il s'ouvre
+  // souvent dans un navigateur in-app (Messages, Instagram, Gmail…) dont la
+  // feuille de partage ne propose PAS « Sur l'écran d'accueil » — seule Safari
+  // l'offre. Certains conteneurs (SFSafariViewController) ont le même
+  // user-agent que Safari : indétectables. On affiche donc l'astuce dès qu'on
+  // est sur iOS hors PWA installée — dans Safari réel elle est directement
+  // actionnable, ailleurs elle explique comment sortir du navigateur in-app.
+  function iosInstallHintHtml(){
+    try{
+      if(navigator.standalone) return ""; // déjà installé en PWA
+      var ua = navigator.userAgent || "";
+      var isIos = /iPhone|iPad|iPod/i.test(ua) ||
+        (navigator.platform === "MacIntel" && Number(navigator.maxTouchPoints) > 1);
+      if(!isIos) return "";
+      return '<div class="racine-gate-sub" style="margin-top:10px">📲 Pour installer Racine sur ton écran d\'accueil : ouvre ce lien dans <strong>Safari</strong> (si tu es dans Messages, Instagram ou Gmail : menu ⋯ ou 🧭 → « Ouvrir dans Safari »), puis <strong>Partager → « Sur l\'écran d\'accueil »</strong>.</div>';
+    }catch(e){ return ""; }
+  }
+
   function showInfoCard(msg){
     var g = ensureOverlay();
     g.innerHTML = "";
@@ -171,6 +190,7 @@
       '<div class="racine-gate-card">'+
         '<div class="racine-gate-eyebrow">Racine · prescription du coach</div>'+
         '<div class="racine-gate-sub">'+esc(msg)+'</div>'+
+        iosInstallHintHtml()+
         '<button class="btn-ghost" id="rxCloseBtn" style="width:100%">Fermer</button>'+
       '</div>'
     );
@@ -194,6 +214,7 @@
         '<div class="racine-gate-title">'+esc(patch.coach ? patch.coach + " te propose :" : "Ton coach te propose :")+'</div>'+
         lines+
         '<div class="racine-gate-sub" style="margin-top:12px">Rien ne s\'applique sans ton accord. Ton historique et tes résultats sont conservés.</div>'+
+        iosInstallHintHtml()+
         mismatch+
         '<div class="btn-row">'+
           '<button class="btn-accent" id="rxAcceptBtn" style="flex:1">Accepter</button>'+

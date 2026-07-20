@@ -243,10 +243,13 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     var ratios = {};
     Object.keys(ref).forEach(function(key){
       var v = values[key], d = ref[key];
-      ratios[key] = ((v||v===0) && d) ? (v/d) : lvl.fallbackRatio;
+      // v > 0 : une valeur absente, nulle ou négative n'est pas une mesure —
+      // un ratio 0 désactiverait le scaling en aval (coachApplyUserLoadScale)
+      // et plomberait les moyennes de famille ci-dessous.
+      ratios[key] = (v > 0 && d) ? (v/d) : lvl.fallbackRatio;
     });
     function avg(keys){
-      var present = keys.map(function(k){ return ratios[k]; }).filter(function(v){ return v||v===0; });
+      var present = keys.map(function(k){ return ratios[k]; }).filter(function(v){ return v > 0; });
       if(!present.length) return lvl.fallbackRatio;
       return present.reduce(function(a,b){ return a+b; }, 0) / present.length;
     }
@@ -255,7 +258,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     ratios._lowerBody = avg(["frontSquat","backSquat5RM","bulgarianDb"]);
     ratios._hinge     = avg(["hipThrust8RM","dbRdl"]);
     ratios._olympic   = avg(["powerClean"]);
-    var allVals = Object.keys(ref).map(function(k){ return ratios[k]; }).filter(function(v){ return v||v===0; });
+    var allVals = Object.keys(ref).map(function(k){ return ratios[k]; }).filter(function(v){ return v > 0; });
     ratios._overall = allVals.length ? (allVals.reduce(function(a,b){ return a+b; }, 0) / allVals.length) : lvl.fallbackRatio;
     return ratios;
   };

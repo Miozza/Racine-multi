@@ -40,7 +40,11 @@ function coachUserLoadRatio(label){
       var cfg = PR_FIELD_MAP[ids[i]];
       if(cfg && cfg.profile && prCfgMatchesResult(cfg, label)){
         var direct = ratios[cfg.profile];
-        if(direct || direct === 0) return direct;
+        // direct > 0 : un ratio 0 stocké (donnée corrompue d'une version
+        // antérieure) n'est pas « ne pas scaler » — on le traite comme absent
+        // et on retombe sur la famille puis _overall.
+        if(direct > 0) return direct;
+        break;
       }
     }
   }
@@ -54,8 +58,8 @@ function coachUserLoadRatio(label){
   else if(/squat|lunge|step up|leg press|calf|bulgarian/.test(n)) fam = ratios._lowerBody;
   else if(/row|pull up|pulldown|curl|face pull|rear delt|lat |shrug/.test(n)) fam = ratios._upperPull;
   else if(/press|push up|pushup|dip|fly|chest/.test(n)) fam = ratios._upperPush;
-  if(fam || fam === 0) return fam;
-  return (ratios._overall || ratios._overall === 0) ? ratios._overall : 1;
+  if(fam > 0) return fam;
+  return (ratios._overall > 0) ? ratios._overall : 1;
 }
 
 // Applique le ratio personnel à une charge générique (programme ou repère

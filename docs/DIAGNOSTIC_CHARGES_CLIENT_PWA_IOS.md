@@ -2,7 +2,10 @@
 
 Date : 2026-07-20 · Branche : `claude/diagnostic-charge-pwa-ios-kketw3`
 Méthode : systematic-debugging 4 phases (reproduction → isolement → cause racine → correctif vérifié).
-Statut : **diagnostic livré, correctifs proposés NON appliqués** (en attente de feu vert).
+Statut : **correctifs appliqués le 2026-07-20 après feu vert** (diffs 1-3 Bug 1 +
+encart d'installation iOS dans les cartes de prescription). Restent côté données :
+la vérification/correction du profil de Christian (section « Données à vérifier »),
+et l'option « clamp de bande » (scénario B) non appliquée — à discuter.
 Aucun fichier de données protégé n'a été modifié ; `setActiveWeek()` / `applyWeekTrackingForWeek()` / `buildWeekTrackingForWeek()` non touchés.
 
 ---

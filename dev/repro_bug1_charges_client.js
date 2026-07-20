@@ -87,7 +87,9 @@ console.log('════ Scénario 0 — profil client SAIN (référence attend
 }
 
 console.log('\n════ Scénario A — champ "Bench press" VIDÉ à l\'écran de revue ════');
-console.log('(ui.js:489 : Number("")=0 accepté → values.bench=0 → ratio 0)');
+console.log('(historique : ui.js:489 acceptait Number("")=0 → ratio 0 → scaling désactivé.');
+console.log(' Corrigé : ui.js rejette vide/0, et ratiosFromValues + coachUserLoadRatio');
+console.log(' traitent un 0 résiduel comme absent → fallback du niveau. Attendu : valeurs saines.)');
 {
   const ctx = buildContext();
   const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
@@ -97,14 +99,17 @@ console.log('(ui.js:489 : Number("")=0 accepté → values.bench=0 → ratio 0)'
   const ratios = ctx.CoachOnboarding.ratiosFromValues(computed.values, 'debutant');
   ctx.state.profile = {onboarded:true, name:'Client', experienceLevel:'debutant',
     aggressiveness:0.7, scaleRatios: ratios};
-  console.log('ratios corrompus:', JSON.stringify(ratios, (k,v)=>typeof v==='number'?+v.toFixed(3):v));
-  console.log('  Bench Press (prog 205 lb):', suggest(ctx,'Bench Press','205 lb',10), ' ← ratio 0 = AUCUN scaling');
-  console.log('  DB Fly      (prog 35 lb): ', suggest(ctx,'DB Fly','35 lb',12), ' ← moyenne _upperPush plombée par le 0');
+  console.log('ratios obtenus:', JSON.stringify(ratios, (k,v)=>typeof v==='number'?+v.toFixed(3):v));
+  if(ratios.bench === 0) throw new Error('REGRESSION : ratiosFromValues produit encore un ratio 0');
+  console.log('  Bench Press (prog 205 lb):', suggest(ctx,'Bench Press','205 lb',10), ' ← fallback niveau, plus de 205 lb brut');
+  console.log('  DB Fly      (prog 35 lb): ', suggest(ctx,'DB Fly','35 lb',12), ' ← moyenne _upperPush préservée');
   console.log('  Incline DB  (prog 70 lb): ', suggest(ctx,'Incline DB Press','70 lb',10));
 }
 
 console.log('\n════ Scénario B — latPulldown10RM saisi à l\'échelle machine (120 lb) ════');
-console.log('(réf V2 = 20 lb de LEST en traction ; 120/20 = ratio 6 → _upperPull empoisonné)');
+console.log('(réf V2 = 20 lb de LEST en traction ; 120/20 = ratio 6 → _upperPull empoisonné.');
+console.log(' TOUJOURS reproductible : la valeur est plausible pour le code, l\'échelle est');
+console.log(' fausse — correction côté DONNÉES du profil. Un clamp moteur reste à discuter.)');
 {
   const ctx = buildContext();
   const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
