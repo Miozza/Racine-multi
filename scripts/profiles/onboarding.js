@@ -243,10 +243,22 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     var ratios = {};
     Object.keys(ref).forEach(function(key){
       var v = values[key], d = ref[key];
-      ratios[key] = ((v||v===0) && d) ? (v/d) : lvl.fallbackRatio;
+      // v > 0 : une valeur absente, nulle ou négative n'est pas une mesure —
+      // un ratio 0 désactiverait le scaling en aval (coachApplyUserLoadScale)
+      // et plomberait les moyennes de famille ci-dessous.
+      ratios[key] = (v > 0 && d) ? (v/d) : lvl.fallbackRatio;
     });
+    // Bande de vraisemblance des composantes de moyenne : les clés de profil
+    // mélangent des échelles absolues différentes (barre, haltère « par main »,
+    // lest de traction). Une valeur saisie à la mauvaise échelle produit un
+    // ratio individuel énorme (cas réel : dbRdl saisi ~185 lb à l'échelle
+    // barre vs référence 75/main → ratio 2.45 → _hinge empoisonné → Deadlift
+    // de programme 245 lb suggéré à 600 lb). Un ratio > 2 n'est pas un humain
+    // plus fort, c'est une donnée à la mauvaise échelle : exclu de la moyenne,
+    // la famille s'appuie sur les autres repères ou retombe sur le niveau.
+    var RATIO_COMPONENT_MAX = 2.0;
     function avg(keys){
-      var present = keys.map(function(k){ return ratios[k]; }).filter(function(v){ return v||v===0; });
+      var present = keys.map(function(k){ return ratios[k]; }).filter(function(v){ return v > 0 && v <= RATIO_COMPONENT_MAX; });
       if(!present.length) return lvl.fallbackRatio;
       return present.reduce(function(a,b){ return a+b; }, 0) / present.length;
     }
@@ -255,7 +267,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     ratios._lowerBody = avg(["frontSquat","backSquat5RM","bulgarianDb"]);
     ratios._hinge     = avg(["hipThrust8RM","dbRdl"]);
     ratios._olympic   = avg(["powerClean"]);
-    var allVals = Object.keys(ref).map(function(k){ return ratios[k]; }).filter(function(v){ return v||v===0; });
+    var allVals = Object.keys(ref).map(function(k){ return ratios[k]; }).filter(function(v){ return v > 0 && v <= RATIO_COMPONENT_MAX; });
     ratios._overall = allVals.length ? (allVals.reduce(function(a,b){ return a+b; }, 0) / allVals.length) : lvl.fallbackRatio;
     return ratios;
   };

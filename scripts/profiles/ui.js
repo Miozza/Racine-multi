@@ -487,7 +487,10 @@
       Array.prototype.forEach.call(card.querySelectorAll("[data-profile-key]"), function(inp){
         var key = inp.getAttribute("data-profile-key");
         var v = Number(inp.value);
-        if(!isNaN(v)) computed.values[key] = v;
+        // Un champ vidé donne Number("") === 0 : une charge de départ à 0 (ou
+        // négative) n'existe pas et produirait un ratio de scaling 0 — on garde
+        // alors la valeur calculée au lieu d'enregistrer la corruption.
+        if(String(inp.value).trim() !== "" && isFinite(v) && v > 0) computed.values[key] = v;
       });
       if(typeof api.ratiosFromValues==="function"){
         computed.ratios = api.ratiosFromValues(computed.values, wiz.meta.experienceLevel);

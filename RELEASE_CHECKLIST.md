@@ -26,12 +26,16 @@ node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 node dev/movement_swaps_checks.js
 node dev/prescription_checks.js
+node dev/repro_bug1_charges_client.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :
 
 - `docs/superpowers/specs/2026-07-15-client-charge-safety-design.md`
 - `docs/superpowers/plans/2026-07-15-client-charge-safety.md`
+- `docs/DIAGNOSTIC_CHARGES_CLIENT_PWA_IOS.md` (diagnostic 2026-07-20 : ratios de
+  scaling corrompus + installation PWA iOS ; reproduction exécutable :
+  `dev/repro_bug1_charges_client.js`)
 
 Contrôles manuels minimum :
 

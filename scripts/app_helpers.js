@@ -19,7 +19,10 @@ function nowIso(){try{return new Date().toISOString();}catch(e){return String(ne
 
 function round5(n){if(n===0)return 0;if(!n||isNaN(n))return null;return Math.round(n/5)*5;}
 function lb(n){var r=round5(n);return(r===0||r)?r+" lb":"—";}
-function parseLoad(v){if(v===0||v==="0")return 0;if(!v)return null;var m=String(v).replace(",",".").match(/[0-9]+(\.[0-9]+)?/);return m?Number(m[0]):null;}
+// Un texte contenant « RPE » sans unité lb/kg n'est pas une charge : sans ce
+// garde, parseLoad("RPE 7–8") extrayait 7, mis à l'échelle puis arrondi en
+// suggestion « 5 lb » sur les programmes à consigne RPE. "135 lb RPE 8" reste 135.
+function parseLoad(v){if(v===0||v==="0")return 0;if(!v)return null;var s=String(v);if(/rpe/i.test(s)&&!/\b(lb|kg)\b/i.test(s))return null;var m=s.replace(",",".").match(/[0-9]+(\.[0-9]+)?/);return m?Number(m[0]):null;}
 
 
 function parseRestToSeconds(s){

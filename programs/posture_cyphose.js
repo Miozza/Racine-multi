@@ -182,7 +182,7 @@ function postureBlocks(day, week){
 
     {time:"12 min", title:"B. Full body correctif", tag:"Correctif", kind:"accessory",
      exercises:[
-       pstEx("Goblet Squat", w1?"3×8":w3?"4×8":"3×10", w1?"24 kg":"24-32 kg", "0:30 avant B2", "Tempo 3 sec descente. Torse haut, respiration calme."),
+       pstEx("Goblet Squat", w1?"3×8":w3?"4×8":"3×10", w1?"53 lb":"53-70 lb", "0:30 avant B2", "Tempo 3 sec descente. Torse haut, respiration calme."),
        pstEx("Ring Row", w1?"3×8":w3?"4×8-10":"3×10-12", "poids du corps", "1:00 après B2", "Poitrine aux anneaux, omoplates fortes.")
      ]},
 
