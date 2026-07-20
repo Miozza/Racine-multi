@@ -19,6 +19,26 @@ ajouté** après le cas réel « Deadlift suggéré à 600 lb » (PR 1RM réel 3
 Reste côté données : recalibrer/corriger le profil de Christian (`dbRdl` doit
 être un poids PAR MAIN d'haltère ; le clamp borne les dégâts mais ne calibre
 pas). Section « Données à vérifier » ci-dessous.
+
+Audit pré-déploiement (2026-07-20, feu vert appliqué) — deux bloquants
+supplémentaires corrigés :
+- **Crash client neuf** : `suggestion.js` référençait `genericSeedForFilter`
+  dont la déclaration avait été supprimée par le refactor du filtre de
+  vraisemblance (b8b9442) → `ReferenceError` non attrapée dès qu'un profil
+  sans historique rencontrait une charge texte (« Poids du corps » — Pull-Up
+  jour 1 de l'Arnold Strict), vue de séance cassée. Déclaration rétablie.
+- **« RPE 7–8 » lu comme 7 lb** : `parseLoad` (app_helpers.js) extrayait le
+  premier nombre de n'importe quel texte → suggestions « 5 lb » sur les 26
+  exercices à consigne RPE d'`arnold_split_2026_adapte`. Garde ajouté : un
+  texte contenant « RPE » sans unité lb/kg n'est pas une charge (null) ; le
+  moteur retombe sur le repère générique mis à l'échelle (Back Squat ~90 lb
+  débutant) ou affiche le texte tel quel (Bench Press). "135 lb RPE 8" reste
+  135. Ces deux bugs étaient masqués pour Bertin par le plancher historique.
+Régression verrouillée : scénario D de `dev/repro_bug1_charges_client.js`.
+À savoir (décisions produit, non corrigées) : fallback « avancé » = ratio 1.0
+si tests sautés ; PR saisis ne recalculent pas les ratios ; saisie kg non
+convertie dans les résultats ; deload auto semaine 6 (programmes 6+ semaines
+seulement).
 Aucun fichier de données protégé n'a été modifié ; `setActiveWeek()` / `applyWeekTrackingForWeek()` / `buildWeekTrackingForWeek()` non touchés.
 
 ---

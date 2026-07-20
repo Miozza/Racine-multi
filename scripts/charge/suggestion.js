@@ -167,6 +167,11 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var isDeload=coachIsDeloadWeekOrContext(moveContext);
   var seedReason="Charge du programme, arrondie selon l'equipement.";
   if(programNum===null||programNum===undefined){
+    // Déclaration rétablie : le refactor du filtre de vraisemblance
+    // (coachIsImplausibleLoadRow) avait supprimé ce var mais laissé son usage
+    // ci-dessous — ReferenceError pour tout profil sans historique sur un
+    // mouvement à charge texte (« Poids du corps »…), vue de séance cassée.
+    var genericSeedForFilter=coachDefaultLoadSeedForMovement(label,target);
     var seedFromReal=lastHasValidLoad?lastLoad:(((bestControlled&&bestControlled.load)||bestControlled&&bestControlled.load===0)?bestControlled.load:null);
     var seed;
     if(seedFromReal||seedFromReal===0){

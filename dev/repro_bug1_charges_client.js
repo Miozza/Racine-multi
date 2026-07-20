@@ -154,3 +154,34 @@ console.log(' jeudi 245 lb × 2.45 = 600 lb. PR 1RM réel du client : 375.)');
   console.log('C2 ratios stockés corrompus (_hinge 2.449) → Deadlift:', d2.loadNum + ' lb  (borné, plus jamais 600)');
   if(d2.loadNum > 245 * 1.6) throw new Error('REGRESSION : clamp au point d\'usage inopérant');
 }
+
+console.log('\n════ Scénario D — client neuf : charges texte et consignes RPE ════');
+console.log('(D1 : « genericSeedForFilter is not defined » cassait la vue séance dès le');
+console.log(' jour 1 — Pull-Up « Poids du corps » — pour tout profil sans historique.');
+console.log(' D2 : parseLoad("RPE 7–8") retournait 7 → « 5 lb » suggéré sur les 26');
+console.log(' exercices d\'arnold_split_2026_adapte.)');
+{
+  const ctx = buildContext();
+  const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
+  ctx.state.profile = {onboarded:true, name:'Client', experienceLevel:'debutant',
+    aggressiveness:0.7, scaleRatios: computed.ratios};
+
+  // D1 — aucun historique + charge texte : ne doit plus jamais lever d'exception.
+  [['Pull-Up','Poids du corps'],['Dips','Poids du corps'],['Farmer Carry','lourd propre']].forEach(([n,l])=>{
+    let d;
+    try{ d = ctx.guardedSuggestedLoadDecision(n, l, 8, {kind:'main'}); }
+    catch(e){ throw new Error('REGRESSION : crash « '+n+' » ('+e.message+')'); }
+    if(!d || !d.loadText) throw new Error('REGRESSION : décision vide pour '+n);
+    console.log('  '+n+' ('+l+') →', JSON.stringify(d.loadText));
+  });
+
+  // D2 — consigne RPE comme charge : plus de faux « 5 lb ».
+  if(ctx.parseLoad('RPE 7–8') !== null) throw new Error('REGRESSION : parseLoad("RPE 7–8") doit être null');
+  if(ctx.parseLoad('135 lb RPE 8') !== 135) throw new Error('REGRESSION : parseLoad("135 lb RPE 8") doit rester 135');
+  const bs = ctx.guardedSuggestedLoadDecision('Back Squat','RPE 7–8',10,{kind:'main'});
+  console.log('  Back Squat (charge "RPE 7–8") →', JSON.stringify(bs.loadText), ' ← repère générique mis à l\'échelle');
+  if(bs.loadNum !== null && bs.loadNum < 40) throw new Error('REGRESSION : Back Squat sur consigne RPE suggéré à '+bs.loadNum+' lb');
+  const bp = ctx.guardedSuggestedLoadDecision('Bench Press','RPE 7–8',10,{kind:'main'});
+  console.log('  Bench Press (charge "RPE 7–8") →', JSON.stringify(bp.loadText), ' ← pas de repère : texte affiché tel quel');
+  if(bp.loadNum !== null && bp.loadNum < 40) throw new Error('REGRESSION : Bench Press sur consigne RPE suggéré à '+bp.loadNum+' lb');
+}
