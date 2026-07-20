@@ -3,9 +3,22 @@
 Date : 2026-07-20 · Branche : `claude/diagnostic-charge-pwa-ios-kketw3`
 Méthode : systematic-debugging 4 phases (reproduction → isolement → cause racine → correctif vérifié).
 Statut : **correctifs appliqués le 2026-07-20 après feu vert** (diffs 1-3 Bug 1 +
-encart d'installation iOS dans les cartes de prescription). Restent côté données :
-la vérification/correction du profil de Christian (section « Données à vérifier »),
-et l'option « clamp de bande » (scénario B) non appliquée — à discuter.
+encart d'installation iOS dans les cartes de prescription), **puis clamp de bande
+ajouté** après le cas réel « Deadlift suggéré à 600 lb » (PR 1RM réel 375) :
+- cause confirmée par l'arithmétique : Deadlift jeudi 245 lb × `_hinge` 2.449 =
+  600. Un `dbRdl` saisi ~185 lb à l'échelle BARRE (au lieu de « lb par main »,
+  référence 75) donne ratio 2.45, propagé au `hipThrust8RM` dérivé → famille
+  `_hinge` entière empoisonnée (touche aussi Romanian Deadlift ~430 et
+  Stiff-Leg Deadlift ~405) ;
+- `onboarding.js` : les ratios individuels > 2.0 sont exclus des moyennes de
+  famille et de `_overall` (donnée trans-échelle, pas un humain plus fort) ;
+- `scaling.js` : tout ratio appliqué à une charge de programme est borné à
+  [0.25, 1.6] au point d'usage (`coachClampScaleRatio`, journalisé via
+  CoachLog) — protège aussi les ratios corrompus déjà stockés : Deadlift
+  borné à 390 lb au lieu de 600 en attendant la recalibration.
+Reste côté données : recalibrer/corriger le profil de Christian (`dbRdl` doit
+être un poids PAR MAIN d'haltère ; le clamp borne les dégâts mais ne calibre
+pas). Section « Données à vérifier » ci-dessous.
 Aucun fichier de données protégé n'a été modifié ; `setActiveWeek()` / `applyWeekTrackingForWeek()` / `buildWeekTrackingForWeek()` non touchés.
 
 ---

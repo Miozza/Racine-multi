@@ -27,6 +27,32 @@ function coachProfileNeedsCalibration(){
   return !profile.scaleRatios;
 }
 
+// Bande de vraisemblance d'un ratio appliqué à une charge de programme.
+// Les clés de profil mélangent des échelles absolues différentes (barre,
+// haltère « par main », lest de traction) : une valeur saisie à la mauvaise
+// échelle produit un ratio énorme qui multiplie ensuite toutes les charges
+// de programme concernées (cas réel : dbRdl saisi à l'échelle barre → _hinge
+// ≈ 2.45 → Deadlift 245 lb suggéré à 600 lb). Aucun client réel ne vaut plus
+// de ~1.6× l'athlète de référence ni moins de ~0.25× sur un mouvement : hors
+// bande, on borne et on journalise. Le clamp peut sous-suggérer un cas
+// extrême légitime (ex. traction très lestée) : direction sûre — l'historique
+// loggé reprend la main dès les premières séances. Protège aussi les ratios
+// déjà STOCKÉS corrompus (profils calibrés avant ce garde-fou).
+var COACH_SCALE_RATIO_MIN = 0.25;
+var COACH_SCALE_RATIO_MAX = 1.6;
+function coachClampScaleRatio(ratio, label, sourceKey){
+  ratio = Number(ratio);
+  if(!(ratio > 0)) return 1;
+  if(ratio >= COACH_SCALE_RATIO_MIN && ratio <= COACH_SCALE_RATIO_MAX) return ratio;
+  var clamped = Math.max(COACH_SCALE_RATIO_MIN, Math.min(COACH_SCALE_RATIO_MAX, ratio));
+  try{
+    if(typeof window !== 'undefined' && window.CoachLog && CoachLog.warn){
+      CoachLog.warn('scale_ratio_clamped', {movement:String(label||''), source:String(sourceKey||''), ratio:ratio, clamped:clamped});
+    }
+  }catch(e){}
+  return clamped;
+}
+
 function coachUserLoadRatio(label){
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
   var ratios = profile && profile.scaleRatios;
@@ -43,7 +69,7 @@ function coachUserLoadRatio(label){
         // direct > 0 : un ratio 0 stocké (donnée corrompue d'une version
         // antérieure) n'est pas « ne pas scaler » — on le traite comme absent
         // et on retombe sur la famille puis _overall.
-        if(direct > 0) return direct;
+        if(direct > 0) return coachClampScaleRatio(direct, label, cfg.profile);
         break;
       }
     }
@@ -58,8 +84,8 @@ function coachUserLoadRatio(label){
   else if(/squat|lunge|step up|leg press|calf|bulgarian/.test(n)) fam = ratios._lowerBody;
   else if(/row|pull up|pulldown|curl|face pull|rear delt|lat |shrug/.test(n)) fam = ratios._upperPull;
   else if(/press|push up|pushup|dip|fly|chest/.test(n)) fam = ratios._upperPush;
-  if(fam > 0) return fam;
-  return (ratios._overall > 0) ? ratios._overall : 1;
+  if(fam > 0) return coachClampScaleRatio(fam, label, 'famille');
+  return (ratios._overall > 0) ? coachClampScaleRatio(ratios._overall, label, '_overall') : 1;
 }
 
 // Applique le ratio personnel à une charge générique (programme ou repère

@@ -107,9 +107,9 @@ console.log(' traitent un 0 résiduel comme absent → fallback du niveau. Atten
 }
 
 console.log('\n════ Scénario B — latPulldown10RM saisi à l\'échelle machine (120 lb) ════');
-console.log('(réf V2 = 20 lb de LEST en traction ; 120/20 = ratio 6 → _upperPull empoisonné.');
-console.log(' TOUJOURS reproductible : la valeur est plausible pour le code, l\'échelle est');
-console.log(' fausse — correction côté DONNÉES du profil. Un clamp moteur reste à discuter.)');
+console.log('(réf V2 = 20 lb de LEST en traction ; 120/20 = ratio 6. Corrigé : les ratios');
+console.log(' > 2.0 sont exclus des moyennes de famille, et tout ratio utilisé est borné');
+console.log(' à [0.25, 1.6] au point d\'usage. Attendu : _upperPull sain.)');
 {
   const ctx = buildContext();
   const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
@@ -117,8 +117,40 @@ console.log(' fausse — correction côté DONNÉES du profil. Un clamp moteur r
   const ratios = ctx.CoachOnboarding.ratiosFromValues(computed.values, 'debutant');
   ctx.state.profile = {onboarded:true, name:'Client', experienceLevel:'debutant',
     aggressiveness:0.7, scaleRatios: ratios};
-  console.log('ratios corrompus:', JSON.stringify(ratios, (k,v)=>typeof v==='number'?+v.toFixed(3):v));
+  console.log('ratios obtenus:', JSON.stringify(ratios, (k,v)=>typeof v==='number'?+v.toFixed(3):v));
+  if(ratios._upperPull > 2.0) throw new Error('REGRESSION : _upperPull encore empoisonné par un ratio trans-échelle');
   console.log('  Lat Pulldown(prog 140 lb):', suggest(ctx,'Lat Pulldown','140 lb',10), ' ← famille _upperPull ×'+ratios._upperPull.toFixed(2));
   console.log('  Barbell Curl(prog 75 lb): ', suggest(ctx,'Barbell Curl','75 lb',10));
   console.log('  Barbell Row (prog 165 lb):', suggest(ctx,'Barbell Row','165 lb',10), ' ← direct row8RM, non touché');
+}
+
+console.log('\n════ Scénario C — cas réel « Deadlift 600 lb » (dbRdl à l\'échelle barre) ════');
+console.log('(Test chaîne postérieure = DB RDL par main, réf 75. Saisi ~185 lb à l\'échelle');
+console.log(' barre → ratio 2.45, propagé au Hip Thrust dérivé → _hinge 2.45 → Deadlift');
+console.log(' jeudi 245 lb × 2.45 = 600 lb. PR 1RM réel du client : 375.)');
+{
+  // C1 — ratios recalculés APRÈS correctif (nouvelle calibration / revue) :
+  // les deux composantes > 2.0 sont exclues → _hinge retombe sur le niveau.
+  const ctx = buildContext();
+  const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
+  computed.values.dbRdl = 185;                                    // échelle barre saisie par erreur
+  computed.values.hipThrust8RM = Math.round(315 * (185/75)/5)*5;  // dérivé proportionnel contaminé
+  const ratios = ctx.CoachOnboarding.ratiosFromValues(computed.values, 'debutant');
+  ctx.state.profile = {onboarded:true, name:'Client', experienceLevel:'debutant',
+    aggressiveness:0.7, scaleRatios: ratios};
+  console.log('C1 ratios recalculés: _hinge =', +ratios._hinge.toFixed(3));
+  if(ratios._hinge > 2.0) throw new Error('REGRESSION : _hinge encore empoisonné');
+  const d1 = ctx.guardedSuggestedLoadDecision('Deadlift','245 lb',8,{kind:'main'});
+  console.log('  Deadlift (prog 245 lb):', d1.loadNum + ' lb');
+  if(d1.loadNum >= 400) throw new Error('REGRESSION : Deadlift aberrant avec ratios recalculés');
+
+  // C2 — ratios corrompus déjà STOCKÉS (profil calibré avant le correctif) :
+  // le clamp [0.25, 1.6] au point d'usage borne les dégâts (245×1.6=392→390),
+  // plus jamais 600. La vraie correction reste la recalibration du profil.
+  const ctx2 = buildContext();
+  ctx2.state.profile = {onboarded:true, name:'Client', experienceLevel:'debutant',
+    aggressiveness:0.7, scaleRatios: {_hinge: 2.449, _overall: 1.1}};
+  const d2 = ctx2.guardedSuggestedLoadDecision('Deadlift','245 lb',8,{kind:'main'});
+  console.log('C2 ratios stockés corrompus (_hinge 2.449) → Deadlift:', d2.loadNum + ' lb  (borné, plus jamais 600)');
+  if(d2.loadNum > 245 * 1.6) throw new Error('REGRESSION : clamp au point d\'usage inopérant');
 }
