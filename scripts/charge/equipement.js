@@ -3,6 +3,15 @@
 
 function defaultEquipmentLoadRules(){
   return {
+    // Seule famille en kg de l'app (convention : KB = kg, tout le reste = lb).
+    // Un mouvement nommé KB est traité en kg même sans unité dans le texte
+    // (l'étape de scaling arrondit sans le texte de charge) ; seul un « lb »
+    // explicite le fait retomber sur le comportement lb historique.
+    kettlebell: {
+      match:["kb ","kettlebell"],
+      unit:"kg",
+      available:[4,8,10,12,16,18,24,28,32]
+    },
     cable: {
       match:["câble","cable","poulie","rope","face pull","triceps pushdown","triceps rope","lat pulldown","upright row"],
       step:10
@@ -33,8 +42,13 @@ function normalizeChargeText(s){return String(s||"").toLowerCase().normalize("NF
 function equipmentRuleForExercise(nameOrKey, loadText){
   var rules=effectiveEquipmentLoadRules();
   var text=normalizeChargeText((nameOrKey||"")+" "+(loadText||""));
-  if(/\bkg\b/.test(text))return null;
   function has(rule){return (rule&&rule.match||[]).some(function(x){return text.indexOf(normalizeChargeText(x))!==-1;});}
+  // Kettlebells : testés AVANT le court-circuit kg pour que les charges KB
+  // s'arrondissent aux vraies tailles du rack (16 kg) au lieu de l'arrondi
+  // générique aux 5 (15 kg, un bell qui n'existe pas). Un mouvement nommé KB
+  // sans unité est kg par convention ; « lb » explicite = comportement lb.
+  if(has(rules.kettlebell) && !/\blb\b/.test(text))return rules.kettlebell;
+  if(/\bkg\b/.test(text))return null;
   if(has(rules.cable))return rules.cable;
   if(has(rules.band))return rules.band;
   if(has(rules.dumbbell))return rules.dumbbell;
@@ -113,7 +127,7 @@ function equipmentStepLabelForExercise(nameOrKey, loadText){
   if(!rule)return "arrondi 5 lb";
   if(Array.isArray(rule.available)){
     var hasNumeric=rule.available.some(function(x){return !isNaN(Number(x));});
-    if(hasNumeric)return "charges disponibles: "+rule.available.join(", ")+" lb";
+    if(hasNumeric)return "charges disponibles: "+rule.available.join(", ")+" "+(rule.unit||"lb");
     return "tailles disponibles: "+rule.available.join(" → ");
   }
   return "incréments de "+rule.step+" lb";

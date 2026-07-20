@@ -37,6 +37,7 @@ function buildContext(){
     'scripts/profiles/reference.js',
     'programs/config.js',           // defaultProfile + movements (vrai mapping)
     'data/charges.js',              // DEFAULT_CHARGES (lecture seule, non modifié)
+    'data/equipment.js',            // règles d'équipement réelles (incl. kettlebells kg)
     'scripts/profiles/onboarding.js',
     'scripts/app_helpers.js',
     'scripts/charge/equipement.js',
@@ -184,4 +185,21 @@ console.log(' exercices d\'arnold_split_2026_adapte.)');
   const bp = ctx.guardedSuggestedLoadDecision('Bench Press','RPE 7–8',10,{kind:'main'});
   console.log('  Bench Press (charge "RPE 7–8") →', JSON.stringify(bp.loadText), ' ← pas de repère : texte affiché tel quel');
   if(bp.loadNum !== null && bp.loadNum < 40) throw new Error('REGRESSION : Bench Press sur consigne RPE suggéré à '+bp.loadNum+' lb');
+}
+
+console.log('\n════ Scénario E — kettlebells en kg : arrondi aux vraies tailles ════');
+console.log('(Convention : KB = kg, tout le reste = lb. Avant : arrondi générique aux 5,');
+console.log(' des bells inexistants (15 kg…). Après : toujours une taille du rack [4..32].)');
+{
+  const ctx = buildContext();
+  const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
+  ctx.state.profile = {onboarded:true, name:'Client', experienceLevel:'debutant',
+    aggressiveness:0.7, scaleRatios: computed.ratios};
+  const kb = ctx.guardedSuggestedLoadDecision('KB Swings','24 kg',15,{kind:'main'});
+  console.log('  KB Swings (prog 24 kg) →', JSON.stringify(kb.loadText));
+  const KB_SIZES = [4,8,10,12,16,18,24,28,32];
+  if(KB_SIZES.indexOf(kb.loadNum) === -1) throw new Error('REGRESSION : KB arrondi hors du rack ('+kb.loadNum+' kg)');
+  if(!/kg/.test(kb.loadText)) throw new Error('REGRESSION : unité kg perdue pour un KB');
+  // Un KB déclaré en lb ailleurs garde le comportement lb historique.
+  if(ctx.parseLoad('53 lb') !== 53) throw new Error('REGRESSION : parseLoad lb');
 }

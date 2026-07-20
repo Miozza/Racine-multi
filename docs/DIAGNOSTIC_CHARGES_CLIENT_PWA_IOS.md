@@ -39,6 +39,22 @@ Régression verrouillée : scénario D de `dev/repro_bug1_charges_client.js`.
 si tests sautés ; PR saisis ne recalculent pas les ratios ; saisie kg non
 convertie dans les résultats ; deload auto semaine 6 (programmes 6+ semaines
 seulement).
+
+**Convention d'unités (2026-07-20)** : KB = kg, tout le reste = lb.
+- La règle d'équipement kettlebell est branchée (data/equipment.js +
+  equipement.js) : une charge KB en kg s'arrondit aux vraies tailles du rack
+  [4, 8, 10, 12, 16, 18, 24, 28, 32] au lieu de l'arrondi générique aux 5
+  (« 16 kg », plus jamais « 15 kg »). La règle exige « kg » dans le texte :
+  un KB déclaré en lb garde le comportement lb.
+- Goblet Squat harmonisé en lb (posture_cyphose : 24 kg → 53 lb) pour que le
+  même mouvement n'accumule plus un historique mixte kg/lb entre programmes.
+- Limite connue (long terme) : le moteur ne convertit pas les unités — un
+  client qui s'entraîne dans un autre gym avec des KB marqués en lb et logge
+  « 35 » sur un historique kg fera voir un faux saut au moteur. La vraie
+  solution est une unité canonique interne (lb) avec conversion à la
+  saisie/affichage et migration de l'historique kg — chantier à planifier,
+  hors périmètre pré-déploiement. Consigne clients d'ici là : logger les KB
+  en kg tels que gravés sur le bell.
 Aucun fichier de données protégé n'a été modifié ; `setActiveWeek()` / `applyWeekTrackingForWeek()` / `buildWeekTrackingForWeek()` non touchés.
 
 ---

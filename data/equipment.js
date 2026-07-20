@@ -47,3 +47,12 @@ window.EQUIPMENT_LOAD_RULES.barbell = {
   match:["barbell","bench","squat","strict press","push press","deadlift","clean","row","hip thrust"],
   step: window.RACINE_EQUIPMENT.barbells.step
 };
+// Seule famille en kg (convention : KB = kg, tout le reste = lb). Un mouvement
+// nommé KB est traité en kg même sans unité dans le texte ; seul un « lb »
+// explicite le fait retomber sur le comportement lb. Arrondit aux vraies
+// tailles du rack au lieu de l'arrondi générique aux 5.
+window.EQUIPMENT_LOAD_RULES.kettlebell = {
+  match:["kb ","kettlebell"],
+  unit: window.RACINE_EQUIPMENT.kettlebells.unit,
+  available: window.RACINE_EQUIPMENT.kettlebells.values
+};
