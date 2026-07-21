@@ -179,7 +179,12 @@ function coachContextMatches(rowCtx, currentCtx, label){
 
 function coachIsNonPerformanceSeed(row){
   var source=row&&row.planned&&row.planned.source;
-  return source==='manual_recalibration'||source==='manual_charge_override';
+  // manual_pr = record 1RM saisi (trophee date). C'est un maximum, souvent
+  // ancien, jamais une charge de travail : le moteur ne doit JAMAIS le lire
+  // comme une seance recente (sinon il projette ~1RM via Epley et surevalue
+  // tout mouvement sans historique reel). Comme les autres seeds de calibrage,
+  // il reste stocke pour l'affichage/trophee mais est exclu de la progression.
+  return source==='manual_recalibration'||source==='manual_charge_override'||source==='manual_pr';
 }
 
 function resetManualChargeOverridesFromAthleteState(){
