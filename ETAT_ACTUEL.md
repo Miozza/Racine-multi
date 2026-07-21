@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.17
+# ETAT ACTUEL — V4.5.18
 
-Version actuelle : V4.5.17
+Version actuelle : V4.5.18
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version reconstruit `programs/hypertrophie_fesse_stephanie.js` (« Hypertrophie Fessier Femme ») sur le patron `arnold_split_strict.js` : séquence fixe en cycle de 2 semaines (5 jours réels, S1 lourd/volume, S2 isolation/pump/récup) au lieu de l'ancienne bibliothèque de cartes à rotation calculée. Programme rendu public (`visibility: "public"`). Corrige au passage : charges qui retombaient à ~5 lb (le moteur lisait le chiffre d'un « RPE 7 » textuel comme une charge — remplacé par des qualificatifs d'équipement sans chiffre), un finisher du jour 1 sans exercice reconnu par le parseur WOD, les fiches techniques/vidéos manquantes pour une douzaine de mouvements accessoires et d'échauffement. Nouveau point d'extension opt-in `getDayLabel(day, week)` (honoré par `currentDayMeta`, `previewDayMeta`, `buildWorkout`) permettant à un programme de nommer différemment un même jour selon la semaine — utilisé ici pour que la semaine 2 ne semble pas être une répétition de la semaine 1. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. V4.5.18 conserve les 32 programmes de base accessibles à tous, rend « Hypertrophie Fessier Femme » privé et traite tout futur programme sans `visibility:"public"` comme privé. Une migration idempotente préserve les profils qui utilisent déjà ce cycle. La vue Gear admin ne prétend plus connaître l’état d’un appareil hors ligne : elle sert uniquement à sélectionner un client, chercher un programme spécialisé et copier un lien de prescription permanent. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

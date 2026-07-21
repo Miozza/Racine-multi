@@ -58,7 +58,7 @@
     var nextIds = Array.isArray(ended.suggestedNext) ? ended.suggestedNext : [];
 
     var candidates = (Array.isArray(input.candidates) ? input.candidates : [])
-      .filter(function(p){ return p && p.id && (p.visibility || "public") === "public"; })
+      .filter(function(p){ return p && p.id && p.visibility === "public"; })
       .filter(function(p){ return p.objective !== "transition"; }); // le deload s'insère par fatigue, jamais par classement
 
     var scored = candidates.map(function(p){
@@ -90,7 +90,7 @@
     var fatigue = Number(input.recentAvgRpe) || 0;
     if(fatigue >= FATIGUE_RPE_THRESHOLD){
       var deload = (Array.isArray(input.candidates) ? input.candidates : []).find(function(p){
-        return p && p.objective === "transition" && (p.visibility || "public") === "public" && /deload/i.test(p.id);
+        return p && p.objective === "transition" && p.visibility === "public" && /deload/i.test(p.id);
       });
       if(deload){
         out = [{

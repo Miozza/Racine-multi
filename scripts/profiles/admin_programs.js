@@ -1,8 +1,6 @@
 // Racine — Panneau admin « Programmes clients » (Réglages, admin seulement).
-// Point unique pour activer un programme (public OU privé) comme cycle courant
-// de n'importe quel profil, sans basculer dans son profil. Lecture seule sur le
-// state des profils (via CoachProfiles.exportProfileBlob) ; toute écriture passe
-// par CoachProfiles.setProfileActiveProgram / grant / revoke (pas d'état parallèle).
+// Outil hors ligne de prescription : Gear prépare un lien à envoyer au client.
+// Il ne prétend jamais connaître, accorder, retirer ou activer un état distant.
 window.RacineAdminPrograms = window.RacineAdminPrograms || {};
 
 (function(){
@@ -31,11 +29,6 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     var blob = (window.CoachProfiles && CoachProfiles.exportProfileBlob) ? CoachProfiles.exportProfileBlob(id) : null;
     return (blob && blob.state) || {};
   }
-  function programName(id){
-    var e = catalog().filter(function(p){ return p.id === id; })[0];
-    return e ? e.name : (id || "—");
-  }
-
   function status(msg, ok){
     var s = document.getElementById("adminProgStatus");
     if(s){ s.textContent = msg || ""; s.className = "status-msg" + (ok ? " ok" : (msg ? " err" : "")); }
@@ -67,32 +60,18 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
 
     var target = list.filter(function(p){ return p.id === selectedId; })[0] || list[0];
     var st = readState(target.id);
-    var currentGoal = st.cycle && st.cycle.goal;
-    var perms = Array.isArray(target.programPermissions) ? target.programPermissions : [];
-
     var f = filterText.trim().toLowerCase();
-    var progs = catalog().filter(function(p){ return !f || String(p.name||"").toLowerCase().indexOf(f) !== -1; });
-    var publics = progs.filter(function(p){ return p.visibility !== "private"; });
-    var privates = progs.filter(function(p){ return p.visibility === "private"; });
+    var privates = catalog().filter(function(p){
+      if(!p || !p.id || p.visibility === "public") return false;
+      return !f || String(p.name||"").toLowerCase().indexOf(f) !== -1;
+    });
 
     function card(p){
-      var isActive = p.id === currentGoal;
-      var granted = perms.indexOf(p.id) !== -1;
-      var badge = (p.visibility === "private") ? '<span class="admin-prog-badge priv">Privé</span>' : '<span class="admin-prog-badge pub">Public</span>';
-      var stat = isActive ? '<span class="admin-prog-stat actif">ACTIF</span>' : (granted ? '<span class="admin-prog-stat accorde">Accordé</span>' : '');
-      var actions = '';
-      if(p.visibility === "private"){
-        actions += granted
-          ? '<button type="button" class="btn-ghost admin-prog-btn" data-revoke="'+esc(p.id)+'">Retirer</button>'
-          : '<button type="button" class="btn-ghost admin-prog-btn" data-grant="'+esc(p.id)+'">Accorder</button>';
-      }
-      if(!isActive) actions += '<button type="button" class="btn-accent admin-prog-btn" data-activate="'+esc(p.id)+'">Activer comme cycle</button>';
-      // Prescription par lien : à envoyer au client (texto/WhatsApp) pour
-      // appliquer sur SON appareil, sans PIN admin chez lui.
-      if(window.RacinePrescription) actions += '<button type="button" class="btn-ghost admin-prog-btn" data-share="'+esc(p.id)+'">Partager le lien</button>';
-      return '<div class="admin-prog-card'+(isActive?' is-active':'')+'">'+
-        '<div class="admin-prog-head"><strong>'+esc(p.name)+'</strong> '+badge+' '+stat+'</div>'+
-        '<div class="admin-prog-actions">'+actions+'</div>'+
+      return '<div class="admin-prog-card">'+
+        '<div class="admin-prog-head"><strong>'+esc(p.name)+'</strong></div>'+
+        '<div class="admin-prog-actions">'+
+          '<button type="button" class="btn-accent admin-prog-btn" data-share-program="'+esc(p.id)+'">Copier le lien</button>'+
+        '</div>'+
       '</div>';
     }
 
@@ -128,12 +107,9 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       '<select id="adminProgSelectProfile" class="input-field">'+
         list.map(function(p){ return '<option value="'+esc(p.id)+'"'+(p.id===target.id?' selected':'')+'>'+esc(p.name)+(p.id===activeId?' (actif)':'')+'</option>'; }).join("")+
       '</select>'+
-      '<p class="muted" style="margin:6px 0 12px">'+esc(levelLabel(target.experienceLevel))+
-        ' · Cycle actuel : <strong>'+esc(currentGoal ? programName(currentGoal) : "aucun")+'</strong>'+
-        (st.week ? (' · Semaine '+esc(st.week)) : '')+'</p>'+
-      '<input id="adminProgFilter" class="input-field" type="text" placeholder="Filtrer par nom…" value="'+esc(filterText)+'"/>'+
-      '<div class="admin-prog-group"><div class="admin-prog-group-title">Publics</div>'+ (publics.length?publics.map(card).join(""):'<p class="muted">—</p>') +'</div>'+
-      '<div class="admin-prog-group"><div class="admin-prog-group-title">Privés</div>'+ (privates.length?privates.map(card).join(""):'<p class="muted">—</p>') +'</div>'+
+      '<p class="muted" style="margin:6px 0 12px">'+esc(levelLabel(target.experienceLevel))+' · Les programmes de base sont déjà disponibles sur son appareil.</p>'+
+      '<input id="adminProgFilter" class="input-field" type="text" placeholder="Rechercher un programme spécialisé…" value="'+esc(filterText)+'"/>'+
+      '<div class="admin-prog-group admin-private-program-list"><div class="admin-prog-group-title">Programmes spécialisés</div>'+ (privates.length?privates.map(card).join(""):'<p class="muted">Aucun programme spécialisé trouvé.</p>') +'</div>'+
       swapsHtml+
       '<p id="adminProgStatus" class="status-msg"></p>';
     h.innerHTML = html;
@@ -143,12 +119,6 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     var flt = document.getElementById("adminProgFilter");
     if(flt) flt.oninput = function(){ filterText = flt.value; var pos=flt.selectionStart; api.render(); var f2=document.getElementById("adminProgFilter"); if(f2){ f2.focus(); try{ f2.setSelectionRange(pos,pos); }catch(e){} } };
 
-    Array.prototype.forEach.call(h.querySelectorAll("[data-grant]"), function(b){
-      b.onclick = function(){ CoachProfiles.grantProgramPermission(target.id, b.getAttribute("data-grant")); status("Programme accordé.", true); api.render(); };
-    });
-    Array.prototype.forEach.call(h.querySelectorAll("[data-revoke]"), function(b){
-      b.onclick = function(){ CoachProfiles.revokeProgramPermission(target.id, b.getAttribute("data-revoke")); status("Permission retirée.", true); api.render(); };
-    });
     // Génère et copie le lien de prescription (programme optionnel + les
     // remplacements actifs du profil ciblé). Fallback : prompt avec le lien
     // si le presse-papier est refusé.
@@ -166,12 +136,12 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       function fallback(){ try{ prompt("Copie ce lien et envoie-le à "+target.name+" :", link); }catch(e){} }
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(link).then(function(){
-          status("✅ Lien copié — envoie-le à "+target.name+" (texto/WhatsApp). Il proposera Accepter/Refuser sur son téléphone.", true);
+          status("Lien copié — envoie-le à "+target.name+".", true);
         }, fallback);
       } else { fallback(); }
     }
-    Array.prototype.forEach.call(h.querySelectorAll("[data-share]"), function(b){
-      b.onclick = function(){ sharePrescription(b.getAttribute("data-share")); };
+    Array.prototype.forEach.call(h.querySelectorAll("[data-share-program]"), function(b){
+      b.onclick = function(){ sharePrescription(b.getAttribute("data-share-program")); };
     });
     var swapsShare = document.getElementById("adminSwapsShare");
     if(swapsShare) swapsShare.onclick = function(){ sharePrescription(null); };
@@ -241,15 +211,6 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
         RacineMovementSwaps.remove(target.id, b.getAttribute("data-swap-remove"));
         api.render();
         status("Remplacement retiré — retour au programme original.", true);
-      };
-    });
-    Array.prototype.forEach.call(h.querySelectorAll("[data-activate]"), function(b){
-      b.onclick = function(){
-        var pid = b.getAttribute("data-activate");
-        if(!confirm('Activer "'+programName(pid)+'" comme cycle actif de '+target.name+' ? Sa semaine repartira à 1, son historique est conservé.')) return;
-        var res = CoachProfiles.setProfileActiveProgram(target.id, pid);
-        if(res && res.ok){ status('✅ "'+programName(pid)+'" activé pour '+target.name+'.', true); api.render(); }
-        else{ status((res && res.error) || "Activation impossible.", false); }
       };
     });
   };

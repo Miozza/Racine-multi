@@ -132,7 +132,7 @@ if(version){
   assert(app.includes('function applyWeekTrackingForWeek(wk)'), 'app.js doit appliquer un suivi de semaine reconstruit.');
   assert(app.includes('state.history||[]'), 'Le suivi de semaine doit relire state.history.');
   assert(app.includes('state.weekTransitions||[]'), 'Le suivi de semaine doit relire weekTransitions.');
-  const weekTracking = app.match(/function buildWeekTrackingForWeek\(wk, cycle\)\{[\s\S]*?return \{completedDays:completed,missedDays:missed\};\n\}/);
+  const weekTracking = app.match(/function buildWeekTrackingForWeek\(wk, cycle\)\{[\s\S]*?return \{completedDays:completed,missedDays:missed\};\r?\n\}/);
   assert(!!weekTracking && !weekTracking[0].includes('state.completedDays'), 'La reconstruction par semaine ne doit pas réinjecter state.completedDays.');
   assert(!!swipeNav && swipeNav[0].includes('setActiveWeek(Number(state.week)-1)'), 'weekPrev doit passer par setActiveWeek.');
   assert(!!swipeNav && swipeNav[0].includes('setActiveWeek(Number(state.week)+1)'), 'weekNext doit passer par setActiveWeek.');

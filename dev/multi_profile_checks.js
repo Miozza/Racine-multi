@@ -36,6 +36,52 @@ assert(onboarding.includes('blankProfile()'), 'Onboarding initialise un profil v
 const scaling = read('scripts/charge/scaling.js');
 assert(scaling.includes('profile.scaleRatios'), 'Le scaling lit les ratios du profil actif.');
 assert(!/^\/\/ Coach Bertin/m.test(read('data/charges.js')), 'data/charges.js n’est plus présenté comme profil Bertin.');
+assert(app.includes('CoachProfiles.reconcileActivePrivateProgramPermissions'), 'Le boot protège les cycles actifs devenus privés avant le filtrage.');
+
+// Migration locale : un programme public devenu privé reste accessible au
+// profil qui l'utilise déjà, sans modifier son state ni dupliquer la permission.
+try{
+  const mem = {};
+  const localStorage = {
+    getItem: key => Object.prototype.hasOwnProperty.call(mem, key) ? mem[key] : null,
+    setItem: (key, value) => { mem[key] = String(value); },
+    removeItem: key => { delete mem[key]; }
+  };
+  mem.racineProfileRegistry = JSON.stringify({
+    version:1,
+    activeProfileId:'p_steph',
+    profiles:[{id:'p_steph',name:'Stéphanie',onboarded:true,programPermissions:[]}]
+  });
+  const originalState = {
+    cycle:{goal:'hypertrophie_fesse_stephanie'},
+    week:4,
+    day:'jeudi',
+    history:[{id:'h1'}],
+    athleteState:{movements:{}}
+  };
+  mem['racineState::p_steph'] = JSON.stringify(originalState);
+  const storageCtx = {
+    window:{
+      COACH_BERTIN_PROGRAM_INDEX:[
+        {id:'hypertrophie_fesse_stephanie',visibility:'private'},
+        {id:'programme_public',visibility:'public'}
+      ]
+    },
+    localStorage,
+    console
+  };
+  storageCtx.window.window = storageCtx.window;
+  vm.runInNewContext(read('scripts/profiles/storage.js'), storageCtx, {filename:'storage.js'});
+  const profilesApi = storageCtx.window.CoachProfiles;
+  assert(typeof profilesApi.reconcileActivePrivateProgramPermissions === 'function', 'Migration des cycles privés exposée.');
+  assert(profilesApi.reconcileActivePrivateProgramPermissions() === true, 'La migration ajoute la permission du cycle privé actif.');
+  assert(profilesApi.hasProgramPermission('p_steph','hypertrophie_fesse_stephanie'), 'Le profil conserve son programme Stéphanie.');
+  assert(profilesApi.reconcileActivePrivateProgramPermissions() === false, 'La migration est idempotente.');
+  const savedState = JSON.parse(mem['racineState::p_steph']);
+  assert(JSON.stringify(savedState) === JSON.stringify(originalState), 'La migration ne modifie ni cycle, ni semaine, ni historique, ni charges.');
+}catch(e){
+  errors.push('Migration programme privé actif impossible : ' + (e && e.stack ? e.stack : e));
+}
 
 // Test dynamique minimal : un débutant bench 95x8 doit produire un ratio bas,
 // pas une charge de départ avancée ou héritée.

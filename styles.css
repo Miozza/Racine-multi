@@ -6288,6 +6288,9 @@ body.is-client [data-ai-clear]{display:none!important}
 .admin-prog-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .admin-prog-btn{min-height:44px}
 .admin-prog-group-title{font-size:12px;text-transform:uppercase;opacity:.6;margin:14px 0 4px}
+.admin-private-program-list .admin-prog-card{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.admin-private-program-list .admin-prog-head{min-width:0;overflow-wrap:anywhere}
+.admin-private-program-list .admin-prog-actions{margin-top:0;flex:0 0 auto}
 
 /* Sélecteur de mouvements avec recherche (remplacements, panneau admin) */
 .admin-swap-list{

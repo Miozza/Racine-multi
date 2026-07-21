@@ -19,12 +19,18 @@ function assert(cond, msg){ (cond ? notes : errors).push(msg); }
 // Câblage statique.
 assert(read('index.html').indexOf('scripts/profiles/prescription.js') !== -1, 'prescription.js chargé par index.html.');
 assert(read('scripts/profiles/admin_programs.js').indexOf('RacinePrescription') !== -1, 'Panneau admin : bouton Partager branché.');
+const adminPrograms = read('scripts/profiles/admin_programs.js');
+assert(adminPrograms.includes('data-share-program'), 'Gear expose une action de copie par programme privé.');
+assert(!adminPrograms.includes('data-grant='), 'Gear ne prétend plus accorder localement un accès distant.');
+assert(!adminPrograms.includes('data-revoke='), 'Gear ne prétend plus retirer un accès distant.');
+assert(!adminPrograms.includes('data-activate='), 'Gear ne prétend plus activer un cycle distant.');
+assert(!adminPrograms.includes('setProfileActiveProgram'), 'Gear ne change plus le cycle actif.');
 assert(read('scripts/profiles/ui.js').indexOf('RacinePrescription.propose') !== -1, 'Réglages client : coller le lien branché.');
 // Le boot doit reconstruire le catalogue avec les permissions du profil actif,
 // sinon un programme privé accordé après le chargement de la page (prescription
 // acceptée, activation admin) reste invisible et déclenche à tort le fallback
 // « programme absent ».
-assert(/function coachFullBoot\(\)[\s\S]{0,600}registerProgramsFromIndex\(\)/.test(read('app.js')),
+assert(/function coachFullBoot\(\)[\s\S]{0,800}registerProgramsFromIndex\(\)/.test(read('app.js')),
   'coachFullBoot reconstruit focusConfigs (permissions du profil actif).');
 assert(/state\.missingCycle && focusConfigs\[state\.missingCycle\.id\]/.test(read('app.js')),
   'Auto-guérison : un cycle tracé par le fallback est restauré quand le programme redevient disponible.');
@@ -71,14 +77,22 @@ try{
   const oldLink = '#rx=' + ctx.btoa(unescape(encodeURIComponent(JSON.stringify(old)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   assert(api.parse(oldLink) && api.parse(oldLink).error, 'Prescription expirée refusée avec message.');
 
-  // Application : jamais sans profil actif; passe par les API existantes.
-  let activated = null; const swapsAdded = [];
+  const missingVisibility = { id:'futur_programme', name:'Futur programme' };
+  assert(missingVisibility.visibility !== 'public', 'Un futur programme sans visibilité n’est pas public implicitement.');
+
+  // Application : jamais sans profil actif; accorde l'accès sans changer le
+  // cycle courant. Réaccepter le même lien doit rester idempotent.
+  const granted = []; const swapsAdded = [];
   ctx.window.COACH_BERTIN_PROGRAM_INDEX = [{ id:'hypertrophie_fesse_stephanie', name:'Hypertrophie Fessiers — Stéphanie', visibility:'private' }];
   ctx.window.CoachProfiles = ctx.CoachProfiles = {
     getActiveId: function(){ return 'p1'; },
     hasActiveOnboardedProfile: function(){ return true; },
     getActive: function(){ return { id:'p1', name:'Stéphanie', onboarded:true }; },
-    setProfileActiveProgram: function(id, pid){ activated = { id:id, pid:pid }; return { ok:true }; }
+    hasProgramPermission: function(id, pid){ return granted.some(x => x.id === id && x.pid === pid); },
+    grantProgramPermission: function(id, pid){
+      if(!this.hasProgramPermission(id, pid)) granted.push({id:id,pid:pid});
+      return true;
+    }
   };
   const knownMovements = ['Bench Press', 'DB Bench Press'];
   ctx.window.RacineMovementSwaps = ctx.RacineMovementSwaps = {
@@ -94,8 +108,10 @@ try{
   };
   let r = api.applyToActiveProfile(parsed.patch);
   assert(r.ok, 'Application OK sur profil actif.');
-  assert(activated && activated.pid === 'hypertrophie_fesse_stephanie', 'Programme activé via CoachProfiles.setProfileActiveProgram.');
+  assert(granted.length === 1 && granted[0].pid === 'hypertrophie_fesse_stephanie', 'Programme accordé sans changer le cycle actif.');
   assert(swapsAdded.length === 1 && swapsAdded[0].to === 'DB Bench Press', 'Remplacements posés via RacineMovementSwaps.');
+  r = api.applyToActiveProfile(parsed.patch);
+  assert(r.ok && granted.length === 1, 'Réaccepter la même prescription ne duplique pas la permission et ne réactive aucun cycle.');
   const unknown = api.buildPatch({ programId:'programme_inexistant' });
   r = api.applyToActiveProfile(unknown);
   assert(!r.ok && r.error, 'Programme inconnu refusé (app pas à jour) au lieu d\'écrire un cycle cassé.');
