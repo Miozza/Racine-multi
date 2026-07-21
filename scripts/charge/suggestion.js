@@ -162,28 +162,59 @@ function coachCycleProgress01(){
 
 // Reference de travail declaree pour une plage (PR exclus). Cherche d'abord la
 // plage exacte ; sinon derive via 1RM Epley depuis une autre plage disponible.
-function coachDeclaredRangeReference(mv,range,targetReps){
-  if(!mv||!mv.ranges)return null;
-  function refLoad(r){var l=parseLoad(r&&r.currentLoad);if(l===null||l===undefined)l=Number(r&&r.currentLoad)||0;return Number(l)||0;}
-  function isPrRef(r){return !!(r&&r.planned&&r.planned.source==='manual_pr');}
-  var direct=mv.ranges[range];
-  if(direct&&!isPrRef(direct)){
-    var l=refLoad(direct);
-    var reps=Number(direct.currentReps)||Number(direct.actualReps)||0;
-    if(l>0)return {load:l,reps:reps||Number(targetReps)||0,range:range,exact:true};
-  }
-  var best=null;
-  ['strength','hypertrophy','endurance'].forEach(function(rg){
-    var r=mv.ranges[rg];if(!r||isPrRef(r))return;
-    var l=refLoad(r),reps=Number(r.currentReps)||Number(r.actualReps)||0;
-    if(l>0&&reps>0){
-      var oneRM=epley1RM(l,reps);
-      if(oneRM>0&&(!best||oneRM>best.oneRM))best={oneRM:oneRM};
+function coachDeclaredRangeReference(mv,range,targetReps,label){
+  // 1. athleteState (references saisies dans la grille + seances). Peut etre
+  //    absent pour un client onboardé (voir fallback movementRefs plus bas).
+  if(mv&&mv.ranges){
+    var refLoad=function(r){var l=parseLoad(r&&r.currentLoad);if(l===null||l===undefined)l=Number(r&&r.currentLoad)||0;return Number(l)||0;};
+    var isPrRef=function(r){return !!(r&&r.planned&&r.planned.source==='manual_pr');};
+    var direct=mv.ranges[range];
+    if(direct&&!isPrRef(direct)){
+      var l=refLoad(direct);
+      var reps=Number(direct.currentReps)||Number(direct.actualReps)||0;
+      if(l>0)return {load:l,reps:reps||Number(targetReps)||0,range:range,exact:true};
     }
-  });
-  if(best){
-    var derived=estimateLoadForRepsFrom1RM(best.oneRM,Number(targetReps)||8);
-    if(derived>0)return {load:derived,reps:Number(targetReps)||8,range:range,exact:false};
+    var best=null;
+    ['strength','hypertrophy','endurance'].forEach(function(rg){
+      var r=mv.ranges[rg];if(!r||isPrRef(r))return;
+      var l=refLoad(r),reps=Number(r.currentReps)||Number(r.actualReps)||0;
+      if(l>0&&reps>0){
+        var oneRM=epley1RM(l,reps);
+        if(oneRM>0&&(!best||oneRM>best.oneRM))best={oneRM:oneRM};
+      }
+    });
+    if(best){
+      var derived=estimateLoadForRepsFrom1RM(best.oneRM,Number(targetReps)||8);
+      if(derived>0)return {load:derived,reps:Number(targetReps)||8,range:range,exact:false};
+    }
+  }
+  // 2. Fallback: state.movementRefs (keyed mvKey__range) est semé par l'ONBOARDING
+  // et les seances, et ne passe PAS par athleteState. Sans cette lecture, un
+  // client fraichement onboardé n'aurait jamais son seed sous-le-RM (le moteur
+  // retomberait sur le defaut programme x ratio, ~100% de la capacite). On
+  // exclut les trophees 1RM (status "pr").
+  if(typeof state!=='undefined'&&state&&state.movementRefs){
+    var wantedRefLabels=(typeof coachMovementLookupLabels==='function')?coachMovementLookupLabels(label).map(coachNormalizeMoveText):[coachNormalizeMoveText(label)];
+    var mvCfg=(typeof movements!=='undefined'&&movements)?movements:{};
+    var refMovesToLabel=function(mvKey){
+      var nm=mvCfg[mvKey]&&mvCfg[mvKey].name;
+      return !!nm&&wantedRefLabels.indexOf(coachNormalizeMoveText(nm))>=0;
+    };
+    var rkeys=Object.keys(state.movementRefs),rExact=null,rBest=null;
+    for(var ri=0;ri<rkeys.length;ri++){
+      var e=state.movementRefs[rkeys[ri]];
+      if(!e||e.implausible||e.status==='pr')continue;
+      var eMvKey=e.movement||rkeys[ri].split('__')[0];
+      if(!refMovesToLabel(eMvKey))continue;
+      var eLoad=parseLoad(e.load);if(eLoad===null||eLoad===undefined)eLoad=Number(e.load)||0;
+      if(!(eLoad>0))continue;
+      var eReps=Number(e.reps)||0;
+      var eRange=e.range||(eReps?repRange(eReps):null);
+      if(eRange===range&&!rExact)rExact={load:eLoad,reps:eReps};
+      if(eReps>0){var oneRMr=epley1RM(eLoad,eReps);if(oneRMr>0&&(!rBest||oneRMr>rBest.oneRM))rBest={oneRM:oneRMr};}
+    }
+    if(rExact)return {load:rExact.load,reps:rExact.reps||Number(targetReps)||0,range:range,exact:true};
+    if(rBest){var dRef=estimateLoadForRepsFrom1RM(rBest.oneRM,Number(targetReps)||8);if(dRef>0)return {load:dRef,reps:Number(targetReps)||8,range:range,exact:false};}
   }
   return null;
 }
@@ -286,7 +317,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   // travail.
   var hasRealHistory=hist.some(function(r){return coachHistoryHasValidLoad(r,label,moveContext);});
   if(!hasRealHistory&&!contextLimited&&!isTechnicalMovement(label)&&!isDeload){
-    var declaredRef=coachDeclaredRangeReference(mv,range,target);
+    var declaredRef=coachDeclaredRangeReference(mv,range,target,label);
     var refSeed=declaredRef?coachReferenceSeedWorkingLoad(declaredRef,range):null;
     if(refSeed&&refSeed.load>0){
       suggested=refSeed.load;

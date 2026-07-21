@@ -95,6 +95,19 @@ console.log('\n════ Reference seed & PR decoupling ════\n');
   assert(s1 >= 190 && s1 <= 210, 'Avec PR 300 + refs, semaine 1 pilotee par la reference (~200, obtenu ' + s1 + ' lb)');
 })();
 
+// 3b. Reference d'ONBOARDING (movementRefs seul, pas d'athleteState) doit
+//     aussi piloter le seed — sinon un nouveau client garde une charge trop
+//     haute en semaine 1.
+(function(){
+  const c = buildCtx(1, 6);
+  const cfg = Object.assign({}, benchCfg(c), { reps: 8, range: 'hypertrophy' });
+  c.updateMovementRefFromPR(cfg, 215, '2024-06-01', 8); // ecrit movementRefs seulement
+  const hasAthlete = !!(c.state.athleteState.movements['Bench press']);
+  const s1 = bench(c);
+  assert(!hasAthlete, 'Cas onboarding : reference dans movementRefs, rien dans athleteState');
+  assert(s1 >= 190 && s1 <= 210, 'Reference onboarding (movementRefs) pilote le seed sous le RM (~200, obtenu ' + s1 + ' lb)');
+})();
+
 // 4. Rampe croissante sur le cycle (surcharge planifiee).
 (function(){
   const loads = [];
