@@ -1,13 +1,15 @@
-// Racine — Panneau admin « Programmes clients » (Réglages, admin seulement).
-// Outil hors ligne de prescription : Gear prépare un lien à envoyer au client.
-// Il ne prétend jamais connaître, accorder, retirer ou activer un état distant.
+// Racine — Panneau admin « Programmes spécialisés » (Réglages, admin seulement).
+// Tous les profils vivent sur cet appareil : la grille d'accès accorde/retire
+// directement les programmes privés (effet local immédiat, ex-onglet Admin de
+// la vue PC). Les remplacements de mouvements gardent un profil ciblé. Le
+// panneau ne prétend jamais connaître ou modifier un état distant ; le lien de
+// prescription reste disponible pour partager les remplacements.
 window.RacineAdminPrograms = window.RacineAdminPrograms || {};
 
 (function(){
   var api = window.RacineAdminPrograms;
-  var selectedId = null;   // profil ciblé (persiste entre rendus)
-  var filterText = "";
-  var moveCatCache = null; // { profileId, programGoal, cat } — évite de rebalayer tout le cycle à chaque frappe du filtre
+  var selectedId = null;   // profil ciblé des remplacements (persiste entre rendus)
+  var moveCatCache = null; // { profileId, programGoal, cat } — évite de rebalayer tout le cycle à chaque rendu
 
   // Délègue au helper global (scripts/ui_modals.js) — même convention que
   // scripts/view_pc.js:pcEsc — pour ne pas faire diverger l'échappement HTML.
@@ -60,20 +62,43 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
 
     var target = list.filter(function(p){ return p.id === selectedId; })[0] || list[0];
     var st = readState(target.id);
-    var f = filterText.trim().toLowerCase();
     var privates = catalog().filter(function(p){
-      if(!p || !p.id || p.visibility === "public") return false;
-      return !f || String(p.name||"").toLowerCase().indexOf(f) !== -1;
+      return p && p.id && p.visibility !== "public";
     });
 
-    function card(p){
-      return '<div class="admin-prog-card">'+
-        '<div class="admin-prog-head"><strong>'+esc(p.name)+'</strong></div>'+
-        '<div class="admin-prog-actions">'+
-          '<button type="button" class="btn-accent admin-prog-btn" data-share-program="'+esc(p.id)+'">Copier le lien</button>'+
-        '</div>'+
-      '</div>';
+    // Grille d'accès : profils en lignes, programmes privés en colonnes.
+    // ✓ = accès accordé, · = pas d'accès. Clic = bascule, effet immédiat.
+    var gridHtml;
+    if(!privates.length){
+      gridHtml = '<p class="muted">Aucun programme spécialisé défini.</p>';
+    }else{
+      var headers = privates.map(function(prog){
+        var short = prog.name.replace(/^Phase \d+ — /,'').replace(/^Strict /,'').slice(0,22);
+        return '<th style="font-size:10px;font-weight:600;padding:4px 6px;text-align:center;opacity:.7">'+esc(short)+'</th>';
+      }).join('');
+      var rows = list.map(function(p){
+        var cells = privates.map(function(prog){
+          var has = Array.isArray(p.programPermissions) && p.programPermissions.indexOf(prog.id) !== -1;
+          return '<td style="text-align:center">'+
+            '<button type="button" class="pcx-perm-toggle '+(has?'active':'')+'" '+
+              'data-perm-profile="'+esc(p.id)+'" data-perm-program="'+esc(prog.id)+'" '+
+              'title="'+(has?'Retirer':'Donner')+' «'+esc(prog.name)+'» à '+esc(p.name)+'" '+
+              'style="font-size:16px;background:none;border:none;cursor:pointer;opacity:'+(has?'1':'0.25')+'">'+(has?'✓':'·')+'</button>'+
+            '</td>';
+        }).join('');
+        return '<tr><td style="padding:6px 10px 6px 0;white-space:nowrap"><strong>'+esc(p.name)+'</strong></td>'+cells+'</tr>';
+      }).join('');
+      gridHtml =
+        '<p class="muted" style="margin:4px 0 8px">Coche ✓ pour donner accès, · pour retirer. Effet immédiat sur cet appareil.</p>'+
+        '<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">'+
+          '<thead><tr><th style="text-align:left;padding:4px 10px 4px 0"></th>'+headers+'</tr></thead>'+
+          '<tbody>'+rows+'</tbody>'+
+        '</table></div>';
     }
+    var accessHtml =
+      '<div class="admin-prog-group"><div class="admin-prog-group-title">Accès aux programmes spécialisés</div>'+
+      gridHtml+
+      '</div>';
 
     // Remplacements de mouvements du profil ciblé (scripts/profiles/swaps.js).
     var swaps = (window.RacineMovementSwaps && RacineMovementSwaps.listFor) ? RacineMovementSwaps.listFor(target.id) : [];
@@ -86,6 +111,13 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
     }
     var swapsHtml =
       '<div class="admin-prog-group"><div class="admin-prog-group-title">Remplacements de mouvements</div>'+
+      // Seule cette section a besoin d'un profil ciblé : les remplacements
+      // sont propres à un profil (la grille d'accès, elle, montre tout le monde).
+      '<label for="adminProgSelectProfile">Profil</label>'+
+      '<select id="adminProgSelectProfile" class="input-field">'+
+        list.map(function(p){ return '<option value="'+esc(p.id)+'"'+(p.id===target.id?' selected':'')+'>'+esc(p.name)+(p.id===activeId?' (actif)':'')+'</option>'; }).join("")+
+      '</select>'+
+      '<p class="muted" style="margin:6px 0 8px">'+esc(levelLabel(target.experienceLevel))+'</p>'+
       '<p class="muted" style="margin:4px 0 8px">Propre à ce profil : partout où sa séance affiche le mouvement d\'origine, l\'app montre le remplaçant (le moteur de charges suit le nouveau nom). Retirer la ligne = retour au programme original.</p>'+
       (swaps.length ? swaps.map(swapRow).join("") : '<p class="muted">Aucun remplacement actif.</p>')+
       // Sélection par liste avec recherche : la syntaxe exacte du nom est
@@ -103,25 +135,31 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
       '</div>';
 
     var html =
-      '<label for="adminProgSelectProfile">Profil</label>'+
-      '<select id="adminProgSelectProfile" class="input-field">'+
-        list.map(function(p){ return '<option value="'+esc(p.id)+'"'+(p.id===target.id?' selected':'')+'>'+esc(p.name)+(p.id===activeId?' (actif)':'')+'</option>'; }).join("")+
-      '</select>'+
-      '<p class="muted" style="margin:6px 0 12px">'+esc(levelLabel(target.experienceLevel))+' · Les programmes de base sont déjà disponibles sur son appareil.</p>'+
-      '<input id="adminProgFilter" class="input-field" type="text" placeholder="Rechercher un programme spécialisé…" value="'+esc(filterText)+'"/>'+
-      '<div class="admin-prog-group admin-private-program-list"><div class="admin-prog-group-title">Programmes spécialisés</div>'+ (privates.length?privates.map(card).join(""):'<p class="muted">Aucun programme spécialisé trouvé.</p>') +'</div>'+
+      accessHtml+
       swapsHtml+
       '<p id="adminProgStatus" class="status-msg"></p>';
     h.innerHTML = html;
 
+    // Bascule d'accès direct : même geste que l'ex-onglet Admin de la vue PC.
+    Array.prototype.forEach.call(h.querySelectorAll("[data-perm-profile]"), function(btn){
+      btn.onclick = function(){
+        var pid = btn.getAttribute("data-perm-profile");
+        var progId = btn.getAttribute("data-perm-program");
+        if(!pid || !progId || !window.CoachProfiles) return;
+        var has = btn.classList.contains("active");
+        if(has) CoachProfiles.revokeProgramPermission(pid, progId);
+        else CoachProfiles.grantProgramPermission(pid, progId);
+        api.render();
+        var name = (list.filter(function(p){ return p.id===pid; })[0]||{}).name || pid;
+        status((has ? "❌ Retiré : " : "✅ Accordé : ") + progId + " → " + name, true);
+      };
+    });
     var sel = document.getElementById("adminProgSelectProfile");
-    if(sel) sel.onchange = function(){ selectedId = sel.value; filterText = ""; api.render(); };
-    var flt = document.getElementById("adminProgFilter");
-    if(flt) flt.oninput = function(){ filterText = flt.value; var pos=flt.selectionStart; api.render(); var f2=document.getElementById("adminProgFilter"); if(f2){ f2.focus(); try{ f2.setSelectionRange(pos,pos); }catch(e){} } };
+    if(sel) sel.onchange = function(){ selectedId = sel.value; api.render(); };
 
-    // Génère et copie le lien de prescription (programme optionnel + les
-    // remplacements actifs du profil ciblé). Fallback : prompt avec le lien
-    // si le presse-papier est refusé.
+    // Génère et copie le lien de prescription (remplacements actifs du profil
+    // ciblé ; programme optionnel, plus utilisé depuis la grille d'accès
+    // directe). Fallback : prompt avec le lien si le presse-papier est refusé.
     function sharePrescription(programId){
       if(!window.RacinePrescription) return;
       var me = (window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive()) || {};
@@ -140,9 +178,6 @@ window.RacineAdminPrograms = window.RacineAdminPrograms || {};
         }, fallback);
       } else { fallback(); }
     }
-    Array.prototype.forEach.call(h.querySelectorAll("[data-share-program]"), function(b){
-      b.onclick = function(){ sharePrescription(b.getAttribute("data-share-program")); };
-    });
     var swapsShare = document.getElementById("adminSwapsShare");
     if(swapsShare) swapsShare.onclick = function(){ sharePrescription(null); };
     // Sélecteurs de mouvements avec recherche. Le groupe « Programme actuel »

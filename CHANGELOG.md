@@ -19,6 +19,13 @@
 - **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
 - Tests : nouveau `dev/history_progress_checks.js`.
 
+### Gestion des programmes : un seul endroit (Gear), fin de l'onglet Admin de la vue PC
+- **La grille d'accès aux programmes privés** (profils en lignes × programmes spécialisés en colonnes, bascule ✓/· à effet immédiat) **déménage de l'onglet Admin de la vue PC vers Gear** (Réglages → « Programmes spécialisés »). Tous les profils étant locaux (sur l'appareil), aucun sélecteur de profil n'est nécessaire pour donner ou retirer un programme : tout le monde est visible d'un coup.
+- **L'onglet « Admin » disparaît de la vue PC**, qui redevient purement de l'inspection en lecture seule (Séance, Semaine, Route, Analyse, Export). L'accès à la vue reste gardé admin par la navigation.
+- **Gear simplifié** : suppression du flux « choisir un client → copier le lien du programme » (remplacé par la grille directe) et du filtre de recherche associé. Le sélecteur de profil restant est scopé aux **remplacements de mouvements** (par nature propres à un profil), dont le partage par lien est conservé.
+- **Inchangé** : le système de prescription par lien (côté client, « J'ai reçu un lien du coach »), les permissions elles-mêmes (`grant/revokeProgramPermission`), les remplacements de mouvements, le moteur.
+- Tests : nouveau `dev/gear_permissions_checks.js` (statique + smoke runtime du rendu de la grille) ; `dev/prescription_checks.js` et `dev/client_view_checks.js` mis à jour vers le nouveau contrat.
+
 ## V4.5.18 — Accès programmes hors ligne et Gear simplifié
 - **Base préservée** : les 32 programmes actuellement publics restent accessibles à tous. « Hypertrophie Fessier Femme » devient privé.
 - **Privé par défaut** : tout programme nouveau ou sans `visibility:"public"` exige désormais une permission explicite.

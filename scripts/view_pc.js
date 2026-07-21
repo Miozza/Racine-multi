@@ -268,22 +268,12 @@ function pcRenderSelectors(){
     '<label>Jour<select id="pcDaySelect" class="pcx-select">'+dayOpts+'</select></label>'+ 
     '</div>';
 }
-function pcIsAdmin(){
-  // Délègue au helper centralisé. Fallback local si CoachProfiles absent —
-  // sans passe-droit par nom de profil : seul un flag explicite compte.
-  try{
-    if(window.CoachProfiles && CoachProfiles.isActiveAdmin) return CoachProfiles.isActiveAdmin();
-    var ap = window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive();
-    if(!ap) return false;
-    return !!(ap.isAdmin || ap.macrocycleOverrideKey === "BERTIN_MACROCYCLE_OVERRIDE");
-  }catch(e){ return false; }
-}
-
 function pcRenderTabs(){
-  // « Progression » a déménagé dans l'onglet Historique (tous les profils) :
-  // même moteur de rendu, monté via pcRenderProgressInto(). Plus d'onglet ici.
+  // « Progression » a déménagé dans l'onglet Historique (tous les profils) et
+  // « Admin » (permissions de programmes) dans Gear (Réglages → Programmes
+  // spécialisés) : la vue PC est purement de l'inspection en lecture seule.
+  // L'accès à la vue elle-même reste gardé admin par switchView.
   var tabs=[['session','Séance'],['week','Semaine'],['roadmap','Route'],['analysis','Analyse'],['export','Export']];
-  if(pcIsAdmin()) tabs.push(['admin','Admin']);
   return '<div class="pcx-tabs">'+tabs.map(function(t){return '<button type="button" class="pcx-tab '+(pcActiveTab===t[0]?'active':'')+'" data-pc-tab="'+t[0]+'">'+t[1]+'</button>';}).join('')+'</div>';
 }
 function pcRenderTopHeader(){
@@ -1173,68 +1163,14 @@ function pcRenderExportTab(){
     '</div>'+
     '</section>';
 }
-function pcRenderAdminTab(){
-  var profiles = window.CoachProfiles ? CoachProfiles.list().filter(function(p){ return p.onboarded; }) : [];
-  var privatePrograms = (window.COACH_BERTIN_PROGRAM_INDEX || []).filter(function(p){ return p.visibility === 'private'; });
-
-  if(!privatePrograms.length){
-    return '<section class="pcx-panel"><h2>Admin</h2><p class="pcx-muted">Aucun programme privé défini.</p></section>';
-  }
-
-  var rows = profiles.map(function(p){
-    var permCells = privatePrograms.map(function(prog){
-      var has = Array.isArray(p.programPermissions) && p.programPermissions.indexOf(prog.id) !== -1;
-      return '<td style="text-align:center">'+
-        '<button type="button" class="pcx-perm-toggle '+(has?'active':'')+'" '+
-          'data-profile-id="'+pcEsc(p.id)+'" data-program-id="'+pcEsc(prog.id)+'" '+
-          'title="'+(has?'Révoquer':'Accorder')+' «'+pcEsc(prog.name)+'» à '+pcEsc(p.name)+'" '+
-          'style="font-size:16px;background:none;border:none;cursor:pointer;opacity:'+(has?'1':'0.25')+'">'+(has?'✓':'·')+'</button>'+
-        '</td>';
-    }).join('');
-    return '<tr><td style="padding:6px 10px 6px 0;white-space:nowrap"><strong>'+pcEsc(p.name)+'</strong></td>'+permCells+'</tr>';
-  }).join('');
-
-  var headers = privatePrograms.map(function(prog){
-    var short = prog.name.replace(/^Phase \d+ — /,'').replace(/^Strict /,'').slice(0,22);
-    return '<th style="font-size:10px;font-weight:600;padding:4px 6px;text-align:center;opacity:.7">'+pcEsc(short)+'</th>';
-  }).join('');
-
-  return '<section class="pcx-panel"><h2>Admin — Programmes privés</h2>'+
-    '<p class="pcx-muted" style="font-size:11px">Coche ✓ pour donner accès, · pour retirer. Effet immédiat.</p>'+
-    '<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">'+
-      '<thead><tr><th style="text-align:left;padding:4px 10px 4px 0"></th>'+headers+'</tr></thead>'+
-      '<tbody>'+rows+'</tbody>'+
-    '</table></div>'+
-    '<p id="pcAdminStatus" class="status-msg" style="margin-top:10px"></p>'+
-  '</section>';
-}
-
-function pcBindAdmin(){
-  document.querySelectorAll('.pcx-perm-toggle').forEach(function(btn){
-    btn.onclick = function(){
-      var pid = btn.getAttribute('data-profile-id');
-      var progId = btn.getAttribute('data-program-id');
-      if(!pid || !progId || !window.CoachProfiles) return;
-      var has = btn.classList.contains('active');
-      if(has){
-        CoachProfiles.revokeProgramPermission(pid, progId);
-      } else {
-        CoachProfiles.grantProgramPermission(pid, progId);
-      }
-      var s = document.getElementById('pcAdminStatus');
-      if(s){ s.textContent = (has ? '❌ Retiré : ' : '✅ Accordé : ') + progId + ' → ' + pid; s.className='status-msg ok'; }
-      // Re-render le tableau seulement
-      renderPhoneWod();
-    };
-  });
-}
+// L'ex-onglet « Admin » (grille de permissions des programmes privés) a
+// déménagé dans Gear : scripts/profiles/admin_programs.js.
 
 function pcRenderActiveTab(){
   if(pcActiveTab==='week')return pcRenderWeekTab();
   if(pcActiveTab==='roadmap')return pcRenderRoadmapTab();
   if(pcActiveTab==='analysis')return pcRenderAnalysisTab();
   if(pcActiveTab==='export')return pcRenderExportTab();
-  if(pcActiveTab==='admin' && pcIsAdmin())return pcRenderAdminTab();
   return pcRenderSessionTab();
 }
 function pcBind(){
@@ -1243,7 +1179,6 @@ function pcBind(){
   if(w)w.onchange=function(){pcInspectWeek=Number(this.value)||1;renderPhoneWod();};
   if(d)d.onchange=function(){pcInspectDay=this.value;renderPhoneWod();};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-tab]'),function(btn){btn.onclick=function(){pcActiveTab=btn.getAttribute('data-pc-tab')||'session';renderPhoneWod();};});
-  if(pcIsAdmin()) pcBindAdmin();
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-toggle-week-alerts]'),function(btn){btn.onclick=function(){pcWeekAlertsOpen=!pcWeekAlertsOpen;renderPhoneWod();};});
   var start=$('pcStartSessionBtn');if(start)start.onclick=function(){CoachSession.openFrom('phone');};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-ai]'),function(btn){btn.onclick=function(){pcCopyText(pcAIPrompt(btn.getAttribute('data-pc-ai')||'day'));};});

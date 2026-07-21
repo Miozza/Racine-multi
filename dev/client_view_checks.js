@@ -20,7 +20,9 @@ const index   = read('index.html');
 
 // Helper admin centralisé
 assert(/api\.isActiveAdmin\s*=\s*function/.test(storage), 'CoachProfiles.isActiveAdmin défini dans storage.js.');
-assert(viewPc.includes('CoachProfiles.isActiveAdmin'), 'pcIsAdmin délègue au helper isActiveAdmin.');
+// La vue PC n'a plus de gating interne : plus d'onglet Admin (grille déménagée
+// dans Gear) ; l'accès à la vue reste gardé par switchView (assertion plus bas).
+assert(!/pcRenderAdminTab|pcBindAdmin/.test(viewPc), 'Vue PC : onglet Admin retiré (grille dans Gear).');
 
 // Gating vue client
 const boot = app.match(/function coachFullBoot\(\)\{[\s\S]*?\n\}/);
@@ -39,7 +41,7 @@ assert(/RacineAdminPrograms\.render\(\)/.test(app) && /isActiveAdmin\(\)\s*\)\s*
 // Module admin programmes chargé
 assert(index.includes('scripts/profiles/admin_programs.js'), 'admin_programs.js chargé dans index.html.');
 assert(fs.existsSync(path.join(root, 'scripts/profiles/admin_programs.js')), 'scripts/profiles/admin_programs.js existe.');
-assert(index.includes('Envoyer un programme spécialisé'), 'Gear nomme clairement le flux de prescription.');
+assert(index.includes('Programmes spécialisés'), 'Gear nomme clairement la gestion des programmes spécialisés.');
 assert(index.includes('programmes de base'), 'Gear rappelle que les programmes de base sont déjà accessibles.');
 
 // setProfileActiveProgram : ne réinitialise jamais l'historique/les résultats
