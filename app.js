@@ -1600,7 +1600,11 @@ function renderHistory(){
     h.innerHTML='<p style="color:var(--muted);font-size:13px">Aucune séance enregistrée.</p>';
     return;
   }
-  renderProgressCharts();
+  // Progression riche (ex-onglet « Progression » de la vue PC) : graphiques
+  // SVG, filtres de période et comparaison, pour tous les profils. Repli sur
+  // les mini-barres historiques si view_pc.js n'est pas chargé.
+  if(window.pcRenderProgressInto) pcRenderProgressInto("progressCharts");
+  else renderProgressCharts();
 
   // Pagination : ne pas construire tout l'historique dans le DOM — après des
   // mois d'entraînement, la liste complète ralentit sensiblement l'onglet.
@@ -1654,6 +1658,8 @@ function renderHistory(){
   });
 }
 
+// Repli minimal (mini-barres) si la Progression riche de view_pc.js
+// (pcRenderProgressInto) n'est pas disponible.
 function renderProgressCharts(){
   var c=$("progressCharts");if(!c)return;c.innerHTML="";
   var tracked=["strictPress","frontSquat","powerClean","bench"];
@@ -2194,52 +2200,51 @@ function download(name,text){
   var blob=new Blob([text],{type:type}),url=URL.createObjectURL(blob);
   var a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
-function exportBackup(){
-  var v=String(APP_VERSION||"backup").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
-  download("racine-"+v+"-profil.json",JSON.stringify({version:APP_VERSION,exportedAt:new Date().toISOString(),state:state},null,2));
+// Export JSON robuste (profil/historique) : vrai fichier .json via partage
+// natif ou repli <a download>, compatible Safari iOS ancien. Voir
+// scripts/export_file.js. Repli défensif si le module n'est pas chargé.
+function saveJsonFile(name,data){
+  if(window.RacineExport&&window.RacineExport.saveJson){
+    return window.RacineExport.saveJson(name,data);
+  }
+  download(name,typeof data==="string"?data:JSON.stringify(data,null,2));
 }
-function importBackup(file){
-  if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    var d;
-    try{ d=JSON.parse(e.target.result); }
-    catch(ex){
-      if(window.CoachLog)CoachLog.error("backup_import_invalid", ex, {});
-      alert("Fichier invalide : ce n’est pas un JSON lisible.");
-      return;
-    }
-    // Validation structurelle : un export Racine complet, pas un JSON quelconque.
-    var KNOWN_KEYS=["history","week","day","cycle","profile"];
-    var looksValid = d && typeof d==="object" && d.state && typeof d.state==="object" &&
-      KNOWN_KEYS.some(function(k){ return k in d.state; });
-    if(!looksValid){
-      if(window.CoachLog)CoachLog.error("backup_import_rejected", {reason:"structure inconnue"}, {});
-      alert("Fichier invalide : ce n’est pas une sauvegarde Racine.");
-      return;
-    }
-    // Confirmation avec les métadonnées de l'export : l'utilisateur voit ce
-    // qu'il s'apprête à restaurer et sur quel profil, avant tout écrasement.
-    var srcName=(d.state.profile&&d.state.profile.name)?d.state.profile.name:"inconnu";
-    var curName=(state.profile&&state.profile.name)?state.profile.name:"actuel";
-    var when=d.exportedAt?String(d.exportedAt).slice(0,10):"date inconnue";
-    var msg="Restaurer cette sauvegarde ?\n\n"+
-      "Export : profil « "+srcName+" » · "+when+" · "+(d.version||"version inconnue")+"\n"+
-      "Elle remplacera ENTIÈREMENT les données du profil actif (« "+curName+" »).";
-    if(d.version && d.version!==APP_VERSION) msg+="\n\n⚠️ Version différente de l’app ("+APP_VERSION+").";
-    if(!confirm(msg)) return;
-    // Filet de sécurité : garder l'état écrasé sous une clé de secours.
-    if(window.CoachState && CoachState.writeImportRescue) CoachState.writeImportRescue(state);
-    // Remplacement complet en conservant l'identité de l'objet global `state` :
-    // une fusion laissait survivre des clés de l'ancien état (état hybride).
-    Object.keys(state).forEach(function(k){ delete state[k]; });
-    Object.assign(state, d.state);
-    save();
-    alert("Import réussi. L’app va redémarrer sur les données restaurées.");
-    location.reload();
-  };
-  r.readAsText(file);
+// Repli de restauration pour les anciennes sauvegardes « état brut »
+// ({version, exportedAt, state}) exportées avant l'unification sur l'export de
+// profil. L'unique bouton « Importer un profil » tente d'abord le format
+// profil (CoachProfiles) puis retombe ici : aucun ancien fichier ne devient
+// irrécupérable. Retourne true si le fichier EST une telle sauvegarde (et lance
+// la restauration ou l'annulation), false s'il n'en est pas une.
+function isLegacyStateBackup(d){
+  if(!d || typeof d!=="object" || !d.state || typeof d.state!=="object") return false;
+  var KNOWN_KEYS=["history","week","day","cycle","profile"];
+  return KNOWN_KEYS.some(function(k){ return k in d.state; });
 }
+function restoreLegacyStateBackup(d){
+  if(!isLegacyStateBackup(d)) return false;
+  // Confirmation avec les métadonnées de l'export : l'utilisateur voit ce
+  // qu'il s'apprête à restaurer et sur quel profil, avant tout écrasement.
+  var srcName=(d.state.profile&&d.state.profile.name)?d.state.profile.name:"inconnu";
+  var curName=(state.profile&&state.profile.name)?state.profile.name:"actuel";
+  var when=d.exportedAt?String(d.exportedAt).slice(0,10):"date inconnue";
+  var msg="Restaurer cette sauvegarde ?\n\n"+
+    "Export : profil « "+srcName+" » · "+when+" · "+(d.version||"version inconnue")+"\n"+
+    "Elle remplacera ENTIÈREMENT les données du profil actif (« "+curName+" »).";
+  if(d.version && d.version!==APP_VERSION) msg+="\n\n⚠️ Version différente de l’app ("+APP_VERSION+").";
+  if(!confirm(msg)) return true; // fichier reconnu mais annulé : pas une erreur
+  // Filet de sécurité : garder l'état écrasé sous une clé de secours.
+  if(window.CoachState && CoachState.writeImportRescue) CoachState.writeImportRescue(state);
+  // Remplacement complet en conservant l'identité de l'objet global `state` :
+  // une fusion laissait survivre des clés de l'ancien état (état hybride).
+  Object.keys(state).forEach(function(k){ delete state[k]; });
+  Object.assign(state, d.state);
+  save();
+  alert("Import réussi. L’app va redémarrer sur les données restaurées.");
+  location.reload();
+  return true;
+}
+window.isLegacyStateBackup=isLegacyStateBackup;
+window.restoreLegacyStateBackup=restoreLegacyStateBackup;
 
 // ─── Navigation principale ────────────────────────────────────────────────────
 // V50.57 : switchView() et la liste des vues sont extraits dans scripts/app_navigation.js.
@@ -2272,14 +2277,12 @@ function bind(){
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};
   var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();}};
-  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){download("racine-historique.txt","Historique "+APP_VERSION+"\n\n"+JSON.stringify(state.history,null,2));};
+  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){var stamp=(window.RacineExport&&window.RacineExport.stamp)?window.RacineExport.stamp():new Date().toISOString().slice(0,10);saveJsonFile("racine-historique-"+stamp+".json",state.history);};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique ? Le moteur de charge oubliera aussi les references apprises (athleteState, RPE) pour repartir a zero.")){state.history=[];rebuildRefsFromHistory();save();renderHistory();renderWorkout();renderReferences();renderWeekProgress();}};
   var rcb=$("resetCustomChargesBtn");if(rcb)rcb.onclick=resetCustomCharges;
-  var ebb=$("exportBackupBtn");if(ebb)ebb.onclick=exportBackup;
-  var ibf=$("importBackupFile");if(ibf)ibf.onchange=function(e){importBackup(e.target.files[0]);};
-  var ewb=$("exportWeekBtn");if(ewb)ewb.onclick=function(){download("racine-semaine.txt",weekText());};
-  var ebb2=$("exportBackupBtnSettings");if(ebb2)ebb2.onclick=exportBackup;
-  var ibf2=$("importBackupFileSettings");if(ibf2)ibf2.onchange=function(e){importBackup(e.target.files[0]);};
+  // Export/import de profil unifiés : un seul couple de boutons dans le panneau
+  // « Profil » des Réglages (CoachOnboarding.renderSettingsPanel). La sauvegarde
+  // « état brut » et la vue Backup dédiée ont été retirées (doublons).
   var ewb2=$("exportWeekBtnSettings");if(ewb2)ewb2.onclick=function(){download("racine-semaine.txt",weekText());};
   var cel=$("copyErrorLogBtn");
   if(cel)cel.onclick=function(){

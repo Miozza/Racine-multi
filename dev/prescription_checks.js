@@ -18,11 +18,15 @@ function assert(cond, msg){ (cond ? notes : errors).push(msg); }
 
 // Câblage statique.
 assert(read('index.html').indexOf('scripts/profiles/prescription.js') !== -1, 'prescription.js chargé par index.html.');
-assert(read('scripts/profiles/admin_programs.js').indexOf('RacinePrescription') !== -1, 'Panneau admin : bouton Partager branché.');
+assert(read('scripts/profiles/admin_programs.js').indexOf('RacinePrescription') !== -1, 'Panneau admin : partage des remplacements par lien branché.');
 const adminPrograms = read('scripts/profiles/admin_programs.js');
-assert(adminPrograms.includes('data-share-program'), 'Gear expose une action de copie par programme privé.');
-assert(!adminPrograms.includes('data-grant='), 'Gear ne prétend plus accorder localement un accès distant.');
-assert(!adminPrograms.includes('data-revoke='), 'Gear ne prétend plus retirer un accès distant.');
+// Tous les profils sont locaux : Gear accorde/retire les programmes privés
+// directement via la grille (ex-onglet Admin de la vue PC), sans lien.
+assert(adminPrograms.includes('data-perm-profile') && adminPrograms.includes('data-perm-program'),
+  'Gear expose la grille d\'accès directe aux programmes privés.');
+assert(adminPrograms.includes('grantProgramPermission') && adminPrograms.includes('revokeProgramPermission'),
+  'Grille Gear branchée sur grant/revokeProgramPermission.');
+assert(!adminPrograms.includes('data-share-program'), 'Gear ne copie plus de lien par programme (grille directe à la place).');
 assert(!adminPrograms.includes('data-activate='), 'Gear ne prétend plus activer un cycle distant.');
 assert(!adminPrograms.includes('setProfileActiveProgram'), 'Gear ne change plus le cycle actif.');
 assert(read('scripts/profiles/ui.js').indexOf('RacinePrescription.propose') !== -1, 'Réglages client : coller le lien branché.');

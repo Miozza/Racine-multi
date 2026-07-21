@@ -148,8 +148,7 @@
       ["cycle", "cycleView"],
       ["history", "historyView"],
       ["settings", "settingsView"],
-      ["profile", "profileView"],
-      ["backup", "backupView"]
+      ["profile", "profileView"]
     ];
     for(var i=0;i<pairs.length;i++){
       var el = $(pairs[i][1]);

@@ -29,6 +29,10 @@ node dev/prescription_checks.js
 node dev/repro_bug1_charges_client.js
 node dev/reference_seed_checks.js
 node dev/reference_seed_stress.js
+node dev/json_export_ios_checks.js
+node dev/profile_backup_ui_checks.js
+node dev/history_progress_checks.js
+node dev/gear_permissions_checks.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :

@@ -1,3 +1,31 @@
+## Non publié — Export JSON fiable sur Safari iOS ancien
+- **Vrai fichier `.json`** : l'export du profil et de l'historique génère désormais un fichier `application/json` encodé UTF-8, avec un nom clair et unique (horodaté). L'export d'historique n'est plus un `.txt` avec en-tête texte.
+- **Cause corrigée** : sur les anciens Safari iOS (iPhone SE 2019-2020, iOS 13-14) l'attribut `download` d'une ancre n'est pas honoré — le clic naviguait vers l'URL `blob:` et Safari affichait le JSON en texte brut dans une nouvelle page, sans option « Enregistrer dans Fichiers ».
+- **Partage natif prioritaire** : nouveau module `scripts/export_file.js` (`window.RacineExport.saveJson`) qui utilise `navigator.share({files:[File]})` — vérifié via `navigator.canShare({files})` — pour exposer « Enregistrer dans Fichiers ».
+- **Repli compatible** : sinon `Blob` + `URL.createObjectURL()` + `<a download>` + `URL.revokeObjectURL()` (desktop/Android). En dernier recours sur iOS ancien sans partage de fichiers : message clair invitant à utiliser la feuille de partage ou à mettre Safari à jour. Le JSON n'est **jamais** ouvert dans un nouvel onglet.
+- **Inchangé** : structure des données JSON, import, logique métier et calculs d'entraînement.
+- Tests : nouveau `dev/json_export_ios_checks.js` (fichier, nom, MIME, partage natif, repli, message, absence d'ouverture de page).
+
+### Ménage export/import de profil — 2 boutons
+- **5 boutons → 2** : l'export/import de profil se résume à « Exporter mon profil (JSON) » + « Importer un profil » dans **Réglages → Profil**. Suppression du panneau « Sauvegarde locale » (« Sauvegarder / Restaurer mes données », doublon de l'export d'état brut) et de la vue « Backup » dédiée (orpheline, sans entrée de navigation).
+- **Plus de gestion de profil par l'admin** : suppression du bouton « Exporter tous les profils (JSON) » (multi-profils) dans les Réglages **et** dans le sélecteur de profil, ainsi que du code mort associé.
+- **Aucune perte de restauration** : l'unique « Importer un profil » lit le format profil et retombe automatiquement sur l'ancien format de sauvegarde « état brut » (`restoreLegacyStateBackup`) — les anciens fichiers restent restaurables.
+- **Inchangé** : l'export/import d'un profil (format, données), le sélecteur de profil (import toujours dispo pour restaurer sur appareil vierge), le bouton « ↓ Sauvegarder profil » du résumé de séance, les programmes clients et le PIN admin.
+- Tests : nouveau `dev/profile_backup_ui_checks.js`.
+
+### Progression pour tous — déménagée dans l'Historique
+- **La Progression riche est désormais dans l'onglet Historique**, visible par tous les profils (clients inclus) : graphiques SVG par mouvement, filtres de période (4 sem. / 8 sem. / Tout), comparaison de deux mouvements, points cliquables. Elle remplace les mini-barres rudimentaires de `#progressCharts` (conservées en repli si `view_pc.js` n'est pas chargé).
+- **L'onglet « Progression » disparaît de la vue PC** (admin inclus) : même moteur (`pcRenderProgressTab`), un seul point de montage (`pcRenderProgressInto`, `scripts/view_pc.js`). Les interactions ne re-rendent que le conteneur progression, pas la liste des séances.
+- **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
+- Tests : nouveau `dev/history_progress_checks.js`.
+
+### Gestion des programmes : un seul endroit (Gear), fin de l'onglet Admin de la vue PC
+- **La grille d'accès aux programmes privés** (profils en lignes × programmes spécialisés en colonnes, bascule ✓/· à effet immédiat) **déménage de l'onglet Admin de la vue PC vers Gear** (Réglages → « Programmes spécialisés »). Tous les profils étant locaux (sur l'appareil), aucun sélecteur de profil n'est nécessaire pour donner ou retirer un programme : tout le monde est visible d'un coup.
+- **L'onglet « Admin » disparaît de la vue PC**, qui redevient purement de l'inspection en lecture seule (Séance, Semaine, Route, Analyse, Export). L'accès à la vue reste gardé admin par la navigation.
+- **Gear simplifié** : suppression du flux « choisir un client → copier le lien du programme » (remplacé par la grille directe) et du filtre de recherche associé. Le sélecteur de profil restant est scopé aux **remplacements de mouvements** (par nature propres à un profil), dont le partage par lien est conservé.
+- **Inchangé** : le système de prescription par lien (côté client, « J'ai reçu un lien du coach »), les permissions elles-mêmes (`grant/revokeProgramPermission`), les remplacements de mouvements, le moteur.
+- Tests : nouveau `dev/gear_permissions_checks.js` (statique + smoke runtime du rendu de la grille) ; `dev/prescription_checks.js` et `dev/client_view_checks.js` mis à jour vers le nouveau contrat.
+
 ## V4.5.18 — Accès programmes hors ligne et Gear simplifié
 - **Base préservée** : les 32 programmes actuellement publics restent accessibles à tous. « Hypertrophie Fessier Femme » devient privé.
 - **Privé par défaut** : tout programme nouveau ou sans `visibility:"public"` exige désormais une permission explicite.
