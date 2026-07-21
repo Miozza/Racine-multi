@@ -1,5 +1,5 @@
-// Racine V4.5.16 — Hypertrophie Fessier Femme : reconstruction sur le patron Arnold, public, charges/cycle/tutos corrigés
-var APP_VERSION = "V4.5.16";
+// Racine V4.5.17 — Moteur de charge : PR découplé, seed via référence de travail périodisée, onglet « Charge » unifié
+var APP_VERSION = "V4.5.17";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1741,6 +1741,88 @@ function renderProfile(){
   });
   var d=$("prDate");if(d&&!d.value)d.value=todayDateString();
   var st=$("prStatus");if(st){st.textContent="";st.className="status-msg";}
+  // Onglet « Charge » unifie : references de travail editables + references
+  // vivantes (reflet des seances) + ajustements ponctuels.
+  if(typeof renderWorkingRefs==="function")renderWorkingRefs();
+  if(typeof renderReferences==="function")renderReferences();
+  if(typeof renderChargeSettings==="function")renderChargeSettings();
+}
+
+// ─── Références de travail (éditables) : source de vérité que le moteur lit ───
+// Chaque valeur saisie ici est une reference de travail par plage (proche du
+// max pour ce nombre de reps). Enregistree comme manual_recalibration (RPE 8),
+// donc lue et periodisee par le moteur (voir coachDeclaredRangeReference dans
+// scripts/charge/suggestion.js) — jamais comme un trophee 1RM (manual_pr).
+var REFERENCE_MOVEMENTS = [
+  {label:"Bench Press",           mvKey:"bench"},
+  {label:"Front Squat",           mvKey:"frontSquat"},
+  {label:"Back Squat",            mvKey:"backSquat"},
+  {label:"Strict Press",          mvKey:"strictPress"},
+  {label:"Power Clean",           mvKey:"powerClean"},
+  {label:"Barbell Row",           mvKey:"barbellRow"},
+  {label:"Chest Supported Row",   mvKey:"chestRow"},
+  {label:"Weighted Pull-up",      mvKey:"latPulldown"},
+  {label:"Incline DB Press",      mvKey:"inclineDb"},
+  {label:"Hip Thrust",            mvKey:"hipThrust"},
+  {label:"Bulgarian Split Squat", mvKey:"bulgarian"},
+  {label:"DB RDL",                mvKey:"dbRdl"}
+];
+var REFERENCE_RANGES = [
+  {range:"strength",    reps:5,  label:"Force · 5"},
+  {range:"hypertrophy", reps:8,  label:"Hypertro · 8-12"},
+  {range:"endurance",   reps:15, label:"Endurance · 15+"}
+];
+
+function workingRefPrefill(mvKey,label,range){
+  var ref=state.movementRefs&&state.movementRefs[mvKey+"__"+range];
+  if(ref&&!ref.implausible&&(ref.load||ref.load===0))return Number(ref.load);
+  var mv=state.athleteState&&state.athleteState.movements&&state.athleteState.movements[label];
+  var rr=mv&&mv.ranges&&mv.ranges[range];
+  // On ne pre-remplit jamais depuis un trophee 1RM (manual_pr) : un record
+  // n'est pas une reference de travail.
+  if(rr&&!(rr.planned&&rr.planned.source==="manual_pr")&&(rr.currentLoad||rr.currentLoad===0))return Number(rr.currentLoad);
+  return null;
+}
+
+function renderWorkingRefs(){
+  var host=$("workingRefsGrid");if(!host)return;host.innerHTML="";
+  REFERENCE_MOVEMENTS.forEach(function(m){
+    var cells=REFERENCE_RANGES.map(function(rg){
+      var pre=workingRefPrefill(m.mvKey,m.label,rg.range);
+      var val=(pre||pre===0)?String(pre):"";
+      return '<div class="wref-cell">'+
+        '<span class="wref-cell-label">'+rg.label+'</span>'+
+        '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="numeric" '+
+          'data-mvkey="'+escapeHtml(m.mvKey)+'" data-label="'+escapeHtml(m.label)+'" '+
+          'data-range="'+rg.range+'" data-reps="'+rg.reps+'" value="'+escapeHtml(val)+'" placeholder="—"/>'+
+          '<span class="wref-unit">lb</span></span>'+
+        '</div>';
+    }).join("");
+    var row=document.createElement("div");row.className="wref-row";
+    row.innerHTML='<div class="wref-name">'+escapeHtml(m.label)+'</div><div class="wref-cells">'+cells+'</div>';
+    host.appendChild(row);
+  });
+  Array.prototype.forEach.call(host.querySelectorAll("input.wref-input"),function(inp){
+    inp.addEventListener("change",function(){saveWorkingRef(inp);});
+  });
+}
+
+function saveWorkingRef(inp){
+  var mvKey=inp.getAttribute("data-mvkey"),label=inp.getAttribute("data-label"),
+      range=inp.getAttribute("data-range"),reps=Number(inp.getAttribute("data-reps"))||8;
+  var val=parseLoad(inp.value);
+  var dateStr=todayDateString();
+  var cfg={mvKey:mvKey,label:label,profile:null,reps:reps,range:range};
+  if(val){
+    // RPE 8 => manual_recalibration => reference de travail lue par le moteur.
+    updateMovementRefFromPR(cfg,val,dateStr,8);
+    updateAthleteStateFromPR(cfg,val,dateStr,8);
+  }
+  save();
+  if(typeof renderReferences==="function")renderReferences();
+  if(typeof renderWorkout==="function")renderWorkout();
+  var st=$("wrefStatus");
+  if(st){st.textContent=val?(label+" "+range+" : "+val+" lb enregistré."):(label+" : reference vidée.");st.className="status-msg ok";}
 }
 
 // rpe par défaut à 10 (vrai PR/maximum déclaré). Un appel avec un rpe < 9
@@ -1855,8 +1937,12 @@ function detectAndApplyAutomaticPr(results,dateStr){
       if(reps < Number(cfg.reps||1))return;
       if(load <= old)return;
       state.profile[cfg.profile]=load;
-      updateMovementRefFromPR(cfg,load,dateStr);
-      updateAthleteStateFromPR(cfg,load,dateStr);
+      // reps===1 = trophee 1RM (manual_pr, ignore par le moteur) ; reps>1 =
+      // reference de travail (manual_recalibration, lue et periodisee). Voir
+      // scripts/charge/suggestion.js (coachDeclaredRangeReference).
+      var seedRpe=(Number(cfg.reps)>1)?8:10;
+      updateMovementRefFromPR(cfg,load,dateStr,seedRpe);
+      updateAthleteStateFromPR(cfg,load,dateStr,seedRpe);
       r.autoPr=true;
       r.prLabel=cfg.label;
       r.prOld=old||null;
@@ -1881,9 +1967,12 @@ async function savePrProfile(){
     if(val!==old){
       state.profile[cfg.profile]=val;
       changed[cfg.label]={old:old||null,new:val,reps:cfg.reps};
-      results[cfg.label]={load:String(val),reps:String(cfg.reps),rpe:"10",note:"PR saisi manuellement",status:"pr"};
-      updateMovementRefFromPR(cfg,val,dateStr);
-      updateAthleteStateFromPR(cfg,val,dateStr);
+      // reps===1 = trophee 1RM (manual_pr, ignore par le moteur) ; reps>1 =
+      // reference de travail (manual_recalibration, lue et periodisee).
+      var seedRpe=(Number(cfg.reps)>1)?8:10;
+      results[cfg.label]={load:String(val),reps:String(cfg.reps),rpe:String(seedRpe),note:seedRpe>=9?"PR saisi manuellement":"Reference de travail saisie",status:seedRpe>=9?"pr":"success"};
+      updateMovementRefFromPR(cfg,val,dateStr,seedRpe);
+      updateAthleteStateFromPR(cfg,val,dateStr,seedRpe);
     }
   });
   var st=$("prStatus");
@@ -2087,7 +2176,7 @@ function importBackup(file){
 // ─── Binding ─────────────────────────────────────────────────────────────────
 
 function bind(){
-  [["trainingTab","training"],["phoneTab","phone"],["profileTab","profile"],["referencesTab","references"],["cycleTab","cycle"],["historyTab","history"],["settingsTab","settings"]].forEach(function(pair){
+  [["trainingTab","training"],["phoneTab","phone"],["profileTab","profile"],["cycleTab","cycle"],["historyTab","history"],["settingsTab","settings"]].forEach(function(pair){
     var t=$(pair[0]);if(t)t.onclick=function(){switchView(pair[1]);};
   });
   var pvb=$("phoneViewBtn");if(pvb)pvb.onclick=function(){switchView("phone");};
@@ -2159,6 +2248,60 @@ function applyAdminVisibility(){
   var admin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
   document.body.classList.toggle('is-client', !admin);
 }
+// Migration V4.5.17 : re-tague les references de travail (reps>1) stockees
+// par erreur comme trophee 1RM (manual_pr / status "pr") par l'ancien
+// formulaire unique. Depuis le decouplage du PR, les manual_pr sont exclus du
+// moteur : ces references de travail resteraient invisibles. Les vrais 1RM
+// (reps===1) restent des trophees. Idempotent : ne sauvegarde que si un
+// re-taguage a lieu (aucune donnee re-ecrite au boot suivant).
+function coachMigratePrTrophyReferences(){
+  if(!window.state)return 0;
+  var changed=0;
+  var ast=state.athleteState&&state.athleteState.movements;
+  if(ast&&typeof ast==='object'){
+    Object.keys(ast).forEach(function(label){
+      var mv=ast[label];if(!mv)return;
+      if(mv.ranges&&typeof mv.ranges==='object'){
+        Object.keys(mv.ranges).forEach(function(rg){
+          var r=mv.ranges[rg];
+          var reps=Number(r&&(r.currentReps||r.actualReps))||0;
+          if(r&&r.planned&&r.planned.source==='manual_pr'&&reps>1){
+            r.planned.source='manual_recalibration';
+            if(r.status==='pr')r.status='success';
+            changed++;
+          }
+        });
+      }
+      if(Array.isArray(mv.history)){
+        mv.history.forEach(function(row){
+          var reps=Number(row&&row.reps)||0;
+          if(row&&row.planned&&row.planned.source==='manual_pr'&&reps>1){
+            row.planned.source='manual_recalibration';
+            if(row.status==='pr')row.status='success';
+            changed++;
+          }
+        });
+      }
+    });
+  }
+  if(state.movementRefs&&typeof state.movementRefs==='object'){
+    Object.keys(state.movementRefs).forEach(function(k){
+      var e=state.movementRefs[k];
+      var reps=Number(e&&e.reps)||0;
+      if(e&&e.status==='pr'&&reps>1){
+        e.status='success';
+        if(e.note==='PR saisi manuellement')e.note='Reference de travail (migration)';
+        changed++;
+      }
+    });
+  }
+  if(changed>0){
+    if(typeof save==='function')save();
+    if(window.CoachLog&&CoachLog.info)CoachLog.info('migrate_pr_trophy_refs',{retagged:changed});
+  }
+  return changed;
+}
+
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
   // Reconstruire le catalogue avec les permissions du profil actif MAINTENANT.
@@ -2169,6 +2312,7 @@ function coachFullBoot(){
   registerProgramsFromIndex();
   load();
   coachSanitizeImplausibleLoads();
+  coachMigratePrTrophyReferences();
   // Auto-guérison : si le programme tracé par un ancien fallback est redevenu
   // disponible (permission accordée, app mise à jour), restaurer le cycle —
   // sauf si l'utilisateur a activé un autre programme entre-temps.

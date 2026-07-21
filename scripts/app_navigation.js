@@ -8,7 +8,9 @@
 var VIEW_ALIASES={phone:"pc"};
 var VIEW_MAIN_IDS={pc:"pcView"};
 var VIEW_TAB_IDS={pc:"phoneTab"};
-var VIEWS=["training","pc","session","results","cycle","history","settings","profile","references","backup"];
+// « references » : onglet fusionne dans « Charge » (profileView) — plus de vue
+// dediee. renderReferences() est appele par renderProfile().
+var VIEWS=["training","pc","session","results","cycle","history","settings","profile","backup"];
 
 function normalizeViewName(v){
   return VIEW_ALIASES[v] || v;
@@ -62,6 +64,5 @@ function switchView(v){
   if(v==="cycle")renderCycle();
   if(v==="history")renderHistory();
   if(v==="profile")renderProfile();
-  if(v==="references")renderReferences();
   if(v==="settings")renderSettings();
 }

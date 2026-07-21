@@ -128,6 +128,106 @@ function coachIsImplausibleLoadRow(label,row,targetReps){
   return load<15 && !!seed && load<(seed*0.20);
 }
 
+// ── Rampe de reference (priorite 2) ─────────────────────────────────────────
+// Quand un mouvement n'a AUCUN historique reel loggé mais qu'une reference de
+// travail existe pour la plage cible, le moteur prescrit une charge de travail
+// SOUS le RM de reference et la fait monter sur le cycle (surcharge progressive
+// planifiee). Un RM (ex. 215x8) n'est pas une charge de travail : programmer
+// « 8-12 reps a 215 » = viser l'echec chaque serie. Semaine 1 part a reps en
+// reserve (~RPE 7 ≈ 90-93% du RM), la derniere semaine de charge approche/
+// depasse le RM (adaptation attendue sur le bloc). Des qu'une seance reelle est
+// loggée, l'autoregulation (priorite 1) reprend la main.
+// Les PR (source manual_pr) sont TOUJOURS exclus : un record n'est jamais une
+// reference de travail. Anneaux reglables ici sans toucher au reste du moteur.
+var COACH_REF_RAMP = {
+  strength:    {start:0.90, end:1.02},
+  hypertrophy: {start:0.93, end:1.05},
+  endurance:   {start:0.90, end:1.03}
+};
+
+// Progression 0..1 dans les semaines de charge du cycle. weekIdx/totalWeeks
+// sont des globals de l'app ; repli prudent hors app (tests, contextes isoles).
+function coachCycleProgress01(){
+  var wIdx=(typeof weekIdx==='function')?Number(weekIdx()):Math.max(0,(Number(state&&state.week)||1)-1);
+  if(!(wIdx>=0))wIdx=0;
+  var tw=(typeof totalWeeks==='function')?Number(totalWeeks()):0;
+  // ~1 semaine de deload en fin de cycle : les semaines de charge sont tw-1.
+  // Repli 5 semaines de charge si le cycle est inconnu.
+  var loadingWeeks=tw>1?Math.max(1,tw-1):5;
+  if(loadingWeeks<=1)return {progress:0,wIdx:wIdx,loadingWeeks:loadingWeeks};
+  var p=wIdx/(loadingWeeks-1);
+  if(p<0)p=0;if(p>1)p=1;
+  return {progress:p,wIdx:wIdx,loadingWeeks:loadingWeeks};
+}
+
+// Reference de travail declaree pour une plage (PR exclus). Cherche d'abord la
+// plage exacte ; sinon derive via 1RM Epley depuis une autre plage disponible.
+function coachDeclaredRangeReference(mv,range,targetReps,label){
+  // 1. athleteState (references saisies dans la grille + seances). Peut etre
+  //    absent pour un client onboardé (voir fallback movementRefs plus bas).
+  if(mv&&mv.ranges){
+    var refLoad=function(r){var l=parseLoad(r&&r.currentLoad);if(l===null||l===undefined)l=Number(r&&r.currentLoad)||0;return Number(l)||0;};
+    var isPrRef=function(r){return !!(r&&r.planned&&r.planned.source==='manual_pr');};
+    var direct=mv.ranges[range];
+    if(direct&&!isPrRef(direct)){
+      var l=refLoad(direct);
+      var reps=Number(direct.currentReps)||Number(direct.actualReps)||0;
+      if(l>0)return {load:l,reps:reps||Number(targetReps)||0,range:range,exact:true};
+    }
+    var best=null;
+    ['strength','hypertrophy','endurance'].forEach(function(rg){
+      var r=mv.ranges[rg];if(!r||isPrRef(r))return;
+      var l=refLoad(r),reps=Number(r.currentReps)||Number(r.actualReps)||0;
+      if(l>0&&reps>0){
+        var oneRM=epley1RM(l,reps);
+        if(oneRM>0&&(!best||oneRM>best.oneRM))best={oneRM:oneRM};
+      }
+    });
+    if(best){
+      var derived=estimateLoadForRepsFrom1RM(best.oneRM,Number(targetReps)||8);
+      if(derived>0)return {load:derived,reps:Number(targetReps)||8,range:range,exact:false};
+    }
+  }
+  // 2. Fallback: state.movementRefs (keyed mvKey__range) est semé par l'ONBOARDING
+  // et les seances, et ne passe PAS par athleteState. Sans cette lecture, un
+  // client fraichement onboardé n'aurait jamais son seed sous-le-RM (le moteur
+  // retomberait sur le defaut programme x ratio, ~100% de la capacite). On
+  // exclut les trophees 1RM (status "pr").
+  if(typeof state!=='undefined'&&state&&state.movementRefs){
+    var wantedRefLabels=(typeof coachMovementLookupLabels==='function')?coachMovementLookupLabels(label).map(coachNormalizeMoveText):[coachNormalizeMoveText(label)];
+    var mvCfg=(typeof movements!=='undefined'&&movements)?movements:{};
+    var refMovesToLabel=function(mvKey){
+      var nm=mvCfg[mvKey]&&mvCfg[mvKey].name;
+      return !!nm&&wantedRefLabels.indexOf(coachNormalizeMoveText(nm))>=0;
+    };
+    var rkeys=Object.keys(state.movementRefs),rExact=null,rBest=null;
+    for(var ri=0;ri<rkeys.length;ri++){
+      var e=state.movementRefs[rkeys[ri]];
+      if(!e||e.implausible||e.status==='pr')continue;
+      var eMvKey=e.movement||rkeys[ri].split('__')[0];
+      if(!refMovesToLabel(eMvKey))continue;
+      var eLoad=parseLoad(e.load);if(eLoad===null||eLoad===undefined)eLoad=Number(e.load)||0;
+      if(!(eLoad>0))continue;
+      var eReps=Number(e.reps)||0;
+      var eRange=e.range||(eReps?repRange(eReps):null);
+      if(eRange===range&&!rExact)rExact={load:eLoad,reps:eReps};
+      if(eReps>0){var oneRMr=epley1RM(eLoad,eReps);if(oneRMr>0&&(!rBest||oneRMr>rBest.oneRM))rBest={oneRM:oneRMr};}
+    }
+    if(rExact)return {load:rExact.load,reps:rExact.reps||Number(targetReps)||0,range:range,exact:true};
+    if(rBest){var dRef=estimateLoadForRepsFrom1RM(rBest.oneRM,Number(targetReps)||8);if(dRef>0)return {load:dRef,reps:Number(targetReps)||8,range:range,exact:false};}
+  }
+  return null;
+}
+
+// Charge de travail periodisee depuis une reference de plage.
+function coachReferenceSeedWorkingLoad(declaredRef,range){
+  if(!declaredRef||!(declaredRef.load>0))return null;
+  var ramp=COACH_REF_RAMP[range]||COACH_REF_RAMP.hypertrophy;
+  var cyc=coachCycleProgress01();
+  var pct=ramp.start+(ramp.end-ramp.start)*cyc.progress;
+  return {load:declaredRef.load*pct,pct:pct,progress:cyc.progress,wIdx:cyc.wIdx,loadingWeeks:cyc.loadingWeeks};
+}
+
 function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var moveContext=(context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
   var label=moveContext&&moveContext.label?moveContext.label:canonicalMovementLabel(nameOrKey);
@@ -205,6 +305,29 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
     suggested=programNum;mode="nearest";severity=severity==="ok"?"watch":severity;
     reason=contextLimitReason || "Mouvement technique : pas d'auto-progression comme un mouvement principal.";
     brainAdjusted=true;
+  }
+
+  // ── Priorite 2 : reference de travail (aucun historique reel loggé) ────────
+  // Sans aucune seance reelle, on ne part PAS du defaut programme x ratio (qui
+  // vise ~100% d'une capacite theorique, souvent issue d'un vieux max) : on part
+  // d'une reference de travail declaree pour la plage cible, periodisee SOUS le
+  // RM (rampe planifiee). Des qu'une seance reelle est loggée, hasRealHistory
+  // devient vrai et l'autoregulation (priorite 1, blocs ci-dessous) reprend la
+  // main. Les PR (manual_pr) sont exclus de la reference : jamais une charge de
+  // travail.
+  var hasRealHistory=hist.some(function(r){return coachHistoryHasValidLoad(r,label,moveContext);});
+  if(!hasRealHistory&&!contextLimited&&!isTechnicalMovement(label)&&!isDeload){
+    var declaredRef=coachDeclaredRangeReference(mv,range,target,label);
+    var refSeed=declaredRef?coachReferenceSeedWorkingLoad(declaredRef,range):null;
+    if(refSeed&&refSeed.load>0){
+      suggested=refSeed.load;
+      mode="nearest";
+      severity=severity==="ok"?"watch":severity;
+      reason="Reference de travail "+Math.round(declaredRef.load)+" lb"+(declaredRef.exact?"":" (derivee)")
+        +" : semaine "+(refSeed.wIdx+1)+"/"+refSeed.loadingWeeks+" a ~"+Math.round(refSeed.pct*100)+"% ("
+        +Math.round(refSeed.load)+" lb), sous le RM. Rampe planifiee : pas de charge proche du RM pour un travail en "+range+".";
+      brainAdjusted=true;
+    }
   }
 
   // Si le programme est clairement sous l'historique reel controle, remonter vers la reference reelle.

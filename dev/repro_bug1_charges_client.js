@@ -52,11 +52,12 @@ function buildContext(){
     'scripts/charge/suggestion.js'
   ].forEach(f => vm.runInNewContext(read(f), context, {filename:f}));
   // PR_FIELD_MAP (app.js:1720-1733) + normalizePrCompareName/prCfgMatchesResult
-  // (app.js:1807-1841) — extraits verbatim du fichier réel.
-  const app = read('app.js').split('\n');
-  const slice = (a,b) => app.slice(a-1, b).join('\n');
-  vm.runInNewContext(slice(1720,1733), context, {filename:'app.js#PR_FIELD_MAP'});
-  vm.runInNewContext(slice(1807,1841), context, {filename:'app.js#prCfgMatchesResult'});
+  // — extraits verbatim du fichier réel. Extraction par ANCRE (nom de bloc),
+  // pas par numéro de ligne : robuste aux insertions ailleurs dans app.js.
+  const src = read('app.js');
+  const grab = (re, tag) => { const m = src.match(re); if(!m) throw new Error('extract '+tag+' introuvable'); return m[0]; };
+  vm.runInNewContext(grab(/var PR_FIELD_MAP = \{[\s\S]*?\n\};/, 'PR_FIELD_MAP'), context, {filename:'app.js#PR_FIELD_MAP'});
+  vm.runInNewContext(grab(/function normalizePrCompareName[\s\S]*?(?=\nfunction detectAndApplyAutomaticPr)/, 'prCfgMatchesResult'), context, {filename:'app.js#prCfgMatchesResult'});
   return context;
 }
 
