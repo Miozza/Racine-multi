@@ -280,7 +280,9 @@ function pcIsAdmin(){
 }
 
 function pcRenderTabs(){
-  var tabs=[['session','Séance'],['week','Semaine'],['roadmap','Route'],['progress','Progression'],['analysis','Analyse'],['export','Export']];
+  // « Progression » a déménagé dans l'onglet Historique (tous les profils) :
+  // même moteur de rendu, monté via pcRenderProgressInto(). Plus d'onglet ici.
+  var tabs=[['session','Séance'],['week','Semaine'],['roadmap','Route'],['analysis','Analyse'],['export','Export']];
   if(pcIsAdmin()) tabs.push(['admin','Admin']);
   return '<div class="pcx-tabs">'+tabs.map(function(t){return '<button type="button" class="pcx-tab '+(pcActiveTab===t[0]?'active':'')+'" data-pc-tab="'+t[0]+'">'+t[1]+'</button>';}).join('')+'</div>';
 }
@@ -935,11 +937,21 @@ function pcRenderProgressTab(){
   return html;
 }
 function pcBindProgression(){
-  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-progress-range]'),function(btn){btn.onclick=function(){pcProgressRange=btn.getAttribute('data-pc-progress-range')||'all';pcProgressSelected=null;renderPhoneWod();};});
-  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-prog-point]'),function(dot){dot.onclick=function(){pcProgressSelected={id:dot.getAttribute('data-pc-prog-point'),key:dot.getAttribute('data-pc-prog-key')};renderPhoneWod();};});
-  var a=document.getElementById('pcProgressCompareA');if(a)a.onchange=function(){pcProgressCompareA=this.value;renderPhoneWod();};
-  var b=document.getElementById('pcProgressCompareB');if(b)b.onchange=function(){pcProgressCompareB=this.value;renderPhoneWod();};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-progress-range]'),function(btn){btn.onclick=function(){pcProgressRange=btn.getAttribute('data-pc-progress-range')||'all';pcProgressSelected=null;pcRenderProgressInto();};});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-prog-point]'),function(dot){dot.onclick=function(){pcProgressSelected={id:dot.getAttribute('data-pc-prog-point'),key:dot.getAttribute('data-pc-prog-key')};pcRenderProgressInto();};});
+  var a=document.getElementById('pcProgressCompareA');if(a)a.onchange=function(){pcProgressCompareA=this.value;pcRenderProgressInto();};
+  var b=document.getElementById('pcProgressCompareB');if(b)b.onchange=function(){pcProgressCompareB=this.value;pcRenderProgressInto();};
 }
+// Monte la Progression dans l'onglet Historique (#progressCharts), pour tous
+// les profils. Ne re-rend que ce conteneur : les interactions (période, point
+// sélectionné, comparaison) ne reconstruisent pas la liste des séances.
+function pcRenderProgressInto(hostId){
+  var host=document.getElementById(hostId||"progressCharts");
+  if(!host)return;
+  host.innerHTML=pcRenderProgressTab();
+  pcBindProgression();
+}
+window.pcRenderProgressInto=pcRenderProgressInto;
 function pcRenderAnalysisTab(){
   var dayAlerts=pcAlerts(), weekRows=[];pcDayOrder().forEach(function(d){weekRows=weekRows.concat(pcAlerts(d,pcCurrentWeek()).map(function(x){x.day=d;return x;}));});
   var counts=pcSummaryCounts(weekRows);
@@ -1220,7 +1232,6 @@ function pcBindAdmin(){
 function pcRenderActiveTab(){
   if(pcActiveTab==='week')return pcRenderWeekTab();
   if(pcActiveTab==='roadmap')return pcRenderRoadmapTab();
-  if(pcActiveTab==='progress')return pcRenderProgressTab();
   if(pcActiveTab==='analysis')return pcRenderAnalysisTab();
   if(pcActiveTab==='export')return pcRenderExportTab();
   if(pcActiveTab==='admin' && pcIsAdmin())return pcRenderAdminTab();
@@ -1233,7 +1244,6 @@ function pcBind(){
   if(d)d.onchange=function(){pcInspectDay=this.value;renderPhoneWod();};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-tab]'),function(btn){btn.onclick=function(){pcActiveTab=btn.getAttribute('data-pc-tab')||'session';renderPhoneWod();};});
   if(pcIsAdmin()) pcBindAdmin();
-  if(pcActiveTab==='progress' && typeof pcBindProgression==='function') pcBindProgression();
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-toggle-week-alerts]'),function(btn){btn.onclick=function(){pcWeekAlertsOpen=!pcWeekAlertsOpen;renderPhoneWod();};});
   var start=$('pcStartSessionBtn');if(start)start.onclick=function(){CoachSession.openFrom('phone');};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-ai]'),function(btn){btn.onclick=function(){pcCopyText(pcAIPrompt(btn.getAttribute('data-pc-ai')||'day'));};});

@@ -1600,7 +1600,11 @@ function renderHistory(){
     h.innerHTML='<p style="color:var(--muted);font-size:13px">Aucune séance enregistrée.</p>';
     return;
   }
-  renderProgressCharts();
+  // Progression riche (ex-onglet « Progression » de la vue PC) : graphiques
+  // SVG, filtres de période et comparaison, pour tous les profils. Repli sur
+  // les mini-barres historiques si view_pc.js n'est pas chargé.
+  if(window.pcRenderProgressInto) pcRenderProgressInto("progressCharts");
+  else renderProgressCharts();
 
   // Pagination : ne pas construire tout l'historique dans le DOM — après des
   // mois d'entraînement, la liste complète ralentit sensiblement l'onglet.
@@ -1654,6 +1658,8 @@ function renderHistory(){
   });
 }
 
+// Repli minimal (mini-barres) si la Progression riche de view_pc.js
+// (pcRenderProgressInto) n'est pas disponible.
 function renderProgressCharts(){
   var c=$("progressCharts");if(!c)return;c.innerHTML="";
   var tracked=["strictPress","frontSquat","powerClean","bench"];

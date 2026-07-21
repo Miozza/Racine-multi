@@ -13,6 +13,12 @@
 - **Inchangé** : l'export/import d'un profil (format, données), le sélecteur de profil (import toujours dispo pour restaurer sur appareil vierge), le bouton « ↓ Sauvegarder profil » du résumé de séance, les programmes clients et le PIN admin.
 - Tests : nouveau `dev/profile_backup_ui_checks.js`.
 
+### Progression pour tous — déménagée dans l'Historique
+- **La Progression riche est désormais dans l'onglet Historique**, visible par tous les profils (clients inclus) : graphiques SVG par mouvement, filtres de période (4 sem. / 8 sem. / Tout), comparaison de deux mouvements, points cliquables. Elle remplace les mini-barres rudimentaires de `#progressCharts` (conservées en repli si `view_pc.js` n'est pas chargé).
+- **L'onglet « Progression » disparaît de la vue PC** (admin inclus) : même moteur (`pcRenderProgressTab`), un seul point de montage (`pcRenderProgressInto`, `scripts/view_pc.js`). Les interactions ne re-rendent que le conteneur progression, pas la liste des séances.
+- **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
+- Tests : nouveau `dev/history_progress_checks.js`.
+
 ## V4.5.18 — Accès programmes hors ligne et Gear simplifié
 - **Base préservée** : les 32 programmes actuellement publics restent accessibles à tous. « Hypertrophie Fessier Femme » devient privé.
 - **Privé par défaut** : tout programme nouveau ou sans `visibility:"public"` exige désormais une permission explicite.
