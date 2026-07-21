@@ -26,6 +26,7 @@ vm.runInContext(read('programs/racine_crossfit_programs.js'), context, {filename
 
 const index = context.window.COACH_BERTIN_PROGRAM_INDEX || [];
 const programs = context.window.COACH_BERTIN_PROGRAMS || {};
+const appSource = read('app.js');
 const clientIds = index.filter(x => x && x.macroRole === 'client_catalog').map(x => x.id);
 const baseClientIds = clientIds.filter(id => (index.find(x => x.id === id) || {}).file === 'programs/racine_client_programs.js');
 const sportClientIds = clientIds.filter(id => (index.find(x => x.id === id) || {}).file === 'programs/racine_crossfit_programs.js');
@@ -70,6 +71,9 @@ assert(!!steph, 'hypertrophie_fesse_stephanie est enregistré dans COACH_BERTIN_
 assert(typeof steph.getBlocks === 'function', 'hypertrophie_fesse_stephanie fournit getBlocks().');
 assert(Array.isArray(steph.days) && steph.days.length >= 2, 'hypertrophie_fesse_stephanie déclare ses jours.');
 const stephEntry = index.find(x => x && x.id === 'hypertrophie_fesse_stephanie') || {};
+assert(stephEntry.visibility === 'private', 'hypertrophie_fesse_stephanie est privé par défaut.');
+assert(index.filter(p => p && p.visibility === 'public').length === 32, 'Les 32 autres programmes publics restent accessibles à tous.');
+assert(!appSource.includes('item.visibility || "public"'), 'Une visibilité absente ne doit jamais devenir publique.');
 for(let wk = 1; wk <= (Number(stephEntry.durationWeeks) || 4); wk++){
   steph.days.forEach(day => {
     const blocks = steph.getBlocks(day, wk) || [];
@@ -84,7 +88,7 @@ for(let wk = 1; wk <= (Number(stephEntry.durationWeeks) || 4); wk++){
 // ─── V4.4 — Métadonnées de suggestion (La Saison) ───────────────────────────
 // Tout programme public doit porter les champs dont le moteur de suggestion
 // dépend : objective, frequency et le graphe suggestedNext.
-const publicEntries = index.filter(p => p && (p.visibility || 'public') === 'public');
+const publicEntries = index.filter(p => p && p.visibility === 'public');
 assert(publicEntries.length >= 20, 'Le catalogue expose au moins 20 programmes publics.');
 publicEntries.forEach(p => {
   assert(typeof p.objective === 'string' && p.objective.length > 0, p.id + ' : objective présent.');
@@ -93,7 +97,7 @@ publicEntries.forEach(p => {
   (p.suggestedNext || []).forEach(nid => {
     const target = index.find(t => t && t.id === nid);
     assert(!!target, p.id + " : suggestedNext '" + nid + "' référence un id existant.");
-    assert(target && (target.visibility || 'public') === 'public', p.id + " : suggestedNext '" + nid + "' est public.");
+    assert(target && target.visibility === 'public', p.id + " : suggestedNext '" + nid + "' est public.");
     assert(nid !== p.id, p.id + ' : ne se suggère pas lui-même.');
   });
 });

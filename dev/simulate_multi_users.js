@@ -164,7 +164,7 @@ function familyForProgram(id, personaFamily) {
 
 function visiblePrograms(profile) {
   const perms = new Set(profile.programPermissions || []);
-  return programIndex.filter(p => p.visibility !== 'private' || perms.has(p.id));
+  return programIndex.filter(p => p.visibility === 'public' || perms.has(p.id));
 }
 
 function computeProfile(persona) {

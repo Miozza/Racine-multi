@@ -24,7 +24,7 @@ assert(read('scripts/profiles/ui.js').indexOf('RacinePrescription.propose') !== 
 // sinon un programme privé accordé après le chargement de la page (prescription
 // acceptée, activation admin) reste invisible et déclenche à tort le fallback
 // « programme absent ».
-assert(/function coachFullBoot\(\)[\s\S]{0,600}registerProgramsFromIndex\(\)/.test(read('app.js')),
+assert(/function coachFullBoot\(\)[\s\S]{0,800}registerProgramsFromIndex\(\)/.test(read('app.js')),
   'coachFullBoot reconstruit focusConfigs (permissions du profil actif).');
 assert(/state\.missingCycle && focusConfigs\[state\.missingCycle\.id\]/.test(read('app.js')),
   'Auto-guérison : un cycle tracé par le fallback est restauré quand le programme redevient disponible.');

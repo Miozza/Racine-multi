@@ -65,10 +65,8 @@ function programIndexIds(){
   return (window.COACH_BERTIN_PROGRAM_INDEX || [])
     .filter(function(item){
       if(!item || !item.id) return false;
-      var vis = item.visibility || "public";
-      if(vis === "public") return true;
-      if(vis === "private") return isAdmin || activePerms.indexOf(item.id) !== -1;
-      return false;
+      if(item.visibility === "public") return true;
+      return isAdmin || activePerms.indexOf(item.id) !== -1;
     })
     .map(function(item){ return item.id; });
 }
@@ -2377,6 +2375,7 @@ function coachMigratePrTrophyReferences(){
 
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
+  if(window.CoachProfiles && CoachProfiles.reconcileActivePrivateProgramPermissions) CoachProfiles.reconcileActivePrivateProgramPermissions();
   // Reconstruire le catalogue avec les permissions du profil actif MAINTENANT.
   // focusConfigs était construit une seule fois au chargement de la page : un
   // programme privé accordé ensuite (prescription acceptée, activation admin,

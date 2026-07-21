@@ -165,6 +165,32 @@
     return changed;
   };
 
+  // Préserve un cycle déjà utilisé lorsqu'un programme auparavant public
+  // devient privé. La permission est ajoutée au registre du profil sans jamais
+  // modifier son state (cycle, semaine, historique, résultats ou charges).
+  api.reconcileActivePrivateProgramPermissions = function(){
+    var catalog = window.COACH_BERTIN_PROGRAM_INDEX || [];
+    var visibilityById = {};
+    catalog.forEach(function(item){ if(item && item.id) visibilityById[item.id] = item.visibility; });
+    var reg = readRegistry();
+    var changed = false;
+    reg.profiles.forEach(function(profile){
+      var keys = api.storageKeysFor(profile.id);
+      var st = {};
+      try{ st = JSON.parse(localStorage.getItem(keys.state) || "{}") || {}; }catch(e){ st = {}; }
+      var goal = st.cycle && st.cycle.goal;
+      if(!goal || !Object.prototype.hasOwnProperty.call(visibilityById, goal) || visibilityById[goal] === "public") return;
+      var perms = Array.isArray(profile.programPermissions) ? profile.programPermissions.slice() : [];
+      if(perms.indexOf(goal) === -1){
+        perms.push(goal);
+        profile.programPermissions = perms;
+        changed = true;
+      }
+    });
+    if(changed) writeRegistry(reg);
+    return changed;
+  };
+
   // Admin (coach) vs client. Centralisé : toute vérification admin passe par ici.
   // Admin = flag isAdmin, sinon marqueur propriétaire posé à la migration.
   // Le nom du profil ne donne plus l'admin : créer un profil « Bertin » via
@@ -188,7 +214,7 @@
     for(var i=0;i<catalog.length;i++){ if(catalog[i].id === programId){ entry = catalog[i]; break; } }
     if(!entry) return { ok:false, error:"Programme inconnu dans le catalogue." };
     // Programme privé : accorder la permission au profil cible (geste attendu de l'admin).
-    if(entry.visibility === "private" && !api.hasProgramPermission(profileId, programId)){
+    if(entry.visibility !== "public" && !api.hasProgramPermission(profileId, programId)){
       api.grantProgramPermission(profileId, programId);
     }
     var keys = api.storageKeysFor(profileId);
