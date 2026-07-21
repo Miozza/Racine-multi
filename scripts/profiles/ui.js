@@ -19,11 +19,15 @@
     });
   }
 
-  // Téléchargement d'un objet JSON (exports de profil). Pattern <a download>
-  // + Blob URL, supporté par Safari iOS.
+  // Téléchargement d'un objet JSON (exports de profil). Vrai fichier .json via
+  // partage natif (navigator.share) ou repli <a download> — compatible Safari
+  // iOS ancien. Voir scripts/export_file.js ; repli défensif si non chargé.
   function downloadJsonFile(obj, name){
+    if(window.RacineExport && window.RacineExport.saveJson){
+      return window.RacineExport.saveJson(name, obj);
+    }
     var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)],{type:"application/json"}));
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)],{type:"application/json;charset=utf-8"}));
     a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
   }

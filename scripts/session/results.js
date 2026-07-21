@@ -477,13 +477,18 @@ function downloadProfileBackup(){
   var id=CoachProfiles.getActiveId();
   var blob=CoachProfiles.exportProfileBlob(id);
   if(!blob)return;
-  var text=JSON.stringify(blob,null,2);
   var date=new Date().toISOString().slice(0,10);
   var name="racine-"+(blob.profile&&blob.profile.name?blob.profile.name.toLowerCase().replace(/[^a-z0-9]+/g,"-"):"profil")+"-"+date+".json";
-  var a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
-  a.download=name;
-  document.body.appendChild(a);a.click();a.remove();
+  // Vrai fichier .json via partage natif ou repli <a download> (Safari iOS).
+  if(window.RacineExport&&window.RacineExport.saveJson){
+    window.RacineExport.saveJson(name,blob);
+  }else{
+    var text=JSON.stringify(blob,null,2);
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([text],{type:"application/json;charset=utf-8"}));
+    a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+  }
   // Cet export compte comme sauvegarde : horodater pour le rappel d'export.
   if(CoachProfiles.markExported)CoachProfiles.markExported(id);
   var reminder=document.getElementById("exportReminderBanner");

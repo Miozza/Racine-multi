@@ -1,3 +1,11 @@
+## Non publié — Export JSON fiable sur Safari iOS ancien
+- **Vrai fichier `.json`** : l'export du profil et de l'historique génère désormais un fichier `application/json` encodé UTF-8, avec un nom clair et unique (horodaté). L'export d'historique n'est plus un `.txt` avec en-tête texte.
+- **Cause corrigée** : sur les anciens Safari iOS (iPhone SE 2019-2020, iOS 13-14) l'attribut `download` d'une ancre n'est pas honoré — le clic naviguait vers l'URL `blob:` et Safari affichait le JSON en texte brut dans une nouvelle page, sans option « Enregistrer dans Fichiers ».
+- **Partage natif prioritaire** : nouveau module `scripts/export_file.js` (`window.RacineExport.saveJson`) qui utilise `navigator.share({files:[File]})` — vérifié via `navigator.canShare({files})` — pour exposer « Enregistrer dans Fichiers ».
+- **Repli compatible** : sinon `Blob` + `URL.createObjectURL()` + `<a download>` + `URL.revokeObjectURL()` (desktop/Android). En dernier recours sur iOS ancien sans partage de fichiers : message clair invitant à utiliser la feuille de partage ou à mettre Safari à jour. Le JSON n'est **jamais** ouvert dans un nouvel onglet.
+- **Inchangé** : structure des données JSON, import, logique métier et calculs d'entraînement.
+- Tests : nouveau `dev/json_export_ios_checks.js` (fichier, nom, MIME, partage natif, repli, message, absence d'ouverture de page).
+
 ## V4.5.18 — Accès programmes hors ligne et Gear simplifié
 - **Base préservée** : les 32 programmes actuellement publics restent accessibles à tous. « Hypertrophie Fessier Femme » devient privé.
 - **Privé par défaut** : tout programme nouveau ou sans `visibility:"public"` exige désormais une permission explicite.

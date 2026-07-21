@@ -2194,9 +2194,19 @@ function download(name,text){
   var blob=new Blob([text],{type:type}),url=URL.createObjectURL(blob);
   var a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
+// Export JSON robuste (profil/historique) : vrai fichier .json via partage
+// natif ou repli <a download>, compatible Safari iOS ancien. Voir
+// scripts/export_file.js. Repli défensif si le module n'est pas chargé.
+function saveJsonFile(name,data){
+  if(window.RacineExport&&window.RacineExport.saveJson){
+    return window.RacineExport.saveJson(name,data);
+  }
+  download(name,typeof data==="string"?data:JSON.stringify(data,null,2));
+}
 function exportBackup(){
   var v=String(APP_VERSION||"backup").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
-  download("racine-"+v+"-profil.json",JSON.stringify({version:APP_VERSION,exportedAt:new Date().toISOString(),state:state},null,2));
+  var stamp=(window.RacineExport&&window.RacineExport.stamp)?window.RacineExport.stamp():new Date().toISOString().slice(0,10);
+  saveJsonFile("racine-"+v+"-profil-"+stamp+".json",{version:APP_VERSION,exportedAt:new Date().toISOString(),state:state});
 }
 function importBackup(file){
   if(!file)return;
@@ -2272,7 +2282,7 @@ function bind(){
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};
   var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();}};
-  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){download("racine-historique.txt","Historique "+APP_VERSION+"\n\n"+JSON.stringify(state.history,null,2));};
+  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){var stamp=(window.RacineExport&&window.RacineExport.stamp)?window.RacineExport.stamp():new Date().toISOString().slice(0,10);saveJsonFile("racine-historique-"+stamp+".json",state.history);};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique ? Le moteur de charge oubliera aussi les references apprises (athleteState, RPE) pour repartir a zero.")){state.history=[];rebuildRefsFromHistory();save();renderHistory();renderWorkout();renderReferences();renderWeekProgress();}};
   var rcb=$("resetCustomChargesBtn");if(rcb)rcb.onclick=resetCustomCharges;
   var ebb=$("exportBackupBtn");if(ebb)ebb.onclick=exportBackup;
