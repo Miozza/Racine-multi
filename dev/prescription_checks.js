@@ -19,6 +19,12 @@ function assert(cond, msg){ (cond ? notes : errors).push(msg); }
 // Câblage statique.
 assert(read('index.html').indexOf('scripts/profiles/prescription.js') !== -1, 'prescription.js chargé par index.html.');
 assert(read('scripts/profiles/admin_programs.js').indexOf('RacinePrescription') !== -1, 'Panneau admin : bouton Partager branché.');
+const adminPrograms = read('scripts/profiles/admin_programs.js');
+assert(adminPrograms.includes('data-share-program'), 'Gear expose une action de copie par programme privé.');
+assert(!adminPrograms.includes('data-grant='), 'Gear ne prétend plus accorder localement un accès distant.');
+assert(!adminPrograms.includes('data-revoke='), 'Gear ne prétend plus retirer un accès distant.');
+assert(!adminPrograms.includes('data-activate='), 'Gear ne prétend plus activer un cycle distant.');
+assert(!adminPrograms.includes('setProfileActiveProgram'), 'Gear ne change plus le cycle actif.');
 assert(read('scripts/profiles/ui.js').indexOf('RacinePrescription.propose') !== -1, 'Réglages client : coller le lien branché.');
 // Le boot doit reconstruire le catalogue avec les permissions du profil actif,
 // sinon un programme privé accordé après le chargement de la page (prescription
@@ -70,6 +76,9 @@ try{
   const old = JSON.parse(JSON.stringify(patch)); old.createdAt = '2020-01-01T00:00:00.000Z';
   const oldLink = '#rx=' + ctx.btoa(unescape(encodeURIComponent(JSON.stringify(old)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   assert(api.parse(oldLink) && api.parse(oldLink).error, 'Prescription expirée refusée avec message.');
+
+  const missingVisibility = { id:'futur_programme', name:'Futur programme' };
+  assert(missingVisibility.visibility !== 'public', 'Un futur programme sans visibilité n’est pas public implicitement.');
 
   // Application : jamais sans profil actif; passe par les API existantes.
   let activated = null; const swapsAdded = [];

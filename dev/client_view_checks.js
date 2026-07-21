@@ -39,6 +39,8 @@ assert(/RacineAdminPrograms\.render\(\)/.test(app) && /isActiveAdmin\(\)\s*\)\s*
 // Module admin programmes chargé
 assert(index.includes('scripts/profiles/admin_programs.js'), 'admin_programs.js chargé dans index.html.');
 assert(fs.existsSync(path.join(root, 'scripts/profiles/admin_programs.js')), 'scripts/profiles/admin_programs.js existe.');
+assert(index.includes('Envoyer un programme spécialisé'), 'Gear nomme clairement le flux de prescription.');
+assert(index.includes('programmes de base'), 'Gear rappelle que les programmes de base sont déjà accessibles.');
 
 // setProfileActiveProgram : ne réinitialise jamais l'historique/les résultats
 const m = storage.match(/setProfileActiveProgram\s*=\s*function[\s\S]*?\n  \};/);
