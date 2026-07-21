@@ -19,6 +19,7 @@
 ### Task 1: Verrouiller et appliquer les trois visibilités privées
 
 **Files:**
+- Modify: `RELEASE_CHECKLIST.md`
 - Modify: `dev/program_catalog_checks.js`
 - Modify: `programs/index.js:16-18`
 
@@ -26,7 +27,9 @@
 - Consumes: `window.COACH_BERTIN_PROGRAM_INDEX`, dont chaque entrée expose `id`, `visibility` et `suggestedNext`.
 - Produces: trois entrées dont `visibility === "private"`; le moteur existant de permissions les traite alors comme des prescriptions privées.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
+
+Référencer la présente spécification et le présent plan dans `RELEASE_CHECKLIST.md`, conformément au contrôle de structure du dépôt.
 
 Ajouter dans `dev/program_catalog_checks.js` :
 
@@ -41,13 +44,13 @@ assert(index.filter(p => p && p.visibility === 'public').length === 29, 'Les 29 
 
 Remplacer l'assertion qui oblige chaque `suggestedNext` à être public par une assertion documentant que tout successeur existe; la visibilité finale est filtrée dans `scripts/season/suggest.js`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `node dev/program_catalog_checks.js`
 
 Expected: FAIL sur `hypertrophy_base est privé.` parce que sa visibilité vaut encore `public`.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Dans `programs/index.js`, remplacer uniquement :
 
@@ -63,7 +66,7 @@ visibility: "private"
 
 sur les entrées `hypertrophy_base`, `force_performance` et `competition_peak`.
 
-- [ ] **Step 4: Run targeted and regression tests**
+- [x] **Step 4: Run targeted and regression tests**
 
 Run: `node dev/program_catalog_checks.js`
 

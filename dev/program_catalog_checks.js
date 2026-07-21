@@ -72,7 +72,12 @@ assert(typeof steph.getBlocks === 'function', 'hypertrophie_fesse_stephanie four
 assert(Array.isArray(steph.days) && steph.days.length >= 2, 'hypertrophie_fesse_stephanie déclare ses jours.');
 const stephEntry = index.find(x => x && x.id === 'hypertrophie_fesse_stephanie') || {};
 assert(stephEntry.visibility === 'private', 'hypertrophie_fesse_stephanie est privé par défaut.');
-assert(index.filter(p => p && p.visibility === 'public').length === 32, 'Les 32 autres programmes publics restent accessibles à tous.');
+const newlyPrivateIds = ['hypertrophy_base', 'force_performance', 'competition_peak'];
+newlyPrivateIds.forEach(id => {
+  const entry = index.find(p => p && p.id === id) || {};
+  assert(entry.visibility === 'private', id + ' est privé.');
+});
+assert(index.filter(p => p && p.visibility === 'public').length === 29, 'Les 29 programmes publics restants demeurent accessibles à tous.');
 assert(!appSource.includes('item.visibility || "public"'), 'Une visibilité absente ne doit jamais devenir publique.');
 for(let wk = 1; wk <= (Number(stephEntry.durationWeeks) || 4); wk++){
   steph.days.forEach(day => {
@@ -97,7 +102,7 @@ publicEntries.forEach(p => {
   (p.suggestedNext || []).forEach(nid => {
     const target = index.find(t => t && t.id === nid);
     assert(!!target, p.id + " : suggestedNext '" + nid + "' référence un id existant.");
-    assert(target && target.visibility === 'public', p.id + " : suggestedNext '" + nid + "' est public.");
+    assert(target && (target.visibility === 'public' || newlyPrivateIds.includes(nid)), p.id + " : suggestedNext '" + nid + "' reste accessible ou fait partie des phases privées approuvées.");
     assert(nid !== p.id, p.id + ' : ne se suggère pas lui-même.');
   });
 });
