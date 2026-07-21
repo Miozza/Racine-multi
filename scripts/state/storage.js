@@ -48,7 +48,7 @@
       }
       if(!writeFailureNotified){
         writeFailureNotified = true;
-        alert("⚠️ Sauvegarde impossible : le stockage local est plein ou bloqué.\nExporte tes données (Réglages → Sauvegarde locale) puis libère de l'espace.");
+        alert("⚠️ Sauvegarde impossible : le stockage local est plein ou bloqué.\nExporte ton profil (Réglages → Profil → Exporter mon profil) puis libère de l'espace.");
       }
       return false;
     }

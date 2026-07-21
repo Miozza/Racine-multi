@@ -30,6 +30,7 @@ node dev/repro_bug1_charges_client.js
 node dev/reference_seed_checks.js
 node dev/reference_seed_stress.js
 node dev/json_export_ios_checks.js
+node dev/profile_backup_ui_checks.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :

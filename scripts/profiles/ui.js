@@ -46,22 +46,6 @@
     removeExportReminder();
     return true;
   }
-  // Export "tous les profils" : un seul fichier JSON avec tout le registre.
-  // Horodate l'export de chaque profil inclus.
-  function exportAllProfiles(){
-    if(!(window.CoachProfiles && CoachProfiles.exportAllProfilesBlob)) return false;
-    var blob = CoachProfiles.exportAllProfilesBlob();
-    if(!blob) return false;
-    var date = new Date().toISOString().slice(0,10);
-    downloadJsonFile(blob, "racine-profils-"+date+".json");
-    if(CoachProfiles.markExported){
-      blob.profiles.forEach(function(entry){
-        if(entry.profile && entry.profile.id) CoachProfiles.markExported(entry.profile.id);
-      });
-    }
-    removeExportReminder();
-    return true;
-  }
 
   // Import d'un fichier d'export (mono ou multi-profils). Retourne {ok, error}.
   // Format multi : propose l'import de chaque profil, un par un. Aucun profil
@@ -224,7 +208,6 @@
         '<div class="racine-gate-sub">Chaque profil a ses propres charges, son propre historique et son propre rythme de progression. Tout reste sur cet appareil.</div>'+
         rows+
         '<button class="btn-ghost" id="racineNewProfileBtn" style="width:100%;margin-top:10px">+ Nouveau profil</button>'+
-        (list.length ? '<button class="btn-ghost" id="racineExportAllBtn" style="width:100%;margin-top:8px">Exporter tous les profils (JSON)</button>' : '')+
         // Import disponible dès l'écran d'accueil : indispensable pour restaurer
         // un export sur un appareil vierge (après purge Safari), sans devoir
         // créer un profil temporaire pour atteindre les Réglages.
@@ -244,8 +227,6 @@
       wiz = { mode:"create", step:"welcome", answers:{} };
       render();
     };
-    var exportAllBtn = card.querySelector("#racineExportAllBtn");
-    if(exportAllBtn) exportAllBtn.onclick = function(){ exportAllProfiles(); };
     var pickerImport = card.querySelector("#racinePickerImportFile");
     if(pickerImport) pickerImport.onchange = function(e){
       var file = e.target.files[0]; if(!file) return;
@@ -709,11 +690,8 @@
         '<button id="clientDashboardBtn" class="btn-ghost">Tableau de bord clients'+(profiles.length>1?(' ('+profiles.length+')'):'')+'</button>'+
       '</div>'):'')+
       '<div class="btn-row">'+
-        '<button id="exportProfileBtn" class="btn-ghost">Exporter ce profil (JSON)</button>'+
+        '<button id="exportProfileBtn" class="btn-ghost">Exporter mon profil (JSON)</button>'+
         '<label class="btn-ghost file-label">Importer un profil<input id="importProfileFile" type="file" accept="application/json"/></label>'+
-      '</div>'+
-      '<div class="btn-row">'+
-        '<button id="exportAllProfilesBtn" class="btn-ghost">Exporter tous les profils (JSON)</button>'+
       '</div>'+
       '<div class="btn-row">'+
         '<button id="coachRxBtn" class="btn-ghost">J\'ai reçu un lien du coach</button>'+
@@ -782,13 +760,6 @@
         if(s){ s.textContent = "Lien non reconnu. Recopie le lien complet du message."; s.className = "status-msg err"; }
       }
     };
-    var exportAllBtn = document.getElementById("exportAllProfilesBtn");
-    if(exportAllBtn) exportAllBtn.onclick = function(){
-      if(exportAllProfiles()){
-        var s=document.getElementById("profileSettingsStatus");
-        if(s){s.textContent="✅ Tous les profils exportés.";s.className="status-msg ok";}
-      }
-    };
     var importFile = document.getElementById("importProfileFile");
     if(importFile) importFile.onchange = function(e){
       var file = e.target.files[0]; if(!file) return;
@@ -799,6 +770,9 @@
           var payload = JSON.parse(ev.target.result);
           var result = importExportPayload(payload);
           if(!result.ok){
+            // Repli : ancienne sauvegarde « état brut » ({state}) exportée avant
+            // l'unification. Restauration en place du profil actif si reconnue.
+            if(window.restoreLegacyStateBackup && window.restoreLegacyStateBackup(payload)) return;
             if(s){s.textContent=result.error||"Fichier de profil invalide.";s.className="status-msg err";}
           }
         }catch(err){

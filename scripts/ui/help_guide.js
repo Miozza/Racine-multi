@@ -77,7 +77,7 @@
         '<p><strong>Cycle</strong> : où tu en es dans ton programme — semaine courante, jours faits, jours manqués. Un programme dure en général 6 semaines ; la dernière est souvent plus légère (deload) : c’est voulu, c’est là que le corps encaisse les gains. À la fin d’un cycle, l’app te propose la suite logique.</p>')+
       section('🔒 Tes données',
         '<p>Tout reste sur ton téléphone. Rien n’est envoyé nulle part, pas de compte, pas d’abonnement.</p>'+
-        '<p>Dans <strong>⚙ Réglages</strong>, « Sauvegarder mes données » crée un fichier de secours ; « Restaurer » le recharge. Fais-en une de temps en temps.</p>'+
+        '<p>Dans <strong>⚙ Réglages → Profil</strong>, « Exporter mon profil » crée un fichier de secours (.json) ; « Importer un profil » le recharge. Fais-en une de temps en temps.</p>'+
         '<p><strong>⚠️ Important :</strong> ne supprime pas les « données de sites web » de Safari pour Racine — c’est là que vivent ton historique et tes réglages. En cas de doute, fais une sauvegarde d’abord.</p>')+
       '<button type="button" class="btn-accent" data-help-close style="width:100%;margin-top:12px">Fermer</button>'+
     '</div>';

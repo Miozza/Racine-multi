@@ -10,7 +10,7 @@ var VIEW_MAIN_IDS={pc:"pcView"};
 var VIEW_TAB_IDS={pc:"phoneTab"};
 // « references » : onglet fusionne dans « Charge » (profileView) — plus de vue
 // dediee. renderReferences() est appele par renderProfile().
-var VIEWS=["training","pc","session","results","cycle","history","settings","profile","backup"];
+var VIEWS=["training","pc","session","results","cycle","history","settings","profile"];
 
 function normalizeViewName(v){
   return VIEW_ALIASES[v] || v;
