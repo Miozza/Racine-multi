@@ -1855,8 +1855,12 @@ function detectAndApplyAutomaticPr(results,dateStr){
       if(reps < Number(cfg.reps||1))return;
       if(load <= old)return;
       state.profile[cfg.profile]=load;
-      updateMovementRefFromPR(cfg,load,dateStr);
-      updateAthleteStateFromPR(cfg,load,dateStr);
+      // reps===1 = trophee 1RM (manual_pr, ignore par le moteur) ; reps>1 =
+      // reference de travail (manual_recalibration, lue et periodisee). Voir
+      // scripts/charge/suggestion.js (coachDeclaredRangeReference).
+      var seedRpe=(Number(cfg.reps)>1)?8:10;
+      updateMovementRefFromPR(cfg,load,dateStr,seedRpe);
+      updateAthleteStateFromPR(cfg,load,dateStr,seedRpe);
       r.autoPr=true;
       r.prLabel=cfg.label;
       r.prOld=old||null;
@@ -1881,9 +1885,12 @@ async function savePrProfile(){
     if(val!==old){
       state.profile[cfg.profile]=val;
       changed[cfg.label]={old:old||null,new:val,reps:cfg.reps};
-      results[cfg.label]={load:String(val),reps:String(cfg.reps),rpe:"10",note:"PR saisi manuellement",status:"pr"};
-      updateMovementRefFromPR(cfg,val,dateStr);
-      updateAthleteStateFromPR(cfg,val,dateStr);
+      // reps===1 = trophee 1RM (manual_pr, ignore par le moteur) ; reps>1 =
+      // reference de travail (manual_recalibration, lue et periodisee).
+      var seedRpe=(Number(cfg.reps)>1)?8:10;
+      results[cfg.label]={load:String(val),reps:String(cfg.reps),rpe:String(seedRpe),note:seedRpe>=9?"PR saisi manuellement":"Reference de travail saisie",status:seedRpe>=9?"pr":"success"};
+      updateMovementRefFromPR(cfg,val,dateStr,seedRpe);
+      updateAthleteStateFromPR(cfg,val,dateStr,seedRpe);
     }
   });
   var st=$("prStatus");
