@@ -28,6 +28,7 @@ node dev/movement_swaps_checks.js
 node dev/prescription_checks.js
 node dev/repro_bug1_charges_client.js
 node dev/reference_seed_checks.js
+node dev/reference_seed_stress.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :
