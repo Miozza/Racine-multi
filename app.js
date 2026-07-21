@@ -1,5 +1,5 @@
-// Racine V4.5.16 — Hypertrophie Fessier Femme : reconstruction sur le patron Arnold, public, charges/cycle/tutos corrigés
-var APP_VERSION = "V4.5.16";
+// Racine V4.5.17 — Moteur de charge : PR découplé, seed via référence de travail périodisée, onglet « Charge » unifié
+var APP_VERSION = "V4.5.17";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2176,7 +2176,7 @@ function importBackup(file){
 // ─── Binding ─────────────────────────────────────────────────────────────────
 
 function bind(){
-  [["trainingTab","training"],["phoneTab","phone"],["profileTab","profile"],["referencesTab","references"],["cycleTab","cycle"],["historyTab","history"],["settingsTab","settings"]].forEach(function(pair){
+  [["trainingTab","training"],["phoneTab","phone"],["profileTab","profile"],["cycleTab","cycle"],["historyTab","history"],["settingsTab","settings"]].forEach(function(pair){
     var t=$(pair[0]);if(t)t.onclick=function(){switchView(pair[1]);};
   });
   var pvb=$("phoneViewBtn");if(pvb)pvb.onclick=function(){switchView("phone");};
@@ -2248,6 +2248,60 @@ function applyAdminVisibility(){
   var admin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
   document.body.classList.toggle('is-client', !admin);
 }
+// Migration V4.5.17 : re-tague les references de travail (reps>1) stockees
+// par erreur comme trophee 1RM (manual_pr / status "pr") par l'ancien
+// formulaire unique. Depuis le decouplage du PR, les manual_pr sont exclus du
+// moteur : ces references de travail resteraient invisibles. Les vrais 1RM
+// (reps===1) restent des trophees. Idempotent : ne sauvegarde que si un
+// re-taguage a lieu (aucune donnee re-ecrite au boot suivant).
+function coachMigratePrTrophyReferences(){
+  if(!window.state)return 0;
+  var changed=0;
+  var ast=state.athleteState&&state.athleteState.movements;
+  if(ast&&typeof ast==='object'){
+    Object.keys(ast).forEach(function(label){
+      var mv=ast[label];if(!mv)return;
+      if(mv.ranges&&typeof mv.ranges==='object'){
+        Object.keys(mv.ranges).forEach(function(rg){
+          var r=mv.ranges[rg];
+          var reps=Number(r&&(r.currentReps||r.actualReps))||0;
+          if(r&&r.planned&&r.planned.source==='manual_pr'&&reps>1){
+            r.planned.source='manual_recalibration';
+            if(r.status==='pr')r.status='success';
+            changed++;
+          }
+        });
+      }
+      if(Array.isArray(mv.history)){
+        mv.history.forEach(function(row){
+          var reps=Number(row&&row.reps)||0;
+          if(row&&row.planned&&row.planned.source==='manual_pr'&&reps>1){
+            row.planned.source='manual_recalibration';
+            if(row.status==='pr')row.status='success';
+            changed++;
+          }
+        });
+      }
+    });
+  }
+  if(state.movementRefs&&typeof state.movementRefs==='object'){
+    Object.keys(state.movementRefs).forEach(function(k){
+      var e=state.movementRefs[k];
+      var reps=Number(e&&e.reps)||0;
+      if(e&&e.status==='pr'&&reps>1){
+        e.status='success';
+        if(e.note==='PR saisi manuellement')e.note='Reference de travail (migration)';
+        changed++;
+      }
+    });
+  }
+  if(changed>0){
+    if(typeof save==='function')save();
+    if(window.CoachLog&&CoachLog.info)CoachLog.info('migrate_pr_trophy_refs',{retagged:changed});
+  }
+  return changed;
+}
+
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
   // Reconstruire le catalogue avec les permissions du profil actif MAINTENANT.
@@ -2258,6 +2312,7 @@ function coachFullBoot(){
   registerProgramsFromIndex();
   load();
   coachSanitizeImplausibleLoads();
+  coachMigratePrTrophyReferences();
   // Auto-guérison : si le programme tracé par un ancien fallback est redevenu
   // disponible (permission accordée, app mise à jour), restaurer le cycle —
   // sauf si l'utilisateur a activé un autre programme entre-temps.

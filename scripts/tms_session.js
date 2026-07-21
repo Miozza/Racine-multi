@@ -149,7 +149,6 @@
       ["history", "historyView"],
       ["settings", "settingsView"],
       ["profile", "profileView"],
-      ["references", "referencesView"],
       ["backup", "backupView"]
     ];
     for(var i=0;i<pairs.length;i++){
