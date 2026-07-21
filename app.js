@@ -1741,11 +1741,84 @@ function renderProfile(){
   });
   var d=$("prDate");if(d&&!d.value)d.value=todayDateString();
   var st=$("prStatus");if(st){st.textContent="";st.className="status-msg";}
-  // Onglet « Charge » unifie : references de travail editables + references
-  // vivantes (reflet des seances) + ajustements ponctuels.
+  // Onglet « Charge » unifie : trophees + references de travail editables +
+  // references vivantes (reflet des seances) + ajustements ponctuels.
+  if(typeof renderTrophies==="function")renderTrophies();
   if(typeof renderWorkingRefs==="function")renderWorkingRefs();
   if(typeof renderReferences==="function")renderReferences();
   if(typeof renderChargeSettings==="function")renderChargeSettings();
+}
+
+// ─── Trophées : records personnels datés (hors calcul) ───────────────────────
+// Stockés dans state.profile.records = { key:{value,date,unit} }. TOTALEMENT
+// découplés du moteur : aucune écriture dans athleteState/movementRefs, donc
+// jamais de conflit avec une reference de travail. Les 1RM avec scaleKey sont
+// aussi reflétés dans state.profile[scaleKey] (ancien chemin / affichage).
+var TROPHY_FIELDS = [
+  {key:'bench',        label:'Bench Press 1RM',  unit:'lb',   scaleKey:'bench'},
+  {key:'backSquat1RM', label:'Back Squat 1RM',   unit:'lb'},
+  {key:'frontSquat',   label:'Front Squat 1RM',  unit:'lb',   scaleKey:'frontSquat'},
+  {key:'deadlift',     label:'Deadlift 1RM',     unit:'lb'},
+  {key:'strictPress',  label:'Strict Press 1RM', unit:'lb',   scaleKey:'strictPress'},
+  {key:'powerClean',   label:'Power Clean 1RM',  unit:'lb',   scaleKey:'powerClean'},
+  {key:'maxPullup',    label:'Max tractions',    unit:'reps', scaleKey:'strictPullupReps'}
+];
+
+function trophyRecord(key){var recs=(state.profile&&state.profile.records)||{};return recs[key]||null;}
+function trophyPrefillValue(f){
+  var r=trophyRecord(f.key);
+  if(r&&(r.value||r.value===0))return r.value;
+  if(f.scaleKey&&state.profile&&(state.profile[f.scaleKey]||state.profile[f.scaleKey]===0))return state.profile[f.scaleKey];
+  return '';
+}
+function trophyPrefillDate(f){var r=trophyRecord(f.key);return (r&&r.date)?r.date:'';}
+
+function renderTrophies(){
+  var host=$("trophyGrid");if(!host)return;host.innerHTML="";
+  TROPHY_FIELDS.forEach(function(f){
+    var v=trophyPrefillValue(f), d=trophyPrefillDate(f);
+    var card=document.createElement("div");card.className="trophy-card";
+    card.innerHTML=
+      '<div class="trophy-label">'+escapeHtml(f.label)+'</div>'+
+      '<div class="trophy-value-row">'+
+        '<input class="trophy-input" type="number" inputmode="numeric" data-tro="'+f.key+'" value="'+escapeHtml(String(v))+'" placeholder="—"/>'+
+        '<span class="trophy-unit">'+f.unit+'</span>'+
+      '</div>'+
+      '<input class="trophy-date" type="date" data-tro-date="'+f.key+'" value="'+escapeHtml(String(d))+'"/>';
+    host.appendChild(card);
+  });
+}
+
+function saveTrophies(){
+  if(!state.profile)state.profile={};
+  if(!state.profile.records)state.profile.records={};
+  var today=todayDateString();
+  var changed=0;
+  TROPHY_FIELDS.forEach(function(f){
+    var vi=document.querySelector('[data-tro="'+f.key+'"]');
+    var di=document.querySelector('[data-tro-date="'+f.key+'"]');
+    if(!vi)return;
+    var raw=String(vi.value||"").trim();
+    if(raw===""){
+      if(state.profile.records[f.key]){delete state.profile.records[f.key];changed++;}
+      return;
+    }
+    var val=(f.unit==='reps')?(parseInt(raw,10)||0):parseLoad(raw);
+    if(!(val>0))return;
+    var date=(di&&di.value)?di.value:(trophyPrefillDate(f)||today);
+    var prev=state.profile.records[f.key];
+    if(!prev||Number(prev.value)!==Number(val)||prev.date!==date){
+      state.profile.records[f.key]={value:val,date:date,unit:f.unit};
+      // Miroir vers profile[scaleKey] (affichage / ancien chemin). N'ecrit
+      // JAMAIS athleteState/movementRefs : un trophee ne touche pas le moteur.
+      if(f.scaleKey)state.profile[f.scaleKey]=val;
+      changed++;
+    }
+  });
+  var st=$("prStatus");
+  if(!changed){if(st){st.textContent="Aucun record modifié.";st.className="status-msg";}return;}
+  save();
+  if(st){st.textContent="✅ Records sauvegardés (datés, hors calcul).";st.className="status-msg ok";}
 }
 
 // ─── Références de travail (éditables) : source de vérité que le moteur lit ───
@@ -2196,7 +2269,7 @@ function bind(){
   // Sélecteur de profil déplacé dans Gear / réglages : aucun mini bouton dans la topnav.
   var sc=$("saveCycleBtn");if(sc)sc.onclick=saveCycle;
   var nc=$("newCycleBtn");if(nc)nc.onclick=newCycle;
-  var spr=$("savePrBtn");if(spr)spr.onclick=savePrProfile;
+  var spr=$("savePrBtn");if(spr)spr.onclick=saveTrophies;
   var cg=$("cycleGoal");if(cg)cg.onchange=function(){resetPreviewPosition(cg.value);var csi=$("cycleStartDateInput");if(csi)csi.value=todayIsoDate();renderCycle();};
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};

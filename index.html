@@ -235,20 +235,20 @@
   <div class="panel">
     <div class="system-tag" style="margin-bottom:12px">Charge · base de calcul</div>
     <h2>Charge</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:6px">Priorité du moteur pour proposer une charge :</p>
-    <ol style="font-size:12px;color:var(--muted);margin:0 0 4px 18px;padding:0;line-height:1.5">
+    <p class="charge-note">Priorité du moteur pour proposer une charge :</p>
+    <ol class="charge-note charge-note-list">
       <li><strong>Tes séances réelles loggées</strong> (autorégulation)</li>
       <li><strong>Tes références de travail</strong> ci-dessous (le moteur part sous le RM et monte sur le cycle)</li>
       <li>Défaut du programme</li>
     </ol>
-    <p style="font-size:12px;color:var(--muted);margin:0">Les <strong>PR</strong> sont des trophées datés — jamais utilisés pour proposer une charge de travail.</p>
+    <p class="charge-note">Les <strong>PR</strong> sont des trophées datés — jamais utilisés pour proposer une charge de travail.</p>
   </div>
 
   <!-- Références de travail (éditables · pilotent le moteur) -->
   <div class="panel">
     <div class="system-tag" style="margin-bottom:12px">Références de travail · pilote le moteur</div>
     <h2>Mes charges de travail</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Ton meilleur effort par plage de reps (proche du max pour ce nombre de reps). Le moteur démarre <strong>sous</strong> ces valeurs en début de cycle et monte vers elles. Se met à jour tout seul quand une séance confirme plus lourd.</p>
+    <p class="charge-note">Ton meilleur effort par plage de reps (proche du max pour ce nombre de reps). Le moteur démarre <strong>sous</strong> ces valeurs en début de cycle et monte vers elles. Se met à jour tout seul quand une séance confirme plus lourd.</p>
     <div id="workingRefsGrid" class="wref-grid"></div>
     <p id="wrefStatus" class="status-msg"></p>
   </div>
@@ -257,54 +257,27 @@
   <div class="panel">
     <div class="system-tag" style="margin-bottom:12px">Références vivantes · reflet des séances</div>
     <h2>Ce que le moteur retient</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Références apprises de tes vraies séances (lecture seule). Elles remplacent tes valeurs saisies dès que tu confirmes plus lourd à l'entraînement.</p>
+    <p class="charge-note">Références apprises de tes vraies séances (lecture seule). Elles remplacent tes valeurs saisies dès que tu confirmes plus lourd à l'entraînement.</p>
     <div id="referencesList" class="ref-grid"></div>
   </div>
 
-  <!-- Trophées : records 1RM (hors calcul) -->
+  <!-- Trophées : records personnels datés (hors calcul) -->
   <div class="panel">
-    <div class="system-tag" style="margin-bottom:12px">Trophées · records 1RM</div>
+    <div class="system-tag" style="margin-bottom:12px">Trophées · records personnels</div>
     <h2>Records personnels</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Tes maximums, avec la date. Fierté et suivi — <strong>jamais</strong> utilisés pour calculer une charge de travail.</p>
-    <div class="pr-section">
-      <div class="pr-row-grid">
-        <div class="pr-stat-card">
-          <div class="pr-stat-label">BENCH PRESS 1RM</div>
-          <div class="pr-stat-input"><input id="prBench" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
-          <div class="pr-stat-target">Trophée</div>
-        </div>
-        <div class="pr-stat-card">
-          <div class="pr-stat-label">FRONT SQUAT 1RM</div>
-          <div class="pr-stat-input"><input id="prFrontSquat" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
-          <div class="pr-stat-target">Trophée</div>
-        </div>
-        <div class="pr-stat-card">
-          <div class="pr-stat-label">STRICT PRESS 1RM</div>
-          <div class="pr-stat-input"><input id="prStrictPress" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
-          <div class="pr-stat-target">Trophée</div>
-        </div>
-        <div class="pr-stat-card">
-          <div class="pr-stat-label">POWER CLEAN 1RM</div>
-          <div class="pr-stat-input"><input id="prPowerClean" type="number" class="pr-input"/><span class="pr-unit">lb</span></div>
-          <div class="pr-stat-target">Trophée</div>
-        </div>
-      </div>
+    <p class="charge-note">Tes maximums, chacun avec sa date. Fierté et suivi — <strong>jamais</strong> utilisés pour calculer une charge de travail.</p>
+    <div id="trophyGrid" class="trophy-grid"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button id="savePrBtn" class="btn-accent">Sauvegarder les records</button>
     </div>
-    <div class="pr-save-panel">
-      <label>Date du PR</label>
-      <input id="prDate" type="date" class="input-field"/>
-      <div class="btn-row">
-        <button id="savePrBtn" class="btn-accent">Sauvegarder les records</button>
-      </div>
-      <p id="prStatus" class="status-msg"></p>
-    </div>
+    <p id="prStatus" class="status-msg"></p>
   </div>
 
   <!-- Ajustements ponctuels (ex-« Charges ajustables ») -->
   <div class="panel">
     <div class="system-tag" style="margin-bottom:12px">Ajustements ponctuels</div>
     <h2>Forcer une charge</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Impose une charge précise sur un mouvement (utile WOD/accessoires). Laisse vide pour utiliser la base stable de <code>charges.js</code>.</p>
+    <p class="charge-note">Impose une charge précise sur un mouvement (utile WOD/accessoires). Laisse vide pour utiliser la base stable de <code>charges.js</code>.</p>
     <button id="resetCustomChargesBtn" class="btn-danger">Réinitialiser charges locales</button>
     <div id="chargeSettingsList" class="charge-grid"></div>
   </div>

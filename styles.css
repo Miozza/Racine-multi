@@ -1392,10 +1392,74 @@ label {
 .wref-unit {
   position: absolute;
   right: 8px;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--muted);
   pointer-events: none;
 }
+
+/* ════ Onglet « Charge » : typographie uniforme et lisible ════
+   Une seule police (--font-main) et une échelle de tailles cohérente sur
+   toute la vue, du texte explicatif aux champs. Scopé à #profileView. */
+#profileView { font-size: 15px; }
+#profileView h2 { font-size: 19px; }
+#profileView .system-tag { font-size: 11px; }
+#profileView .charge-note {
+  font-family: var(--font-main);
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+#profileView .charge-note strong { color: var(--text2); }
+#profileView .charge-note-list { margin: 0 0 10px 20px; padding: 0; }
+#profileView .charge-note-list li { margin-bottom: 4px; }
+#profileView .status-msg { font-size: 13px; }
+/* Libellés de champ : même police, tailles cohérentes */
+#profileView .wref-name,
+#profileView .trophy-label { font-family: var(--font-main); font-size: 14px; font-weight: 700; color: var(--text2); }
+#profileView .wref-cell-label { font-family: var(--font-main); font-size: 11px; letter-spacing: .04em; }
+#profileView .charge-row label { font-family: var(--font-main); font-size: 12px; }
+#profileView .ref-name  { font-size: 14px; }
+#profileView .ref-value { font-family: var(--font-main); font-size: 14px; }
+#profileView .ref-meta  { font-size: 12px; }
+/* Tous les champs de saisie de la vue : même police, même taille */
+#profileView input.wref-input,
+#profileView input.trophy-input,
+#profileView input.trophy-date,
+#profileView input.charge-input,
+#profileView input.input-field {
+  font-family: var(--font-main);
+  font-size: 15px;
+}
+
+/* ── Trophées : grille de records datés ── */
+.trophy-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.trophy-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.trophy-label { font-size: 14px; font-weight: 700; color: var(--text2); }
+.trophy-value-row { position: relative; display: flex; align-items: center; }
+.trophy-input {
+  width: 100%; min-width: 0;
+  background: var(--bg); color: var(--gold);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 9px 34px 9px 10px;
+  font-size: 16px;
+}
+.trophy-unit { position: absolute; right: 10px; font-size: 11px; color: var(--muted); pointer-events: none; }
+.trophy-date {
+  width: 100%;
+  background: var(--bg); color: var(--text2);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; font-size: 13px;
+}
+@media (max-width: 380px){ .trophy-grid { grid-template-columns: 1fr; } }
 
 /* File label */
 .file-label { display: inline-block; cursor: pointer; }
