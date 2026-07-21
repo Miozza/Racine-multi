@@ -19,6 +19,12 @@
 - **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
 - Tests : nouveau `dev/history_progress_checks.js`.
 
+### Historique : sous-onglets Séances / Progression + invitation paysage
+- **Les séances redeviennent prioritaires** : l'onglet Historique s'ouvre sur la liste des séances ; les graphiques de progression passent dans un **sous-onglet « Progression »** affiché sur demande explicite (plus d'empilement au-dessus de la liste).
+- **Invitation au mode paysage** : dans le sous-onglet Progression, un bandeau (CSS pur, `@media (orientation: portrait)`) invite à tourner l'iPhone en paysage pour mieux lire les graphiques — il disparaît automatiquement en paysage ou sur grand écran.
+- Bonus perf : la Progression n'est rendue que quand son sous-onglet est ouvert.
+- Tests : `dev/history_progress_checks.js` étendu (sous-onglets, défaut « Séances », bandeau portrait).
+
 ### Gestion des programmes : un seul endroit (Gear), fin de l'onglet Admin de la vue PC
 - **La grille d'accès aux programmes privés** (profils en lignes × programmes spécialisés en colonnes, bascule ✓/· à effet immédiat) **déménage de l'onglet Admin de la vue PC vers Gear** (Réglages → « Programmes spécialisés »). Tous les profils étant locaux (sur l'appareil), aucun sélecteur de profil n'est nécessaire pour donner ou retirer un programme : tout le monde est visible d'un coup.
 - **L'onglet « Admin » disparaît de la vue PC**, qui redevient purement de l'inspection en lecture seule (Séance, Semaine, Route, Analyse, Export). L'accès à la vue reste gardé admin par la navigation.

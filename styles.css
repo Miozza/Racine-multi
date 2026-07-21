@@ -6510,3 +6510,13 @@ body.is-client [data-ai-clear]{display:none!important}
   line-height: 1.55;
 }
 .help-list li { margin-bottom: 4px; }
+
+/* ── Historique : sous-onglets Séances / Progression ────────────────────── */
+.history-subtabs{display:flex;gap:10px;margin:12px 0 16px;flex-wrap:wrap;}
+/* Invitation paysage : rendue seulement quand le sous-onglet Progression est
+   actif (JS retire .hidden), et visible uniquement en portrait sur écran
+   étroit — en paysage ou sur grand écran, les graphiques respirent déjà. */
+.history-landscape-hint{display:none;}
+@media (orientation:portrait) and (max-width:920px){
+  .history-landscape-hint:not(.hidden){display:block;margin:0 0 14px;}
+}

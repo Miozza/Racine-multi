@@ -1586,8 +1586,27 @@ async function deleteHistorySession(index){
 
 var historyRenderLimit = 30; // affichage seulement — les données complètes restent intactes
 
+// Sous-onglet actif de la vue Historique : les séances restent prioritaires
+// (défaut) ; la Progression s'affiche sur demande explicite — moment logique
+// pour inviter à passer en paysage sur iPhone (bandeau CSS, portrait only).
+var historyActiveSubtab="sessions";
 function renderHistory(){
   var h=$("history");if(!h)return;
+  var showProgress=historyActiveSubtab==="progress";
+  var tS=$("historySubtabSessions");if(tS)tS.classList.toggle("active",!showProgress);
+  var tP=$("historySubtabProgress");if(tP)tP.classList.toggle("active",showProgress);
+  var hint=$("historyLandscapeHint");if(hint)hint.classList.toggle("hidden",!showProgress);
+  var pc=$("progressCharts");if(pc)pc.classList.toggle("hidden",!showProgress);
+  var st0=$("historyStatus");if(st0)st0.classList.toggle("hidden",showProgress);
+  h.classList.toggle("hidden",showProgress);
+  if(showProgress){
+    // Progression riche (ex-onglet « Progression » de la vue PC) : graphiques
+    // SVG, filtres de période et comparaison, pour tous les profils. Repli sur
+    // les mini-barres historiques si view_pc.js n'est pas chargé.
+    if(window.pcRenderProgressInto) pcRenderProgressInto("progressCharts");
+    else renderProgressCharts();
+    return;
+  }
   h.innerHTML="";
   var status=$("historyStatus");
   if(!status){
@@ -1600,11 +1619,6 @@ function renderHistory(){
     h.innerHTML='<p style="color:var(--muted);font-size:13px">Aucune séance enregistrée.</p>';
     return;
   }
-  // Progression riche (ex-onglet « Progression » de la vue PC) : graphiques
-  // SVG, filtres de période et comparaison, pour tous les profils. Repli sur
-  // les mini-barres historiques si view_pc.js n'est pas chargé.
-  if(window.pcRenderProgressInto) pcRenderProgressInto("progressCharts");
-  else renderProgressCharts();
 
   // Pagination : ne pas construire tout l'historique dans le DOM — après des
   // mois d'entraînement, la liste complète ralentit sensiblement l'onglet.
@@ -2278,6 +2292,8 @@ function bind(){
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};
   var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();}};
   var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){var stamp=(window.RacineExport&&window.RacineExport.stamp)?window.RacineExport.stamp():new Date().toISOString().slice(0,10);saveJsonFile("racine-historique-"+stamp+".json",state.history);};
+  var hts=$("historySubtabSessions");if(hts)hts.onclick=function(){historyActiveSubtab="sessions";renderHistory();};
+  var htp=$("historySubtabProgress");if(htp)htp.onclick=function(){historyActiveSubtab="progress";renderHistory();};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique ? Le moteur de charge oubliera aussi les references apprises (athleteState, RPE) pour repartir a zero.")){state.history=[];rebuildRefsFromHistory();save();renderHistory();renderWorkout();renderReferences();renderWeekProgress();}};
   var rcb=$("resetCustomChargesBtn");if(rcb)rcb.onclick=resetCustomCharges;
   // Export/import de profil unifiés : un seul couple de boutons dans le panneau
