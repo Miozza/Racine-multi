@@ -1741,6 +1741,88 @@ function renderProfile(){
   });
   var d=$("prDate");if(d&&!d.value)d.value=todayDateString();
   var st=$("prStatus");if(st){st.textContent="";st.className="status-msg";}
+  // Onglet « Charge » unifie : references de travail editables + references
+  // vivantes (reflet des seances) + ajustements ponctuels.
+  if(typeof renderWorkingRefs==="function")renderWorkingRefs();
+  if(typeof renderReferences==="function")renderReferences();
+  if(typeof renderChargeSettings==="function")renderChargeSettings();
+}
+
+// ─── Références de travail (éditables) : source de vérité que le moteur lit ───
+// Chaque valeur saisie ici est une reference de travail par plage (proche du
+// max pour ce nombre de reps). Enregistree comme manual_recalibration (RPE 8),
+// donc lue et periodisee par le moteur (voir coachDeclaredRangeReference dans
+// scripts/charge/suggestion.js) — jamais comme un trophee 1RM (manual_pr).
+var REFERENCE_MOVEMENTS = [
+  {label:"Bench Press",           mvKey:"bench"},
+  {label:"Front Squat",           mvKey:"frontSquat"},
+  {label:"Back Squat",            mvKey:"backSquat"},
+  {label:"Strict Press",          mvKey:"strictPress"},
+  {label:"Power Clean",           mvKey:"powerClean"},
+  {label:"Barbell Row",           mvKey:"barbellRow"},
+  {label:"Chest Supported Row",   mvKey:"chestRow"},
+  {label:"Weighted Pull-up",      mvKey:"latPulldown"},
+  {label:"Incline DB Press",      mvKey:"inclineDb"},
+  {label:"Hip Thrust",            mvKey:"hipThrust"},
+  {label:"Bulgarian Split Squat", mvKey:"bulgarian"},
+  {label:"DB RDL",                mvKey:"dbRdl"}
+];
+var REFERENCE_RANGES = [
+  {range:"strength",    reps:5,  label:"Force · 5"},
+  {range:"hypertrophy", reps:8,  label:"Hypertro · 8-12"},
+  {range:"endurance",   reps:15, label:"Endurance · 15+"}
+];
+
+function workingRefPrefill(mvKey,label,range){
+  var ref=state.movementRefs&&state.movementRefs[mvKey+"__"+range];
+  if(ref&&!ref.implausible&&(ref.load||ref.load===0))return Number(ref.load);
+  var mv=state.athleteState&&state.athleteState.movements&&state.athleteState.movements[label];
+  var rr=mv&&mv.ranges&&mv.ranges[range];
+  // On ne pre-remplit jamais depuis un trophee 1RM (manual_pr) : un record
+  // n'est pas une reference de travail.
+  if(rr&&!(rr.planned&&rr.planned.source==="manual_pr")&&(rr.currentLoad||rr.currentLoad===0))return Number(rr.currentLoad);
+  return null;
+}
+
+function renderWorkingRefs(){
+  var host=$("workingRefsGrid");if(!host)return;host.innerHTML="";
+  REFERENCE_MOVEMENTS.forEach(function(m){
+    var cells=REFERENCE_RANGES.map(function(rg){
+      var pre=workingRefPrefill(m.mvKey,m.label,rg.range);
+      var val=(pre||pre===0)?String(pre):"";
+      return '<div class="wref-cell">'+
+        '<span class="wref-cell-label">'+rg.label+'</span>'+
+        '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="numeric" '+
+          'data-mvkey="'+escapeHtml(m.mvKey)+'" data-label="'+escapeHtml(m.label)+'" '+
+          'data-range="'+rg.range+'" data-reps="'+rg.reps+'" value="'+escapeHtml(val)+'" placeholder="—"/>'+
+          '<span class="wref-unit">lb</span></span>'+
+        '</div>';
+    }).join("");
+    var row=document.createElement("div");row.className="wref-row";
+    row.innerHTML='<div class="wref-name">'+escapeHtml(m.label)+'</div><div class="wref-cells">'+cells+'</div>';
+    host.appendChild(row);
+  });
+  Array.prototype.forEach.call(host.querySelectorAll("input.wref-input"),function(inp){
+    inp.addEventListener("change",function(){saveWorkingRef(inp);});
+  });
+}
+
+function saveWorkingRef(inp){
+  var mvKey=inp.getAttribute("data-mvkey"),label=inp.getAttribute("data-label"),
+      range=inp.getAttribute("data-range"),reps=Number(inp.getAttribute("data-reps"))||8;
+  var val=parseLoad(inp.value);
+  var dateStr=todayDateString();
+  var cfg={mvKey:mvKey,label:label,profile:null,reps:reps,range:range};
+  if(val){
+    // RPE 8 => manual_recalibration => reference de travail lue par le moteur.
+    updateMovementRefFromPR(cfg,val,dateStr,8);
+    updateAthleteStateFromPR(cfg,val,dateStr,8);
+  }
+  save();
+  if(typeof renderReferences==="function")renderReferences();
+  if(typeof renderWorkout==="function")renderWorkout();
+  var st=$("wrefStatus");
+  if(st){st.textContent=val?(label+" "+range+" : "+val+" lb enregistré."):(label+" : reference vidée.");st.className="status-msg ok";}
 }
 
 // rpe par défaut à 10 (vrai PR/maximum déclaré). Un appel avec un rpe < 9

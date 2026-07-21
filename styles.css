@@ -1351,6 +1351,52 @@ label {
   letter-spacing: .04em;
 }
 
+/* ── Références de travail (grille éditable, onglet Charge) ── */
+.wref-grid { display: grid; gap: 8px; }
+.wref-row {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.wref-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  letter-spacing: .03em;
+  margin-bottom: 8px;
+}
+.wref-cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.wref-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.wref-cell-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.wref-input-wrap { position: relative; display: flex; align-items: center; }
+.wref-input {
+  width: 100%;
+  min-width: 0;
+  background: var(--bg);
+  color: var(--gold);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 26px 8px 8px;
+  font-family: var(--font-hud);
+  font-size: 13px;
+  letter-spacing: .03em;
+}
+.wref-input::placeholder { color: var(--border); }
+.wref-unit {
+  position: absolute;
+  right: 8px;
+  font-size: 9px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
 /* File label */
 .file-label { display: inline-block; cursor: pointer; }
 .file-label input { display: none; }
