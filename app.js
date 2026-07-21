@@ -1,5 +1,5 @@
-// Racine V4.5.17 — Moteur de charge : PR découplé, seed via référence de travail périodisée, onglet « Charge » unifié
-var APP_VERSION = "V4.5.17";
+// Racine V4.5.18 — Accès programmes privés par défaut et Gear de prescription hors ligne
+var APP_VERSION = "V4.5.18";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2319,7 +2319,7 @@ function applyAdminVisibility(){
   var admin = !!(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin());
   document.body.classList.toggle('is-client', !admin);
 }
-// Migration V4.5.17 : re-tague les references de travail (reps>1) stockees
+// Migration V4.5.18 : re-tague les references de travail (reps>1) stockees
 // par erreur comme trophee 1RM (manual_pr / status "pr") par l'ancien
 // formulaire unique. Depuis le decouplage du PR, les manual_pr sont exclus du
 // moteur : ces references de travail resteraient invisibles. Les vrais 1RM

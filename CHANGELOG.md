@@ -1,3 +1,11 @@
+## V4.5.18 — Accès programmes hors ligne et Gear simplifié
+- **Base préservée** : les 32 programmes actuellement publics restent accessibles à tous. « Hypertrophie Fessier Femme » devient privé.
+- **Privé par défaut** : tout programme nouveau ou sans `visibility:"public"` exige désormais une permission explicite.
+- **Migration sûre** : un profil dont le cycle actif devient privé reçoit automatiquement la permission correspondante, sans modification de sa semaine, son historique, ses résultats ou ses charges.
+- **Gear fidèle au hors-ligne** : suppression des faux états « Actif », « Accordé », « Retirer » et de l’activation distante. L’admin sélectionne un client, recherche un programme spécialisé et copie son lien de prescription.
+- **Compatibilité** : les permissions existantes sont conservées; une prescription acceptée reste accessible sur l’appareil.
+- Tests : catalogue, migration multi-profils, prescription, vue client, saison, structure et régression; contrôle mobile 393 px et 375 px.
+
 ## V4.5.17 — Moteur de charge : PR découplé, seed via référence de travail, onglet « Charge » unifié
 - **Découplage du PR** : un record 1RM (`manual_pr`) n'influence plus jamais la charge de travail proposée. Il reste un trophée daté. Corrige la sur-évaluation des mouvements sans historique (un vieux 1RM était projeté via Epley → ~8RM maximal proposé pour du 8-12 reps, impossible au jour 1).
 - **Seed via référence de travail (priorité 2)** : pour un mouvement sans séance réelle loggée, le moteur part d'une référence de travail déclarée pour la plage cible, périodisée **sous** le RM (rampe planifiée sur le cycle : ~93 % en S1 → ~105 % en dernière semaine de charge), au lieu du défaut programme × ratio. Priorité : 1) séances réelles, 2) références déclarées, 3) défaut programme. Réglable via `COACH_REF_RAMP` (scripts/charge/suggestion.js). Le moteur lit `athleteState` puis `movementRefs` (références d'onboarding incluses).
