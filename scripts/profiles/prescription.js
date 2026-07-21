@@ -98,7 +98,7 @@
     var lines = [];
     if(patch.programId){
       var entry = programEntry(patch.programId);
-      lines.push("Nouveau cycle : " + (entry ? entry.name : patch.programId));
+      lines.push("Programme accessible : " + (entry ? entry.name : patch.programId));
     }
     (patch.swaps||[]).forEach(function(s){
       lines.push("Remplacement : " + s.from + " → " + s.to + (s.note ? " — " + s.note : ""));
@@ -114,7 +114,8 @@
     if(patch.programId && !programEntry(patch.programId)){
       return { ok:false, error:"Programme inconnu dans cette version de l'app. Recharge la page (mise à jour), puis rouvre le lien." };
     }
-    // Remplacements d'abord : l'activation du programme re-boote l'UI.
+    // Remplacements d'abord, puis permission locale. La prescription ne change
+    // jamais le cycle actif : Gear ne connaît pas l'état distant du client.
     // Même exigence que l'admin (admin_programs.js canonicalMovement) : on ne
     // pose que des noms exacts du catalogue, sinon le moteur de charges ne
     // reconnaîtrait pas le mouvement et le remplacement échouerait en silence.
@@ -129,13 +130,14 @@
       });
     }
     if(patch.programId){
-      // Accorde la permission des programmes privés, préserve l'historique,
-      // re-boote l'UI du profil actif.
-      var res = CoachProfiles.setProfileActiveProgram(id, patch.programId);
-      if(!res || !res.ok) return { ok:false, error:(res && res.error) || "Activation impossible." };
-    } else if(typeof window.coachFullBoot === "function"){
-      window.coachFullBoot();
+      if(!(CoachProfiles.grantProgramPermission && CoachProfiles.hasProgramPermission)){
+        return { ok:false, error:"Permissions programmes non chargées." };
+      }
+      if(!CoachProfiles.hasProgramPermission(id, patch.programId) && !CoachProfiles.grantProgramPermission(id, patch.programId)){
+        return { ok:false, error:"Permission impossible à enregistrer." };
+      }
     }
+    if(typeof window.coachFullBoot === "function") window.coachFullBoot();
     return skippedSwaps.length
       ? { ok:true, warning:"Appliqué, mais "+skippedSwaps.length+" remplacement(s) ignoré(s) car le nom ne correspond plus au catalogue actuel : "+skippedSwaps.join(", ")+". Redemande un lien à jour à ton coach." }
       : { ok:true };

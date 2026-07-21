@@ -80,14 +80,19 @@ try{
   const missingVisibility = { id:'futur_programme', name:'Futur programme' };
   assert(missingVisibility.visibility !== 'public', 'Un futur programme sans visibilité n’est pas public implicitement.');
 
-  // Application : jamais sans profil actif; passe par les API existantes.
-  let activated = null; const swapsAdded = [];
+  // Application : jamais sans profil actif; accorde l'accès sans changer le
+  // cycle courant. Réaccepter le même lien doit rester idempotent.
+  const granted = []; const swapsAdded = [];
   ctx.window.COACH_BERTIN_PROGRAM_INDEX = [{ id:'hypertrophie_fesse_stephanie', name:'Hypertrophie Fessiers — Stéphanie', visibility:'private' }];
   ctx.window.CoachProfiles = ctx.CoachProfiles = {
     getActiveId: function(){ return 'p1'; },
     hasActiveOnboardedProfile: function(){ return true; },
     getActive: function(){ return { id:'p1', name:'Stéphanie', onboarded:true }; },
-    setProfileActiveProgram: function(id, pid){ activated = { id:id, pid:pid }; return { ok:true }; }
+    hasProgramPermission: function(id, pid){ return granted.some(x => x.id === id && x.pid === pid); },
+    grantProgramPermission: function(id, pid){
+      if(!this.hasProgramPermission(id, pid)) granted.push({id:id,pid:pid});
+      return true;
+    }
   };
   const knownMovements = ['Bench Press', 'DB Bench Press'];
   ctx.window.RacineMovementSwaps = ctx.RacineMovementSwaps = {
@@ -103,8 +108,10 @@ try{
   };
   let r = api.applyToActiveProfile(parsed.patch);
   assert(r.ok, 'Application OK sur profil actif.');
-  assert(activated && activated.pid === 'hypertrophie_fesse_stephanie', 'Programme activé via CoachProfiles.setProfileActiveProgram.');
+  assert(granted.length === 1 && granted[0].pid === 'hypertrophie_fesse_stephanie', 'Programme accordé sans changer le cycle actif.');
   assert(swapsAdded.length === 1 && swapsAdded[0].to === 'DB Bench Press', 'Remplacements posés via RacineMovementSwaps.');
+  r = api.applyToActiveProfile(parsed.patch);
+  assert(r.ok && granted.length === 1, 'Réaccepter la même prescription ne duplique pas la permission et ne réactive aucun cycle.');
   const unknown = api.buildPatch({ programId:'programme_inexistant' });
   r = api.applyToActiveProfile(unknown);
   assert(!r.ok && r.error, 'Programme inconnu refusé (app pas à jour) au lieu d\'écrire un cycle cassé.');
