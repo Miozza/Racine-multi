@@ -964,15 +964,18 @@ function pcRenderProgressCompare(series){
   var selected=candidates.filter(function(c){return pcProgressCompareSet.indexOf(c.id)!==-1;});
   var toggles=candidates.map(function(c){
     var idx=selected.indexOf(c), on=idx!==-1;
+    // Un mouvement actif porte lui-même son état (pastille couleur via ::before)
+    // et sa variation : pas de doublon dans une légende séparée en dessous.
+    var delta='';
+    if(on){var d=c.stats?Math.round(c.stats.deltaMetric):0;delta='<span class="pcx-compare-toggle-delta">'+(d>0?'+':'')+d+pcProgMetricUnit(c)+'</span>';}
     return '<button type="button" class="pcx-compare-toggle'+(on?' active':'')+'" data-pc-compare-toggle="'+pcEsc(c.id)+'"'+
-      (on?' style="--cmp:'+pcProgCompareColor(idx)+'"':'')+'>'+pcEsc(c.label)+'</button>';
+      (on?' style="--cmp:'+pcProgCompareColor(idx)+'"':'')+'>'+pcEsc(c.label)+delta+'</button>';
   }).join('');
   var body;
   if(!selected.length){
     body='<p class="pcx-muted">Sélectionne au moins un mouvement ci-dessus.</p>';
   }else{
-    var legend=selected.map(function(s,i){var d=s.stats?Math.round(s.stats.deltaMetric):0;return '<span style="--cmp:'+pcProgCompareColor(i)+'">'+pcEsc(s.label)+' · '+(d>0?'+':'')+d+pcProgMetricUnit(s)+'</span>';}).join('');
-    body='<div class="pcx-progress-legend cmp">'+legend+'</div><div class="pcx-progress-chart">'+pcProgCompareSvg(selected)+'</div>';
+    body='<div class="pcx-progress-chart">'+pcProgCompareSvg(selected)+'</div>';
   }
   return '<section class="pcx-panel pcx-progress-compare"><div class="pcx-progress-compare-head"><div><h3>Comparaison</h3><p>Active autant de mouvements que tu veux pour superposer leurs courbes. Le graphique est normalisé en % depuis le premier point, pour comparer des charges et des reps sur la même échelle.</p></div><span class="pcx-muted pcx-compare-count">'+selected.length+' / '+candidates.length+' actifs</span></div>'+
     '<div class="pcx-compare-toggles">'+toggles+'</div>'+
