@@ -498,6 +498,21 @@
     return html;
   }
 
+  // Programmes réellement accessibles au profil en cours de création (publics +
+  // permissions éventuelles). On lit programIndexIds() pour ne jamais proposer un
+  // programme privé fermé au profil, et on affiche le libellé du programme.
+  function programChoiceOptionsHtml(selected){
+    var ids = (typeof programIndexIds === "function") ? programIndexIds() : [];
+    var catalog = window.COACH_BERTIN_PROGRAM_INDEX || [];
+    var nameById = {};
+    catalog.forEach(function(item){ if(item && item.id) nameById[item.id] = item.name; });
+    return ids.map(function(id){
+      var cfg = window.focusConfigs && window.focusConfigs[id];
+      var label = (cfg && cfg.label) || nameById[id] || id;
+      return '<option value="' + esc(id) + '"' + (selected === id ? ' selected' : '') + '>' + esc(label) + '</option>';
+    }).join("");
+  }
+
   // ── Écran : agressivité de la progression + objectif long terme ─────────
   function renderAggressiveness(){
     var agg = wiz.meta.aggressiveness;
@@ -507,7 +522,10 @@
         stepDots(WIZARD_STEPS.length, wizStepIndex())+
         '<div class="racine-gate-title">Vitesse de progression</div>'+
         '<div class="racine-gate-sub">Ce réglage contrôle la taille des sauts de charge proposés quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</div>'+
-        '<label>Pourquoi t\'entraînes-tu ?</label>'+
+        '<label>Programme de départ</label>'+
+        '<select id="rrProgram" class="select-field">'+programChoiceOptionsHtml((typeof defaultProgramId==="function"?defaultProgramId():null))+'</select>'+
+        '<p class="field-hint">C\'est le programme que tu commenceras aujourd\'hui. Tu pourras en changer à tout moment dans Réglages.</p>'+
+        '<label style="margin-top:16px">Pourquoi t\'entraînes-tu ?</label>'+
         '<select id="rrTrainingGoal" class="select-field">'+trainingGoalOptionsHtml(null)+'</select>'+
         '<p class="field-hint">Ton objectif guide les programmes proposés en fin de cycle. Modifiable à tout moment dans Réglages.</p>'+
         '<label style="margin-top:16px">Agressivité de la progression</label>'+
@@ -544,6 +562,8 @@
     });
     card.querySelector("#rrConfirm").onclick = function(){
       wiz.meta.aggressiveness = Number(aggInput.value)||1;
+      var progSel = card.querySelector("#rrProgram");
+      wiz.meta.programId = progSel ? (progSel.value || null) : null;
       var goalSel = card.querySelector("#rrTrainingGoal");
       wiz.meta.trainingGoal = goalSel ? (goalSel.value || null) : null;
       var hasGoal = card.querySelector("#rrHasGoalYes").checked;

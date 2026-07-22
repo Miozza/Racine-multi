@@ -319,6 +319,20 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     state.profile.competitionDateIso = meta.competitionDateIso || null;
     state.profile.trainingGoal = (window.CoachSeasonGoals ? CoachSeasonGoals.normalize(meta.trainingGoal) : meta.trainingGoal) || null;
     state.profile.scaleRatios = computed.ratios;
+
+    // Programme choisi dans le formulaire. On l'active comme cycle courant plutôt
+    // que de laisser le défaut codé en dur (jadis shoulders3d, un programme privé
+    // que la plupart des profils ne peuvent pas ouvrir). Si le formulaire n'a rien
+    // fourni (compat), on retombe sur le premier programme accessible.
+    var chosenProgram = meta.programId || (typeof defaultCycleGoal === "function" ? defaultCycleGoal() : (state.cycle && state.cycle.goal));
+    if(chosenProgram && state.cycle){
+      state.cycle.goal = chosenProgram;
+      state.missingCycle = null;
+      state.week = 1;
+      var prog = (window.focusConfigs && window.focusConfigs[chosenProgram]) || null;
+      state.day = (prog && Array.isArray(prog.days) && prog.days[0]) || "lundi";
+      state.activeCycleStartDate = (typeof nowIso === "function") ? nowIso() : new Date().toISOString();
+    }
     state.profile.referenceVersion = (window.RacineProfileReference && RacineProfileReference.REFERENCE_VERSION) || 2;
 
     // Ensemence movementRefs (référence de charge utilisée pour le scaling et
