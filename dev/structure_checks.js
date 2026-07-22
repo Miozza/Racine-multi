@@ -47,7 +47,7 @@ const detectedModeReason = forcedUpdatePackage ? 'update (--update-package)' : (
 
 const allowedRootFiles = new Set([
   'app.js','index.html','styles.css','manifest.json','service-worker.js',
-  'README.md','CHANGELOG.md','ETAT_ACTUEL.md','RELEASE_CHECKLIST.md',
+  'README.md','CHANGELOG.md','ETAT_ACTUEL.md','RELEASE_CHECKLIST.md','CLAUDE.md',
   'apple-touch-icon.png','apple-touch-icon-precomposed.png','icon-180.png','icon-192.png','icon-512.png'
 ]);
 const allowedDirs = new Set(['programs','scripts','data','dev','docs','.github','.claude','assets']);

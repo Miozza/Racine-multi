@@ -2244,7 +2244,7 @@ function stableIphoneText(day,week){
   var txt=w.day.label.toUpperCase()+" - "+w.day.base.toUpperCase()+" - SEMAINE "+week+"\nFocus: "+focus().label+"\n"+dayIntention(day)+"\n\n";
   w.blocks.forEach(function(b){
     txt+=b.title.toUpperCase()+" ("+b.time+")\n";
-    if(b.exercises&&b.exercises.length){if(b.text)txt+=cleanLine(displayChargeText(b.text))+"\n";b.exercises.forEach(function(e){var smartLoad=CoachCharge.suggestLoad(e.name,e.load,(parseTargetReps(e.format,10).min||parseTargetReps(e.format,10).max),{kind:b.kind,blockTitle:b.title,note:e.note,text:b.text,format:e.format,day:state.day,week:state.week});txt+=e.name+"\nFormat: "+e.format+"\nPoids: "+smartLoad+"\nRepos: "+e.rest+"\n"+(e.note?"Note: "+e.note+"\n":"")+"\n";});}
+    if(b.exercises&&b.exercises.length){if(b.text)txt+=cleanLine(displayChargeText(b.text))+"\n";b.exercises.forEach(function(e){var smartLoad=CoachCharge.suggestForExercise(e,b);txt+=e.name+"\nFormat: "+e.format+"\nPoids: "+smartLoad+"\nRepos: "+e.rest+"\n"+(e.note?"Note: "+e.note+"\n":"")+"\n";});}
     else if(b.progress&&b.progress.length){b.progress.forEach(function(mvKey,j){var reps=targetReps(j,b.kind),load=lb(suggestLoad(mvKey,progressionPct(j),reps));txt+=movements[mvKey].name+"\nFormat: "+setScheme(b.kind,j)+"\nPoids: "+load+"\nRepos: "+restFor(b.kind)+"\n\n";});}
     else{txt+=cleanLine(displayChargeText(b.text||""))+"\n\n";}
   });

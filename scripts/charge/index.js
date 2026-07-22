@@ -22,6 +22,7 @@
     brainMemory: window.CoachBrainMemory || null,
     filterHistory: window.CoachHistory && CoachHistory.filterForProgression ? CoachHistory.filterForProgression : (typeof coachFilterHistoryForProgression === 'function' ? coachFilterHistoryForProgression : null),
     suggestLoad: window.coachSafeSuggestedLoad || (typeof athleteSuggestedLoad === 'function' ? athleteSuggestedLoad : null),
+    suggestForExercise: typeof coachSuggestForExercise === 'function' ? coachSuggestForExercise : null,
     enrichSessionResults: typeof enrichSessionResults === 'function' ? enrichSessionResults : null,
     updateAthleteStateFromResults: typeof updateAthleteStateFromResults === 'function' ? updateAthleteStateFromResults : null
   });

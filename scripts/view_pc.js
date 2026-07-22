@@ -160,8 +160,7 @@ function pcCurrentBlocksSummaryLines(){
     if(block.text) lines.push("  "+cleanLine(displayChargeText(block.text||"")));
     if(block.exercises&&block.exercises.length){
       block.exercises.forEach(function(e){
-        var parsed=parseTargetReps(e.format,10);var target=parsed.min||parsed.max||10;
-        var shown=CoachCharge.suggestLoad(e.name,e.load,target,{kind:block.kind,blockTitle:block.title,note:e.note,text:block.text,format:e.format,day:(state&&state.day),week:(state&&state.week)});
+        var shown=CoachCharge.suggestForExercise(e, block);
         lines.push("  • "+e.name+" · "+(e.format||"?")+" · "+shown+(e.rest?" · repos "+e.rest:"")+(e.note?" · note: "+e.note:""));
       });
     }
@@ -302,8 +301,7 @@ function pcRenderBlock(block, session, mainSeen){
   }else if(block.exercises&&block.exercises.length){
     html+='<div class="pcx-table"><div class="pcx-row pcx-head"><span>Mouvement</span><span>Format</span><span>Charge</span><span>Repos</span><span>Réalisé</span></div>';
     block.exercises.forEach(function(e){
-      var parsed=parseTargetReps(e.format,10);var target=parsed.min||parsed.max||10;
-      var shown=CoachCharge.suggestLoad(e.name,e.load,target,{kind:block.kind,blockTitle:block.title,note:e.note,text:block.text,format:e.format,day:(state&&state.day),week:(state&&state.week)});
+      var shown=CoachCharge.suggestForExercise(e, block);
       var res=pcResultForExercise(session,e.name);
       var done=res?((res.load?res.load+' lb':'')+(res.reps?' × '+res.reps:'')+(res.rpe?' @RPE '+res.rpe:'')):'—';
       html+='<div class="pcx-row"><span><strong>'+pcEsc(e.name)+'</strong>'+(e.note?'<small>'+pcEsc(e.note)+'</small>':'')+'</span><span>'+pcEsc(e.format||'')+'</span><span class="pcx-load">'+pcEsc(shown)+loadInfoButtonHtml(e,shown)+'</span><span>'+pcEsc(e.rest||'')+'</span><span>'+pcEsc(done)+'</span></div>';
@@ -345,8 +343,7 @@ function pcRenderWeekBlock(block, session, mainSeen){
   var items=[];
   if(block.exercises&&block.exercises.length){
     block.exercises.forEach(function(e){
-      var parsed=parseTargetReps(e.format,10);var target=parsed.min||parsed.max||10;
-      var shown=CoachCharge.suggestLoad(e.name,e.load,target,{kind:block.kind,blockTitle:block.title,note:e.note,text:block.text,format:e.format,day:(state&&state.day),week:(state&&state.week)});
+      var shown=CoachCharge.suggestForExercise(e, block);
       var res=pcResultForExercise(session,e.name);
       var done=res?((res.load?res.load+' lb':'')+(res.reps?' × '+res.reps:'')+(res.rpe?' @RPE '+res.rpe:'')):'—';
       items.push('<li><strong>'+pcEsc(e.name)+'</strong><span>Format '+pcEsc(e.format||'—')+' · Charge <b class="pcx-week-load">'+pcEsc(shown)+loadInfoButtonHtml(e,shown)+'</b> · Repos '+pcEsc(e.rest||'—')+'</span>'+(e.note?'<small>'+pcEsc(e.note)+'</small>':'')+(done!=='—'?'<small>Réalisé : '+pcEsc(done)+'</small>':'')+'</li>');
@@ -1045,8 +1042,7 @@ function pcResultLineForExercise(session, exerciseName){
 }
 function pcPlannedExerciseLine(e, session, block){
   block = block || {};
-  var parsed=parseTargetReps(e.format,10);var target=parsed.min||parsed.max||10;
-  var shown=CoachCharge.suggestLoad(e.name,e.load,target,{kind:block.kind,blockTitle:block.title,note:e.note,text:block.text,format:e.format,day:(state&&state.day),week:(state&&state.week)});
+  var shown=CoachCharge.suggestForExercise(e, block);
   return "  • "+e.name+" · prévu "+(e.format||"?")+" · suggéré "+shown+(e.rest?" · repos "+e.rest:"")+" · "+pcResultLineForExercise(session,e.name)+(e.note?" · note: "+e.note:"");
 }
 function pcDayAuditLines(day, week){
@@ -1152,8 +1148,7 @@ function pcNextWeekText(){
       (w.blocks||[]).forEach(function(block){
         lines.push("- Bloc "+(block.title||"Bloc")+(block.time?" · "+block.time:""));
         (block.exercises||[]).forEach(function(e){
-          var parsed=parseTargetReps(e.format,10);var target=parsed.min||parsed.max||10;
-          lines.push("  • "+e.name+" · "+(e.format||"?")+" · suggéré "+CoachCharge.suggestLoad(e.name,e.load,target,{kind:block.kind,blockTitle:block.title,note:e.note,text:block.text,format:e.format,day:day,week:next})+(e.rest?" · repos "+e.rest:""));
+          lines.push("  • "+e.name+" · "+(e.format||"?")+" · suggéré "+CoachCharge.suggestForExercise(e, block, {day:day, week:next})+(e.rest?" · repos "+e.rest:""));
         });
         if((!block.exercises||!block.exercises.length)&&block.text)lines.push("  "+cleanLine(displayChargeText(block.text||"")));
       });

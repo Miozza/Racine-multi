@@ -14,6 +14,7 @@ node dev/ai_export_movement_context_smoke.js
 node dev/simulate_multi_users.js
 node dev/simulate_users.js
 node dev/charge_engine_checks.js
+node dev/suggest_helper_checks.js
 node dev/client_charge_safety_checks.js
 node dev/progression_contract_checks.js
 node dev/regression_checks.js --full

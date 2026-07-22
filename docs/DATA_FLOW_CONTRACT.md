@@ -24,9 +24,12 @@ collectSessionResults()
   -> updateRefsFromResults(results)
   -> CoachCharge.updateAthleteStateFromResults(results, date)
   -> state.history.push(session)
-  -> saveToGitHub(payload)
-  -> savePersistentStateToGitHub(token)
+  -> save()   // CoachState.writeState(state) -> localStorage
 ```
+
+Persistance **locale uniquement** : `save()` écrit dans `localStorage` via
+`CoachState`. La sync GitHub (`saveToGitHub` / `savePersistentStateToGitHub`) a été
+retirée du code — aucun envoi réseau lors d'une sauvegarde de séance.
 
 ## Roles
 

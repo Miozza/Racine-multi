@@ -35,5 +35,5 @@ Lateral Raise DB vs Lateral Raise câble
 Rear Delt Fly DB vs Rear Delt Fly câble
 Power Clean WOD vs Power Clean principal
 Bouton jaune ! avec historique
-Résultats + sauvegarde GitHub
+Résultats + sauvegarde locale (localStorage, aucun réseau)
 ```
