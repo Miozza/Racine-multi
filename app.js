@@ -2273,7 +2273,8 @@ function bind(){
   var btb=$("backTrainingBtn");if(btb)btb.onclick=function(){switchView("training");};
   var fs=$("fullscreenBtn");if(fs)fs.onclick=function(){var el=document.documentElement,fn=el.requestFullscreen||el.webkitRequestFullscreen;if(fn)try{fn.call(el);}catch(e){}};
   renderWakeLockStatus();
-  var smb=$("sessionModeBtn");if(smb)smb.onclick=function(){CoachSession.openFrom("phone");};
+  // ▶ Séance et TMS retirés de la toolbar PC (inspection en lecture seule) :
+  // « Démarrer séance » reste dans l'inspection d'une journée, TMS dans la nav.
   var wdbg=$("wakeLockDebugBtn");if(wdbg)wdbg.onclick=function(){requestWakeLock();};
   var tgb=$("tmsGlobalBtn");if(tgb)tgb.onclick=function(){
     if(typeof window.openCoachBeurtTmsChoice==="function"){

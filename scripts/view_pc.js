@@ -3,11 +3,12 @@
 // Lecture seule: aucune modification de programme, aucune écriture data.
 // IMPORTANT: ne pas toucher ici au mode résultats/séance guidée.
 
-var pcActiveTab = "session";
+var pcActiveTab = "cycle";
 var pcInspectCycleId = null;
 var pcInspectWeek = null;
 var pcInspectDay = null;
 var pcWeekAlertsOpen = false;
+var pcCycleReturn = false; // true = l'inspection Séance a été ouverte depuis la grille Cycle
 
 function pcEsc(v){
   if(typeof escapeHtml === "function") return escapeHtml(v);
@@ -273,7 +274,7 @@ function pcRenderTabs(){
   // « Admin » (permissions de programmes) dans Gear (Réglages → Programmes
   // spécialisés) : la vue PC est purement de l'inspection en lecture seule.
   // L'accès à la vue elle-même reste gardé admin par switchView.
-  var tabs=[['session','Séance'],['week','Semaine'],['roadmap','Route'],['analysis','Analyse'],['export','Export']];
+  var tabs=[['cycle','Cycle'],['session','Séance'],['week','Semaine'],['roadmap','Route'],['analysis','Analyse'],['export','Export']];
   return '<div class="pcx-tabs">'+tabs.map(function(t){return '<button type="button" class="pcx-tab '+(pcActiveTab===t[0]?'active':'')+'" data-pc-tab="'+t[0]+'">'+t[1]+'</button>';}).join('')+'</div>';
 }
 function pcRenderTopHeader(){
@@ -327,7 +328,8 @@ function pcRenderSessionTab(){
   var mainSeen=0;
   var blocks=(w.blocks||[]).map(function(b){if(b.kind==='main')mainSeen++;return pcRenderBlock(b,session,mainSeen);}).join('');
   var action=pcIsActiveSelection()?'<button type="button" class="pcx-action green" id="pcStartSessionBtn">▶ Démarrer séance</button>':'<button type="button" class="pcx-action" disabled>Lecture seule — séance active différente</button>';
-  return '<div class="pcx-layout"><main class="pcx-main"><section class="pcx-panel pcx-intro"><h2>'+pcEsc(w.day.label)+'</h2><p>'+pcEsc(typeof dayIntention==="function"?pcWithSelection(function(){return dayIntention(state.day);}):'')+'</p></section>'+blocks+'</main><aside class="pcx-side">'+pcRenderMiniAlerts(alerts)+'<div class="pcx-panel"><h3>Réalisation</h3>'+(session?'<p>Dernière séance trouvée : <strong>'+pcEsc(session.date||'date inconnue')+'</strong></p>':'<p class="pcx-muted">Aucun résultat enregistré pour ce jour/semaine.</p>')+action+'</div></aside></div>';
+  var backRow=pcCycleReturn?'<div class="pcx-cycle-back-row"><button type="button" class="pcx-action slim" id="pcBackToCycleBtn">← Retour au cycle</button><span class="pcx-muted">S'+pcCurrentWeek()+' · '+pcEsc(pcDisplayDayName(pcCurrentDay()))+'</span></div>':'';
+  return backRow+'<div class="pcx-layout"><main class="pcx-main"><section class="pcx-panel pcx-intro"><h2>'+pcEsc(w.day.label)+'</h2><p>'+pcEsc(typeof dayIntention==="function"?pcWithSelection(function(){return dayIntention(state.day);}):'')+'</p></section>'+blocks+'</main><aside class="pcx-side">'+pcRenderMiniAlerts(alerts)+'<div class="pcx-panel"><h3>Réalisation</h3>'+(session?'<p>Dernière séance trouvée : <strong>'+pcEsc(session.date||'date inconnue')+'</strong></p>':'<p class="pcx-muted">Aucun résultat enregistré pour ce jour/semaine.</p>')+action+'</div></aside></div>';
 }
 function pcWeekDayIntention(day){
   if(typeof dayIntention!=="function") return "";
@@ -389,6 +391,59 @@ function pcRenderWeekAlertsPanel(alertsAll){
   html+='</div></section>';
   return html;
 }
+// ── Vue « Cycle » : grille complète, mouvements + séries×reps seulement ────
+// Extrait pour une journée la liste condensée { name, scheme } (sans charge).
+// Les blocs WOD/texte libre deviennent une ligne courte « WOD : … ».
+function pcCycleDayItems(day, week){
+  var w = pcWorkout(day, week);
+  var out = [];
+  (w.blocks||[]).forEach(function(block){
+    if(block.exercises && block.exercises.length){
+      block.exercises.forEach(function(e){ out.push({ name:e.name, scheme:e.format||'' }); });
+    } else if(block.progress && block.progress.length){
+      block.progress.forEach(function(mvKey,j){
+        var mv = movements[mvKey] || {name:mvKey};
+        out.push({ name: mv.name, scheme: (typeof setScheme==="function"?setScheme(block.kind,j):'')||'' });
+      });
+    } else if(block.kind==='wod' || block.text){
+      var txt = cleanLine(displayChargeText(block.text||'')).replace(/\s+/g,' ').trim();
+      out.push({ wod:true, name:'WOD', scheme: txt.slice(0,70) });
+    }
+  });
+  return out;
+}
+function pcRenderCycleTab(){
+  var days = pcDayOrder();
+  var weeks = pcTotalWeeks();
+  var cols = days.length;
+  var head = '<div class="pcx-cycle-cell pcx-cycle-corner">S \\ Jour</div>';
+  days.forEach(function(d){ head += '<div class="pcx-cycle-cell pcx-cycle-colhead">'+pcEsc(pcDisplayDayName(d))+'</div>'; });
+  var body = '';
+  for(var wk=1; wk<=weeks; wk++){
+    body += '<div class="pcx-cycle-cell pcx-cycle-rowhead">S'+wk+'</div>';
+    days.forEach(function(d){
+      var items = pcCycleDayItems(d, wk);
+      var inner;
+      if(!items.length){
+        inner = '<span class="pcx-cycle-rest">repos</span>';
+      } else {
+        inner = '<ul>'+items.map(function(it){
+          return it.wod
+            ? '<li class="pcx-cycle-wod"><b>WOD</b> <span>'+pcEsc(it.scheme)+'</span></li>'
+            : '<li><b>'+pcEsc(it.name)+'</b> <span>'+pcEsc(it.scheme)+'</span></li>';
+        }).join('')+'</ul>';
+      }
+      var sel = (wk===pcCurrentWeek() && d===pcCurrentDay()) ? ' selected' : '';
+      body += '<button type="button" class="pcx-cycle-cell pcx-cycle-day'+sel+'" '+
+        'data-pc-cycle-week="'+wk+'" data-pc-cycle-day="'+pcEsc(d)+'" '+
+        'title="Inspecter '+pcEsc(pcDisplayDayName(d))+' · S'+wk+'">'+inner+'</button>';
+    });
+  }
+  return '<section class="pcx-panel pcx-cycle-intro"><h2>Cycle complet — '+pcEsc((pcFocusCfg().label)||pcCurrentCycleId())+'</h2>'+
+    '<p class="pcx-muted">Vue d\'ensemble : mouvements et séries×reps seulement (sans charge), pour évaluer et construire. Clique une journée pour l\'inspecter en détail. Optimisé pour écran large (paysage 1080p).</p></section>'+
+    '<div class="pcx-cycle-grid" style="grid-template-columns:88px repeat('+cols+',minmax(0,1fr))">'+head+body+'</div>';
+}
+
 function pcRenderWeekTab(){
   var days=pcDayOrder();
   var alertsAll=[];
@@ -1167,6 +1222,7 @@ function pcRenderExportTab(){
 // déménagé dans Gear : scripts/profiles/admin_programs.js.
 
 function pcRenderActiveTab(){
+  if(pcActiveTab==='cycle')return pcRenderCycleTab();
   if(pcActiveTab==='week')return pcRenderWeekTab();
   if(pcActiveTab==='roadmap')return pcRenderRoadmapTab();
   if(pcActiveTab==='analysis')return pcRenderAnalysisTab();
@@ -1178,7 +1234,16 @@ function pcBind(){
   if(c)c.onchange=function(){pcInspectCycleId=this.value;pcInspectWeek=1;pcInspectDay=(pcDayOrder()[0]||'lundi');renderPhoneWod();};
   if(w)w.onchange=function(){pcInspectWeek=Number(this.value)||1;renderPhoneWod();};
   if(d)d.onchange=function(){pcInspectDay=this.value;renderPhoneWod();};
-  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-tab]'),function(btn){btn.onclick=function(){pcActiveTab=btn.getAttribute('data-pc-tab')||'session';renderPhoneWod();};});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-tab]'),function(btn){btn.onclick=function(){pcActiveTab=btn.getAttribute('data-pc-tab')||'cycle';pcCycleReturn=false;renderPhoneWod();};});
+  // Grille Cycle : cliquer une journée l'ouvre dans l'inspection Séance, avec
+  // un retour vers le cycle (pcCycleReturn).
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-cycle-day]'),function(cell){cell.onclick=function(){
+    pcInspectWeek=Number(cell.getAttribute('data-pc-cycle-week'))||pcCurrentWeek();
+    pcInspectDay=cell.getAttribute('data-pc-cycle-day')||pcCurrentDay();
+    pcCycleReturn=true; pcActiveTab='session'; renderPhoneWod();
+  };});
+  var backCycle=document.getElementById('pcBackToCycleBtn');
+  if(backCycle)backCycle.onclick=function(){pcCycleReturn=false;pcActiveTab='cycle';renderPhoneWod();};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-toggle-week-alerts]'),function(btn){btn.onclick=function(){pcWeekAlertsOpen=!pcWeekAlertsOpen;renderPhoneWod();};});
   var start=$('pcStartSessionBtn');if(start)start.onclick=function(){CoachSession.openFrom('phone');};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-ai]'),function(btn){btn.onclick=function(){pcCopyText(pcAIPrompt(btn.getAttribute('data-pc-ai')||'day'));};});

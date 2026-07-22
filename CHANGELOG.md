@@ -19,6 +19,13 @@
 - **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
 - Tests : nouveau `dev/history_progress_checks.js`.
 
+### Vue PC : nouvel onglet « Cycle complet » + toolbar allégée
+- **Nouvel onglet « Cycle » (par défaut)** : grille de tout le cycle, semaines en lignes × jours en colonnes, ne montrant **que le nom du mouvement et les séries×reps** (aucune charge, aucune alerte). Pensée pour évaluer et construire des programmes logiques sur écran large (paysage 1080p+). Les blocs WOD/texte libre apparaissent en ligne courte « WOD : … ».
+- **Clic sur une journée** → ouvre l'inspection Séance détaillée de cette journée précise, avec un bouton **« ← Retour au cycle »**.
+- **Toolbar PC allégée** : suppression de « ▶ Séance » et « TMS » en haut de la vue. « Démarrer séance » reste dans l'inspection d'une journée ; TMS reste dans la barre de navigation principale.
+- Lecture seule, aucune écriture ni changement de logique métier.
+- Tests : nouveau `dev/pc_cycle_view_checks.js` (statique + smoke runtime de la grille).
+
 ### Historique : sous-onglets Séances / Progression + invitation paysage
 - **Les séances redeviennent prioritaires** : l'onglet Historique s'ouvre sur la liste des séances ; les graphiques de progression passent dans un **sous-onglet « Progression »** affiché sur demande explicite (plus d'empilement au-dessus de la liste).
 - **Invitation au mode paysage** : dans le sous-onglet Progression, un bandeau (CSS pur, `@media (orientation: portrait)`) invite à tourner l'iPhone en paysage pour mieux lire les graphiques — il disparaît automatiquement en paysage ou sur grand écran.
