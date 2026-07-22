@@ -158,7 +158,15 @@
         <button id="resetHistoryBtn"  class="btn-danger">Effacer</button>
       </div>
     </div>
-    <div id="progressCharts" class="progress-charts"></div>
+    <!-- Sous-onglets : les séances (prioritaires) par défaut, les graphiques
+         de progression sur demande explicite — où l'invitation à passer en
+         paysage (portrait iPhone) prend tout son sens. -->
+    <div class="history-subtabs">
+      <button id="historySubtabSessions" type="button" class="pcx-tab active">Séances</button>
+      <button id="historySubtabProgress" type="button" class="pcx-tab">Progression</button>
+    </div>
+    <div id="historyLandscapeHint" class="notice history-landscape-hint hidden">📱 <strong>Tourne ton iPhone en paysage</strong> pour mieux lire les graphiques de progression.</div>
+    <div id="progressCharts" class="progress-charts hidden"></div>
     <div id="history" class="history-list"></div>
   </div>
 </main>

@@ -42,6 +42,18 @@ assert(/else renderProgressCharts\(\)/.test(app), 'renderHistory : repli mini-ba
 assert(/function renderProgressCharts/.test(app), 'repli renderProgressCharts conservé');
 assert(/id="progressCharts"/.test(html), 'index.html : conteneur #progressCharts présent dans l\'Historique');
 
+// ── Sous-onglets : séances prioritaires, progression sur demande ───────────
+const css = read('styles.css');
+assert(/id="historySubtabSessions"/.test(html) && /id="historySubtabProgress"/.test(html),
+  'index.html : sous-onglets Séances / Progression présents');
+assert(/historyActiveSubtab\s*=\s*"sessions"/.test(app), 'app.js : les séances sont le sous-onglet par défaut (prioritaires)');
+assert(/historyActiveSubtab==="progress"/.test(app), 'renderHistory : bascule selon le sous-onglet actif');
+assert(/historySubtabSessions/.test(app) && /historySubtabProgress/.test(app), 'app.js : clics des sous-onglets branchés');
+assert(/id="historyLandscapeHint"/.test(html) && /paysage/i.test(html),
+  'index.html : bandeau d\'invitation au mode paysage présent');
+assert(/orientation\s*:\s*portrait/.test(css) && /history-landscape-hint/.test(css),
+  'styles.css : le bandeau paysage ne s\'affiche qu\'en portrait (media query)');
+
 // ── L'Historique reste accessible à tous (pas de garde admin) ──────────────
 const histView = html.match(/<main id="historyView">[\s\S]*?<\/main>/);
 assert(!!histView && !/admin-only/.test(histView[0]), 'vue Historique : aucune classe admin-only');
