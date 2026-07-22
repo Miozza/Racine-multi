@@ -6149,7 +6149,7 @@ body.arnold-mode{
 .pcx-compare-toggle.active{color:var(--cmp);border-color:var(--cmp);background:color-mix(in srgb, var(--cmp) 14%, transparent)}
 .pcx-compare-toggle.active::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--cmp);margin-right:7px;vertical-align:baseline}
 .pcx-compare-count{font-family:var(--font-hud);font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
-.pcx-progress-legend.cmp span{color:var(--cmp);border-color:var(--cmp);background:color-mix(in srgb, var(--cmp) 10%, transparent)}
+.pcx-compare-toggle-delta{margin-left:8px;opacity:.85;font-weight:900}
 @media (max-width:900px){.pcx-progress-summary-head{display:grid}.pcx-progress-controls.compact{grid-template-columns:1fr}.pcx-progress-selected-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.pcx-progress-svg{min-width:640px}.pcx-progress-selected-grid{grid-template-columns:1fr}.pcx-progress-summary-head{gap:8px}}
 

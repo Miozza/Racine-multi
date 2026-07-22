@@ -49,7 +49,9 @@ try{
   out = ctx.pcRenderProgressCompare(series);
   assert((out.match(/<polyline/g)||[]).length === 3, 'trois mouvements actifs → trois courbes (plus de limite à 2)');
   assert(/stroke:#/.test(out), 'couleur inline par courbe');
-  assert(/pcx-progress-legend cmp/.test(out), 'légende colorée par mouvement');
+  // L'état + variation vit sur le bouton actif (pas de légende doublon en dessous).
+  assert(!/pcx-progress-legend cmp/.test(out), 'plus de légende doublon : l\'état vit sur le toggle');
+  assert((out.match(/pcx-compare-toggle-delta/g)||[]).length === 3, 'chaque toggle actif porte sa variation');
 
   ctx.pcProgressCompareSet = [];
   out = ctx.pcRenderProgressCompare(series);
