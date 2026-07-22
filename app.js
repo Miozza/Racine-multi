@@ -102,6 +102,22 @@ function defaultProgramId(){
   return Object.keys(focusConfigs)[0] || "";
 }
 
+// Programme par défaut d'un profil neuf ou d'un state sans cycle. On prend le
+// premier programme ACCESSIBLE au profil actif (public pour un profil sans
+// permission) au lieu d'un programme privé codé en dur comme shoulders3d, que
+// la plupart des utilisateurs ne peuvent pas ouvrir (d'où l'ancien
+// « Programme absent détecté »). L'onboarding laisse ensuite l'utilisateur
+// choisir explicitement son programme.
+function defaultCycleGoal(){
+  try{ var id = defaultProgramId(); if(id) return id; }catch(e){}
+  return "shoulders3d";
+}
+
+// Ancien cycle de départ codé en dur pour tout profil neuf (programme privé de
+// Bertin). Conservé uniquement pour nettoyer les fausses alertes « Programme
+// absent » héritées de ce défaut. Ne plus utiliser comme valeur par défaut.
+var LEGACY_DEFAULT_CYCLE_ID = "shoulders3d";
+
 registerProgramsFromIndex();
 
 // Données de profil, mouvements et banques WOD chargées depuis programs/config.js
@@ -290,7 +306,7 @@ function freshState(){
     history: [],
     profile: blankProfile(),
     trainingMaxPct: 0.925,
-    cycle: { goal:"shoulders3d" },
+    cycle: { goal:defaultCycleGoal() },
     movementRefs: {},
     // Suivi RPE par mouvement pour progression automatique
     rpeHistory: {},        // { "mvKey__range": [rpe1, rpe2, rpe3] } — 3 dernières séances
@@ -319,7 +335,7 @@ function load(){
     if(p){
       state = Object.assign(state, p);
       state.profile      = Object.assign(blankProfile(), p.profile||{});
-      state.cycle        = Object.assign({goal:"shoulders3d"}, p.cycle||{});
+      state.cycle        = Object.assign({goal:defaultCycleGoal()}, p.cycle||{});
       state.movementRefs = liveMovementRefsFromPayload(p);
       state.history      = p.history || [];
       state.rpeHistory   = p.rpeHistory || {};
@@ -353,7 +369,7 @@ function buildCycleStatePayload(){
   return {
     version:APP_VERSION,
     updatedAt:nowIso(),
-    activeCycle:state.cycle&&state.cycle.goal?state.cycle.goal:"shoulders3d",
+    activeCycle:state.cycle&&state.cycle.goal?state.cycle.goal:defaultCycleGoal(),
     activeWeek:state.week,
     activeDay:state.day,
     activeDays:currentDayOrder(),
@@ -2417,6 +2433,20 @@ function coachFullBoot(){
   // — tous effacent la trace dès qu'ils écrivent state.cycle.goal). Sa seule
   // présence ici garantit donc qu'aucun choix délibéré n'a eu lieu depuis le
   // fallback : on peut restaurer sans comparer goal à defaultProgramId().
+  // Nettoyage migration : l'ancien défaut codait shoulders3d (programme privé
+  // de Bertin) comme cycle de départ de TOUT profil neuf. Un profil qui n'y a
+  // jamais eu accès (ni admin, ni permission) a donc pu déclencher une fausse
+  // alerte « Programme absent : shoulders3d » qui ne guérira jamais (le
+  // programme ne lui sera jamais accordé). Ce n'est pas un vrai cycle perdu :
+  // on efface la trace en silence. On ne touche jamais une alerte légitime
+  // (programme accessible, ou dont le profil détient la permission).
+  if(state.missingCycle && state.missingCycle.id === LEGACY_DEFAULT_CYCLE_ID
+     && !focusConfigs[state.missingCycle.id]
+     && !(window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())
+     && !(window.CoachProfiles && CoachProfiles.hasProgramPermission && CoachProfiles.hasProgramPermission(CoachProfiles.getActiveId&&CoachProfiles.getActiveId(), state.missingCycle.id))){
+    state.missingCycle = null;
+    save();
+  }
   if(state.missingCycle && focusConfigs[state.missingCycle.id]){
     state.cycle.goal = state.missingCycle.id;
     state.missingCycle = null;

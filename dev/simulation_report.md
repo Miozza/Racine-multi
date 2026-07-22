@@ -1,6 +1,6 @@
 # Rapport simulation multi-utilisateurs — Racine V1.16-multi
 
-Généré: 2026-07-14T22:05:29.741Z
+Généré: 2026-07-22T19:09:46.744Z
 
 ## Verdict global
 
@@ -29,7 +29,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `beginner_light`, niveau `debutant`, agressivité `0.65`
 - Programme: `client_beginner_foundation_2d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 75 lb · front squat 75 lb · strict press 45 lb · row 70 lb · hinge 380 lb
 
@@ -45,7 +45,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `recomp_intermittent`, niveau `debutant`, agressivité `0.75`
 - Programme: `client_recomposition_3d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 110 lb · front squat 100 lb · strict press 70 lb · row 90 lb · hinge 525 lb
 
@@ -65,7 +65,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `steph_glutes`, niveau `intermediaire`, agressivité `0.9`
 - Programme: `hypertrophie_fesse_stephanie`
-- Programmes visibles: 33, blocs S1: 8
+- Programmes visibles: 30, blocs S1: 8
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 100 lb · front squat 115 lb · strict press 60 lb · row 95 lb · hinge 695 lb
 
@@ -86,7 +86,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `strength_2d_busy`, niveau `intermediaire`, agressivité `0.95`
 - Programme: `client_strength_2d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 185 lb · front squat 165 lb · strict press 115 lb · row 155 lb · hinge 945 lb
 
@@ -107,7 +107,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `advanced_force`, niveau `avance`, agressivité `1.15`
 - Programme: `client_strength_4d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 280 lb · front squat 260 lb · strict press 175 lb · row 215 lb · hinge 1325 lb
 
@@ -129,7 +129,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `rx_crossfit`, niveau `avance`, agressivité `1.05`
 - Programme: `client_rx_crossfit_5d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 245 lb · front squat 230 lb · strict press 150 lb · row 195 lb · hinge 1195 lb
 
@@ -151,7 +151,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `metcon_prep`, niveau `intermediaire`, agressivité `0.9`
 - Programme: `client_metcon_prep_3d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 175 lb · front squat 165 lb · strict press 110 lb · row 140 lb · hinge 905 lb
 
@@ -174,7 +174,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `strict_mu_candidate`, niveau `avance`, agressivité `0.85`
 - Programme: `strict_muscle_up_10w`
-- Programmes visibles: 33, blocs S1: 5
+- Programmes visibles: 29, blocs S1: 5
 - Points Progression après dédup: 50
 - Charges de départ clés: bench 220 lb · front squat 190 lb · strict press 135 lb · row 185 lb · hinge 1090 lb
 
@@ -195,7 +195,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `return_injury`, niveau `intermediaire`, agressivité `0.6`
 - Programme: `client_hybrid_performance_3d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 175 lb · front squat 150 lb · strict press 110 lb · row 140 lb · hinge 820 lb
 
@@ -215,7 +215,7 @@ Verdict: **WARN contrôlé** — logique exploitable, mais certains profils mér
 
 - Profil: `chaos_donnees`, niveau `intermediaire`, agressivité `1.25`
 - Programme: `client_hypertrophy_5d`
-- Programmes visibles: 33, blocs S1: 6
+- Programmes visibles: 29, blocs S1: 6
 - Points Progression après dédup: 36
 - Charges de départ clés: bench 45 lb · front squat 200 lb · strict press 115 lb · row 320 lb · hinge 335 lb
 

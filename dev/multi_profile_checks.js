@@ -33,6 +33,18 @@ assert(onboarding.includes('RacineProfileReference.profile'), 'Onboarding utilis
 assert(onboarding.includes('scaleRatios: computed.ratios'), 'Onboarding écrit les ratios dans le registre du profil.');
 assert(onboarding.includes('blankProfile()'), 'Onboarding initialise un profil vide avant d’écrire ses valeurs.');
 
+// Programme de départ : un profil neuf ne doit plus atterrir en dur sur
+// shoulders3d (privé) — il démarre sur le programme choisi dans le formulaire,
+// sinon sur le premier programme accessible.
+assert(!/cycle:\s*\{\s*goal:\s*"shoulders3d"\s*\}/.test(app), 'freshState ne code plus shoulders3d en dur comme cycle par défaut.');
+assert(app.includes('function defaultCycleGoal'), 'app.js expose un défaut de cycle accessible (defaultCycleGoal).');
+assert(app.includes('cycle: { goal:defaultCycleGoal() }'), 'freshState démarre sur le programme par défaut accessible.');
+assert(onboarding.includes('meta.programId'), 'Onboarding applique le programme choisi (meta.programId) comme cycle actif.');
+const onboardingUi = read('scripts/profiles/ui.js');
+assert(onboardingUi.includes('programChoiceOptionsHtml'), 'Le formulaire d’onboarding propose un choix de programme accessible.');
+assert(/id="rrProgram"/.test(onboardingUi), 'Le formulaire d’onboarding contient le sélecteur de programme de départ.');
+assert(onboardingUi.includes('wiz.meta.programId'), 'Le formulaire capture le programme choisi dans meta.programId.');
+
 const scaling = read('scripts/charge/scaling.js');
 assert(scaling.includes('profile.scaleRatios'), 'Le scaling lit les ratios du profil actif.');
 assert(!/^\/\/ Coach Bertin/m.test(read('data/charges.js')), 'data/charges.js n’est plus présenté comme profil Bertin.');
