@@ -320,7 +320,7 @@
 
   function bindTmsButtons(){
     [
-      { id:"tmsSessionBtn", options:{} },
+      // tmsSessionBtn retiré de la toolbar PC ; TMS reste dans la nav (global).
       { id:"tmsGlobalBtn", options:{ fromGlobal:true } },
       { id:"wodPlusTmsBtn", options:{ fromWodPlus:true } }
     ].forEach(function(item){

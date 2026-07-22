@@ -33,6 +33,7 @@ node dev/json_export_ios_checks.js
 node dev/profile_backup_ui_checks.js
 node dev/history_progress_checks.js
 node dev/gear_permissions_checks.js
+node dev/pc_cycle_view_checks.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :

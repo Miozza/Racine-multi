@@ -6520,3 +6520,37 @@ body.is-client [data-ai-clear]{display:none!important}
 @media (orientation:portrait) and (max-width:920px){
   .history-landscape-hint:not(.hidden){display:block;margin:0 0 14px;}
 }
+
+/* ── Vue PC : grille « Cycle complet » (paysage 1080p+) ─────────────────── */
+.pcx-cycle-intro{margin-bottom:14px;}
+.pcx-cycle-grid{display:grid;gap:6px;align-items:stretch;margin-bottom:24px;}
+.pcx-cycle-cell{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.35;}
+.pcx-cycle-colhead,.pcx-cycle-rowhead,.pcx-cycle-corner{
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-hud);font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  font-size:12px;color:var(--gold);background:rgba(255,213,0,.10);border:1px solid rgba(255,213,0,.28);
+}
+.pcx-cycle-rowhead{justify-content:center;}
+.pcx-cycle-corner{color:var(--text2);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);font-size:10px;}
+.pcx-cycle-day{
+  text-align:left;cursor:pointer;color:var(--text);
+  background:linear-gradient(180deg,rgba(17,24,43,.96),rgba(8,12,24,.96));
+  border:1px solid rgba(140,170,210,.18);transition:border-color .12s,transform .08s,box-shadow .12s;
+}
+.pcx-cycle-day:hover{border-color:rgba(34,211,238,.6);transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.28);}
+.pcx-cycle-day.selected{border-color:rgba(255,213,0,.7);box-shadow:0 0 0 1px rgba(255,213,0,.35) inset;}
+.pcx-cycle-day ul{list-style:none;margin:0;padding:0;}
+.pcx-cycle-day li{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.pcx-cycle-day li:last-child{border-bottom:0;}
+.pcx-cycle-day li b{font-weight:700;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pcx-cycle-day li span{color:var(--cyan);font-family:var(--font-hud);font-size:12px;white-space:nowrap;flex-shrink:0;}
+.pcx-cycle-wod b{color:var(--gold)!important;}
+.pcx-cycle-wod span{color:var(--text2)!important;white-space:normal;font-family:var(--font-main);}
+.pcx-cycle-rest{color:var(--text2);font-style:italic;font-size:12px;}
+.pcx-cycle-back-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+/* Portrait / petit écran : la grille reste lisible en colonne unique. */
+@media (max-width:900px){
+  .pcx-cycle-grid{grid-template-columns:1fr!important;}
+  .pcx-cycle-colhead{display:none;}
+  .pcx-cycle-rowhead{justify-content:flex-start;margin-top:8px;}
+}
