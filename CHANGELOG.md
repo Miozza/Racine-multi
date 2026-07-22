@@ -19,6 +19,11 @@
 - **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
 - Tests : nouveau `dev/history_progress_checks.js`.
 
+### Progression : comparaison multi-mouvements (boutons toggle)
+- La comparaison de l'onglet Progression n'est plus limitée à deux menus déroulants (Mouvement A / B). **Chaque mouvement disponible devient un bouton toggle** : on en active autant qu'on veut et toutes les courbes se superposent.
+- **Une couleur par mouvement**, reprise dans la légende avec le delta ; compteur « N / total actifs ». Graphique toujours normalisé en % depuis le premier point pour comparer charges et reps sur la même échelle.
+- Tests : nouveau `dev/pc_progress_compare_checks.js` (statique + smoke runtime).
+
 ### Vue PC : nouvel onglet « Cycle complet » + toolbar allégée
 - **Nouvel onglet « Cycle » (par défaut)** : grille de tout le cycle, semaines en lignes × jours en colonnes, ne montrant **que le nom du mouvement et les séries×reps** (aucune charge, aucune alerte). Pensée pour évaluer et construire des programmes logiques sur écran large (paysage 1080p+). Les blocs WOD/texte libre apparaissent en ligne courte « WOD : … ».
 - **Clic sur une journée** → ouvre l'inspection Séance détaillée de cette journée précise, avec un bouton **« ← Retour au cycle »**.

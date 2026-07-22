@@ -34,6 +34,7 @@ node dev/profile_backup_ui_checks.js
 node dev/history_progress_checks.js
 node dev/gear_permissions_checks.js
 node dev/pc_cycle_view_checks.js
+node dev/pc_progress_compare_checks.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :
