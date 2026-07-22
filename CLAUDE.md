@@ -16,6 +16,24 @@ En cas de contradiction, ces documents priment sur ce fichier.
 
 ## 1. Le projet
 
+### Mission — ce qui rend Racine unique
+
+**Le cœur de Racine, c'est son moteur de charges.** C'est lui qui différencie l'app
+de tout autre suivi d'entraînement. Objectif de fond, assumé comme difficile :
+**suggérer le bon poids, au bon moment, pour n'importe quel athlète** — pas
+seulement pour le créateur.
+
+Conséquence pratique pour tout agent :
+
+- Le moteur de charges (`scripts/charge/`) est traité comme le **domaine prioritaire**.
+  Avant d'y toucher, lire la section 3.2 **et** les contrats charges listés en § 9.
+- Le choix des mouvements et la **progression des poids** sont au même niveau de
+  priorité : un bon mouvement mal suivi ne donne pas une bonne progression.
+- Toute intervention qui touche les charges se termine par les garde-fous charges
+  (§ 6). Aucune exception.
+
+### Nature
+
 Racine est une PWA CrossFit en **JavaScript vanilla** — pas de framework, pas de
 build step, pas de bundler. Développée en solo. Version multi-utilisateurs.
 
@@ -119,15 +137,53 @@ Noms de mouvements : uniquement le nom réel, stable et distinct. Aucune intenti
 intensité ou qualificatif de programmation dans `name` — ça vit dans `format`,
 `load`, `rest`, `note`. Voir la règle des noms dans `docs/STRUCTURE_CONTRACT.md`.
 
-### 3.2 Moteur de suggestion de charges
+### 3.2 Moteur de suggestion de charges — la symbiose
 
-Regroupé dans `scripts/charge/` (porte publique `window.CoachCharge`).
+Domaine **prioritaire** (voir Mission § 1). Regroupé dans `scripts/charge/`, porte
+publique unique `window.CoachCharge` (`scripts/charge/index.js`).
 
-- Source de vérité primaire : `athlete_state` (état dérivé), reconstructible depuis `resultats`.
-- Méthode : **Epley + RPE**, avec profils RPE personnalisés par athlète.
+Le moteur n'est pas un seul calcul : c'est un **empilement de couches** qui doivent
+rester cohérentes entre elles. Ordre logique :
+
+| Couche | Rôle | Fichier(s) |
+|---|---|---|
+| Math de base | e1RM **Epley** (`epley1RM`), projection entre plages de reps | `scripts/charge/historique.js` |
+| Prudence RPE | pas de hausse après RPE ≥ 9, saut max, deload, statut surveillance | `scripts/charge/rpe.js`, `suggestion.js` |
+| Contexte / intention | `technique`/`wod`/`light`… ne progressent pas comme un mouvement principal | `scripts/charge/mouvements.js` + `buildContext` |
+| Échelle par profil | ratios de test + agressivité, par athlète | `scripts/charge/scaling.js` |
+| Apprentissage (Brain) | confiance, précision, profils de mouvement, journal, explication `(!)` | `scripts/charge/brain_*.js`, `movement_profiles.js` |
+| Arrondi équipement | tailles réelles du rack (câble/barre/haltère/KB/bande) | **`data/equipment.js`** (`EQUIPMENT_LOAD_RULES`) |
+
+Règles clés :
+
+- **Source de vérité primaire** : `athlete_state` (état dérivé **en mémoire /
+  `localStorage`**), reconstructible depuis `resultats`. Les fichiers
+  `data/athlete_state.json` / `data/resultats.json` du dépôt sont des **squelettes**
+  (§ 2.2) — quand un doc parle d'« athlete_state.json », il désigne ce rôle logique,
+  pas un fichier à lire/écrire.
+- **Arrondi des charges** : autorité = **`data/equipment.js`** (`EQUIPMENT_LOAD_RULES`),
+  **pas** `data/charges.js`. `charges.js` ne fournit que les charges de **départ**
+  (`DEFAULT_CHARGES`). ⚠️ `docs/CHARGE_ENGINE.md` dit encore « arrondi via charges.js » —
+  c'est **périmé**, se fier au code + `docs/BRAIN.md`.
 - **Haltères** : mise à l'échelle **proportionnelle** à partir des ratios de test.
   Ne **pas** appliquer une conversion Epley directe — les échelles absolues sont
   incompatibles.
+- Un résultat **WOD ou technique** ne remplace **jamais** automatiquement une capacité
+  principale (filtre de contexte obligatoire).
+- Le bouton `(!)` **explique** la suggestion ; il ne recalcule jamais une autre charge
+  en silence.
+
+Deux sens du mot **« Brain »**, à ne pas confondre :
+
+- **Brain (livré)** = la couche locale d'apprentissage/explication déjà en place
+  (`scripts/charge/brain_stats.js`, `brain_memory.js`, `brain_explain.js`,
+  `brain_journal.js`), décrite dans `docs/BRAIN.md`.
+- **Brain.js (différé)** = la bibliothèque ML externe ~100 Ko de la roadmap (§ 8),
+  **pas encore construite**. Ne pas l'implémenter (voir § 8).
+
+Détail persistance : la **sauvegarde est locale uniquement**. Le flux GitHub
+(`saveToGitHub`) a été retiré du code ; les mentions résiduelles dans
+`docs/DATA_FLOW_CONTRACT.md` et `docs/CHARGE_ENGINE_TESTS.md` sont **périmées**.
 
 ### 3.3 Cerveau statistique / Avis IA
 
@@ -217,3 +273,39 @@ Ne pas introduire de nouvelles polices ou couleurs d'accent sans validation.
 - V2 B2C commercial : Supabase + Stripe.
 - Brain.js (~100 Ko) comme couche de raffinement ML au-dessus du moteur Epley + RPE —
   **différé** jusqu'à 3–6 mois d'historique utilisateur. Ne pas l'implémenter d'ici là.
+
+---
+
+## 9. Carte des docs — quand lire quoi
+
+`CLAUDE.md` est le seul fichier lu automatiquement. Les docs ci-dessous ne
+comptent que si on les ouvre. Deux natures à ne pas confondre.
+
+### Contrats durables (font autorité — à lire avant d'agir dans le domaine)
+
+| Doc | Lire avant de toucher à… | Autorité sur |
+|---|---|---|
+| `docs/STRUCTURE_CONTRACT.md` | n'importe quelle frontière de fichier, un nom de mouvement, la version | structure, nommage, version |
+| `docs/ARCHITECTURE.md` | une vue, un domaine, une porte `window.Coach*` | carte du code |
+| `docs/DATA_FLOW_CONTRACT.md` | sauvegarde, historique, `resultats` vs `athlete_state` | qui écrit quoi |
+| `docs/CHARGE_PROGRESSION_CONTRACT.md` | la **progression** des charges | règles de progression |
+| `docs/CHARGE_ENGINE.md` + `docs/CHARGE_CONTEXT.md` | le calcul/contexte de suggestion | moteur (voir réserves § 3.2) |
+| `docs/BRAIN.md` | Brain : apprentissage, confiance, explication `(!)`, Avis IA | philosophie Brain |
+| `docs/UI_CONSTRAINTS.md` | une vue / une séance | contraintes UI |
+| `docs/ERROR_LOGGING.md` | le logger `CoachLog` | journal d'erreurs |
+
+**Le moteur de charges est une symbiose de 5 contrats** : `CHARGE_ENGINE`,
+`CHARGE_CONTEXT`, `CHARGE_PROGRESSION_CONTRACT`, `BRAIN` et `DATA_FLOW_CONTRACT`.
+Les lire ensemble, pas isolément. En cas de désaccord entre eux **ou** avec un doc :
+le **code** (`scripts/charge/`, `data/equipment.js`) tranche, puis
+`STRUCTURE_CONTRACT.md`.
+
+### Rapports / audits / historique (contexte périssable — jamais « la loi »)
+
+`docs/CHARGE_PROGRESSION_AUDIT.md`, `docs/PHASE_2_EXTRACTION_REPORT.md`,
+`docs/DIAGNOSTIC_CHARGES_CLIENT_PWA_IOS.md`, `docs/CHARGE_ENGINE_TESTS.md`,
+`docs/CATALOGUE_MATRICE.md`, `docs/IDEES_FUTURES.md`.
+
+Datés (souvent numérotés `V51.x`, un ancien lignage ≠ la version courante `V4.5.x`).
+Utiles pour comprendre un choix passé ; ne jamais les traiter comme l'état actuel du
+code ni comme une consigne.
