@@ -19,6 +19,11 @@
 - **Aucune nouvelle vue ni nouvel onglet** ; lecture seule (`state.athleteState` + `state.history` du profil actif), aucune modification de la logique métier ni des calculs.
 - Tests : nouveau `dev/history_progress_checks.js`.
 
+### Correctif : crash « Sauvegarder la séance » sur programme sans périodisation
+- **Cause** : `checkDeloadAlert()` (appelé à chaque sauvegarde de séance) lisait `focus().targetReps[weekIdx()]` sans garde. Quand le programme actif n'a pas de tableau `targetReps` (programmes à exercices structurés) ou que le cycle actif est indisponible (`focus()` retombe sur `{}`), l'app plantait avec « undefined is not an object (evaluating 'focus().targetReps[weekIdx()]') » — visible sur iPhone SE.
+- **Fix** : accès défensifs à `focus().targetReps`, `focus().sets` et `focus().mult` (dans `checkDeloadAlert`, `targetReps()`, `setScheme()`, `profileMultiplier()`), avec repli neutre. Aucune perte de comportement pour les programmes périodisés.
+- Tests : nouveau `dev/deload_guard_checks.js` (reproduit le crash puis vérifie qu'il ne se produit plus).
+
 ### Progression : comparaison multi-mouvements (boutons toggle)
 - La comparaison de l'onglet Progression n'est plus limitée à deux menus déroulants (Mouvement A / B). **Chaque mouvement disponible devient un bouton toggle** : on en active autant qu'on veut et toutes les courbes se superposent.
 - **Une couleur par mouvement**, reprise dans la légende avec le delta ; compteur « N / total actifs ». Graphique toujours normalisé en % depuis le premier point pour comparer charges et reps sur la même échelle.

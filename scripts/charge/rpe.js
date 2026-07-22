@@ -26,8 +26,12 @@ function checkDeloadAlert(){
   // Si 3+ mouvements principaux ont RPE ≥ 9 sur 2 séances consécutives → alerte globale
   var mainMvKeys = Object.keys(movements).filter(function(k){ return movements[k].profile; });
   var highRpeCount = 0;
+  // Certains programmes (exercices structurés, ou cycle indisponible → focus()
+  // renvoie {}) n'ont pas de tableau targetReps : garder l'accès défensif pour
+  // ne pas planter la sauvegarde de séance. rng est le même à chaque itération.
+  var tr = focus().targetReps;
+  var rng = repRange((tr && tr[weekIdx()]) || 8);
   mainMvKeys.forEach(function(k){
-    var rng = repRange(focus().targetReps[weekIdx()]||8);
     var rpeKey = k+"__"+rng;
     var hist = state.rpeHistory[rpeKey];
     if(hist&&hist.length>=2&&hist.slice(-2).every(function(r){return r>=9;})) highRpeCount++;

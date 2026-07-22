@@ -415,7 +415,7 @@ function referenceMultiplier(ref){
   if(Number(state.week)===6)m=Math.min(m,0.55);
   return Math.max(0.40,Math.min(m,0.90));
 }
-function profileMultiplier(index){var base=focus().mult[weekIdx()];return index===0?base:Math.max(0.45,base-0.12);}
+function profileMultiplier(index){var m=focus().mult;var base=(m&&m[weekIdx()]!=null)?m[weekIdx()]:1;return index===0?base:Math.max(0.45,base-0.12);}
 function suggestLoad(mvKey,pct,targetReps){
   var base=referenceBase(mvKey,targetReps);
   if(!base.value)return 0;
@@ -426,14 +426,17 @@ function suggestLoad(mvKey,pct,targetReps){
 function progressionPct(index){return profileMultiplier(index);}
 function targetReps(index,kind){
   var goal=state.cycle.goal,week=weekIdx();
-  if(kind==="main")return focus().targetReps[week]||5;
+  // Accès défensif : un programme sans tableau targetReps (ou focus()==={}
+  // quand le cycle actif est indisponible) ne doit pas planter.
+  var tr=focus().targetReps;
+  if(kind==="main")return (tr&&tr[week])||5;
   if(kind==="accessory"){if(goal==="shoulders3d")return 15;if(goal==="strength")return 8;if(goal==="weightlifting")return 3;return 10;}
   if(kind==="wod")return goal==="shoulders3d"?12:8;
-  return focus().targetReps[week]||5;
+  return (tr&&tr[week])||5;
 }
 function setScheme(kind,index){
   var goal=state.cycle.goal,week=weekIdx();
-  if(kind==="main")return focus().sets[week];
+  if(kind==="main"){var s=focus().sets;return (s&&s[week]!=null)?s[week]:"—";}
   if(kind==="accessory"){if(goal==="shoulders3d")return"3-4 x 15";if(goal==="strength")return"3 x 8";if(goal==="weightlifting")return"5 x 3 technique";if(goal==="engine")return"2 x 10";return"3 x 10";}
   return"—";
 }
