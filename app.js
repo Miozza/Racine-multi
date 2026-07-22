@@ -1203,11 +1203,35 @@ function programWeeks(id){
   var cfg=(focusConfigs&&focusConfigs[id])||{};
   return Number(cfg.durationWeeks||cfg.weeks||((cfg.weekLabels&&cfg.weekLabels.length)||0)||((cfg.sets&&cfg.sets.length)||0)||0)||0;
 }
+// Route macrocycle du profil ACTIF (ex. Bertin via macrocycleOverrideKey),
+// sinon le macrocycle générique. Même source que la Route PC (view_pc.js) : on
+// ne code plus la route privée de Bertin en dur pour tout le monde.
+function roadmapMainRoute(){
+  try{
+    var ap = window.CoachProfiles && CoachProfiles.getActive && CoachProfiles.getActive();
+    if(ap && ap.macrocycleOverrideKey && window[ap.macrocycleOverrideKey] && Array.isArray(window[ap.macrocycleOverrideKey].mainRoute)){
+      return window[ap.macrocycleOverrideKey].mainRoute.slice();
+    }
+  }catch(e){}
+  var macro = window.COACH_BERTIN_MACROCYCLE;
+  if(macro && Array.isArray(macro.mainRoute)) return macro.mainRoute.slice();
+  return [];
+}
 function roadmapProgramOrder(activeId){
-  var compRoute=["shoulders3d","hypertrophy_base","force_performance","competition_peak"];
-  if(activeId==="heritage225")return ["heritage225"];
-  if(compRoute.indexOf(activeId)>=0)return compRoute.slice(compRoute.indexOf(activeId));
-  return [activeId,"competition_peak"].filter(function(id,i,a){return id&&a.indexOf(id)===i;});
+  var route=roadmapMainRoute();
+  var order;
+  if(activeId==="heritage225") order=["heritage225"];
+  else if(route.indexOf(activeId)>=0) order=route.slice(route.indexOf(activeId));
+  // Repli sans route connue : on ne suppose plus competition_peak (privé). On
+  // enchaîne le programme actif puis, si elle existe, la fin de la route.
+  else order=[activeId].concat(route);
+  // Ne jamais présenter un programme fermé au profil (fuite de privé chez un
+  // client) : on filtre sur les programmes réellement chargés/accessibles, tout
+  // en gardant le programme actif même s'il vient d'être retiré du catalogue.
+  return order.filter(function(id,i,a){
+    if(!id || a.indexOf(id)!==i) return false;
+    return id===activeId || !!focusConfigs[id];
+  });
 }
 function roadmapRows(activeId, activeWeek){
   activeId=activeId||activeProgramId(); activeWeek=Number(activeWeek||state.week||1);
