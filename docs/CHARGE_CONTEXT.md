@@ -11,6 +11,9 @@ Nom du mouvement = simple + équipement utile
 Intention = contexte séparé
 ```
 
+> La règle de nommage fait autorité dans `docs/STRUCTURE_CONTRACT.md`
+> § « Règle des noms de mouvements ». Ce document ne couvre que le **contexte/intention**.
+
 ## Pourquoi
 
 Les noms de mouvements ont été simplifiés pour éviter les conflits de mapping. Exemple :

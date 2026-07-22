@@ -42,22 +42,12 @@ A1. / B1. / C1.
 
 ### Nom du mouvement
 
-Le nom doit être court et stable.
+Le nom doit être court et stable. **Autorité unique : `docs/STRUCTURE_CONTRACT.md`
+§ « Règle des noms de mouvements »** (liste des interdits, exemples valides). Ne pas
+dupliquer la règle ici — s'y référer.
 
-Exemples valides :
-
-```txt
-Strict Press
-Bench Press
-Lateral Raise DB
-Lateral Raise câble
-Rear Delt Fly DB
-Rear Delt Fly câble
-Power Clean
-Knee Raise
-```
-
-L’équipement reste dans le nom seulement s’il change la charge ou le mapping historique.
+Point spécifique au moteur : l'équipement reste dans le nom **seulement** s'il change
+la charge ou le mapping historique (`Lateral Raise DB` ≠ `Lateral Raise câble`).
 
 ### Contexte
 

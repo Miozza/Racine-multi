@@ -4,10 +4,15 @@
 
 La suggestion de charge suit cette logique générale :
 
-1. `data/athlete_state.json`
-2. reconstruction depuis `data/resultats.json`
-3. `data/charges.js`
+1. `athlete_state` (état dérivé)
+2. reconstruction depuis `resultats` (journal brut)
+3. `data/charges.js` (`DEFAULT_CHARGES` : charges de départ)
 4. fallback du programme
+
+> Note : `athlete_state` et `resultats` désignent des **rôles logiques** vivant en
+> mémoire / `localStorage`. Les fichiers `data/athlete_state.json` et
+> `data/resultats.json` du dépôt sont des **squelettes vides** (voir
+> `docs/DATA_FLOW_CONTRACT.md`) — pas des sources à lire/écrire directement.
 
 ## Règles de prudence
 
@@ -32,9 +37,14 @@ Ces mouvements doivent rester distincts :
 
 ## Équipement
 
+Autorité de l'arrondi : **`data/equipment.js`** (`EQUIPMENT_LOAD_RULES`), source
+unique des tailles réelles du rack. `data/charges.js` ne fournit que les charges de
+**départ** (`DEFAULT_CHARGES`), jamais l'arrondi.
+
 - Câble : incrément réel de 10 lb.
 - Barbell : incrément standard de 5 lb.
-- Dumbbells : arrondi vers les charges disponibles dans `data/charges.js`.
+- Dumbbells : arrondi vers les tailles disponibles dans `data/equipment.js`.
+- Kettlebell : seule famille en kg (voir `data/equipment.js`).
 
 
 ## Transition Épaules 3D v2
