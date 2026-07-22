@@ -248,7 +248,7 @@ function buildGuidedSessionBlocks(){
           format:e.format || "",
           targetMin:parsedTarget.min,
           targetMax:parsedTarget.max,
-          load:CoachCharge.suggestLoad(e.name,e.load,(parsedTarget.min||parsedTarget.max),{kind:b.kind,blockTitle:b.title,note:e.note,text:b.text,format:e.format,day:(state&&state.day),week:(state&&state.week)}) || "",
+          load:CoachCharge.suggestForExercise(e,b) || "",
           rest:e.rest || "",
           note:e.note || "",
           exerciseIndex:ei

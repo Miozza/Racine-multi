@@ -939,3 +939,36 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
   return base.loadText;
 };
 
+// ── Entrée unique d'assemblage : exercice + bloc → charge suggérée ───────────
+// Toutes les vues (WOD+, PC, séance guidée, résultats, export, diagnostic)
+// passent par ici au lieu de reconstruire target + contexte à la main. But :
+// la même charge pour le même exercice, quel que soit l'écran.
+// Comportement identique à l'ancien inline : target = parseTargetReps(format,10)
+// .min||.max, contexte {kind,blockTitle,note,text,format,day,week}, puis moteur.
+// opts.day / opts.week permettent de prévisualiser un autre jour/semaine (PC).
+function coachSuggestForExercise(exercise, block, opts){
+  exercise = exercise || {};
+  block = block || {};
+  opts = opts || {};
+  var parsed = (typeof parseTargetReps === 'function')
+    ? parseTargetReps(exercise.format, 10)
+    : { min: 10, max: 10 };
+  var target = parsed.min || parsed.max || 10;
+  var st = (typeof state !== 'undefined') ? state : null;
+  var context = {
+    kind: block.kind,
+    blockTitle: block.title,
+    note: exercise.note,
+    text: block.text,
+    format: exercise.format,
+    day:  (opts.day  !== undefined) ? opts.day  : (st ? st.day  : undefined),
+    week: (opts.week !== undefined) ? opts.week : (st ? st.week : undefined)
+  };
+  var fn = (typeof window !== 'undefined' && window.CoachCharge && window.CoachCharge.suggestLoad)
+    ? window.CoachCharge.suggestLoad
+    : (typeof coachSafeSuggestedLoad === 'function' ? coachSafeSuggestedLoad
+      : (typeof athleteSuggestedLoad === 'function' ? athleteSuggestedLoad : null));
+  return fn ? fn(exercise.name, exercise.load, target, context) : "";
+}
+window.coachSuggestForExercise = coachSuggestForExercise;
+

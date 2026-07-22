@@ -221,7 +221,7 @@ function collectChargeDiagnosticsForDay(day,week){
       b.exercises.forEach(function(e,ei){
         var parsed=parseTargetReps(e.format,10);
         var target=parsed.min||parsed.max||10;
-        var shown=CoachCharge.suggestLoad(e.name,e.load,target,{kind:b.kind,blockTitle:b.title,note:e.note,text:b.text,format:e.format,day:day,week:week});
+        var shown=CoachCharge.suggestForExercise(e,b,{day:day,week:week});
         var d=buildChargeDiagnosticForExercise(e,shown,{blockTitle:b.title,blockIndex:bi+1,exerciseIndex:ei,targetReps:target,kind:b.kind,day:day,week:week});
         if(d){d.blockTitle=b.title;d.blockIndex=bi+1;d.exerciseIndex=ei;rows.push(d);}
       });

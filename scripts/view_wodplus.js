@@ -76,9 +76,7 @@ function setupWodPlusActions(root){
 }
 function wodPlusExerciseHtml(e, block, isPrimary){
   block = block || {};
-  var target=(parseTargetReps(e.format,10).min||parseTargetReps(e.format,10).max);
-  var chargeContext={kind:block.kind,blockTitle:block.title,note:e.note,text:block.text,format:e.format,day:(state&&state.day),week:(state&&state.week)};
-  var shown=CoachCharge.suggestLoad(e.name,e.load,target,chargeContext);
+  var shown=CoachCharge.suggestForExercise(e, block);
   var html='';
   html+='<div class="wodplus-ex '+(isPrimary?'primary':'')+'">';
   html+='<div class="wodplus-ex-name"><span>'+e.name+'</span>'+tutorialButtonHtml(e.name)+'</div>';

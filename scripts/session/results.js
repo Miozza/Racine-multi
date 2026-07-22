@@ -10,7 +10,7 @@ function collectSessionExercises(){
       b.exercises.forEach(function(e){
         var parsed = parseTargetReps(e.format, 10);
         items.push({key:e.name.replace(/^[A-Z][0-9]?\.\s*/,"").trim(),name:e.name,
-          suggested:CoachCharge.suggestLoad(e.name,e.load,parsed.min||parsed.max,{kind:b.kind,blockTitle:b.title,note:e.note,text:b.text,format:e.format,day:state.day,week:state.week}),format:e.format,targetMin:parsed.min,targetMax:parsed.max,kind:b.kind,blockTitle:b.title,note:e.note||"",text:b.text||"",isWod:false});
+          suggested:CoachCharge.suggestForExercise(e,b),format:e.format,targetMin:parsed.min,targetMax:parsed.max,kind:b.kind,blockTitle:b.title,note:e.note||"",text:b.text||"",isWod:false});
       });
     } else if(b.progress&&b.progress.length){
       b.progress.forEach(function(mvKey,j){
