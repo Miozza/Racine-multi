@@ -529,8 +529,9 @@ function pcRenderRoadmapTab(){
 // Ne modifie jamais les données durables.
 var pcProgressRange = pcProgressRange || "all";
 var pcProgressSelected = pcProgressSelected || null;
-var pcProgressCompareA = pcProgressCompareA || null;
-var pcProgressCompareB = pcProgressCompareB || null;
+// Comparaison multi-mouvements : ids sélectionnés (boutons toggle). null = pas
+// encore initialisé (on préremplit alors avec les deux premiers candidats).
+var pcProgressCompareSet = (typeof pcProgressCompareSet !== "undefined") ? pcProgressCompareSet : null;
 
 var PC_PROGRESS_TRACKERS=[
   {id:"front_squat",label:"Front Squat",priority:10,rx:/\bfront squat\b/},
@@ -911,8 +912,11 @@ function pcRenderProgressCard(item){
     '<details class="pcx-progress-details"><summary>Voir les dernières séances condensées</summary><table><thead><tr><th>Date</th><th>Réel retenu</th><th>RPE</th><th>e1RM</th></tr></thead><tbody>'+table+'</tbody></table></details>'+ 
     '</article>';
 }
-function pcProgOptionList(series,selected){
-  return (series||[]).filter(function(x){return x.rows.length>=1;}).map(function(item){return '<option value="'+pcEsc(item.id)+'" '+(selected===item.id?'selected':'')+'>'+pcEsc(item.label)+'</option>';}).join('');
+// Palette pour superposer plusieurs mouvements (couleur = index dans la liste
+// sélectionnée). Cycle au-delà de 10 mouvements comparés simultanément.
+function pcProgCompareColor(i){
+  var palette=['#00d4ff','#ffd700','#22c55e','#f472b6','#a78bfa','#fb923c','#38bdf8','#f87171','#34d399','#e879f9'];
+  return palette[((i%palette.length)+palette.length)%palette.length];
 }
 function pcProgFind(series,id){
   for(var i=0;i<(series||[]).length;i++)if(series[i].id===id)return series[i];
@@ -924,11 +928,13 @@ function pcProgPercentRows(item){
   var base=pcProgMetricValue(item,first)||1;
   return rows.map(function(r,i){return {i:i,label:pcProgDateLabel(r.date),pct:Math.round(((pcProgMetricValue(item,r)-base)/base)*1000)/10,raw:pcProgMetricValue(item,r)};});
 }
-function pcProgCompareSvg(a,b){
-  if(!a||!b)return '';
-  var ar=pcProgPercentRows(a), br=pcProgPercentRows(b);
-  if(!ar.length||!br.length)return '';
-  var vals=ar.concat(br).map(function(r){return r.pct;});
+// Superpose N courbes normalisées (% depuis le premier point). `list` = série
+// sélectionnée, la couleur suit l'index dans la liste (voir pcProgCompareColor).
+function pcProgCompareSvg(list){
+  list=(list||[]).filter(Boolean);
+  var pctList=list.map(function(s){return {s:s,rows:pcProgPercentRows(s)};}).filter(function(o){return o.rows.length;});
+  if(!pctList.length)return '';
+  var vals=[];pctList.forEach(function(o){o.rows.forEach(function(r){vals.push(r.pct);});});
   var rawMin=Math.min.apply(null,vals), rawMax=Math.max.apply(null,vals);
   if(rawMin===rawMax){rawMin-=5;rawMax+=5;}
   var step=pcProgNiceStep((rawMax-rawMin)/4);
@@ -939,25 +945,38 @@ function pcProgCompareSvg(a,b){
   function x(i,count){return left+(count===1?innerW/2:(i/(count-1))*innerW);} function y(v){return top+((max-v)/(max-min))*innerH;}
   function points(rows){return rows.map(function(r,i){return Math.round(x(i,rows.length))+','+Math.round(y(r.pct));}).join(' ');}
   var grid=ticks.map(function(t){var yy=Math.round(y(t));return '<g class="pcx-progress-gridline"><line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'"></line><text x="'+(left-8)+'" y="'+(yy+4)+'">'+pcEsc((t>0?'+':'')+pcProgFormatNumber(t)+'%')+'</text></g>';}).join('');
-  var labels=ar.map(function(r,i){if(i!==0&&i!==ar.length-1&&i%Math.ceil(ar.length/4)!==0)return '';return '<text class="pcx-progress-date" x="'+Math.round(x(i,ar.length))+'" y="'+(h-14)+'">'+pcEsc(r.label)+'</text>';}).join('');
+  var longest=pctList.reduce(function(a,b){return b.rows.length>a.rows.length?b:a;},pctList[0]).rows;
+  var labels=longest.map(function(r,i){if(i!==0&&i!==longest.length-1&&i%Math.ceil(longest.length/4)!==0)return '';return '<text class="pcx-progress-date" x="'+Math.round(x(i,longest.length))+'" y="'+(h-14)+'">'+pcEsc(r.label)+'</text>';}).join('');
+  var lines=pctList.map(function(o,idx){var color=pcProgCompareColor(idx);return '<polyline points="'+points(o.rows)+'" style="stroke:'+color+';filter:none"></polyline>';}).join('');
   return '<svg class="pcx-progress-svg pcx-compare-svg" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Comparaison progression">'+
     '<rect class="pcx-progress-plot-bg" x="'+left+'" y="'+top+'" width="'+innerW+'" height="'+innerH+'"></rect>'+grid+
-    '<line class="pcx-progress-axis" x1="'+left+'" y1="'+(h-bottom)+'" x2="'+(w-right)+'" y2="'+(h-bottom)+'"></line>'+ 
-    '<line class="pcx-progress-axis" x1="'+left+'" y1="'+top+'" x2="'+left+'" y2="'+(h-bottom)+'"></line>'+ 
-    '<text class="pcx-progress-axis-title" x="'+left+'" y="16">Évolution normalisée depuis le premier point</text>'+ 
-    '<polyline class="compare-a" points="'+points(ar)+'"></polyline><polyline class="compare-b" points="'+points(br)+'"></polyline>'+ labels + '</svg>';
+    '<line class="pcx-progress-axis" x1="'+left+'" y1="'+(h-bottom)+'" x2="'+(w-right)+'" y2="'+(h-bottom)+'"></line>'+
+    '<line class="pcx-progress-axis" x1="'+left+'" y1="'+top+'" x2="'+left+'" y2="'+(h-bottom)+'"></line>'+
+    '<text class="pcx-progress-axis-title" x="'+left+'" y="16">Évolution normalisée depuis le premier point</text>'+
+    lines + labels + '</svg>';
 }
 function pcRenderProgressCompare(series){
   var candidates=(series||[]).filter(function(x){return x.rows.length>=2;});
   if(candidates.length<2)return '<section class="pcx-panel pcx-progress-compare"><h3>Comparaison</h3><p class="pcx-muted">Il faut au moins deux mouvements avec deux points chacun pour comparer.</p></section>';
-  if(!pcProgressCompareA || !pcProgFind(candidates,pcProgressCompareA))pcProgressCompareA=candidates[0].id;
-  if(!pcProgressCompareB || pcProgressCompareB===pcProgressCompareA || !pcProgFind(candidates,pcProgressCompareB))pcProgressCompareB=(candidates[1]||candidates[0]).id;
-  var a=pcProgFind(candidates,pcProgressCompareA), b=pcProgFind(candidates,pcProgressCompareB);
-  var aDelta=a&&a.stats?Math.round(a.stats.deltaMetric):0, bDelta=b&&b.stats?Math.round(b.stats.deltaMetric):0;
-  return '<section class="pcx-panel pcx-progress-compare"><div class="pcx-progress-compare-head"><div><h3>Comparaison</h3><p>Compare deux mouvements sur la même période. Le graphique est normalisé en % depuis le premier point pour éviter de comparer 225 lb avec 12 reps directement.</p></div></div>'+ 
-    '<div class="pcx-progress-controls compact"><label>Mouvement A<select id="pcProgressCompareA" class="pcx-select">'+pcProgOptionList(candidates,pcProgressCompareA)+'</select></label><label>Mouvement B<select id="pcProgressCompareB" class="pcx-select">'+pcProgOptionList(candidates,pcProgressCompareB)+'</select></label></div>'+ 
-    '<div class="pcx-progress-legend"><span class="a">'+pcEsc(a.label)+' · '+(aDelta>0?'+':'')+aDelta+pcProgMetricUnit(a)+'</span><span class="b">'+pcEsc(b.label)+' · '+(bDelta>0?'+':'')+bDelta+pcProgMetricUnit(b)+'</span></div>'+ 
-    '<div class="pcx-progress-chart">'+pcProgCompareSvg(a,b)+'</div></section>';
+  // Init : les deux premiers candidats. Puis on élague les ids disparus.
+  if(!Array.isArray(pcProgressCompareSet)) pcProgressCompareSet=[candidates[0].id, candidates[1].id];
+  pcProgressCompareSet=pcProgressCompareSet.filter(function(id){return pcProgFind(candidates,id);});
+  var selected=candidates.filter(function(c){return pcProgressCompareSet.indexOf(c.id)!==-1;});
+  var toggles=candidates.map(function(c){
+    var idx=selected.indexOf(c), on=idx!==-1;
+    return '<button type="button" class="pcx-compare-toggle'+(on?' active':'')+'" data-pc-compare-toggle="'+pcEsc(c.id)+'"'+
+      (on?' style="--cmp:'+pcProgCompareColor(idx)+'"':'')+'>'+pcEsc(c.label)+'</button>';
+  }).join('');
+  var body;
+  if(!selected.length){
+    body='<p class="pcx-muted">Sélectionne au moins un mouvement ci-dessus.</p>';
+  }else{
+    var legend=selected.map(function(s,i){var d=s.stats?Math.round(s.stats.deltaMetric):0;return '<span style="--cmp:'+pcProgCompareColor(i)+'">'+pcEsc(s.label)+' · '+(d>0?'+':'')+d+pcProgMetricUnit(s)+'</span>';}).join('');
+    body='<div class="pcx-progress-legend cmp">'+legend+'</div><div class="pcx-progress-chart">'+pcProgCompareSvg(selected)+'</div>';
+  }
+  return '<section class="pcx-panel pcx-progress-compare"><div class="pcx-progress-compare-head"><div><h3>Comparaison</h3><p>Active autant de mouvements que tu veux pour superposer leurs courbes. Le graphique est normalisé en % depuis le premier point, pour comparer des charges et des reps sur la même échelle.</p></div><span class="pcx-muted pcx-compare-count">'+selected.length+' / '+candidates.length+' actifs</span></div>'+
+    '<div class="pcx-compare-toggles">'+toggles+'</div>'+
+    body+'</section>';
 }
 function pcRenderProgressControls(series,enough,onePoint){
   return '<section class="pcx-panel pcx-progress-summary"><div class="pcx-progress-summary-head"><div><h2>Progression — mouvements principaux</h2>'+ 
@@ -984,8 +1003,13 @@ function pcRenderProgressTab(){
 function pcBindProgression(){
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-progress-range]'),function(btn){btn.onclick=function(){pcProgressRange=btn.getAttribute('data-pc-progress-range')||'all';pcProgressSelected=null;pcRenderProgressInto();};});
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-prog-point]'),function(dot){dot.onclick=function(){pcProgressSelected={id:dot.getAttribute('data-pc-prog-point'),key:dot.getAttribute('data-pc-prog-key')};pcRenderProgressInto();};});
-  var a=document.getElementById('pcProgressCompareA');if(a)a.onchange=function(){pcProgressCompareA=this.value;pcRenderProgressInto();};
-  var b=document.getElementById('pcProgressCompareB');if(b)b.onchange=function(){pcProgressCompareB=this.value;pcRenderProgressInto();};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-compare-toggle]'),function(btn){btn.onclick=function(){
+    var id=btn.getAttribute('data-pc-compare-toggle');
+    if(!Array.isArray(pcProgressCompareSet))pcProgressCompareSet=[];
+    var i=pcProgressCompareSet.indexOf(id);
+    if(i===-1)pcProgressCompareSet.push(id); else pcProgressCompareSet.splice(i,1);
+    pcRenderProgressInto();
+  };});
 }
 // Monte la Progression dans l'onglet Historique (#progressCharts), pour tous
 // les profils. Ne re-rend que ce conteneur : les interactions (période, point

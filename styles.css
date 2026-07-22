@@ -6141,8 +6141,15 @@ body.arnold-mode{
 .pcx-progress-legend span{border:1px solid rgba(255,255,255,.10);border-radius:999px;padding:8px 11px;font-family:var(--font-hud);font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
 .pcx-progress-legend .a{color:var(--cyan);background:rgba(0,212,255,.07);border-color:rgba(0,212,255,.28)}
 .pcx-progress-legend .b{color:var(--gold);background:rgba(255,213,0,.07);border-color:rgba(255,213,0,.28)}
-.pcx-compare-svg polyline.compare-a{stroke:var(--cyan);stroke-width:4.5}
-.pcx-compare-svg polyline.compare-b{stroke:var(--gold);stroke-width:4.5;filter:drop-shadow(0 0 6px rgba(255,213,0,.26))}
+.pcx-compare-svg polyline{stroke-width:4.5}
+/* Comparaison multi-mouvements : boutons toggle + légende colorée (--cmp). */
+.pcx-compare-toggles{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.pcx-compare-toggle{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--text2);border-radius:999px;padding:8px 13px;font-family:var(--font-hud);font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
+.pcx-compare-toggle:hover{border-color:rgba(255,255,255,.3);color:var(--text)}
+.pcx-compare-toggle.active{color:var(--cmp);border-color:var(--cmp);background:color-mix(in srgb, var(--cmp) 14%, transparent)}
+.pcx-compare-toggle.active::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--cmp);margin-right:7px;vertical-align:baseline}
+.pcx-compare-count{font-family:var(--font-hud);font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.pcx-progress-legend.cmp span{color:var(--cmp);border-color:var(--cmp);background:color-mix(in srgb, var(--cmp) 10%, transparent)}
 @media (max-width:900px){.pcx-progress-summary-head{display:grid}.pcx-progress-controls.compact{grid-template-columns:1fr}.pcx-progress-selected-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.pcx-progress-svg{min-width:640px}.pcx-progress-selected-grid{grid-template-columns:1fr}.pcx-progress-summary-head{gap:8px}}
 
