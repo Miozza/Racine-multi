@@ -404,7 +404,7 @@ function pcCycleDayItems(day, week){
       });
     } else if(block.kind==='wod' || block.text){
       var txt = cleanLine(displayChargeText(block.text||'')).replace(/\s+/g,' ').trim();
-      out.push({ wod:true, name:'WOD', scheme: txt.slice(0,70) });
+      out.push({ wod:true, name:'WOD', scheme: txt });
     }
   });
   return out;
@@ -438,7 +438,7 @@ function pcRenderCycleTab(){
   }
   return '<section class="pcx-panel pcx-cycle-intro"><h2>Cycle complet — '+pcEsc((pcFocusCfg().label)||pcCurrentCycleId())+'</h2>'+
     '<p class="pcx-muted">Vue d\'ensemble : mouvements et séries×reps seulement (sans charge), pour évaluer et construire. Clique une journée pour l\'inspecter en détail. Optimisé pour écran large (paysage 1080p).</p></section>'+
-    '<div class="pcx-cycle-grid" style="grid-template-columns:88px repeat('+cols+',minmax(0,1fr))">'+head+body+'</div>';
+    '<div class="pcx-cycle-grid" style="grid-template-columns:72px repeat('+cols+',minmax(230px,1fr))">'+head+body+'</div>';
 }
 
 function pcRenderWeekTab(){

@@ -6560,7 +6560,7 @@ body.is-client [data-ai-clear]{display:none!important}
 /* ── Vue PC : grille « Cycle complet » (paysage 1080p+) ─────────────────── */
 .pcx-cycle-intro{margin-bottom:14px;}
 .pcx-cycle-grid{display:grid;gap:6px;align-items:stretch;margin-bottom:24px;}
-.pcx-cycle-cell{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.35;}
+.pcx-cycle-cell{border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.38;}
 .pcx-cycle-colhead,.pcx-cycle-rowhead,.pcx-cycle-corner{
   display:flex;align-items:center;justify-content:center;
   font-family:var(--font-hud);font-weight:800;letter-spacing:.06em;text-transform:uppercase;
@@ -6576,12 +6576,14 @@ body.is-client [data-ai-clear]{display:none!important}
 .pcx-cycle-day:hover{border-color:rgba(34,211,238,.6);transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.28);}
 .pcx-cycle-day.selected{border-color:rgba(255,213,0,.7);box-shadow:0 0 0 1px rgba(255,213,0,.35) inset;}
 .pcx-cycle-day ul{list-style:none;margin:0;padding:0;}
-.pcx-cycle-day li{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.pcx-cycle-day li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);}
 .pcx-cycle-day li:last-child{border-bottom:0;}
-.pcx-cycle-day li b{font-weight:700;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pcx-cycle-day li span{color:var(--cyan);font-family:var(--font-hud);font-size:12px;white-space:nowrap;flex-shrink:0;}
-.pcx-cycle-wod b{color:var(--gold)!important;}
-.pcx-cycle-wod span{color:var(--text2)!important;white-space:normal;font-family:var(--font-main);}
+/* Le nom occupe l'espace restant et passe à la ligne au lieu d'être coupé :
+   aucune info perdue, la cellule grandit en hauteur si besoin. */
+.pcx-cycle-day li b{font-weight:700;color:var(--white);flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;}
+.pcx-cycle-day li span{color:var(--cyan);font-family:var(--font-hud);font-size:12px;white-space:nowrap;flex:0 0 auto;text-align:right;}
+.pcx-cycle-day li.pcx-cycle-wod b{color:var(--gold)!important;flex:0 0 auto;white-space:nowrap;}
+.pcx-cycle-day li.pcx-cycle-wod span{color:var(--text2)!important;white-space:normal;font-family:var(--font-main);flex:1 1 auto;min-width:0;overflow-wrap:anywhere;text-align:left;}
 .pcx-cycle-rest{color:var(--text2);font-style:italic;font-size:12px;}
 .pcx-cycle-back-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
 /* Portrait / petit écran : la grille reste lisible en colonne unique. */
