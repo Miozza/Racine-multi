@@ -63,6 +63,7 @@ node dev/strict_muscle_up_checks.js
 - `CHANGELOG.md`
 - `RELEASE_CHECKLIST.md`
 - `docs/ARCHITECTURE.md`
+- `docs/ARCHITECTURE_AUDIT.md`
 - `docs/STRUCTURE_CONTRACT.md`
 - `docs/UI_CONSTRAINTS.md`
 - `docs/DATA_FLOW_CONTRACT.md`

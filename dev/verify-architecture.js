@@ -2,17 +2,17 @@
 /*
   Racine — vérificateur d'architecture (audit).
 
-  Compare architecture.json au contenu réel du dépôt :
-    1. ÉCHEC si un fichier suivi par git est absent de architecture.json.
-    2. ÉCHEC si architecture.json référence un fichier qui n'existe plus.
+  Compare dev/architecture.json au contenu réel du dépôt :
+    1. ÉCHEC si un fichier suivi par git est absent de dev/architecture.json.
+    2. ÉCHEC si dev/architecture.json référence un fichier qui n'existe plus.
     3. AVERTISSEMENT si la taille d'un fichier a bougé de façon significative
        depuis la génération (dérive de contenu → manifeste à régénérer).
   Code de sortie non nul en cas d'échec (branchable en CI).
 
   Usage :
-    node tools/verify-architecture.js
-    node tools/verify-architecture.js --drift 0.25   # seuil de dérive (défaut 0.20)
-    node tools/verify-architecture.js --json          # sortie machine
+    node dev/verify-architecture.js
+    node dev/verify-architecture.js --drift 0.25   # seuil de dérive (défaut 0.20)
+    node dev/verify-architecture.js --json          # sortie machine
 
   Sans dépendance externe. N'écrit rien.
 */
@@ -22,7 +22,7 @@ const path = require('path');
 const cp = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const MANIFEST = path.join(ROOT, 'architecture.json');
+const MANIFEST = path.join(__dirname, 'architecture.json');
 
 function arg(name, fallback){
   const i = process.argv.indexOf(name);
@@ -33,13 +33,13 @@ const DRIFT = Math.max(0, Number(arg('--drift', '0.20')) || 0.20);
 
 function die(msg){ console.error('verify-architecture: ' + msg); process.exit(2); }
 
-if(!fs.existsSync(MANIFEST)) die('architecture.json introuvable à la racine du dépôt.');
+if(!fs.existsSync(MANIFEST)) die('dev/architecture.json introuvable.');
 
 let manifest;
 try { manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8')); }
-catch(e){ die('architecture.json illisible : ' + e.message); }
+catch(e){ die('dev/architecture.json illisible : ' + e.message); }
 
-if(!manifest || !Array.isArray(manifest.files)) die('architecture.json : champ "files" absent ou non-tableau.');
+if(!manifest || !Array.isArray(manifest.files)) die('dev/architecture.json : champ "files" absent ou non-tableau.');
 
 // Liste des fichiers réellement suivis (source de vérité = git, hors .git).
 let tracked;
@@ -56,7 +56,7 @@ const manifestPaths = manifest.files.map(f => f.path);
 const manifestSet = new Set(manifestPaths);
 
 // Le manifeste se référence lui-même : toléré même si non encore commité.
-const SELF = new Set(['architecture.json', 'ARCHITECTURE.md', 'tools/verify-architecture.js']);
+const SELF = new Set(['dev/architecture.json', 'docs/ARCHITECTURE_AUDIT.md', 'dev/verify-architecture.js']);
 
 const errors = [];
 const warnings = [];

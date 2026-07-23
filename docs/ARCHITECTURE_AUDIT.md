@@ -3,9 +3,9 @@
 > Livrable A de l'audit d'architecture. Généré le **2026-07-23** contre la
 > branche `claude/racine-architecture-audit-fx4cr9`.
 >
-> **Lecture seule / non destructif.** Ce document n'a supprimé, renommé ni
-> déplacé aucun fichier. Il accompagne deux autres livrables :
-> `architecture.json` (manifeste machine) et `tools/verify-architecture.js`
+> **Non destructif.** Ce document n'a supprimé ni modifié aucun fichier existant
+> du runtime. Il accompagne deux autres livrables :
+> `dev/architecture.json` (manifeste machine) et `dev/verify-architecture.js`
 > (vérificateur CI).
 >
 > Ce fichier **ne remplace pas** `docs/ARCHITECTURE.md` (carte curée à la main,
@@ -14,34 +14,28 @@
 
 ---
 
-## ⚠️ Avertissement de placement des livrables (à lire en premier)
+## Emplacement des livrables — respect du contrat de structure
 
-Les trois chemins imposés par le prompt d'audit **entrent en conflit avec le
-contrat de structure du dépôt**, tel qu'appliqué par `dev/structure_checks.js` :
+Le prompt d'audit proposait des chemins (`ARCHITECTURE.md` + `architecture.json`
+à la racine, `tools/verify-architecture.js`) qui **entraient en conflit** avec
+`dev/structure_checks.js` : le dossier `tools/` y est explicitement interdit
+(`:64`, et `docs/ARCHITECTURE.md:113`) et la racine a une allowlist stricte
+(`:48-59`). Pour garder une structure saine, les livrables ont été **placés
+dans les dossiers déjà autorisés** plutôt que d'affaiblir les garde-fous :
 
-| Livrable | Conflit | Référence |
+| Livrable | Emplacement retenu | Intégration contrat |
 |---|---|---|
-| `tools/verify-architecture.js` | Le dossier `tools/` est **explicitement interdit** | `dev/structure_checks.js:64` (`assert(!exists('tools'), …)`) + `docs/ARCHITECTURE.md:113` |
-| `ARCHITECTURE.md` (racine) | Fichier racine **hors allowlist** | `dev/structure_checks.js:48-59` (`allowedRootFiles`) |
-| `architecture.json` (racine) | Fichier racine **hors allowlist** | idem |
+| Carte lisible | `docs/ARCHITECTURE_AUDIT.md` | référencé depuis `ETAT_ACTUEL.md` (exigé par `structure_checks:104-106`) |
+| Manifeste machine | `dev/architecture.json` | à côté de son vérificateur |
+| Vérificateur | `dev/verify-architecture.js` | cité dans `RELEASE_CHECKLIST.md` (exigé par `structure_checks:97-100`) |
 
-**Conséquence :** tant que `dev/structure_checks.js` n'est pas ajusté,
-`node dev/structure_checks.js` échouera sur ces fichiers. Deux options, au
-choix du mainteneur (aucune n'est appliquée ici — read-only) :
+Nom `ARCHITECTURE_AUDIT.md` distinct pour ne pas écraser le `docs/ARCHITECTURE.md`
+curé à la main.
 
-1. **Lever l'interdiction** (intention exprimée dans le prompt : « brancher
-   `tools/verify-architecture.js` dans la pipeline ») : dans
-   `dev/structure_checks.js`, retirer l'assert `tools/` ligne 64, ajouter
-   `'tools'` à `allowedDirs`, ajouter `ARCHITECTURE.md` + `architecture.json`
-   à `allowedRootFiles`, et prévoir une exception de citation
-   RELEASE_CHECKLIST pour `tools/verify-architecture.js`.
-2. **Relocaliser** les livrables vers des emplacements déjà autorisés
-   (`docs/` pour le `.md`, `dev/` pour le `.js` avec citation checklist).
-
-> **Note connexe (pré-existante, non causée par cet audit) :**
+> **Reste à traiter (indépendant de cet audit) :**
 > `node dev/structure_checks.js` échoue **déjà** avant tout ajout, car
 > `PROMPT_REFONTE_SYSTEM.md` est un fichier racine hors `allowedRootFiles`
-> (voir § SUSPECT).
+> (voir § SUSPECT). Ce point est laissé à ta décision.
 
 ---
 
@@ -182,14 +176,14 @@ graph TD
 ```
 
 > Le graphe est simplifié : le couplage exact fichier→fichier (vecteur + ligne)
-> est dans `architecture.json` (`consumedBy` / `consumes`).
+> est dans `dev/architecture.json` (`consumedBy` / `consumes`).
 
 ---
 
 ## 4. Modules par domaine
 
 Format : **rôle** · *expose* · **consommé par** (vecteur) · *consomme*.
-Les numéros de ligne complets sont dans `architecture.json`.
+Les numéros de ligne complets sont dans `dev/architecture.json`.
 
 ### Points d'entrée
 
@@ -250,7 +244,7 @@ Epley) → prudence RPE (`rpe.js`) → contexte/intention (`mouvements.js`) → 
 profil (`scaling.js`) → apprentissage (`brain_*.js`, `movement_profiles.js`) →
 arrondi (`equipement.js` via `data/equipment.js`) → assemblage (`suggestion.js`)
 → porte (`index.js` = `CoachCharge`). `ml_refinement.js` (`CoachML`) collecte
-silencieusement (`session/save.js:91`). Voir `architecture.json` pour l'expose
+silencieusement (`session/save.js:91`). Voir `dev/architecture.json` pour l'expose
 détaillé de chaque fichier.
 
 ### Domaines runtime (une porte publique chacun)
@@ -388,11 +382,11 @@ Norme identique appliquée aux identifiants exposés. Résultat vérifié :
 ## 10. Reproduire l'audit
 
 ```bash
-node tools/verify-architecture.js            # cohérence manifeste ↔ dépôt
-node tools/verify-architecture.js --json     # sortie machine
-node tools/verify-architecture.js --drift 0.30
+node dev/verify-architecture.js            # cohérence manifeste ↔ dépôt
+node dev/verify-architecture.js --json     # sortie machine
+node dev/verify-architecture.js --drift 0.30
 ```
 
-`architecture.json` est à **régénérer à chaque version majeure** (pas aux
+`dev/architecture.json` est à **régénérer à chaque version majeure** (pas aux
 incréments `.x`), puis à revérifier. `INUTILISE_PROUVE` reste une **hypothèse à
 vérifier**, jamais un ordre de suppression.

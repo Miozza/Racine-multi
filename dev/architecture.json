@@ -20,22 +20,6 @@
       "consumes": []
     },
     {
-      "path": "ARCHITECTURE.md",
-      "size": 20905,
-      "lines": 399,
-      "role": "Livrable A de l'audit d'architecture : carte lisible humain/IA (mode de chargement, graphe mermaid, modules, flux de données, zones fragiles, SUSPECT). Note : à la racine, hors allowlist actuelle de dev/structure_checks.js.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [
-        {
-          "path": "CLAUDE.md",
-          "vector": "doc-reference (à brancher)",
-          "line": 0
-        }
-      ],
-      "consumes": []
-    },
-    {
       "path": "CHANGELOG.md",
       "size": 60539,
       "lines": 537,
@@ -192,22 +176,6 @@
           "path": "manifest.json",
           "vector": "manifest-icon",
           "line": 13
-        }
-      ],
-      "consumes": []
-    },
-    {
-      "path": "architecture.json",
-      "size": 85750,
-      "lines": 3230,
-      "role": "Livrable B de l'audit : manifeste machine (mode de chargement, inventaire, catégories, consumedBy/consumes). Vérifié par tools/verify-architecture.js.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [
-        {
-          "path": "tools/verify-architecture.js",
-          "vector": "manifest-input",
-          "line": 0
         }
       ],
       "consumes": []
@@ -501,6 +469,22 @@
         {
           "path": "RELEASE_CHECKLIST.md",
           "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/architecture.json",
+      "size": 85753,
+      "lines": 3230,
+      "role": "Livrable B de l'audit : manifeste machine (mode de chargement, inventaire, catégories, consumedBy/consumes). Vérifié par dev/verify-architecture.js.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/verify-architecture.js",
+          "vector": "manifest-input",
           "line": 0
         }
       ],
@@ -971,6 +955,24 @@
       "consumes": []
     },
     {
+      "path": "dev/verify-architecture.js",
+      "size": 4298,
+      "lines": 119,
+      "role": "Livrable C de l'audit : script Node sans dépendance qui compare dev/architecture.json au dépôt (fichier manquant/orphelin, dérive de taille). Cité dans RELEASE_CHECKLIST.md.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": [
+        "dev/architecture.json"
+      ]
+    },
+    {
       "path": "docs/ARCHITECTURE.md",
       "size": 10718,
       "lines": 194,
@@ -985,6 +987,22 @@
         },
         {
           "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/ARCHITECTURE_AUDIT.md",
+      "size": 20905,
+      "lines": 399,
+      "role": "Livrable A de l'audit d'architecture : carte lisible humain/IA (mode de chargement, graphe mermaid, modules, flux de données, zones fragiles, SUSPECT). Complète docs/ARCHITECTURE.md sans le remplacer.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
           "vector": "doc-reference",
           "line": 0
         }
@@ -3205,24 +3223,6 @@
         "assets/fonts/inter-latin.woff2",
         "assets/fonts/inter-latin-ext.woff2",
         "assets/fonts/orbitron-latin.woff2"
-      ]
-    },
-    {
-      "path": "tools/verify-architecture.js",
-      "size": 4286,
-      "lines": 119,
-      "role": "Livrable C de l'audit : script Node sans dépendance qui compare architecture.json au dépôt (fichier manquant/orphelin, dérive de taille). ⚠️ Le dossier tools/ est actuellement interdit par dev/structure_checks.js:64.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [
-        {
-          "path": ".github/workflows/deploy-pages.yml",
-          "vector": "ci-hook (à brancher)",
-          "line": 0
-        }
-      ],
-      "consumes": [
-        "architecture.json"
       ]
     }
   ]
