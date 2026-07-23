@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V4.5.19
+# ETAT ACTUEL — V4.5.20
 
-Version actuelle : V4.5.19
+Version actuelle : V4.5.20
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. V4.5.19 ajoute un bouton ✕ sur la frise Saison (onglet Cycle) : chaque cycle terminé du journal peut être retiré d’un tap avec confirmation, pour effacer un cycle démarré par accident ou un doublon. Le retrait n’affecte que la fiche de saison (`state.season.cycles`) — jamais les séances de l’historique, les charges ni le Brain. Nouvelle porte manuelle `CoachSeason.removeCycle(state, index)`. Les 32 programmes de base restent accessibles à tous, « Hypertrophie Fessier Femme » est privé et tout futur programme sans `visibility:"public"` est traité comme privé, via une migration idempotente qui préserve les profils utilisant déjà ce cycle. La vue Gear admin ne prétend pas connaître l’état d’un appareil hors ligne : elle sert uniquement à sélectionner un client, chercher un programme spécialisé et copier un lien de prescription permanent. Le moteur de charges et le Brain ne sont pas modifiés.
+Racine est un prototype multi-utilisateur local. V4.5.20 corrige le scroll des popups `(!)` (explication de charge) et `(?)` (tuto mouvement) : la page derrière est verrouillée tant que le popup est ouvert, donc le geste de scroll agit sur le popup et non plus sur l’interface du fond (fin du « scroll chaining »). Verrou fiable même sur iOS ancien (`lockBodyScrollForModal`), plus `overscroll-behavior: contain` pour les navigateurs récents. La frise Saison (onglet Cycle) offre un bouton ✕ sur chaque cycle terminé du journal : retrait d’un tap avec confirmation, pour effacer un cycle démarré par accident ou un doublon. Le retrait n’affecte que la fiche de saison (`state.season.cycles`) — jamais les séances de l’historique, les charges ni le Brain. Porte manuelle `CoachSeason.removeCycle(state, index)`. Les 32 programmes de base restent accessibles à tous, « Hypertrophie Fessier Femme » est privé et tout futur programme sans `visibility:"public"` est traité comme privé, via une migration idempotente qui préserve les profils utilisant déjà ce cycle. La vue Gear admin ne prétend pas connaître l’état d’un appareil hors ligne : elle sert uniquement à sélectionner un client, chercher un programme spécialisé et copier un lien de prescription permanent. Le moteur de charges et le Brain ne sont pas modifiés.
 
 ## La Saison — portée active
 

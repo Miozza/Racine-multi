@@ -2830,11 +2830,23 @@ label {
   transition: opacity .22s ease;
 }
 .tuto-modal.visible { opacity: 1; pointer-events: all; }
+/* Verrou de scroll du corps pendant un popup (voir lockBodyScrollForModal).
+   Empêche la page de défiler derrière le popup ; position restaurée à la
+   fermeture. Fiable sur tout iOS, contrairement à overscroll-behavior. */
+body.racine-modal-lock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
 .tuto-modal-inner {
   width: 100%;
   max-width: 680px;
   max-height: 88vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: var(--panel);
   border: 1px solid var(--cyan);
   border-radius: 18px 18px 0 0;
