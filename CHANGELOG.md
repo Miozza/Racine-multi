@@ -1,3 +1,9 @@
+## V4.5.19 — Retirer un cycle de la Saison
+- **Bouton ✕ sur la frise Saison** (onglet Cycle) : chaque cycle terminé du journal peut désormais être retiré d'un tap, avec confirmation. Utile pour effacer un cycle démarré par accident ou un doublon qui polluait le parcours.
+- **Portée limitée à la fiche** : le retrait n'affecte que l'entrée du journal de saison (`state.season.cycles`). Les séances de l'historique (`state.history`), les charges et le Brain ne sont **jamais** touchés.
+- **Action manuelle uniquement** : nouvelle porte `CoachSeason.removeCycle(state, index)` déclenchée par l'athlète — le journal continue de ne jamais s'écraser tout seul. La suppression est persistante (aucune reconstruction depuis `weekTransitions` une fois le journal matérialisé).
+- **Inchangé** : reconstruction best-effort, enregistrement de fin de cycle, propositions, rétention long terme.
+
 ## Non publié — Export JSON fiable sur Safari iOS ancien
 - **Vrai fichier `.json`** : l'export du profil et de l'historique génère désormais un fichier `application/json` encodé UTF-8, avec un nom clair et unique (horodaté). L'export d'historique n'est plus un `.txt` avec en-tête texte.
 - **Cause corrigée** : sur les anciens Safari iOS (iPhone SE 2019-2020, iOS 13-14) l'attribut `download` d'une ancre n'est pas honoré — le clic naviguait vers l'URL `blob:` et Safari affichait le JSON en texte brut dans une nouvelle page, sans option « Enregistrer dans Fichiers ».

@@ -115,4 +115,16 @@
   api.journal = function(state){
     return (state && state.season && Array.isArray(state.season.cycles)) ? state.season.cycles.slice() : [];
   };
+
+  // Retrait manuel d'une entrée du journal (cycle démarré par accident, doublon…).
+  // Action déclenchée par l'athlète uniquement — ce n'est pas une réécriture
+  // automatique : le journal reste « on n'écrase jamais tout seul ». N'affecte
+  // que la fiche de saison, jamais les séances de l'historique (state.history).
+  api.removeCycle = function(state, index){
+    if(!state || !state.season || !Array.isArray(state.season.cycles)) return false;
+    var i = Number(index);
+    if(!isFinite(i) || i < 0 || i >= state.season.cycles.length) return false;
+    state.season.cycles.splice(i, 1);
+    return true;
+  };
 })();

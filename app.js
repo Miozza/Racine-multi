@@ -1,5 +1,5 @@
-// Racine V4.5.18 — Accès programmes privés par défaut et Gear de prescription hors ligne
-var APP_VERSION = "V4.5.18";
+// Racine V4.5.19 — Retrait manuel d’un cycle de la frise Saison
+var APP_VERSION = "V4.5.19";
 
 // Architecture stable
 // programs/*.js = plan prévu

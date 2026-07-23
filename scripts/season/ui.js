@@ -178,8 +178,11 @@
     if(!journal.length){
       html += '<p class="muted">Aucun cycle terminé pour l\'instant — ta saison commence ici.</p>';
     } else {
-      journal.slice(-8).forEach(function(c){
+      var shown = journal.slice(-8);
+      var offset = journal.length - shown.length; // indices réels dans state.season.cycles
+      shown.forEach(function(c, i){
         html += '<div class="season-tl-item season-tl-done">'+
+          '<button type="button" class="season-tl-del" data-season-del="'+(offset + i)+'" aria-label="Retirer ce cycle de la saison" title="Retirer ce cycle">✕</button>'+
           '<strong>'+esc(programLabel(c.programId))+'</strong>'+
           '<span>'+esc(String(c.weeksDone || "?"))+' sem.'+(c.prCount ? ' · '+esc(String(c.prCount))+' PR' : '')+(c.endIso ? ' · fini le '+esc(c.endIso) : '')+(c.reconstructed ? ' · reconstruit' : '')+'</span>'+
         '</div>';
@@ -198,5 +201,16 @@
     }
     html += '</div>';
     host.innerHTML = html;
+
+    Array.prototype.forEach.call(host.querySelectorAll("[data-season-del]"), function(btn){
+      btn.onclick = function(){
+        var idx = Number(btn.getAttribute("data-season-del"));
+        if(!window.confirm("Retirer ce cycle de ta saison ? Tes séances de l'historique ne sont pas touchées.")) return;
+        if(window.CoachSeason && CoachSeason.removeCycle(state, idx)){
+          if(typeof save === "function") save();
+          api.renderTimeline();
+        }
+      };
+    });
   };
 })();
