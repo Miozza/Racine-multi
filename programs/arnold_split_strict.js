@@ -17,7 +17,9 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return { name:name, format:format, load:load || "RPE 7–8", rest:rest || "—", note:note || "" };
   }
 
-  var globalRules = "Repos : 90–150 sec sur les gros mouvements, 60–90 sec sur l’isolation. RPE 7–8 au début, 8–9 max en fin de cycle. Pas d’échec sur squat/deadlift/RDL/mouvements lourds. AMRAP seulement sur pull-ups/dips/ring rows, arrêt RPE 9 max. Progression : si toutes les séries atteignent le haut de plage avec bonne forme, augmenter légèrement la prochaine fois. Les séances se font dans l’ordre, peu importe le jour réel de la semaine — saute ou répète librement.";
+  // Rappel compact affiché en tête de chaque séance. Version détaillée : voir
+  // cycleRules (affiché une fois dans la vue Cycle) + le rest/note de chaque exo.
+  var globalRules = "Repos 90–150 s (lourds) · 60–90 s (iso) · RPE 7–8 → 8–9 max en fin de cycle · aucun échec sur squat/DL/RDL/lourds · AMRAP seulement pull-ups/dips/ring rows (stop RPE 9) · haut de plage + forme propre → +léger la prochaine fois.";
 
   function strictBlocks(day, week){
     if(day==="lundi") return [
