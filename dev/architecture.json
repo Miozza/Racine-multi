@@ -2682,8 +2682,8 @@
     },
     {
       "path": "scripts/migrate_bertin.js",
-      "size": 7094,
-      "lines": 178,
+      "size": 7583,
+      "lines": 185,
       "role": "Outil de migration du profil Bertin depuis l'ancien localStorage mono (migrateBertin) ou depuis des fichiers JSON (migrateBertinFromFiles, utilitaire console manuel).",
       "category": "ACTIF",
       "exposes": [
