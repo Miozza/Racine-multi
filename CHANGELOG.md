@@ -1,3 +1,9 @@
+## V4.5.20 — Scroll des popups (!) et (?) : plus de défilement du fond
+- **Bug corrigé** : dans les popups `(!)` (explication de charge) et `(?)` (tuto mouvement), le scroll partait parfois vers la page derrière au lieu du contenu du popup — surtout quand le contenu tenait dans l’écran ou quand on touchait le fond sombre du bottom-sheet (« scroll chaining »).
+- **Verrou de scroll du corps** : `lockBodyScrollForModal` / `unlockBodyScrollForModal` figent la page (`position:fixed` + restauration de la position) tant qu’un popup est ouvert. Fiable sur tout iOS, y compris les Safari anciens où `overscroll-behavior` n’existe pas. Idempotent et compté correctement quand un popup en remplace un autre.
+- **Renfort navigateurs récents** : `.tuto-modal-inner` reçoit `overscroll-behavior: contain` et `-webkit-overflow-scrolling: touch`.
+- **Inchangé** : contenu des popups, boutons, Avis IA, logique métier.
+
 ## V4.5.19 — Retirer un cycle de la Saison
 - **Bouton ✕ sur la frise Saison** (onglet Cycle) : chaque cycle terminé du journal peut désormais être retiré d'un tap, avec confirmation. Utile pour effacer un cycle démarré par accident ou un doublon qui polluait le parcours.
 - **Portée limitée à la fiche** : le retrait n'affecte que l'entrée du journal de saison (`state.season.cycles`). Les séances de l'historique (`state.history`), les charges et le Brain ne sont **jamais** touchés.

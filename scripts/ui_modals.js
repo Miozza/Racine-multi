@@ -12,6 +12,28 @@ function escapeHtml(s){
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
 }
+// ─── Verrou de scroll du corps pendant un popup ─────────────────────────────
+// Empêche le « scroll chaining » : sans lui, un geste de scroll dans un popup
+// qui ne déborde pas (ou sur le fond sombre du bottom-sheet) fait défiler la
+// page derrière au lieu du popup. Technique position:fixed + restauration de la
+// position, fiable même sur iOS ancien (overscroll-behavior n'est supporté qu'à
+// partir d'iOS 16). Idempotent : ré-ouvrir un popup ne double pas le verrou, et
+// on ne déverrouille que lorsqu'aucun popup .tuto-modal ne reste dans le DOM.
+var __racineModalScrollY = 0;
+function lockBodyScrollForModal(){
+  if(document.body.classList.contains("racine-modal-lock")) return;
+  __racineModalScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.top = (-__racineModalScrollY) + "px";
+  document.body.classList.add("racine-modal-lock");
+}
+function unlockBodyScrollForModal(){
+  if(document.querySelector(".tuto-modal")) return; // un autre popup reste ouvert
+  if(!document.body.classList.contains("racine-modal-lock")) return;
+  document.body.classList.remove("racine-modal-lock");
+  document.body.style.top = "";
+  window.scrollTo(0, __racineModalScrollY);
+}
+
 function tutorialButtonHtml(name){
   if(!window.findCoachBertinTutorial) return "";
   var t = window.findCoachBertinTutorial(name);
@@ -579,7 +601,7 @@ function showLoadInfoModal(msg){
     modal.innerHTML=modalBodyHtml();
     bindLoadInfoModalActions();
   }
-  var close=function(){modal.classList.remove("visible");setTimeout(function(){modal.remove();},220);};
+  var close=function(){modal.classList.remove("visible");setTimeout(function(){modal.remove();unlockBodyScrollForModal();},220);};
   function bindLoadInfoModalActions(){
     var aiBtn=document.getElementById("copyAiAdviceMovementBtn");
     if(aiBtn) aiBtn.onclick=function(){
@@ -622,6 +644,7 @@ function showLoadInfoModal(msg){
   }
   modal.innerHTML=modalBodyHtml();
   document.body.appendChild(modal);
+  lockBodyScrollForModal();
   bindLoadInfoModalActions();
   setTimeout(function(){modal.classList.add("visible");},20);
   modal.addEventListener("click",function(e){ if(e.target===modal) close(); });
@@ -667,8 +690,9 @@ function showTutorialModal(name){
       '<button id="closeTutoBtn" class="btn-accent" style="width:100%;margin-top:14px">Fermer</button>'+
     '</div>';
   document.body.appendChild(modal);
+  lockBodyScrollForModal();
   setTimeout(function(){modal.classList.add("visible");},20);
-  var close=function(){modal.classList.remove("visible");setTimeout(function(){modal.remove();},220);};
+  var close=function(){modal.classList.remove("visible");setTimeout(function(){modal.remove();unlockBodyScrollForModal();},220);};
   var btn=document.getElementById("closeTutoBtn"); if(btn) btn.onclick=close;
   modal.addEventListener("click",function(e){ if(e.target===modal) close(); });
 }

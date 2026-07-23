@@ -1,5 +1,5 @@
-// Racine V4.5.19 — Retrait manuel d’un cycle de la frise Saison
-var APP_VERSION = "V4.5.19";
+// Racine V4.5.20 — Popups (!) et (?) : verrou de scroll, plus de défilement du fond
+var APP_VERSION = "V4.5.20";
 
 // Architecture stable
 // programs/*.js = plan prévu
