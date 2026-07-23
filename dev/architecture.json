@@ -4,8 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 161,
-    "SUSPECT_NON_VERIFIE": 1,
+    "ACTIF": 162,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -53,8 +52,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 6365,
-      "lines": 127,
+      "size": 6430,
+      "lines": 129,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -65,16 +64,6 @@
           "line": 51
         }
       ],
-      "consumes": []
-    },
-    {
-      "path": "PROMPT_REFONTE_SYSTEM.md",
-      "size": 7346,
-      "lines": 155,
-      "role": "Document de prompt/refonte à la racine. Aucune référence entrante trouvée dans le code, les docs, les checks ou le CI, ET absent de l'allowlist racine de dev/structure_checks.js (qui le signale déjà en échec).",
-      "category": "SUSPECT_NON_VERIFIE",
-      "exposes": [],
-      "consumedBy": [],
       "consumes": []
     },
     {
@@ -95,8 +84,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 4086,
-      "lines": 98,
+      "size": 4118,
+      "lines": 99,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -476,8 +465,8 @@
     },
     {
       "path": "dev/architecture.json",
-      "size": 85753,
-      "lines": 3230,
+      "size": 85703,
+      "lines": 3235,
       "role": "Livrable B de l'audit : manifeste machine (mode de chargement, inventaire, catégories, consumedBy/consumes). Vérifié par dev/verify-architecture.js.",
       "category": "ACTIF",
       "exposes": [],
@@ -995,8 +984,8 @@
     },
     {
       "path": "docs/ARCHITECTURE_AUDIT.md",
-      "size": 20905,
-      "lines": 399,
+      "size": 20253,
+      "lines": 390,
       "role": "Livrable A de l'audit d'architecture : carte lisible humain/IA (mode de chargement, graphe mermaid, modules, flux de données, zones fragiles, SUSPECT). Complète docs/ARCHITECTURE.md sans le remplacer.",
       "category": "ACTIF",
       "exposes": [],
@@ -1260,6 +1249,22 @@
         },
         {
           "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/PROMPT_REFONTE_SYSTEM.md",
+      "size": 7346,
+      "lines": 155,
+      "role": "Document de prompt/refonte système (lecture humaine). Déplacé de la racine vers docs/ et référencé dans ETAT_ACTUEL.md pour respecter le contrat de structure.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
           "vector": "doc-reference",
           "line": 0
         }

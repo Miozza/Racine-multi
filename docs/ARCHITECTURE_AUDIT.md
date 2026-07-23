@@ -32,10 +32,10 @@ dans les dossiers déjà autorisés** plutôt que d'affaiblir les garde-fous :
 Nom `ARCHITECTURE_AUDIT.md` distinct pour ne pas écraser le `docs/ARCHITECTURE.md`
 curé à la main.
 
-> **Reste à traiter (indépendant de cet audit) :**
-> `node dev/structure_checks.js` échoue **déjà** avant tout ajout, car
-> `PROMPT_REFONTE_SYSTEM.md` est un fichier racine hors `allowedRootFiles`
-> (voir § SUSPECT). Ce point est laissé à ta décision.
+> **Résolu :** `PROMPT_REFONTE_SYSTEM.md` (fichier racine hors `allowedRootFiles`
+> qui faisait échouer `structure_checks`) a été déplacé sous
+> `docs/PROMPT_REFONTE_SYSTEM.md` et référencé dans `ETAT_ACTUEL.md`.
+> `node dev/structure_checks.js` passe désormais au vert.
 
 ---
 
@@ -85,11 +85,14 @@ fixtures `dev/` et la recherche d'identifiants globaux.
 
 | Catégorie | Nombre |
 |---|---|
-| `ACTIF` | 161 |
+| `ACTIF` | 162 |
 | `POINT_ENTREE` | 3 |
-| `SUSPECT_NON_VERIFIE` | 1 |
+| `SUSPECT_NON_VERIFIE` | 0 |
 | `INUTILISE_PROUVE` | 0 |
 | **Total** | **165** (162 fichiers suivis + 3 livrables d'audit) |
+
+> Le seul `SUSPECT` initial (`PROMPT_REFONTE_SYSTEM.md`) a été résolu : déplacé
+> sous `docs/` et référencé dans `ETAT_ACTUEL.md` (voir § 7).
 
 `POINT_ENTREE` = `index.html`, `service-worker.js`, `manifest.json`.
 
@@ -283,8 +286,8 @@ exception dans sa propre logique (l. 98).
 
 Tous référencés (par `CLAUDE.md`, `README.md`, `ETAT_ACTUEL.md`,
 `RELEASE_CHECKLIST.md` ou entre eux) — `dev/structure_checks.js:104-106`
-impose cette référence, donc aucun doc n'est orphelin **sauf**
-`PROMPT_REFONTE_SYSTEM.md` (§ SUSPECT).
+impose cette référence, donc aucun doc n'est orphelin (y compris
+`docs/PROMPT_REFONTE_SYSTEM.md`, désormais rangé et référencé).
 
 ---
 
@@ -324,24 +327,18 @@ impose cette référence, donc aucun doc n'est orphelin **sauf**
 
 ---
 
-## 7. `SUSPECT_NON_VERIFIE` (1)
+## 7. `SUSPECT_NON_VERIFIE` (0 — résolu)
 
-### `PROMPT_REFONTE_SYSTEM.md`
+### `PROMPT_REFONTE_SYSTEM.md` — traité
 
-- **Constat :** aucune référence entrante trouvée dans le code, les docs, les
-  suites `dev/`, `RELEASE_CHECKLIST.md` ni le workflow CI
-  (`grep -rl "PROMPT_REFONTE"` → seulement le fichier lui-même). De plus il est
-  **absent de `allowedRootFiles`** dans `dev/structure_checks.js`, qui le
-  signale déjà en échec (`Fichier racine autorisé : PROMPT_REFONTE_SYSTEM.md`).
-- **Pourquoi pas `INUTILISE_PROUVE` :** c'est un document **destiné à un lecteur
-  humain** (prompt de refonte système). L'absence de référence machine ne prouve
-  pas qu'il est inutile — un humain peut l'ouvrir délibérément. La norme de
-  preuve d'inutilité ne s'applique pas proprement à de la documentation.
-- **Vérification manuelle requise pour trancher :** demander au mainteneur si ce
-  document est encore une référence de travail. Si **oui** → l'ajouter à
-  `allowedRootFiles` (sinon `structure_checks` reste rouge) ou le déplacer sous
-  `docs/` + le référencer depuis `ETAT_ACTUEL.md`. Si **non** → candidat à
-  archivage (hors périmètre de cet audit : rien n'est supprimé).
+- **Constat initial :** aucune référence entrante (code, docs, suites `dev/`,
+  `RELEASE_CHECKLIST.md`, CI) et **absent de `allowedRootFiles`** dans
+  `dev/structure_checks.js`, qui le signalait en échec.
+- **Décision (mainteneur) :** document de refonte destiné à un lecteur humain,
+  conservé — donc **ni supprimé, ni prouvé inutile**.
+- **Action appliquée :** déplacé de la racine vers `docs/PROMPT_REFONTE_SYSTEM.md`
+  et référencé dans `ETAT_ACTUEL.md`. Il passe donc de `SUSPECT` à `ACTIF`, et
+  `node dev/structure_checks.js` n'a plus d'échec sur ce point.
 
 Aucun autre fichier n'est `SUSPECT` : le contrat `dev/structure_checks.js`
 impose déjà que chaque `scripts/`, `programs/`, `dev/`, `docs/` et asset PWA
