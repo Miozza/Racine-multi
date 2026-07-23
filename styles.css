@@ -6411,6 +6411,15 @@ body.is-client [data-ai-clear]{display:none!important}
   background: var(--border);
 }
 .season-tl-done::before { background: var(--green); }
+.season-tl-done { padding-right: 30px; }
+.season-tl-del {
+  position: absolute; right: 0; top: 8px;
+  width: 24px; height: 24px; padding: 0;
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 6px;
+  font-size: 12px; line-height: 1; cursor: pointer;
+}
+.season-tl-del:hover { color: var(--red); border-color: var(--red); }
 .season-tl-current { border-left-color: var(--blue); }
 .season-tl-current::before { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
 .season-tl-next { border-left-style: dashed; }
