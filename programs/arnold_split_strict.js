@@ -17,13 +17,22 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return { name:name, format:format, load:load || "RPE 7–8", rest:rest || "—", note:note || "" };
   }
 
-  // Rappel compact affiché en tête de chaque séance. Version détaillée : voir
-  // cycleRules (affiché une fois dans la vue Cycle) + le rest/note de chaque exo.
-  var globalRules = "Repos 90–150 s (lourds) · 60–90 s (iso) · RPE 7–8 → 8–9 max en fin de cycle · aucun échec sur squat/DL/RDL/lourds · AMRAP seulement pull-ups/dips/ring rows (stop RPE 9) · haut de plage + forme propre → +léger la prochaine fois.";
+  // Une règle courte et précise PAR séance, tirée des mouvements du jour.
+  // Les règles universelles (repos, RPE, no-fail, progression) vivent dans
+  // cycleRules (vue Cycle, une fois) + le rest/note de chaque exercice.
+  var dayRules = {
+    lundi:    "Alterne poussée et tirage sans traîner. Pull-ups en AMRAP propre : stop dès que la forme casse, jamais à l’échec sur bench ni rows.",
+    mardi:    "Delts et bras en strict, zéro élan du dos sur les curls. Dips en AMRAP propre, réduis l’amplitude si l’épaule tire.",
+    mercredi: "Squat et stiff-leg : technique avant charge, aucun échec. Profondeur stable, dos neutre — si le bas du dos parle, allège la prochaine séance.",
+    jeudi:    "Deadlift en technique seulement, jamais à l’échec : coupe la série si la barre décroche. Surveille la fatigue lombaire pour le reste du bloc.",
+    vendredi: "Finition en congestion, pas en force : charges modérées, strict, sans élan. Stoppe le pompage dès que coudes ou épaules tirent.",
+    samedi:   "2ᵉ séance jambes : tempo et contrôle avant la charge. RDL hanches loin derrière, dos neutre — aucun échec, garde de la récup pour la suite du cycle."
+  };
 
   function strictBlocks(day, week){
+    var rule = dayRules[day] || dayRules.samedi;
     if(day==="lundi") return [
-      {time:"2 min",title:"Règles du bloc",tag:"Préparation",kind:"warmup",text:globalRules},
+      {time:"2 min",title:"Règle du jour",tag:"Préparation",kind:"warmup",text:rule},
       {time:"48–58 min",title:"A. Pecs + Dos A",tag:"Hypertrophie",kind:"main",exercises:[
         ex("Bench Press","4×8-12","205 lb","90-150 sec","Garde les omoplates serrées, barre contrôlée, pas de rebond."),
         ex("Incline DB Press","4×8-12","70 lb","90-150 sec","Inclinaison modérée, descente lente, pousse sans verrouiller brutalement."),
@@ -36,7 +45,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     ];
 
     if(day==="mardi") return [
-      {time:"2 min",title:"Règles du bloc",tag:"Préparation",kind:"warmup",text:globalRules},
+      {time:"2 min",title:"Règle du jour",tag:"Préparation",kind:"warmup",text:rule},
       {time:"50–60 min",title:"A. Épaules + Bras A",tag:"Hypertrophie",kind:"main",exercises:[
         ex("Seated DB Press","4×8-12","60 lb","90-150 sec","Tronc solide, haltères contrôlés, pas d’élan."),
         ex("Cable Lateral Raise","4×10-15","25 lb","60-90 sec","Monte jusqu’à l’épaule, contrôle la descente."),
@@ -49,7 +58,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     ];
 
     if(day==="mercredi") return [
-      {time:"2 min",title:"Règles du bloc",tag:"Préparation",kind:"warmup",text:globalRules},
+      {time:"2 min",title:"Règle du jour",tag:"Préparation",kind:"warmup",text:rule},
       {time:"48–58 min",title:"A. Jambes A",tag:"Hypertrophie",kind:"main",exercises:[
         ex("Back Squat","4×8-12","205 lb","90-150 sec","Option : Front Squat si plus naturel. Descente contrôlée, gainage fort, profondeur stable."),
         ex("Lunges","3×10-15/jambe","45 lb","90-150 sec","Pas long, genou stable, contrôle complet."),
@@ -60,7 +69,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     ];
 
     if(day==="jeudi") return [
-      {time:"2 min",title:"Règles du bloc",tag:"Préparation",kind:"warmup",text:globalRules},
+      {time:"2 min",title:"Règle du jour",tag:"Préparation",kind:"warmup",text:rule},
       {time:"50–62 min",title:"A. Pecs + Dos B",tag:"Hypertrophie",kind:"main",exercises:[
         ex("Deadlift","3×6-10","245 lb","90-150 sec","Technique propre seulement. Pas d’échec."),
         ex("Decline Bench Press","4×8-12","195 lb","90-150 sec","Option : DB Press plat si decline non disponible. Contrôle la descente, pousse fort sans rebond."),
@@ -73,7 +82,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     ];
 
     if(day==="vendredi") return [
-      {time:"2 min",title:"Règles du bloc",tag:"Préparation",kind:"warmup",text:globalRules},
+      {time:"2 min",title:"Règle du jour",tag:"Préparation",kind:"warmup",text:rule},
       {time:"48–58 min",title:"A. Épaules + Bras B",tag:"Hypertrophie",kind:"main",exercises:[
         ex("Arnold Press","4×8-12","50 lb","90-150 sec","Rotation contrôlée, ne force pas l’amplitude si douleur."),
         ex("Front Raise","4×10-12","25 lb","60-90 sec","Pas d’élan, arrêt hauteur épaule."),
@@ -86,7 +95,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     ];
 
     return [
-      {time:"2 min",title:"Règles du bloc",tag:"Préparation",kind:"warmup",text:globalRules},
+      {time:"2 min",title:"Règle du jour",tag:"Préparation",kind:"warmup",text:rule},
       {time:"52–62 min",title:"A. Jambes B",tag:"Hypertrophie",kind:"main",exercises:[
         ex("Front Squat","4×10-15","155 lb","90-150 sec","Option : Goblet Squat avec tempo si front squat non souhaité. Remplace la leg press. Tempo contrôlé, posture droite."),
         ex("Romanian Deadlift","4×8-12","175 lb","90-150 sec","Hanches loin derrière, dos neutre, charge maîtrisée."),
