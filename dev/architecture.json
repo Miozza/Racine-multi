@@ -1,0 +1,3234 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-23",
+  "loadingModel": "script-tags",
+  "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
+  "categoryCounts": {
+    "ACTIF": 162,
+    "POINT_ENTREE": 3
+  },
+  "files": [
+    {
+      "path": ".github/workflows/deploy-pages.yml",
+      "size": 1809,
+      "lines": 63,
+      "role": "(rôle non détaillé dans l'audit — voir fichier)",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 60539,
+      "lines": 537,
+      "role": "Journal des versions livrées.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "root-allowlist",
+          "line": 51
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "CLAUDE.md",
+      "size": 15363,
+      "lines": 331,
+      "role": "Instructions permanentes pour agents IA (seul fichier lu automatiquement).",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "root-allowlist",
+          "line": 51
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "ETAT_ACTUEL.md",
+      "size": 6430,
+      "lines": 129,
+      "role": "État courant du projet + index de docs.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "root-allowlist",
+          "line": 51
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "README.md",
+      "size": 5490,
+      "lines": 104,
+      "role": "Présentation + version courante (contrôlée par structure_checks).",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "root-allowlist",
+          "line": 51
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "RELEASE_CHECKLIST.md",
+      "size": 4118,
+      "lines": 99,
+      "role": "Liste de référence des checks dev à passer avant livraison.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "root-allowlist",
+          "line": 51
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "app.js",
+      "size": 125378,
+      "lines": 2526,
+      "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
+      "category": "ACTIF",
+      "exposes": [
+        "APP_VERSION",
+        "state",
+        "setActiveWeek",
+        "applyWeekTrackingForWeek",
+        "buildWeekTrackingForWeek",
+        "buildWorkout",
+        "coachFullBoot (via globals)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 366
+        }
+      ],
+      "consumes": [
+        "CoachState",
+        "CoachCharge",
+        "CoachSession",
+        "CoachUI",
+        "CoachHistory",
+        "CoachProgress",
+        "CoachSummary",
+        "CoachProfiles",
+        "COACH_BERTIN_PROGRAM_INDEX"
+      ]
+    },
+    {
+      "path": "apple-touch-icon-precomposed.png",
+      "size": 51833,
+      "lines": null,
+      "role": "Icône PWA iOS 180 précomposée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-apple-touch-icon",
+          "line": 9
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "apple-touch-icon.png",
+      "size": 51833,
+      "lines": null,
+      "role": "Icône PWA iOS 180.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-apple-touch-icon",
+          "line": 8
+        },
+        {
+          "path": "manifest.json",
+          "vector": "manifest-icon",
+          "line": 13
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "assets/fonts/inter-latin-ext.woff2",
+      "size": 85272,
+      "lines": null,
+      "role": "Police Inter latin-ext auto-hébergée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "styles.css",
+          "vector": "css-url",
+          "line": 20
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "assets/fonts/inter-latin.woff2",
+      "size": 48432,
+      "lines": null,
+      "role": "Police Inter (texte courant) auto-hébergée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "styles.css",
+          "vector": "css-url",
+          "line": 12
+        },
+        {
+          "path": "index.html",
+          "vector": "preload-font",
+          "line": 17
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "assets/fonts/orbitron-latin.woff2",
+      "size": 11768,
+      "lines": null,
+      "role": "Police Orbitron (signature HUD) auto-hébergée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "styles.css",
+          "vector": "css-url",
+          "line": 28
+        },
+        {
+          "path": "index.html",
+          "vector": "preload-font",
+          "line": 18
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "assets/splash-racine.webp",
+      "size": 168682,
+      "lines": null,
+      "role": "Image de splash au démarrage.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "preload+img",
+          "line": 20
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "data/athlete_state.json",
+      "size": 62,
+      "lines": 6,
+      "role": "Squelette vide (§2.2). Fige le rôle logique « état dérivé » ; la vraie donnée vit dans localStorage. Requis présent par les checks dev --full ; jamais fetch au runtime.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/regression_checks.js",
+          "vector": "fixture-required",
+          "line": 76
+        },
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "fixture-required",
+          "line": 78
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "data/charges.js",
+      "size": 1396,
+      "lines": 42,
+      "role": "Config vivante DEFAULT_CHARGES : charges de DÉPART par mouvement (éditable par un humain). N'est jamais réécrite par l'app. Expose aussi CHARGE_ORDER.",
+      "category": "ACTIF",
+      "exposes": [
+        "DEFAULT_CHARGES",
+        "CHARGE_ORDER"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 326
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "data/cycle_state.json",
+      "size": 284,
+      "lines": 14,
+      "role": "Squelette vide + schéma de référence du cycle (§2.2). Requis présent par les checks dev --full ; jamais fetch au runtime.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/regression_checks.js",
+          "vector": "fixture-required",
+          "line": 76
+        },
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "fixture-required",
+          "line": 78
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "data/equipment.js",
+      "size": 2031,
+      "lines": 59,
+      "role": "Autorité d'arrondi des charges : RACINE_EQUIPMENT (rack réel) et EQUIPMENT_LOAD_RULES (câble/bande/haltère/barre/kettlebell).",
+      "category": "ACTIF",
+      "exposes": [
+        "RACINE_EQUIPMENT",
+        "EQUIPMENT_LOAD_RULES"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 326
+        },
+        {
+          "path": "scripts/charge/equipement.js",
+          "vector": "global-read",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "data/movements_media.js",
+      "size": 16064,
+      "lines": 194,
+      "role": "Table nom de mouvement → ID vidéo YouTube (COACH_BERTIN_MOVEMENT_VIDEOS), clé alignée sur programs/tutorials.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "COACH_BERTIN_MOVEMENT_VIDEOS"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 325
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "data/resultats.json",
+      "size": 3,
+      "lines": 2,
+      "role": "Squelette vide du journal brut (§2.2). Requis présent par les checks dev --full ; jamais fetch au runtime.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/regression_checks.js",
+          "vector": "fixture-required",
+          "line": 76
+        },
+        {
+          "path": "dev/structure_checks.js",
+          "vector": "fixture-required",
+          "line": 78
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/ai_advice_clear_smoke.js",
+      "size": 2979,
+      "lines": 48,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/ai_advice_modal_refresh_smoke.js",
+      "size": 879,
+      "lines": 17,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/ai_cycle_movement_bridge_smoke.js",
+      "size": 2072,
+      "lines": 43,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/ai_export_movement_context_smoke.js",
+      "size": 704,
+      "lines": 9,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/ai_import_fallback_smoke.js",
+      "size": 1980,
+      "lines": 49,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/ai_influence_smoke.js",
+      "size": 1837,
+      "lines": 33,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/architecture.json",
+      "size": 85703,
+      "lines": 3235,
+      "role": "Livrable B de l'audit : manifeste machine (mode de chargement, inventaire, catégories, consumedBy/consumes). Vérifié par dev/verify-architecture.js.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/verify-architecture.js",
+          "vector": "manifest-input",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/charge_engine_checks.js",
+      "size": 30093,
+      "lines": 473,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/client_charge_safety_checks.js",
+      "size": 16971,
+      "lines": 292,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/client_view_checks.js",
+      "size": 3501,
+      "lines": 62,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/crossfit_quality_checks.js",
+      "size": 3835,
+      "lines": 76,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/deload_guard_checks.js",
+      "size": 3648,
+      "lines": 74,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/gear_permissions_checks.js",
+      "size": 5182,
+      "lines": 86,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/history_progress_checks.js",
+      "size": 4126,
+      "lines": 65,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/json_export_ios_checks.js",
+      "size": 8890,
+      "lines": 179,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/movement_swaps_checks.js",
+      "size": 6456,
+      "lines": 115,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/multi_profile_checks.js",
+      "size": 7900,
+      "lines": 135,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/pc_cycle_view_checks.js",
+      "size": 5134,
+      "lines": 89,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/pc_progress_compare_checks.js",
+      "size": 3742,
+      "lines": 67,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/prescription_checks.js",
+      "size": 8737,
+      "lines": 148,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/profile_backup_ui_checks.js",
+      "size": 3397,
+      "lines": 54,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/program_calibration_checks.js",
+      "size": 9762,
+      "lines": 178,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/program_catalog_checks.js",
+      "size": 7635,
+      "lines": 111,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/progression_contract_checks.js",
+      "size": 8772,
+      "lines": 176,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/reference_seed_checks.js",
+      "size": 7476,
+      "lines": 128,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/reference_seed_stress.js",
+      "size": 8665,
+      "lines": 147,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/regression_checks.js",
+      "size": 13773,
+      "lines": 236,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/repro_bug1_charges_client.js",
+      "size": 12792,
+      "lines": 207,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/season_checks.js",
+      "size": 12452,
+      "lines": 191,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/simulate_multi_users.js",
+      "size": 29216,
+      "lines": 615,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/simulate_users.js",
+      "size": 11125,
+      "lines": 270,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/simulation_report.json",
+      "size": 60758,
+      "lines": 2126,
+      "role": "Artefact généré (écrit) par dev/simulate_multi_users.js. Rapport de simulation, non relu comme entrée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/simulate_multi_users.js",
+          "vector": "write-target",
+          "line": 19
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/simulation_report.md",
+      "size": 10430,
+      "lines": 247,
+      "role": "Artefact généré (écrit) par dev/simulate_multi_users.js. Rapport de simulation lisible, non relu comme entrée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/simulate_multi_users.js",
+          "vector": "write-target",
+          "line": 18
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/strict_muscle_up_checks.js",
+      "size": 4168,
+      "lines": 82,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/structure_checks.js",
+      "size": 13147,
+      "lines": 205,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/suggest_helper_checks.js",
+      "size": 7125,
+      "lines": 172,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/verify-architecture.js",
+      "size": 4298,
+      "lines": 119,
+      "role": "Livrable C de l'audit : script Node sans dépendance qui compare dev/architecture.json au dépôt (fichier manquant/orphelin, dérive de taille). Cité dans RELEASE_CHECKLIST.md.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": [
+        "dev/architecture.json"
+      ]
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "size": 10718,
+      "lines": 194,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/ARCHITECTURE_AUDIT.md",
+      "size": 20253,
+      "lines": 390,
+      "role": "Livrable A de l'audit d'architecture : carte lisible humain/IA (mode de chargement, graphe mermaid, modules, flux de données, zones fragiles, SUSPECT). Complète docs/ARCHITECTURE.md sans le remplacer.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/BRAIN.md",
+      "size": 8584,
+      "lines": 260,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "README.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/CATALOGUE_MATRICE.md",
+      "size": 2774,
+      "lines": 40,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/CHARGE_CONTEXT.md",
+      "size": 2365,
+      "lines": 100,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/CHARGE_ENGINE.md",
+      "size": 2275,
+      "lines": 58,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/CHARGE_ENGINE_TESTS.md",
+      "size": 1532,
+      "lines": 40,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/CHARGE_PROGRESSION_AUDIT.md",
+      "size": 15231,
+      "lines": 571,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/CHARGE_PROGRESSION_CONTRACT.md",
+      "size": 3788,
+      "lines": 173,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/DATA_FLOW_CONTRACT.md",
+      "size": 3185,
+      "lines": 79,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/DIAGNOSTIC_CHARGES_CLIENT_PWA_IOS.md",
+      "size": 16455,
+      "lines": 285,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/ERROR_LOGGING.md",
+      "size": 1706,
+      "lines": 84,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/IDEES_FUTURES.md",
+      "size": 3583,
+      "lines": 68,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/PHASE_2_EXTRACTION_REPORT.md",
+      "size": 7497,
+      "lines": 215,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/PROMPT_REFONTE_SYSTEM.md",
+      "size": 7346,
+      "lines": 155,
+      "role": "Document de prompt/refonte système (lecture humaine). Déplacé de la racine vers docs/ et référencé dans ETAT_ACTUEL.md pour respecter le contrat de structure.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/STRUCTURE_CONTRACT.md",
+      "size": 11582,
+      "lines": 294,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/UI_CONSTRAINTS.md",
+      "size": 5881,
+      "lines": 114,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        },
+        {
+          "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-08-la-saison-etapes-1-4.md",
+      "size": 18193,
+      "lines": 192,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-15-client-charge-safety.md",
+      "size": 11961,
+      "lines": 277,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-21-acces-programmes-gear.md",
+      "size": 14262,
+      "lines": 333,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-21-phases-2-4-privees.md",
+      "size": 4182,
+      "lines": 111,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/specs/2026-07-08-la-saison-design.md",
+      "size": 12825,
+      "lines": 193,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/specs/2026-07-15-client-charge-safety-design.md",
+      "size": 4623,
+      "lines": 42,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/specs/2026-07-21-acces-programmes-gear-design.md",
+      "size": 5775,
+      "lines": 98,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/specs/2026-07-21-phases-2-4-privees-design.md",
+      "size": 1198,
+      "lines": 24,
+      "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "icon-180.png",
+      "size": 51833,
+      "lines": null,
+      "role": "Icône 180.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-icon",
+          "line": 10
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "icon-192.png",
+      "size": 58399,
+      "lines": null,
+      "role": "Icône 192.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-icon",
+          "line": 11
+        },
+        {
+          "path": "manifest.json",
+          "vector": "manifest-icon",
+          "line": 18
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "icon-512.png",
+      "size": 371964,
+      "lines": null,
+      "role": "Icône 512 (any + maskable).",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-icon",
+          "line": 12
+        },
+        {
+          "path": "manifest.json",
+          "vector": "manifest-icon",
+          "line": 24
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "index.html",
+      "size": 21095,
+      "lines": 417,
+      "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
+      "category": "POINT_ENTREE",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "styles.css",
+        "manifest.json",
+        "app.js",
+        "tous les scripts/*, programs/*, data/*.js"
+      ]
+    },
+    {
+      "path": "manifest.json",
+      "size": 842,
+      "lines": 38,
+      "role": "Manifeste PWA : nom, couleurs, start_url ./index.html, display standalone, icônes 180/192/512.",
+      "category": "POINT_ENTREE",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-manifest",
+          "line": 7
+        }
+      ],
+      "consumes": [
+        "apple-touch-icon.png",
+        "icon-192.png",
+        "icon-512.png"
+      ]
+    },
+    {
+      "path": "programs/arnold_split_2026_adapte.js",
+      "size": 12500,
+      "lines": 171,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 318
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/arnold_split_beurt.js",
+      "size": 10135,
+      "lines": 150,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 306
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/arnold_split_strict.js",
+      "size": 11493,
+      "lines": 152,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 319
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/competition_peak.js",
+      "size": 14457,
+      "lines": 192,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 303
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/config.js",
+      "size": 5109,
+      "lines": 55,
+      "role": "Configuration statique : defaultProfile (ancre de calibration), table movements (alias→profile), journées de base et banques WOD. Ne patche jamais le runtime.",
+      "category": "ACTIF",
+      "exposes": [
+        "defaultProfile",
+        "movements"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 322
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/epaules_3d.js",
+      "size": 18971,
+      "lines": 228,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 299
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/epaules_3d_press225_phase2.js",
+      "size": 19040,
+      "lines": 186,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 315
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/epaules_3d_v2.js",
+      "size": 13862,
+      "lines": 173,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 300
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/force.js",
+      "size": 8685,
+      "lines": 125,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 304
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/force_performance.js",
+      "size": 16146,
+      "lines": 279,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 302
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/general_hypertrophy_2d.js",
+      "size": 9380,
+      "lines": 159,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 308
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/general_hypertrophy_3d.js",
+      "size": 10763,
+      "lines": 179,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 309
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/general_strength_3d.js",
+      "size": 10018,
+      "lines": 169,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 307
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/heritage_225.js",
+      "size": 18263,
+      "lines": 264,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 305
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/hypertrophie_fesse.js",
+      "size": 12299,
+      "lines": 187,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 304
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/hypertrophie_fesse_stephanie.js",
+      "size": 20085,
+      "lines": 214,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 320
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/hypertrophy_base.js",
+      "size": 16304,
+      "lines": 242,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 301
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/index.js",
+      "size": 18963,
+      "lines": 144,
+      "role": "Registre central des programmes : construit COACH_BERTIN_PROGRAM_INDEX (ordre + visibilité public/private) et les macrocycles. Ne charge AUCUN script (les <script> restent dans index.html).",
+      "category": "ACTIF",
+      "exposes": [
+        "COACH_BERTIN_PROGRAM_INDEX",
+        "BERTIN_PRIVATE_PROGRAM_IDS",
+        "COACH_BERTIN_MACROCYCLE",
+        "BERTIN_MACROCYCLE_OVERRIDE"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 298
+        },
+        {
+          "path": "app.js",
+          "vector": "global-read",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/phase2_fable5.js",
+      "size": 20645,
+      "lines": 204,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 321
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/posture_cyphose.js",
+      "size": 13462,
+      "lines": 234,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 316
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/racine_client_programs.js",
+      "size": 31644,
+      "lines": 352,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 310
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/racine_crossfit_programs.js",
+      "size": 37219,
+      "lines": 504,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 311
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/strict_muscle_up_cycle.js",
+      "size": 17835,
+      "lines": 232,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 312
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/strict_muscle_up_personnel.js",
+      "size": 28738,
+      "lines": 373,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 317
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/transition_weeks.js",
+      "size": 8107,
+      "lines": 132,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 313
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/tutorials.js",
+      "size": 75435,
+      "lines": 303,
+      "role": "Base de fiches technique COACH_BERTIN_TUTORIALS + findCoachBertinTutorial(name) (matching par nom, exclut le cardio).",
+      "category": "ACTIF",
+      "exposes": [
+        "COACH_BERTIN_TUTORIALS",
+        "findCoachBertinTutorial"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 324
+        },
+        {
+          "path": "scripts/ui_modals.js",
+          "vector": "global-call",
+          "line": 38
+        },
+        {
+          "path": "scripts/profiles/swaps.js",
+          "vector": "global-read",
+          "line": 124
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/workouts.js",
+      "size": 3582,
+      "lines": 77,
+      "role": "Moteur générique de construction des workouts extrait de app.js : helpers ex()/exFixed(), résolution de libellé de jour (resolveDayLabel), délégation vers cfg.getBlocks des programmes autonomes.",
+      "category": "ACTIF",
+      "exposes": [
+        "ex",
+        "exFixed",
+        "resolveDayLabel",
+        "buildWorkout (helpers)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 323
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ai/ai_export.js",
+      "size": 22224,
+      "lines": 430,
+      "role": "Export du contexte pour Avis IA externe : RacineAIExport.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineAIExport"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 344
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ai/ai_import.js",
+      "size": 16813,
+      "lines": 372,
+      "role": "Import d'un Avis IA (stocké local, n'applique aucune charge) : RacineAIImport.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineAIImport"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 345
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ai/ai_influence.js",
+      "size": 6189,
+      "lines": 163,
+      "role": "Influence Tracker : détection des overrides manuels : RacineAIInfluence.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineAIInfluence"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 346
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/app_helpers.js",
+      "size": 2890,
+      "lines": 64,
+      "role": "Helpers applicatifs simples extraits de app.js : copy(), $(), findFirstStored(), nowIso(). Aucune logique de charge/historique.",
+      "category": "ACTIF",
+      "exposes": [
+        "copy",
+        "$",
+        "findFirstStored",
+        "nowIso"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 326
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/app_navigation.js",
+      "size": 2470,
+      "lines": 69,
+      "role": "Helpers de navigation entre vues : alias phone→pc, IDs de vues, normalizeViewName().",
+      "category": "ACTIF",
+      "exposes": [
+        "VIEWS",
+        "normalizeViewName",
+        "viewMainId (helpers navigation)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 359
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/brain_explain.js",
+      "size": 13178,
+      "lines": 258,
+      "role": "Moteur d'explication Brain (bouton (!)) : CoachBrainExplain.build.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachBrainExplain"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 342
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/brain_journal.js",
+      "size": 6093,
+      "lines": 130,
+      "role": "Journal consultatif des apprentissages Brain : CoachBrainJournal. Ne modifie jamais les charges.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachBrainJournal"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 343
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/brain_memory.js",
+      "size": 9792,
+      "lines": 218,
+      "role": "Mémoire Brain locale isolée par profil actif : CoachBrainMemory.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachBrainMemory"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 340
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/brain_stats.js",
+      "size": 12802,
+      "lines": 264,
+      "role": "Statistiques locales Brain par mouvement + intention (confiance, précision).",
+      "category": "ACTIF",
+      "exposes": [
+        "(stats Brain via CoachCharge)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 339
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/equipement.js",
+      "size": 5769,
+      "lines": 135,
+      "role": "Arrondi/affichage des charges selon EQUIPMENT_LOAD_RULES (roundLoadForExercise, displayLoadForEquipment).",
+      "category": "ACTIF",
+      "exposes": [
+        "roundLoadForExercise",
+        "displayLoadForEquipment"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 333
+        }
+      ],
+      "consumes": [
+        "EQUIPMENT_LOAD_RULES"
+      ]
+    },
+    {
+      "path": "scripts/charge/historique.js",
+      "size": 18418,
+      "lines": 376,
+      "role": "Signaux historiques du moteur : e1RM Epley (epley1RM), projection entre plages de reps, agressivité par profil.",
+      "category": "ACTIF",
+      "exposes": [
+        "epley1RM",
+        "latestMovementHistory",
+        "coachAggressivenessFactor"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 336
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/index.js",
+      "size": 2715,
+      "lines": 30,
+      "role": "Porte publique unique du moteur de charges : agrège les fonctions globales historiques sous window.CoachCharge.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachCharge"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 353
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/ml_refinement.js",
+      "size": 5194,
+      "lines": 137,
+      "role": "CoachML : collecte silencieuse de vecteurs d'entraînement pour raffinement futur (recordTrainingVector).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachML"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 348
+        },
+        {
+          "path": "scripts/session/save.js",
+          "vector": "global-call",
+          "line": 91
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/mouvements.js",
+      "size": 15572,
+      "lines": 309,
+      "role": "Familles, alias et correspondances de mouvements ; construction du contexte (technique/wod/light) via buildContext.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachBuildMovementContext",
+        "canonicalMovementLabel"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 335
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/movement_profiles.js",
+      "size": 8000,
+      "lines": 236,
+      "role": "Profils de mouvements (famille, sensibilité, vocabulaire Brain Explain) : CoachMovementProfiles.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachMovementProfiles"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 341
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/rpe.js",
+      "size": 2606,
+      "lines": 44,
+      "role": "Prudence RPE : pas de hausse après RPE≥9, saut max, deload, statut surveillance.",
+      "category": "ACTIF",
+      "exposes": [
+        "(règles RPE)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 337
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/scaling.js",
+      "size": 6036,
+      "lines": 114,
+      "role": "Mise à l'échelle des charges par profil : ratios de test + agressivité (coachUserLoadRatio, coachApplyUserLoadScale).",
+      "category": "ACTIF",
+      "exposes": [
+        "coachUserLoadRatio",
+        "coachApplyUserLoadScale",
+        "coachAggressivenessFactor"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 338
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion.js",
+      "size": 53701,
+      "lines": 975,
+      "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachSafeSuggestedLoad",
+        "coachSuggestForExercise"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 347
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/utilitaires.js",
+      "size": 4549,
+      "lines": 101,
+      "role": "Helpers du moteur + coachSanitizeImplausibleLoads (garde-fou charges aberrantes).",
+      "category": "ACTIF",
+      "exposes": [
+        "coachSanitizeImplausibleLoads"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 334
+        },
+        {
+          "path": "app.js",
+          "vector": "global-call",
+          "line": 2449
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge_diagnostic_ui.js",
+      "size": 17949,
+      "lines": 311,
+      "role": "UI admin de diagnostic charges (lecture seule) : analyse la séance affichée vs historique, export JSON séance/semaine.",
+      "category": "ACTIF",
+      "exposes": [
+        "(UI diagnostic)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 355
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/core/logger.js",
+      "size": 4944,
+      "lines": 165,
+      "role": "Journal d'erreurs runtime local CoachLog (voir docs/ERROR_LOGGING.md).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachLog"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 288
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/export_file.js",
+      "size": 5561,
+      "lines": 137,
+      "role": "Helper d'export/téléchargement de fichier (JSON/texte) côté navigateur.",
+      "category": "ACTIF",
+      "exposes": [
+        "(helpers export)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 289
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/history/index.js",
+      "size": 2254,
+      "lines": 45,
+      "role": "API publique de lecture historique CoachHistory : transforme resultats en signaux, sans modifier les données durables.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachHistory"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 349
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/migrate_bertin.js",
+      "size": 7583,
+      "lines": 185,
+      "role": "Outil de migration du profil Bertin depuis l'ancien localStorage mono (migrateBertin) ou depuis des fichiers JSON (migrateBertinFromFiles, utilitaire console manuel).",
+      "category": "ACTIF",
+      "exposes": [
+        "migrateBertin",
+        "migrateBertinFromFiles"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 297
+        },
+        {
+          "path": "scripts/profiles/ui.js",
+          "vector": "global-call",
+          "line": 189
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/admin_programs.js",
+      "size": 14956,
+      "lines": 253,
+      "role": "Écran admin d'attribution des permissions programmes : RacineAdminPrograms.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineAdminPrograms"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 294
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/onboarding.js",
+      "size": 19451,
+      "lines": 383,
+      "role": "Évaluation initiale 5 mouvements calibrant scaleRatios et aggressiveness du profil.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachOnboarding"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 292
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/prescription.js",
+      "size": 12790,
+      "lines": 265,
+      "role": "Prescription coach→client par lien #rx= (aucun serveur) : RacinePrescription. Garde-fou dev/prescription_checks.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacinePrescription"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 296
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/reference.js",
+      "size": 5647,
+      "lines": 81,
+      "role": "Référentiel de calibration profil : RacineProfileReference + RACINE_REFERENCE_PROFILE/REFS.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineProfileReference",
+        "RACINE_REFERENCE_PROFILE",
+        "RACINE_REFERENCE_REFS"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 291
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/storage.js",
+      "size": 16138,
+      "lines": 377,
+      "role": "API publique multi-profils CoachProfiles : registre local + stockage namespacé par profil, flag admin.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachProfiles"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 290
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/swaps.js",
+      "size": 9699,
+      "lines": 194,
+      "role": "Remplacements de mouvements par profil (coach→client) : RacineMovementSwaps. Garde-fou dev/movement_swaps_checks.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineMovementSwaps"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 295
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/profiles/ui.js",
+      "size": 43984,
+      "lines": 869,
+      "role": "Rendu sélection/gestion de profil (aucune logique de charge). Appelle migrateBertin.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachOnboarding (UI)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 293
+        }
+      ],
+      "consumes": [
+        "migrateBertin"
+      ]
+    },
+    {
+      "path": "scripts/progression/index.js",
+      "size": 3238,
+      "lines": 99,
+      "role": "API publique CoachProgress : classe les résultats en progression/surveillance/blocage.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachProgress"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 350
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/season/index.js",
+      "size": 5418,
+      "lines": 131,
+      "role": "Domaine « La Saison » : objectifs de saison CoachSeason / CoachSeasonGoals.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachSeason",
+        "CoachSeasonGoals"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 329
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/season/retention.js",
+      "size": 2200,
+      "lines": 48,
+      "role": "Rétention de saison (CoachRetention).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachRetention"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 330
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/season/suggest.js",
+      "size": 4850,
+      "lines": 107,
+      "role": "Suggestion de programme suivant / deload (CoachSuggest).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachSuggest"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 331
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/season/ui.js",
+      "size": 10737,
+      "lines": 217,
+      "role": "Rendu UI de la saison / timeline (CoachSeasonUI).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachSeasonUI"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 332
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/index.js",
+      "size": 3483,
+      "lines": 67,
+      "role": "Porte publique du domaine séance CoachSession (openFrom, renderResults). Possède #sessionView.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachSession"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 365
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/results.js",
+      "size": 25784,
+      "lines": 560,
+      "role": "Saisie finale des résultats (poids/reps/RPE) ; délègue le résumé à CoachSummary.",
+      "category": "ACTIF",
+      "exposes": [
+        "(rendu résultats)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 363
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/save.js",
+      "size": 6920,
+      "lines": 151,
+      "role": "Sauvegarde locale de la séance ; alimente CoachML.recordTrainingVector.",
+      "category": "ACTIF",
+      "exposes": [
+        "(save séance)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 364
+        }
+      ],
+      "consumes": [
+        "CoachML"
+      ]
+    },
+    {
+      "path": "scripts/session/timer.js",
+      "size": 12904,
+      "lines": 287,
+      "role": "Timer guidé AMRAP/EMOM/For Time du mode séance.",
+      "category": "ACTIF",
+      "exposes": [
+        "(timer)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 362
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/view.js",
+      "size": 26706,
+      "lines": 598,
+      "role": "Rendu de la séance guidée plein écran (blocs guidés).",
+      "category": "ACTIF",
+      "exposes": [
+        "(rendu session)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 361
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/state/index.js",
+      "size": 212,
+      "lines": 6,
+      "role": "Porte publique CoachState : marque api.ready quand les fonctions de storage sont présentes.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachState"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 328
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/state/storage.js",
+      "size": 3694,
+      "lines": 90,
+      "role": "Lecture/écriture locale du state et des charges personnalisées (readState/writeState/readCustomCharges/writeCustomCharges).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachState (impl)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 327
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/summary/index.js",
+      "size": 5970,
+      "lines": 152,
+      "role": "API publique CoachSummary : compose le résumé automatique de séance (PR, progression) depuis CoachProgress/CoachHistory.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachSummary"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 351
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/tms_session.js",
+      "size": 12297,
+      "lines": 343,
+      "role": "Module TMS (choix de séance TMS) : openCoachBeurtTmsChoice / bindCoachBeurtTmsButtons.",
+      "category": "ACTIF",
+      "exposes": [
+        "openCoachBeurtTmsChoice",
+        "bindCoachBeurtTmsButtons"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 367
+        },
+        {
+          "path": "app.js",
+          "vector": "global-call",
+          "line": 2323
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ui/help_guide.js",
+      "size": 8899,
+      "lines": 136,
+      "role": "Guide rapide intégré (RacineHelp).",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineHelp"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 358
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ui/index.js",
+      "size": 1339,
+      "lines": 25,
+      "role": "Porte publique CoachUI (helpers de rendu partagés, escapeHtml).",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachUI"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 357
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ui_modals.js",
+      "size": 37648,
+      "lines": 707,
+      "role": "Helpers UI hérités + modales, dont la fiche technique (!)/(?) qui interroge findCoachBertinTutorial.",
+      "category": "ACTIF",
+      "exposes": [
+        "(helpers modales)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 356
+        }
+      ],
+      "consumes": [
+        "findCoachBertinTutorial"
+      ]
+    },
+    {
+      "path": "scripts/view_pc.js",
+      "size": 84785,
+      "lines": 1301,
+      "role": "Vue PC (inspection multi-jours, route, export, graphiques de progression). Expose le point de montage pcRenderProgressInto réutilisé par l'Historique.",
+      "category": "ACTIF",
+      "exposes": [
+        "pcRenderProgressInto"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 354
+        },
+        {
+          "path": "app.js",
+          "vector": "global-call",
+          "line": 1649
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/view_wodplus.js",
+      "size": 9585,
+      "lines": 202,
+      "role": "Vue WOD+ : rendu de la séance active (blocs, focus du jour, navigation semaine/jour), entrée vers la séance guidée via CoachSession.openFrom.",
+      "category": "ACTIF",
+      "exposes": [
+        "(rendu WOD+)"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 360
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "service-worker.js",
+      "size": 2151,
+      "lines": 61,
+      "role": "Service worker « réseau d'abord, cache en secours ». Aucune liste de précache : il met en cache dynamiquement chaque réponse GET same-origin et sert la coquille hors ligne. Enregistré par app.js.",
+      "category": "POINT_ENTREE",
+      "exposes": [
+        "(événements install/activate/fetch)"
+      ],
+      "consumedBy": [
+        {
+          "path": "app.js",
+          "vector": "serviceWorker.register",
+          "line": 2510
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "styles.css",
+      "size": 219344,
+      "lines": 6616,
+      "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "link-stylesheet",
+          "line": 19
+        }
+      ],
+      "consumes": [
+        "assets/fonts/inter-latin.woff2",
+        "assets/fonts/inter-latin-ext.woff2",
+        "assets/fonts/orbitron-latin.woff2"
+      ]
+    }
+  ]
+}

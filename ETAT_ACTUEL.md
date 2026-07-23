@@ -63,6 +63,7 @@ node dev/strict_muscle_up_checks.js
 - `CHANGELOG.md`
 - `RELEASE_CHECKLIST.md`
 - `docs/ARCHITECTURE.md`
+- `docs/ARCHITECTURE_AUDIT.md`
 - `docs/STRUCTURE_CONTRACT.md`
 - `docs/UI_CONSTRAINTS.md`
 - `docs/DATA_FLOW_CONTRACT.md`
@@ -75,6 +76,7 @@ node dev/strict_muscle_up_checks.js
 - `docs/PHASE_2_EXTRACTION_REPORT.md`
 - `docs/CATALOGUE_MATRICE.md`
 - `docs/IDEES_FUTURES.md`
+- `docs/PROMPT_REFONTE_SYSTEM.md`
 - `docs/superpowers/specs/2026-07-08-la-saison-design.md`
 - `docs/superpowers/plans/2026-07-08-la-saison-etapes-1-4.md`
 

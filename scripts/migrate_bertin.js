@@ -122,6 +122,13 @@ window.migrateBertin = function(migrateData) {
 
 
 // ─── Import depuis fichiers JSON (si pas de localStorage legacy) ──────────────
+// UTILITÉ RÉELLE : outil console MANUEL, volontairement appelé par personne dans
+// l'app. Filet de récupération à usage unique : recréer le profil Bertin à partir
+// d'exports data/ de l'ancien Coach-Beurt mono quand le localStorage legacy est
+// absent (nouvel appareil, cache effacé, migration ratée). À conserver — comme
+// les données Bertin ne sont pas récupérables autrement, le retrait de cette
+// fonction ferme la seule porte de restauration depuis fichiers.
+//
 // Usage : migrateBertinFromFiles(athleteStateObj, cycleStateObj, resultatsArr, chargesObj)
 // Les objets viennent des fichiers data/ de Coach-Beurt mono collés en console.
 //

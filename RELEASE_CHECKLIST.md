@@ -37,6 +37,7 @@ node dev/gear_permissions_checks.js
 node dev/pc_cycle_view_checks.js
 node dev/pc_progress_compare_checks.js
 node dev/deload_guard_checks.js
+node dev/verify-architecture.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :
