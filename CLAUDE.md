@@ -227,16 +227,35 @@ juste pour suivre la version. Toujours annoncer la version visée avant de livre
 
 ## 5. Design system
 
+Identité visuelle **établie et voulue** de Racine. C'est le style validé par le
+créateur — **ne pas le remplacer sans validation écrite explicite**.
+
 ```css
---bg:   #04060f;
+--bg:   #04060f;   /* fond sombre "HUD" */
 --blue: #1e90ff;
 --cyan: #00d4ff;
 ```
 
-- **Inter** (`--font-main`) → contenu et texte courant.
-- **Orbitron** (`--font-hud`) → valeurs numériques (charges, reps, chronos).
+### Polices — RÈGLE
 
-Ne pas introduire de nouvelles polices ou couleurs d'accent sans validation.
+Le style de police de Racine, c'est ce couple, et rien d'autre par défaut :
+
+- **Orbitron** (`--font-hud`) → toute la typographie « HUD » : titres et eyebrows
+  de sections, labels, et les valeurs numériques (charges, reps, RPE, chronos /
+  timers). C'est la **signature typographique** de l'app.
+- **Inter** (`--font-main`) → contenu et texte courant (paragraphes, descriptions).
+
+### Interdit sans validation écrite
+
+- **Changer la police HUD** (ex. remplacer Orbitron par une autre fonte comme
+  Rajdhani, etc.). Orbitron reste la police HUD de Racine.
+- **Retirer ou atténuer fortement la texture de scanlines « CRT / Matrix »**
+  (`body::before`, rayures sombres tous les 2px) — elle fait partie de l'identité.
+- Introduire de **nouvelles polices** ou de **nouvelles couleurs d'accent**.
+
+Des lueurs / profondeurs de fond discrètes (aurore, glow cyan sur les cartes)
+sont acceptables tant qu'elles respectent ces règles et ne changent ni les
+polices ni la nature « dark HUD » de l'app.
 
 ---
 
