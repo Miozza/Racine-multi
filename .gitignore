@@ -1,0 +1,4 @@
+# Ruflo — état interne / outillage, pas du code du projet
+.claude-flow/
+.swarm/
+ruvector.db
