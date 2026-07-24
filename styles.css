@@ -172,6 +172,7 @@ body::before {
   border-color: transparent;
 }
 .tab:active { opacity: .7; }
+#settingsTab { font-size: 16px; }
 
 /* ── Hamburger ── */
 .hamburger {
