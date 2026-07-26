@@ -14,6 +14,7 @@ node dev/ai_export_movement_context_smoke.js
 node dev/simulate_multi_users.js
 node dev/simulate_users.js
 node dev/charge_engine_checks.js
+node dev/charge_suggestion_golden_master.js
 node dev/movement_tuning_boundary_checks.js
 node dev/suggest_helper_checks.js
 node dev/client_charge_safety_checks.js
@@ -52,6 +53,10 @@ Documents d’implémentation associés à la sécurité des charges client :
 - `docs/DIAGNOSTIC_CHARGES_CLIENT_PWA_IOS.md` (diagnostic 2026-07-20 : ratios de
   scaling corrompus + installation PWA iOS ; reproduction exécutable :
   `dev/repro_bug1_charges_client.js`)
+- `docs/superpowers/plans/2026-07-26-charge-suggestion-refactor.md` (plan du
+  refactor structurel de `guardedSuggestedLoadDecision()` en pipeline de
+  règles nommées + table de tuning centralisée par mouvement ; filet de
+  sécurité : `dev/charge_suggestion_golden_master.js`)
 
 Contrôles manuels minimum :
 
