@@ -1,5 +1,5 @@
-// Racine V4.5.21 — Refactor structurel du pipeline de suggestion de charges (comportement identique)
-var APP_VERSION = "V4.5.21";
+// Racine V4.5.22 — completedDays ne mélange plus les programmes lors du suivi hebdo
+var APP_VERSION = "V4.5.22";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -173,7 +173,7 @@ function buildWeekTrackingForWeek(wk, cycle){
   });
   (state.history||[]).forEach(function(s){
     var sw=Number(s&&((s.week!==undefined?s.week:s.semaine)));
-    if(sw!==wk)return;
+    if(sw!==wk||s.cycle!==cycle)return;
     var day=(s&&s.day)||(s&&s.jour);
     addCompleted(day);
   });

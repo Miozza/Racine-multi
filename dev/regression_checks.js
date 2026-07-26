@@ -134,6 +134,8 @@ if(version){
   assert(app.includes('state.weekTransitions||[]'), 'Le suivi de semaine doit relire weekTransitions.');
   const weekTracking = app.match(/function buildWeekTrackingForWeek\(wk, cycle\)\{[\s\S]*?return \{completedDays:completed,missedDays:missed\};\r?\n\}/);
   assert(!!weekTracking && !weekTracking[0].includes('state.completedDays'), 'La reconstruction par semaine ne doit pas réinjecter state.completedDays.');
+  const historyLoop = weekTracking && weekTracking[0].match(/\(state\.history\|\|\[\]\)\.forEach\(function\(s\)\{[\s\S]*?\}\);/);
+  assert(!!historyLoop && /s\.cycle\s*!==\s*cycle/.test(historyLoop[0]), 'La relecture de state.history dans buildWeekTrackingForWeek doit filtrer par cycle (programme), pas seulement par semaine — sinon des séances d’un ancien programme réapparaissent comme complétées dans un nouveau cycle.');
   assert(!!swipeNav && swipeNav[0].includes('setActiveWeek(Number(state.week)-1)'), 'weekPrev doit passer par setActiveWeek.');
   assert(!!swipeNav && swipeNav[0].includes('setActiveWeek(Number(state.week)+1)'), 'weekNext doit passer par setActiveWeek.');
   assert(!!swipeNav && !/state\.week\+\+|state\.week--/.test(swipeNav[0]), 'setupSwipeNav ne doit plus muter state.week directement.');
