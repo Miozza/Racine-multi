@@ -94,7 +94,35 @@ const scenarios = [
   { name:'rep_gap_projection', setup(){ setMovement('Back Squat',[{reps:1,rpe:8,load:225,d:1}]); }, call:['Back Squat','225 lb',8,{}] },
   { name:'athlete_state_cap_watch', setup(){ setMovement('Front Squat',[{reps:8,rpe:7,load:135,d:1}],{hypertrophy:{status:'watch',currentLoad:135}}); }, call:['Front Squat','185 lb',8,{}] },
   { name:'movement_progression_cap_overhead_rope', setup(){ setMovement('Overhead Rope Extension',[{reps:12,rpe:7,load:50,d:1},{reps:12,rpe:7,load:50,d:2}]); }, call:['Overhead Rope Extension','65 lb',12,{}] },
-  { name:'floor_validation', setup(){ setMovement('Back Squat',[{reps:8,rpe:9,load:225,d:1},{reps:8,rpe:9,load:225,d:2}]); }, call:['Back Squat','185 lb',8,{}] }
+  { name:'floor_validation', setup(){ setMovement('Back Squat',[{reps:8,rpe:9,load:225,d:1},{reps:8,rpe:9,load:225,d:2}]); }, call:['Back Squat','185 lb',8,{}] },
+
+  // ── Ajouts revue finale (couverture regles 2/4/7/8/12) ──────────────────
+  // Voir docs/superpowers/plans/2026-07-26-charge-suggestion-refactor.md.
+  // Ces 5 scenarios sont ajoutes APRES coup, en complement des 15 ci-dessus
+  // (jamais modifies), pour exercer des regles jusque-la non couvertes ou
+  // couvertes seulement par leur branche d'exception. Chacun a ete verifie
+  // empiriquement (fixture regeneree + inspection du champ "reason") pour
+  // confirmer que c'est bien la regle visee qui produit le resultat final,
+  // et pas une regle voisine qui prend la main avant/apres elle.
+  { name:'reference_de_travail_ramp', setup(){
+      ctx.state.athleteState.movements={};
+      setMovement('Back Squat',[],{hypertrophy:{currentLoad:300, currentReps:8}});
+    }, call:['Back Squat','150 lb',8,{}] },
+  { name:'reference_reelle_validee_small_gap', setup(){
+      ctx.state.athleteState.movements={};
+      setMovement('Back Squat',[{reps:8,rpe:7,load:165,d:1},{reps:8,rpe:7.5,load:180,d:2}]);
+    }, call:['Back Squat','170 lb',8,{}] },
+  { name:'recent_hard_brake_unresolved', setup(){
+      ctx.state.athleteState.movements={};
+      setMovement('Back Squat',[{reps:8,rpe:9,load:200,d:1},{reps:8,rpe:6,load:195,d:2}]);
+    }, call:['Back Squat','210 lb',8,{}] },
+  { name:'floor_validation_lifts_below_last', setup(){
+      ctx.state.athleteState.movements={};
+      setMovement('Back Squat',[{reps:8,rpe:7,load:200,d:1}]);
+    }, call:['Back Squat','150 lb',8,{}] },
+  { name:'context_limited_rounding_reclamp', setup(){
+      ctx.state.athleteState.movements={};
+    }, call:['Back Squat','188 lb',8,{kind:'wod'}] }
 ];
 
 const results = {};

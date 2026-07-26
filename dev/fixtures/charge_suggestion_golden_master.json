@@ -737,5 +737,201 @@
       "status": "blocked",
       "reason": "Historique difficile : RPE eleve repete, hausse bloquee avant confirmation."
     }
+  },
+  "reference_de_travail_ramp": {
+    "label": "Back Squat",
+    "loadText": "295 lb",
+    "loadNum": 295,
+    "severity": "watch",
+    "reason": "Reference de travail 300 lb : semaine 3/5 a ~99% (297 lb), sous le RM. Rampe planifiee : pas de charge proche du RM pour un travail en hypertrophy.",
+    "last": null,
+    "cap": {
+      "currentLoad": 300,
+      "currentReps": 8
+    },
+    "historySignal": {
+      "label": "Back Squat",
+      "rows": [],
+      "last": null,
+      "previous": null,
+      "lastLoad": 0,
+      "previousLoad": 0,
+      "lastRpe": 0,
+      "highRpeCount": 0,
+      "controlledCount": 0,
+      "stagnationCount": 0,
+      "direction": "unknown",
+      "status": "neutral",
+      "reason": "Historique insuffisant pour trancher."
+    }
+  },
+  "reference_reelle_validee_small_gap": {
+    "label": "Back Squat",
+    "loadText": "180 lb",
+    "loadNum": 180,
+    "severity": "watch",
+    "reason": "Reference reelle plus haute validee : 180 lb x 8 @RPE 7.5. La prochaine suggestion repart de cette charge, pas de l'ancienne suggestion.",
+    "last": {
+      "date": "2026-01-02",
+      "reps": 8,
+      "rpe": 7.5,
+      "load": 180
+    },
+    "cap": null,
+    "historySignal": {
+      "label": "Back Squat",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 7,
+          "load": 165
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 8,
+          "rpe": 7.5,
+          "load": 180
+        }
+      ],
+      "last": {
+        "date": "2026-01-02",
+        "reps": 8,
+        "rpe": 7.5,
+        "load": 180
+      },
+      "previous": {
+        "date": "2026-01-01",
+        "reps": 8,
+        "rpe": 7,
+        "load": 165
+      },
+      "lastLoad": 180,
+      "previousLoad": 165,
+      "lastRpe": 7.5,
+      "highRpeCount": 0,
+      "controlledCount": 2,
+      "stagnationCount": 0,
+      "direction": "up",
+      "status": "ready",
+      "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
+    }
+  },
+  "recent_hard_brake_unresolved": {
+    "label": "Back Squat",
+    "loadText": "200 lb ⚠",
+    "loadNum": 200,
+    "severity": "warning",
+    "reason": "Frein RPE recent : 200 lb a deja coute RPE 9 sans reference plus haute controlee depuis. Pas de hausse automatique vers 210 lb.",
+    "last": {
+      "date": "2026-01-02",
+      "reps": 8,
+      "rpe": 6,
+      "load": 195
+    },
+    "cap": null,
+    "historySignal": {
+      "label": "Back Squat",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 9,
+          "load": 200
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 8,
+          "rpe": 6,
+          "load": 195
+        }
+      ],
+      "last": {
+        "date": "2026-01-02",
+        "reps": 8,
+        "rpe": 6,
+        "load": 195
+      },
+      "previous": {
+        "date": "2026-01-01",
+        "reps": 8,
+        "rpe": 9,
+        "load": 200
+      },
+      "lastLoad": 195,
+      "previousLoad": 200,
+      "lastRpe": 6,
+      "highRpeCount": 1,
+      "controlledCount": 1,
+      "stagnationCount": 0,
+      "direction": "down",
+      "status": "watch",
+      "reason": "Charge recente en baisse : verifier fatigue ou contexte avant progression."
+    }
+  },
+  "floor_validation_lifts_below_last": {
+    "label": "Back Squat",
+    "loadText": "200 lb",
+    "loadNum": 200,
+    "severity": "watch",
+    "reason": "Brain — Plancher maitrise : 200 lb x 8 valide avec confort acceptable. Brain evite de redescendre sans signal durable.",
+    "last": {
+      "date": "2026-01-01",
+      "reps": 8,
+      "rpe": 7,
+      "load": 200
+    },
+    "cap": null,
+    "historySignal": {
+      "label": "Back Squat",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 7,
+          "load": 200
+        }
+      ],
+      "last": {
+        "date": "2026-01-01",
+        "reps": 8,
+        "rpe": 7,
+        "load": 200
+      },
+      "previous": null,
+      "lastLoad": 200,
+      "previousLoad": 0,
+      "lastRpe": 7,
+      "highRpeCount": 0,
+      "controlledCount": 1,
+      "stagnationCount": 0,
+      "direction": "unknown",
+      "status": "watch",
+      "reason": "Historique a confirmer avant decision agressive."
+    }
+  },
+  "context_limited_rounding_reclamp": {
+    "label": "Back Squat",
+    "loadText": "190 lb",
+    "loadNum": 190,
+    "severity": "watch",
+    "reason": "Contexte WOD : ne pas auto-progresser comme un mouvement principal.",
+    "last": null,
+    "cap": null,
+    "historySignal": {
+      "label": "Back Squat",
+      "rows": [],
+      "last": null,
+      "previous": null,
+      "lastLoad": 0,
+      "previousLoad": 0,
+      "lastRpe": 0,
+      "highRpeCount": 0,
+      "controlledCount": 0,
+      "stagnationCount": 0,
+      "direction": "unknown",
+      "status": "neutral",
+      "reason": "Historique insuffisant pour trancher."
+    }
   }
 }
