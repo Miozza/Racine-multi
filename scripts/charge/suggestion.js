@@ -20,14 +20,14 @@ function coachIsDeloadWeekOrContext(context){
 function coachIsMainLoadContext(label,context){
   var raw=[label,context&&context.kind,context&&context.primaryIntent,context&&context.blockTitle].filter(Boolean).join(' ');
   var n=coachNormalizeMoveText(raw);
-  var T=window.COACH_MOVEMENT_TUNING;
+  var T=window.COACH_MOVEMENT_TUNING||{};
   if(coachMatchesAnyTuningPattern(n, T.mainLoadKeywordPatterns))return true;
   if(coachMatchesAnyTuningPattern(coachNormalizeMoveText(label), T.mainLoadMovementPatterns)&&!isIsolationMovement(label))return true;
   return false;
 }
 
 function coachDeloadMultiplierForContext(label,context){
-  var T=window.COACH_MOVEMENT_TUNING.deloadMultiplier;
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.deloadMultiplier)||{main:0.85,other:0.80};
   return coachIsMainLoadContext(label,context)?T.main:T.other;
 }
 
@@ -372,7 +372,7 @@ function coachRuleReferenceDeTravail(ctx){
 
 function coachLiftFromHistoryThreshold(label){
   var n=coachNormalizeMoveText(label);
-  var T=window.COACH_MOVEMENT_TUNING.liftFromHistoryThresholds;
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.liftFromHistoryThresholds)||{default:{gap:20,maxRpe:8},overrides:[]};
   for(var i=0;i<T.overrides.length;i++){
     if(T.overrides[i].pattern.test(n))return T.overrides[i];
   }

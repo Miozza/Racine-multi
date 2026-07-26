@@ -51,7 +51,8 @@ function coachDefaultLoadSeedForMovement(label, targetReps){
     }
   }
   var n=coachNormalizeMoveText(labels.join(' '));
-  return coachFirstMatchingTuningLoad(n, window.COACH_MOVEMENT_TUNING.defaultLoadSeeds);
+  var T=window.COACH_MOVEMENT_TUNING||{};
+  return coachFirstMatchingTuningLoad(n, T.defaultLoadSeeds);
 }
 
 function coachHistoryContext(row){
@@ -67,7 +68,8 @@ function coachHistoryContextIsLimited(row){
 function coachIsBodyweightExternalLoadMovement(label, context){
   var raw=[label, context&&context.rawName, context&&context.label].filter(Boolean).join(' ');
   var n=coachNormalizeMoveText(raw);
-  return coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.bodyweightExternalLoadPatterns);
+  var T=window.COACH_MOVEMENT_TUNING||{};
+  return coachMatchesAnyTuningPattern(n, T.bodyweightExternalLoadPatterns);
 }
 
 function coachHistoryRawLoadValue(row){
@@ -115,7 +117,8 @@ function coachMovementContextKey(ctx){
 
 function coachShouldPreferContextMatch(label, ctx){
   var n=coachNormalizeMoveText((ctx&&ctx.label)||label||'');
-  if(coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.contextPreferenceMovementPatterns))return true;
+  var T=window.COACH_MOVEMENT_TUNING||{};
+  if(coachMatchesAnyTuningPattern(n, T.contextPreferenceMovementPatterns))return true;
   if(ctx&&(ctx.isWod||ctx.isTechnical||ctx.isLight||ctx.isRecovery||ctx.isRecall))return true;
   if(ctx&&Array.isArray(ctx.intents)&&ctx.intents.length)return ctx.intents.some(function(x){return /wod|technique|light|recovery|recall|progression/.test(x);});
   return false;
@@ -123,7 +126,8 @@ function coachShouldPreferContextMatch(label, ctx){
 
 function coachLimitedContextFamilyMatches(rowCtx,currentCtx,label){
   var n=coachNormalizeMoveText((currentCtx&&currentCtx.label)||label||'');
-  if(!coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.limitedContextFamilyPatterns))return false;
+  var T=window.COACH_MOVEMENT_TUNING||{};
+  if(!coachMatchesAnyTuningPattern(n, T.limitedContextFamilyPatterns))return false;
   var rowLimitedSignal=!!(rowCtx&&(rowCtx.isWod||rowCtx.isTechnical||rowCtx.isLight||rowCtx.isRecovery||rowCtx.isProgression));
   var currentLimitedSignal=!!(currentCtx&&(currentCtx.isWod||currentCtx.isTechnical||currentCtx.isLight||currentCtx.isRecovery||currentCtx.isProgression));
   return rowLimitedSignal&&currentLimitedSignal;
@@ -245,7 +249,7 @@ function coachBuildMovementHistorySignal(label, history, context, targetReps){
 
 function coachMaxJumpForExercise(label,lastLoad){
   var n=coachNormalizeMoveText(label);
-  var T=window.COACH_MOVEMENT_TUNING.maxJumpBase;
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.maxJumpBase)||{default:10,overrides:[]};
   var base=null;
   for(var i=0;i<T.overrides.length;i++){
     if(T.overrides[i].pattern.test(n)){base=T.overrides[i].base;break;}
@@ -276,12 +280,14 @@ function coachLoadStepForExercise(name,loadText){
 
 function isIsolationMovement(name){
   var n=coachNormalizeMoveText(name);
-  return coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.isolationPatterns);
+  var T=window.COACH_MOVEMENT_TUNING||{};
+  return coachMatchesAnyTuningPattern(n, T.isolationPatterns);
 }
 
 function isTechnicalMovement(name){
   var n=coachNormalizeMoveText(name);
-  return coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.technicalPatterns);
+  var T=window.COACH_MOVEMENT_TUNING||{};
+  return coachMatchesAnyTuningPattern(n, T.technicalPatterns);
 }
 
 function isTechnicalMovementInContext(name, context){
