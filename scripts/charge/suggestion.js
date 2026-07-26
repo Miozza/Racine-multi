@@ -312,6 +312,10 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   var isDeload=coachIsDeloadWeekOrContext(moveContext);
   var seedReason="Charge du programme, arrondie selon l'equipement.";
   if(programNum===null||programNum===undefined){
+    // Déclaration rétablie : le refactor du filtre de vraisemblance
+    // (coachIsImplausibleLoadRow) avait supprimé ce var mais laissé son usage
+    // ci-dessous — ReferenceError pour tout profil sans historique sur un
+    // mouvement à charge texte (« Poids du corps »…), vue de séance cassée.
     var genericSeedForFilter=coachDefaultLoadSeedForMovement(label,target);
     var seedFromReal=lastHasValidLoad?lastLoad:(((bestControlled&&bestControlled.load)||bestControlled&&bestControlled.load===0)?bestControlled.load:null);
     var seed;
@@ -340,6 +344,11 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     bestControlled:bestControlled, historySignal:historySignal, programNum:programNum,
     originalText:originalText, contextLimited:contextLimited, contextLimitReason:contextLimitReason,
     isDeload:isDeload, suggested:programNum, severity:"ok", reason:seedReason, mode:"nearest",
+    // brainAdjusted — Trace explicite : passe a true chaque fois qu'une regle
+    // depassant le simple arrondi equipement intervient (historique, RPE,
+    // deload, cap contextuel). Remplace la detection par mots-cles sur
+    // `reason` faite plus loin dans storeLoadDecisionHint : la source est ici
+    // un fait connu, pas une supposition.
     brainAdjusted:false
   }};
 }
@@ -352,6 +361,13 @@ function coachRuleContextLimited(ctx){
   }
 }
 
+// Sans aucune seance reelle, on ne part PAS du defaut programme x ratio (qui
+// vise ~100% d'une capacite theorique, souvent issue d'un vieux max) : on part
+// d'une reference de travail declaree pour la plage cible, periodisee SOUS le
+// RM (rampe planifiee). Des qu'une seance reelle est loggée, hasRealHistory
+// devient vrai et l'autoregulation (priorite 1, blocs ci-dessous) reprend la
+// main. Les PR (manual_pr) sont exclus de la reference : jamais une charge de
+// travail.
 function coachRuleReferenceDeTravail(ctx){
   var hasRealHistory=ctx.hist.some(function(r){return coachHistoryHasValidLoad(r,ctx.label,ctx.moveContext);});
   ctx.hasRealHistory=hasRealHistory;
@@ -379,6 +395,9 @@ function coachLiftFromHistoryThreshold(label){
   return T.default;
 }
 
+// Exige au moins 2 entrees d'historique : un point unique (ex. le seed de calibrage/onboarding)
+// n'est pas encore une "reference prouvee" — il ne doit pas a lui seul justifier de suggerer
+// plus que ce que l'utilisateur vient juste d'etablir comme sa propre charge de depart.
 function coachRuleLiftFromControlledHistory(ctx){
   if(!ctx.contextLimited && !ctx.isDeload && ctx.bestControlled&&ctx.bestControlled.load>ctx.suggested&&ctx.hist.length>=2){
     var gap=ctx.bestControlled.load-ctx.suggested;
@@ -481,6 +500,12 @@ function coachRuleRecentHardBrake(ctx){
   }
 }
 
+// Plancher historique : un dernier set reellement reussi (reps cibles atteintes,
+// pas un echec/recalibrage) ne doit jamais etre sous-suggere, meme apres les
+// freins RPE generiques ci-dessus (qui ne plafonnent qu'une hausse). Place en
+// dernier pour avoir le dernier mot : un frein peut traiter un poids plus
+// lourd reussi au meme RPE comme "non resolu" et faire retomber suggested
+// sous ce plancher, ce qui doit etre corrige ici.
 function coachRuleFloorValidation(ctx){
   if(!ctx.contextLimited&&!ctx.isDeload&&!isTechnicalMovement(ctx.label)&&ctx.last&&ctx.lastHasValidLoad){
     var floorReps=coachHistoryRepsNumber(ctx.last);
@@ -510,6 +535,7 @@ function coachRuleAthleteStateCap(ctx){
     var capLoad=parseLoad(capLoadRaw);
     if(capLoad===null||capLoad===undefined)capLoad=Number(capLoadRaw)||0;
     var hasCapLoad=(capLoad||capLoad===0);
+    // Ne pas laisser un cap faible ecraser une reference reelle controlee clairement superieure.
     var ignoreLowCap=ctx.bestControlled&&hasCapLoad&&ctx.bestControlled.load>=capLoad+15&&ctx.bestControlled.rpe<=8.5;
     if(hasCapLoad&&capLoad>0&&ctx.suggested>capLoad&&!ignoreLowCap){ctx.suggested=capLoad;ctx.mode="down";ctx.severity="warning";ctx.reason="Mouvement sous surveillance dans athlete_state : charge cappee jusqu'a confirmation.";}
     else if(ignoreLowCap&&!ctx.isDeload){ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;ctx.reason="Cap athlete_state ignore : historique reel controle plus recent/plus fiable que le cap faible.";}
@@ -546,7 +572,7 @@ function coachRuleRoundingAndMovementCap(ctx){
 
     if(ctx.rounded>cappedByMv){
       ctx.rounded=cappedByMv;
-      if(ctx.rounded>ctx.lastLoad && ctx.lastRpe>=9) ctx.rounded=ctx.lastLoad;
+      if(ctx.rounded>ctx.lastLoad && ctx.lastRpe>=9) ctx.rounded=ctx.lastLoad; // sécurité RPE
       ctx.severity="warning";
       ctx.reason=ctx.label+" : cap de progression +"+maxJumpCap+" lb"
         +(isFridayCtx && mvProgCap.fridayUsesWeekBest ? " (référence semaine vendredi)" : "")
