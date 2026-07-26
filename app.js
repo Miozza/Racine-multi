@@ -1,5 +1,5 @@
-// Racine V4.5.20 — Popups (!) et (?) : verrou de scroll, plus de défilement du fond
-var APP_VERSION = "V4.5.20";
+// Racine V4.5.21 — Refactor structurel du pipeline de suggestion de charges (comportement identique)
+var APP_VERSION = "V4.5.21";
 
 // Architecture stable
 // programs/*.js = plan prévu

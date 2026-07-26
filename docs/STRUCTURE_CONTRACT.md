@@ -268,6 +268,21 @@ scripts/moteur_charges.js
 
 Le commentaire d’en-tête de `app.js` doit toujours correspondre à `APP_VERSION`.
 
+### Règle de tuning par mouvement
+
+Tout seuil ou cas particulier propre à un mouvement (saut de charge max,
+multiplicateur de deload, seuil de remontée depuis l'historique, mouvement
+"principal"/"isolation"/"technique") vit dans
+`scripts/charge/movement_tuning.js` (`window.COACH_MOVEMENT_TUNING`), jamais
+comme une nouvelle regex ou un nouveau `if` inline dans `suggestion.js` ou
+`historique.js`.
+
+Avant d'ajouter une regex sur un nom de mouvement dans ces deux fichiers :
+vérifier si une table existante dans `movement_tuning.js` peut l'accueillir
+(ajouter une entrée à `overrides`) plutôt que d'écrire un nouveau test
+inline. `dev/movement_tuning_boundary_checks.js` fait respecter cette règle
+mécaniquement et doit passer avant toute livraison touchant ces fichiers.
+
 
 ## Domaine session
 

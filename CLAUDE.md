@@ -172,6 +172,10 @@ Règles clés :
   principale (filtre de contexte obligatoire).
 - Le bouton `(!)` **explique** la suggestion ; il ne recalcule jamais une autre charge
   en silence.
+- Tout seuil propre à un mouvement (regex de nom, saut max, multiplicateur…)
+  va dans `scripts/charge/movement_tuning.js`, jamais en dur dans
+  `suggestion.js`/`historique.js` — voir `docs/STRUCTURE_CONTRACT.md` §
+  Domaine charge / Règle de tuning par mouvement.
 
 Deux sens du mot **« Brain »**, à ne pas confondre :
 
