@@ -153,7 +153,7 @@ function coachMovementContextKey(ctx){
 
 function coachShouldPreferContextMatch(label, ctx){
   var n=coachNormalizeMoveText((ctx&&ctx.label)||label||'');
-  if(/overhead rope extension|face pull|power clean/.test(n))return true;
+  if(coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.contextPreferenceMovementPatterns))return true;
   if(ctx&&(ctx.isWod||ctx.isTechnical||ctx.isLight||ctx.isRecovery||ctx.isRecall))return true;
   if(ctx&&Array.isArray(ctx.intents)&&ctx.intents.length)return ctx.intents.some(function(x){return /wod|technique|light|recovery|recall|progression/.test(x);});
   return false;
@@ -161,7 +161,7 @@ function coachShouldPreferContextMatch(label, ctx){
 
 function coachLimitedContextFamilyMatches(rowCtx,currentCtx,label){
   var n=coachNormalizeMoveText((currentCtx&&currentCtx.label)||label||'');
-  if(!/power clean/.test(n))return false;
+  if(!coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.limitedContextFamilyPatterns))return false;
   var rowLimitedSignal=!!(rowCtx&&(rowCtx.isWod||rowCtx.isTechnical||rowCtx.isLight||rowCtx.isRecovery||rowCtx.isProgression));
   var currentLimitedSignal=!!(currentCtx&&(currentCtx.isWod||currentCtx.isTechnical||currentCtx.isLight||currentCtx.isRecovery||currentCtx.isProgression));
   return rowLimitedSignal&&currentLimitedSignal;
@@ -283,14 +283,14 @@ function coachBuildMovementHistorySignal(label, history, context, targetReps){
 
 function coachMaxJumpForExercise(label,lastLoad){
   var n=coachNormalizeMoveText(label);
-  var base;
-  if(/bulgarian split squat/.test(n))base=10;
-  else if(/hip thrust/.test(n))base=30;
-  else if(/barbell row/.test(n))base=10;
-  else if(/front squat|back squat|strict press|bench press|power clean/.test(n))base=10;
-  else if(/db rdl/.test(n))base=10;
-  else if(isIsolationMovement(label))base=coachLoadStepForExercise(label,lastLoad||'')||5;
-  else base=10;
+  var T=window.COACH_MOVEMENT_TUNING.maxJumpBase;
+  var base=null;
+  for(var i=0;i<T.overrides.length;i++){
+    if(T.overrides[i].pattern.test(n)){base=T.overrides[i].base;break;}
+  }
+  if(base===null){
+    base=isIsolationMovement(label)?(coachLoadStepForExercise(label,lastLoad||'')||5):T.default;
+  }
   var factor=(typeof coachAggressivenessFactor==='function')?coachAggressivenessFactor():1;
   if(factor===1)return base;
   var step=coachLoadStepForExercise(label,lastLoad||'')||5;
@@ -314,12 +314,12 @@ function coachLoadStepForExercise(name,loadText){
 
 function isIsolationMovement(name){
   var n=coachNormalizeMoveText(name);
-  return /lateral raise|rear delt|curl|rope extension|pushdown|face pull|trap 3|serratus|calf|fly/.test(n);
+  return coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.isolationPatterns);
 }
 
 function isTechnicalMovement(name){
   var n=coachNormalizeMoveText(name);
-  return /technique|leger|light|warm up|warmup/.test(n) || n.indexOf("power clean technique")>=0;
+  return coachMatchesAnyTuningPattern(n, window.COACH_MOVEMENT_TUNING.technicalPatterns);
 }
 
 function isTechnicalMovementInContext(name, context){

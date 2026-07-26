@@ -20,13 +20,15 @@ function coachIsDeloadWeekOrContext(context){
 function coachIsMainLoadContext(label,context){
   var raw=[label,context&&context.kind,context&&context.primaryIntent,context&&context.blockTitle].filter(Boolean).join(' ');
   var n=coachNormalizeMoveText(raw);
-  if(/main|principal|prioritaire|force|strength/.test(n))return true;
-  if(/strict press|front squat|back squat|bench press|barbell row|deadlift|power clean|hip thrust/.test(coachNormalizeMoveText(label))&&!isIsolationMovement(label))return true;
+  var T=window.COACH_MOVEMENT_TUNING;
+  if(coachMatchesAnyTuningPattern(n, T.mainLoadKeywordPatterns))return true;
+  if(coachMatchesAnyTuningPattern(coachNormalizeMoveText(label), T.mainLoadMovementPatterns)&&!isIsolationMovement(label))return true;
   return false;
 }
 
 function coachDeloadMultiplierForContext(label,context){
-  return coachIsMainLoadContext(label,context)?0.85:0.80;
+  var T=window.COACH_MOVEMENT_TUNING.deloadMultiplier;
+  return coachIsMainLoadContext(label,context)?T.main:T.other;
 }
 
 function coachRecentPeakLoad(history,label,context){
@@ -368,13 +370,23 @@ function coachRuleReferenceDeTravail(ctx){
   }
 }
 
+function coachLiftFromHistoryThreshold(label){
+  var n=coachNormalizeMoveText(label);
+  var T=window.COACH_MOVEMENT_TUNING.liftFromHistoryThresholds;
+  for(var i=0;i<T.overrides.length;i++){
+    if(T.overrides[i].pattern.test(n))return T.overrides[i];
+  }
+  return T.default;
+}
+
 function coachRuleLiftFromControlledHistory(ctx){
   if(!ctx.contextLimited && !ctx.isDeload && ctx.bestControlled&&ctx.bestControlled.load>ctx.suggested&&ctx.hist.length>=2){
     var gap=ctx.bestControlled.load-ctx.suggested;
-    var n=coachNormalizeMoveText(ctx.label);
-    var allowLiftFromHistory=false;
-    if(/barbell row/.test(n)&&gap>=15)allowLiftFromHistory=true;
-    else if(!isIsolationMovement(ctx.label)&&!isTechnicalMovementInContext(ctx.label,ctx.moveContext)&&gap>=20&&ctx.bestControlled.rpe<=8)allowLiftFromHistory=true;
+    var thr=coachLiftFromHistoryThreshold(ctx.label);
+    var allowLiftFromHistory=gap>=thr.gap
+      && (thr.maxRpe==null || ctx.bestControlled.rpe<=thr.maxRpe)
+      && !isIsolationMovement(ctx.label)
+      && !isTechnicalMovementInContext(ctx.label,ctx.moveContext);
     if(allowLiftFromHistory){
       ctx.suggested=Math.min(ctx.bestControlled.load+coachMaxJumpForExercise(ctx.label,ctx.bestControlled.load), ctx.bestControlled.load+10);
       ctx.mode="nearest";
