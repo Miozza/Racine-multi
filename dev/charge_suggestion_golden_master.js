@@ -91,8 +91,8 @@ const scenarios = [
   { name:'deload_week', setup(){ ctx.state.week=6; setMovement('Back Squat',[{reps:8,rpe:7,load:225,d:1},{reps:8,rpe:7,load:225,d:2}]); }, call:['Back Squat','225 lb',8,{}], teardown(){ ctx.state.week=3; } },
   { name:'history_signal_stalled', setup(){ setMovement('Bench Press',[{reps:8,rpe:7,load:135,d:1},{reps:8,rpe:7,load:135,d:2},{reps:8,rpe:7,load:135,d:3}]); }, call:['Bench Press','145 lb',8,{}] },
   { name:'rep_gap_projection', setup(){ setMovement('Back Squat',[{reps:1,rpe:8,load:225,d:1}]); }, call:['Back Squat','225 lb',8,{}] },
-  { name:'athlete_state_cap_watch', setup(){ setMovement('Front Squat',[{reps:8,rpe:7,load:135,d:1}],{strength:{status:'watch',currentLoad:135}}); }, call:['Front Squat','185 lb',8,{}] },
-  { name:'movement_progression_cap_overhead_rope', setup(){ setMovement('Overhead Rope Extension',[{reps:12,rpe:7,load:50,d:1}]); }, call:['Overhead Rope Extension','50 lb',12,{}] },
+  { name:'athlete_state_cap_watch', setup(){ setMovement('Front Squat',[{reps:8,rpe:7,load:135,d:1}],{hypertrophy:{status:'watch',currentLoad:135}}); }, call:['Front Squat','185 lb',8,{}] },
+  { name:'movement_progression_cap_overhead_rope', setup(){ setMovement('Overhead Rope Extension',[{reps:12,rpe:7,load:50,d:1},{reps:12,rpe:7,load:50,d:2}]); }, call:['Overhead Rope Extension','65 lb',12,{}] },
   { name:'floor_validation', setup(){ setMovement('Back Squat',[{reps:8,rpe:9,load:225,d:1},{reps:8,rpe:9,load:225,d:2}]); }, call:['Back Squat','185 lb',8,{}] }
 ];
 

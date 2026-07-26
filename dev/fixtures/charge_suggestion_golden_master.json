@@ -592,17 +592,20 @@
   },
   "athlete_state_cap_watch": {
     "label": "Front Squat",
-    "loadText": "145 lb",
-    "loadNum": 145,
-    "severity": "watch",
-    "reason": "Progression limitee : derniere reference 135 lb @RPE 7. Saut maximal prudent +10 lb.",
+    "loadText": "135 lb ⚠",
+    "loadNum": 135,
+    "severity": "warning",
+    "reason": "Mouvement sous surveillance dans athlete_state : charge cappee jusqu'a confirmation.",
     "last": {
       "date": "2026-01-01",
       "reps": 8,
       "rpe": 7,
       "load": 135
     },
-    "cap": null,
+    "cap": {
+      "status": "watch",
+      "currentLoad": 135
+    },
     "historySignal": {
       "label": "Front Squat",
       "rows": [
@@ -633,12 +636,12 @@
   },
   "movement_progression_cap_overhead_rope": {
     "label": "Overhead Rope Extension",
-    "loadText": "50 lb",
+    "loadText": "50 lb ⚠",
     "loadNum": 50,
-    "severity": "ok",
-    "reason": "Charge du programme, arrondie selon l'equipement.",
+    "severity": "warning",
+    "reason": "Overhead Rope Extension : cap de progression +5 lb.",
     "last": {
-      "date": "2026-01-01",
+      "date": "2026-01-02",
       "reps": 12,
       "rpe": 7,
       "load": 50
@@ -652,24 +655,35 @@
           "reps": 12,
           "rpe": 7,
           "load": 50
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 12,
+          "rpe": 7,
+          "load": 50
         }
       ],
       "last": {
+        "date": "2026-01-02",
+        "reps": 12,
+        "rpe": 7,
+        "load": 50
+      },
+      "previous": {
         "date": "2026-01-01",
         "reps": 12,
         "rpe": 7,
         "load": 50
       },
-      "previous": null,
       "lastLoad": 50,
-      "previousLoad": 0,
+      "previousLoad": 50,
       "lastRpe": 7,
       "highRpeCount": 0,
-      "controlledCount": 1,
+      "controlledCount": 2,
       "stagnationCount": 0,
-      "direction": "unknown",
-      "status": "watch",
-      "reason": "Historique a confirmer avant decision agressive."
+      "direction": "flat",
+      "status": "ready",
+      "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
     }
   },
   "floor_validation": {
