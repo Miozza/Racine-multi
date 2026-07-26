@@ -38,6 +38,7 @@ function buildCtx(week, totalWeeks){
   [
     'scripts/profiles/reference.js','programs/config.js','data/charges.js','data/equipment.js',
     'scripts/profiles/onboarding.js','scripts/app_helpers.js','scripts/charge/equipement.js',
+    'scripts/charge/movement_tuning.js',
     'scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/rpe.js',
     'scripts/charge/historique.js','scripts/charge/scaling.js','scripts/charge/brain_stats.js',
     'scripts/charge/brain_memory.js','scripts/charge/brain_journal.js','scripts/charge/suggestion.js'
