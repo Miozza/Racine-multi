@@ -1,0 +1,35 @@
+{
+  "name": "racine-playwright",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "http-server": "^14.1.1",
+    "playwright": "^1.62.0"
+  },
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "serve": "npx http-server . -p 8080",
+    "playwright:install": "npx playwright install"
+  },
+  "version": "1.0.0",
+  "description": "- Version : `V4.5.22`",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Miozza/Racine-multi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Miozza/Racine-multi/issues"
+  },
+  "homepage": "https://github.com/Miozza/Racine-multi#readme"
+}

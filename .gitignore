@@ -2,3 +2,8 @@
 .claude-flow/
 .swarm/
 ruvector.db
+
+# Node modules and local editor state
+node_modules/
+.vscode/
+test-results/
