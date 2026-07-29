@@ -1,3 +1,4 @@
+// @ts-check
 // Racine V2.9 — Brain Explain Engine + Movement Profiles
 (function(){
   "use strict";

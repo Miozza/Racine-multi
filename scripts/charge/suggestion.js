@@ -1,3 +1,4 @@
+// @ts-check
 // Coach Beurt - moteur de suggestions de charges.
 // Script global volontaire : pas de ES modules.
 
@@ -176,6 +177,7 @@ function coachDeclaredRangeReference(mv,range,targetReps,label){
       var reps=Number(direct.currentReps)||Number(direct.actualReps)||0;
       if(l>0)return {load:l,reps:reps||Number(targetReps)||0,range:range,exact:true};
     }
+    /** @type {any} — rempli plus bas avec {oneRM}. */
     var best=null;
     ['strength','hypertrophy','endurance'].forEach(function(rg){
       var r=mv.ranges[rg];if(!r||isPrRef(r))return;

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23",
+  "generatedAt": "2026-07-29",
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 162,
+    "ACTIF": 176,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -13,6 +13,36 @@
       "size": 1809,
       "lines": 63,
       "role": "(rôle non détaillé dans l'audit — voir fichier)",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": ".gitignore",
+      "size": 494,
+      "lines": 17,
+      "role": "Exclusions git : node_modules, état local de l éditeur, artefacts de test. Versionne explicitement .vscode/tasks.json et .vscode/launch.json.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": ".vscode/launch.json",
+      "size": 1239,
+      "lines": 37,
+      "role": "Outillage éditeur : configurations de débogage navigateur de la PWA (Chrome/Edge). Racine ne se débogue pas sous Node. Jamais servi au client.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": ".vscode/tasks.json",
+      "size": 8045,
+      "lines": 169,
+      "role": "Outillage éditeur : une tâche par validation dev/ et une tâche par défaut qui enchaîne RELEASE_CHECKLIST.md. Jamais servi au client.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],
@@ -465,8 +495,8 @@
     },
     {
       "path": "dev/architecture.json",
-      "size": 85703,
-      "lines": 3235,
+      "size": 90366,
+      "lines": 3385,
       "role": "Livrable B de l'audit : manifeste machine (mode de chargement, inventaire, catégories, consumedBy/consumes). Vérifié par dev/verify-architecture.js.",
       "category": "ACTIF",
       "exposes": [],
@@ -493,6 +523,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/charge_suggestion_golden_master.js",
+      "size": 8706,
+      "lines": 164,
+      "role": "Validation : golden master des suggestions de charge, détecte toute dérive du moteur.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -560,6 +600,16 @@
       "consumes": []
     },
     {
+      "path": "dev/fixtures/charge_suggestion_golden_master.json",
+      "size": 22315,
+      "lines": 937,
+      "role": "Fixture de référence du golden master des suggestions de charge.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/gear_permissions_checks.js",
       "size": 5182,
       "lines": 86,
@@ -621,6 +671,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/movement_tuning_boundary_checks.js",
+      "size": 4005,
+      "lines": 80,
+      "role": "Validation : aucun seuil par mouvement en dur hors de scripts/charge/movement_tuning.js.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -1378,6 +1438,16 @@
       "consumes": []
     },
     {
+      "path": "docs/superpowers/plans/2026-07-26-charge-suggestion-refactor.md",
+      "size": 53832,
+      "lines": 990,
+      "role": "Plan daté de refonte de la suggestion de charge. Rapport périssable, pas un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "docs/superpowers/specs/2026-07-08-la-saison-design.md",
       "size": 12825,
       "lines": 193,
@@ -1515,6 +1585,16 @@
       ]
     },
     {
+      "path": "jsconfig.json",
+      "size": 724,
+      "lines": 24,
+      "role": "Outillage éditeur : active le vérificateur JS sur app.js, scripts/** et programs/**. Aucun build step, aucune dépendance, jamais servi au client.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "manifest.json",
       "size": 842,
       "lines": 38,
@@ -1533,6 +1613,36 @@
         "icon-192.png",
         "icon-512.png"
       ]
+    },
+    {
+      "path": "package-lock.json",
+      "size": 23967,
+      "lines": 711,
+      "role": "Verrou de versions npm pour Playwright. Aucun rôle runtime.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "package.json",
+      "size": 880,
+      "lines": 36,
+      "role": "Outillage de test : dépendances Playwright et scripts npm. Aucun rôle runtime, l app reste sans build step.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "playwright.config.ts",
+      "size": 474,
+      "lines": 25,
+      "role": "Configuration des tests end-to-end Playwright.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     },
     {
       "path": "programs/arnold_split_2026_adapte.js",
@@ -2339,8 +2449,8 @@
     },
     {
       "path": "scripts/charge/brain_explain.js",
-      "size": 13178,
-      "lines": 258,
+      "size": 13191,
+      "lines": 259,
       "role": "Moteur d'explication Brain (bouton (!)) : CoachBrainExplain.build.",
       "category": "ACTIF",
       "exposes": [
@@ -2357,8 +2467,8 @@
     },
     {
       "path": "scripts/charge/brain_journal.js",
-      "size": 6093,
-      "lines": 130,
+      "size": 6187,
+      "lines": 132,
       "role": "Journal consultatif des apprentissages Brain : CoachBrainJournal. Ne modifie jamais les charges.",
       "category": "ACTIF",
       "exposes": [
@@ -2375,8 +2485,8 @@
     },
     {
       "path": "scripts/charge/brain_memory.js",
-      "size": 9792,
-      "lines": 218,
+      "size": 9886,
+      "lines": 220,
       "role": "Mémoire Brain locale isolée par profil actif : CoachBrainMemory.",
       "category": "ACTIF",
       "exposes": [
@@ -2393,8 +2503,8 @@
     },
     {
       "path": "scripts/charge/brain_stats.js",
-      "size": 12802,
-      "lines": 264,
+      "size": 12815,
+      "lines": 265,
       "role": "Statistiques locales Brain par mouvement + intention (confiance, précision).",
       "category": "ACTIF",
       "exposes": [
@@ -2411,8 +2521,8 @@
     },
     {
       "path": "scripts/charge/equipement.js",
-      "size": 5769,
-      "lines": 135,
+      "size": 5782,
+      "lines": 136,
       "role": "Arrondi/affichage des charges selon EQUIPMENT_LOAD_RULES (roundLoadForExercise, displayLoadForEquipment).",
       "category": "ACTIF",
       "exposes": [
@@ -2432,8 +2542,8 @@
     },
     {
       "path": "scripts/charge/historique.js",
-      "size": 18418,
-      "lines": 376,
+      "size": 16725,
+      "lines": 347,
       "role": "Signaux historiques du moteur : e1RM Epley (epley1RM), projection entre plages de reps, agressivité par profil.",
       "category": "ACTIF",
       "exposes": [
@@ -2452,8 +2562,8 @@
     },
     {
       "path": "scripts/charge/index.js",
-      "size": 2715,
-      "lines": 30,
+      "size": 2728,
+      "lines": 31,
       "role": "Porte publique unique du moteur de charges : agrège les fonctions globales historiques sous window.CoachCharge.",
       "category": "ACTIF",
       "exposes": [
@@ -2470,8 +2580,8 @@
     },
     {
       "path": "scripts/charge/ml_refinement.js",
-      "size": 5194,
-      "lines": 137,
+      "size": 5207,
+      "lines": 138,
       "role": "CoachML : collecte silencieuse de vecteurs d'entraînement pour raffinement futur (recordTrainingVector).",
       "category": "ACTIF",
       "exposes": [
@@ -2493,8 +2603,8 @@
     },
     {
       "path": "scripts/charge/mouvements.js",
-      "size": 15572,
-      "lines": 309,
+      "size": 15585,
+      "lines": 310,
       "role": "Familles, alias et correspondances de mouvements ; construction du contexte (technique/wod/light) via buildContext.",
       "category": "ACTIF",
       "exposes": [
@@ -2512,8 +2622,8 @@
     },
     {
       "path": "scripts/charge/movement_profiles.js",
-      "size": 8000,
-      "lines": 236,
+      "size": 8013,
+      "lines": 237,
       "role": "Profils de mouvements (famille, sensibilité, vocabulaire Brain Explain) : CoachMovementProfiles.",
       "category": "ACTIF",
       "exposes": [
@@ -2529,9 +2639,29 @@
       "consumes": []
     },
     {
+      "path": "scripts/charge/movement_tuning.js",
+      "size": 5615,
+      "lines": 122,
+      "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "COACH_MOVEMENT_TUNING",
+        "coachFirstMatchingTuningLoad",
+        "coachMatchesAnyTuningPattern"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 334
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "scripts/charge/rpe.js",
-      "size": 2606,
-      "lines": 44,
+      "size": 2619,
+      "lines": 45,
       "role": "Prudence RPE : pas de hausse après RPE≥9, saut max, deload, statut surveillance.",
       "category": "ACTIF",
       "exposes": [
@@ -2548,8 +2678,8 @@
     },
     {
       "path": "scripts/charge/scaling.js",
-      "size": 6036,
-      "lines": 114,
+      "size": 6049,
+      "lines": 115,
       "role": "Mise à l'échelle des charges par profil : ratios de test + agressivité (coachUserLoadRatio, coachApplyUserLoadScale).",
       "category": "ACTIF",
       "exposes": [
@@ -2568,8 +2698,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 53701,
-      "lines": 975,
+      "size": 58426,
+      "lines": 1051,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [
@@ -2587,8 +2717,8 @@
     },
     {
       "path": "scripts/charge/utilitaires.js",
-      "size": 4549,
-      "lines": 101,
+      "size": 4562,
+      "lines": 102,
       "role": "Helpers du moteur + coachSanitizeImplausibleLoads (garde-fou charges aberrantes).",
       "category": "ACTIF",
       "exposes": [
@@ -2660,6 +2790,16 @@
           "line": 289
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/globals.d.ts",
+      "size": 3547,
+      "lines": 90,
+      "role": "Declarations des globales window.* pour l editeur. Pas du code : jamais charge par le navigateur, absent d index.html et du service worker. Supprimable sans effet sur l application.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -3229,6 +3369,16 @@
         "assets/fonts/inter-latin-ext.woff2",
         "assets/fonts/orbitron-latin.woff2"
       ]
+    },
+    {
+      "path": "tests/racine.spec.ts",
+      "size": 206,
+      "lines": 7,
+      "role": "Test end-to-end Playwright de l application.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     }
   ]
 }

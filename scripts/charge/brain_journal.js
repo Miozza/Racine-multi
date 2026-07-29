@@ -1,9 +1,11 @@
+// @ts-check
 // Racine V3.0 — Brain Journal
 // Journal consultatif des apprentissages Brain.
 // Ne modifie jamais les charges. Ne touche pas aux fichiers data/*.json.
 (function(){
   "use strict";
 
+  /** @type {any} — porte publique construite par assignations successives. */
   var api = window.CoachBrainJournal = window.CoachBrainJournal || {};
 
   function str(v){ return String(v==null?'':v).trim(); }

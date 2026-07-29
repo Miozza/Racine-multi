@@ -41,6 +41,7 @@ function buildContext(){
     'scripts/profiles/onboarding.js',
     'scripts/app_helpers.js',
     'scripts/charge/equipement.js',
+    'scripts/charge/movement_tuning.js',
     'scripts/charge/utilitaires.js',
     'scripts/charge/mouvements.js',
     'scripts/charge/rpe.js',

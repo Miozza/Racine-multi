@@ -1,3 +1,4 @@
+// @ts-check
 // Racine V1.11 — CoachML
 // Étape 1 : collecte silencieuse uniquement.
 // Le moteur de charges N'EST PAS modifié.

@@ -1,3 +1,4 @@
+// @ts-check
 // scripts/charge/movement_tuning.js
 // Racine — table de tuning centralisee par mouvement pour le moteur de charges.
 // Regroupe les seuils et motifs de noms de mouvements que suggestion.js et

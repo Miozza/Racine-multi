@@ -1,3 +1,4 @@
+// @ts-check
 // Racine V2.9 — Brain Movement Profiles
 (function(){
   "use strict";
