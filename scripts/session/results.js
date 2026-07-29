@@ -1,7 +1,7 @@
 // Coach Beurt V51.63 — session results domain
 // Résultats de séance : collecte, rendu, résumé et références.
 
-function collectSessionExercises(){
+function collectSessionExercises(opts){
   var w=buildWorkout(state.day,state.week);
   var items=[];
   w.blocks.forEach(function(b){
@@ -33,19 +33,153 @@ function collectSessionExercises(){
       });
     }
   });
+  // Mouvements faits hors programme (scripts/session/extra_movements.js).
+  // Ajoutés seulement quand l'appelant les demande : plannedMapFromSessionExercises()
+  // appelle cette fonction sans options, donc enrichSessionResults() ne leur
+  // attache aucune cible — ces séries n'étaient pas prévues.
+  if(opts&&opts.includeExtras){
+    try{
+      if(window.CoachExtraMovements&&CoachExtraMovements.buildItems){
+        items=items.concat(CoachExtraMovements.buildItems(items)||[]);
+      }
+    }catch(e){ /* la séance programmée reste saisissable */ }
+  }
   return items;
 }
 
+// Carte de résultats standard : poids / reps / RPE en contrôles − valeur +.
+// Partagée par les mouvements programmés et les mouvements hors programme :
+// même arrondi d'équipement, même suggestion de charge, mêmes contrôles.
+function appendSessionEntryCard(item, container){
+  if(!item||!container)return null;
+  var card=document.createElement("div");
+  card.className="sf-card"+(item.isExtra?" is-extra":"");
+  if(item.isExtra)card.setAttribute("data-extra-key",item.key);
+
+  var suggestedNum = parseLoad(item.suggested)||0;
+  var suggestedDisplay = suggestedNum?suggestedNum:"";
+
+  // Label cible reps pour affichage
+  var repLabel = item.targetMin===item.targetMax
+    ? item.targetMin+" reps"
+    : item.targetMin+"–"+item.targetMax+" reps";
+
+  var safeKey = escHtml(item.key);
+  var loadValue = escHtml(getGuidedResult(item.key,'load',suggestedDisplay));
+  var defaultReps = Math.round((item.targetMin + item.targetMax) / 2);
+  var currentReps = Number(getGuidedResult(item.key,'reps',defaultReps)) || defaultReps;
+  var currentRpe = Number(getGuidedResult(item.key,'rpe',8)) || 8;
+
+  card.innerHTML=
+    '<div class="sf-header">'+
+      '<div class="sf-name">'+escHtml(typeof displayMovementName==='function'?displayMovementName(item.name):item.name)+
+        (item.isExtra?'<span class="sf-extra-tag">hors programme</span>':'')+
+      '</div>'+
+      (suggestedNum?'<div class="sf-badge">'+suggestedNum+' lb · '+repLabel+'</div>':'')+
+      (item.isExtra?'<button type="button" class="sf-extra-remove" data-extra-remove="'+safeKey+'" aria-label="Retirer ce mouvement">✕</button>':'')+
+    '</div>'+
+    '<div class="results-step-control results-load-step">'+
+      '<span class="sf-label">POIDS</span>'+
+      '<div class="results-step-row results-load-row">'+
+        '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-exercise="'+escHtml(item.name||item.key)+'" data-results-step="load" data-step="-5">−</button>'+
+        '<div class="sf-weight-wrap">'+
+          '<span class="sf-weight-unit">lb</span>'+
+          '<input class="sf-input sf-weight-input" '+
+            'data-key="'+safeKey+'" data-field="load" '+
+            'type="number" inputmode="decimal" '+
+            'value="'+loadValue+'" '+
+            'placeholder="'+(suggestedNum||0)+'"/>'+
+        '</div>'+
+        '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-exercise="'+escHtml(item.name||item.key)+'" data-results-step="load" data-step="5">+</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="results-step-grid">'+
+      '<div class="results-step-control reps-step">'+
+        '<span class="sf-label">REPS — cible '+repLabel+'</span>'+
+        '<div class="results-step-row">'+
+          '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-results-step="reps" data-step="-1" data-min="0">−</button>'+
+          '<input class="sf-input sf-reps-input results-mini-input" data-key="'+safeKey+'" data-field="reps" type="number" inputmode="numeric" min="0" step="1" value="'+escHtml(guidedNumberText(currentReps))+'"/>'+
+          '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-results-step="reps" data-step="1" data-min="0">+</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="results-step-control rpe-step">'+
+        '<span class="sf-label">RPE</span>'+
+        '<div class="results-step-row">'+
+          '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-results-step="rpe" data-step="-0.5" data-min="1" data-max="10">−</button>'+
+          '<input class="sf-input sf-rpe-input results-mini-input" data-key="'+safeKey+'" data-field="rpe" type="number" inputmode="decimal" min="1" max="10" step="0.5" value="'+escHtml(guidedNumberText(currentRpe))+'"/>'+
+          '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-results-step="rpe" data-step="0.5" data-min="1" data-max="10">+</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    // Marqueur persistant : l'historique doit savoir que la série n'était pas au programme.
+    (item.isExtra?'<input class="sf-input" data-key="'+safeKey+'" data-field="extra" type="hidden" value="1"/>':'');
+
+  container.appendChild(card);
+
+  // ── Résultats compacts : poids / reps / RPE en contrôles − valeur + ──
+  function syncResultField(field, value){
+    setGuidedResult(item.key, field, value);
+  }
+
+  card.querySelectorAll('[data-results-step]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var field=btn.getAttribute('data-results-step');
+      var step=Number(btn.getAttribute('data-step'))||0;
+      var selector='.sf-input[data-field="'+field+'"]';
+      var inp=card.querySelector(selector);
+      if(!inp)return;
+
+      var current;
+      if(field==='load'){
+        current=parseLoad(inp.value)||parseLoad(item.suggested)||0;
+        inp.value=nextLoadForExercise(item.name||item.key, current, step<0?-1:1, item.suggested||item.load);
+      } else {
+        current=Number(inp.value)||0;
+        var min=btn.getAttribute('data-min');
+        var max=btn.getAttribute('data-max');
+        var next=current+step;
+        if(min!==null&&min!==''&&!isNaN(Number(min))) next=Math.max(Number(min),next);
+        if(max!==null&&max!==''&&!isNaN(Number(max))) next=Math.min(Number(max),next);
+        inp.value=guidedNumberText(next);
+      }
+      syncResultField(field, inp.value);
+    });
+  });
+
+  card.querySelectorAll('.sf-input[data-key][data-field]').forEach(function(inp){
+    inp.addEventListener('input',function(){ syncResultField(inp.getAttribute('data-field'), inp.value); });
+    inp.addEventListener('change',function(){
+      var field=inp.getAttribute('data-field');
+      if(field==='load'){
+        var n=parseLoad(inp.value);
+        if(n!==null&&n!==undefined){
+          var rounded=roundLoadForExercise(item.name||item.key, n, 'nearest', item.suggested||item.load);
+          if(rounded!==null&&rounded!==undefined) inp.value=guidedNumberText(rounded);
+        }
+      }
+      syncResultField(field, inp.value);
+    });
+  });
+
+  var removeBtn=card.querySelector('[data-extra-remove]');
+  if(removeBtn)removeBtn.addEventListener('click',function(){
+    try{
+      if(window.CoachExtraMovements&&CoachExtraMovements.remove)CoachExtraMovements.remove(item.key);
+    }catch(e){ /* jamais bloquant */ }
+  });
+
+  return card;
+}
+
 function renderSessionEntry(){
-  var items=collectSessionExercises();
+  var items=collectSessionExercises({includeExtras:true});
   var container=$("sessionFields");if(!container)return;
   container.innerHTML="";
 
   items.forEach(function(item){
-    var card=document.createElement("div");
-    card.className="sf-card";
-
     if(item.isWod){
+      var card=document.createElement("div");
+      card.className="sf-card";
       // ── Carte WOD intelligente ──
       card.innerHTML = '<div class="sf-name">'+item.name+'</div>';
       container.appendChild(card);
@@ -236,110 +370,24 @@ function renderSessionEntry(){
         updatePreview();
       })(item);
 
+      container.appendChild(card);
     } else {
-      var suggestedNum = parseLoad(item.suggested)||0;
-      var suggestedDisplay = suggestedNum?suggestedNum:"";
-
-      // Label cible reps pour affichage
-      var repLabel = item.targetMin===item.targetMax
-        ? item.targetMin+" reps"
-        : item.targetMin+"–"+item.targetMax+" reps";
-
-      var safeKey = escHtml(item.key);
-      var loadValue = escHtml(getGuidedResult(item.key,'load',suggestedDisplay));
-      var defaultReps = Math.round((item.targetMin + item.targetMax) / 2);
-      var currentReps = Number(getGuidedResult(item.key,'reps',defaultReps)) || defaultReps;
-      var currentRpe = Number(getGuidedResult(item.key,'rpe',8)) || 8;
-
-      card.innerHTML=
-        '<div class="sf-header">'+
-          '<div class="sf-name">'+escHtml(typeof displayMovementName==='function'?displayMovementName(item.name):item.name)+'</div>'+
-          (suggestedNum?'<div class="sf-badge">'+suggestedNum+' lb · '+repLabel+'</div>':'')+
-        '</div>'+
-        '<div class="results-step-control results-load-step">'+
-          '<span class="sf-label">POIDS</span>'+
-          '<div class="results-step-row results-load-row">'+
-            '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-exercise="'+escHtml(item.name||item.key)+'" data-results-step="load" data-step="-5">−</button>'+
-            '<div class="sf-weight-wrap">'+
-              '<span class="sf-weight-unit">lb</span>'+
-              '<input class="sf-input sf-weight-input" '+
-                'data-key="'+safeKey+'" data-field="load" '+
-                'type="number" inputmode="decimal" '+
-                'value="'+loadValue+'" '+
-                'placeholder="'+(suggestedNum||0)+'"/>'+
-            '</div>'+
-            '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-exercise="'+escHtml(item.name||item.key)+'" data-results-step="load" data-step="5">+</button>'+
-          '</div>'+
-        '</div>'+
-        '<div class="results-step-grid">'+
-          '<div class="results-step-control reps-step">'+
-            '<span class="sf-label">REPS — cible '+repLabel+'</span>'+
-            '<div class="results-step-row">'+
-              '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-results-step="reps" data-step="-1" data-min="0">−</button>'+
-              '<input class="sf-input sf-reps-input results-mini-input" data-key="'+safeKey+'" data-field="reps" type="number" inputmode="numeric" min="0" step="1" value="'+escHtml(guidedNumberText(currentReps))+'"/>'+
-              '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-results-step="reps" data-step="1" data-min="0">+</button>'+
-            '</div>'+
-          '</div>'+
-          '<div class="results-step-control rpe-step">'+
-            '<span class="sf-label">RPE</span>'+
-            '<div class="results-step-row">'+
-              '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-results-step="rpe" data-step="-0.5" data-min="1" data-max="10">−</button>'+
-              '<input class="sf-input sf-rpe-input results-mini-input" data-key="'+safeKey+'" data-field="rpe" type="number" inputmode="decimal" min="1" max="10" step="0.5" value="'+escHtml(guidedNumberText(currentRpe))+'"/>'+
-              '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-results-step="rpe" data-step="0.5" data-min="1" data-max="10">+</button>'+
-            '</div>'+
-          '</div>'+
-        '</div>';
-    }
-
-    container.appendChild(card);
-
-    if(!item.isWod){
-      // ── Résultats compacts : poids / reps / RPE en contrôles − valeur + ──
-      function syncResultField(field, value){
-        setGuidedResult(item.key, field, value);
-      }
-
-      card.querySelectorAll('[data-results-step]').forEach(function(btn){
-        btn.addEventListener('click',function(){
-          var field=btn.getAttribute('data-results-step');
-          var step=Number(btn.getAttribute('data-step'))||0;
-          var selector='.sf-input[data-field="'+field+'"]';
-          var inp=card.querySelector(selector);
-          if(!inp)return;
-
-          var current;
-          if(field==='load'){
-            current=parseLoad(inp.value)||parseLoad(item.suggested)||0;
-            inp.value=nextLoadForExercise(item.name||item.key, current, step<0?-1:1, item.suggested||item.load);
-          } else {
-            current=Number(inp.value)||0;
-            var min=btn.getAttribute('data-min');
-            var max=btn.getAttribute('data-max');
-            var next=current+step;
-            if(min!==null&&min!==''&&!isNaN(Number(min))) next=Math.max(Number(min),next);
-            if(max!==null&&max!==''&&!isNaN(Number(max))) next=Math.min(Number(max),next);
-            inp.value=guidedNumberText(next);
-          }
-          syncResultField(field, inp.value);
-        });
-      });
-
-      card.querySelectorAll('.sf-input[data-key][data-field]').forEach(function(inp){
-        inp.addEventListener('input',function(){ syncResultField(inp.getAttribute('data-field'), inp.value); });
-        inp.addEventListener('change',function(){
-          var field=inp.getAttribute('data-field');
-          if(field==='load'){
-            var n=parseLoad(inp.value);
-            if(n!==null&&n!==undefined){
-              var rounded=roundLoadForExercise(item.name||item.key, n, 'nearest', item.suggested||item.load);
-              if(rounded!==null&&rounded!==undefined) inp.value=guidedNumberText(rounded);
-            }
-          }
-          syncResultField(field, inp.value);
-        });
-      });
+      appendSessionEntryCard(item, container);
     }
   });
+
+  // Bouton « + Ajouter un mouvement » en fin de liste. Toute la logique vit dans
+  // scripts/session/extra_movements.js ; si le module manque, la séance
+  // programmée reste saisissable.
+  try{
+    if(window.CoachExtraMovements&&CoachExtraMovements.mount){
+      CoachExtraMovements.mount({
+        container:container,
+        sessionItems:items,
+        renderCard:function(extraItem){ return appendSessionEntryCard(extraItem, container); }
+      });
+    }
+  }catch(e){ /* jamais bloquant */ }
 }
 
 function collectSessionResults(){

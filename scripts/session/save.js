@@ -25,6 +25,7 @@ function buildSessionPayload(results){
 
 function returnFromResultsToWod(){
   guidedResultCache = {};
+  try{ if(window.CoachExtraMovements)CoachExtraMovements.clear(); }catch(e){ /* jamais bloquant */ }
   guidedResultsMode=false;
   document.body.classList.remove("guided-results-active");
   document.body.classList.remove("results-view-active");
@@ -79,6 +80,8 @@ function setupSessionSave(){
       state.history.push(entry);
       save();
     }
+    // Mouvements hors programme : la liste ne vit que le temps de l'écran Résultats.
+    try{ if(window.CoachExtraMovements)CoachExtraMovements.clear(); }catch(e){ /* jamais bloquant */ }
     // Brain V2.1 — mémoire locale par mouvement + intention.
     // Apprend uniquement des résultats déjà enrichis; aucun effet réseau et aucune donnée durable statique modifiée.
     try{

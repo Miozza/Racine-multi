@@ -6643,3 +6643,136 @@ body.is-client [data-ai-clear]{display:none!important}
   .pcx-cycle-colhead{display:none;}
   .pcx-cycle-rowhead{justify-content:flex-start;margin-top:8px;}
 }
+
+/* ── Résultats : mouvement fait hors programme ───────────────────────────────
+   Un mouvement ajouté depuis l'écran Résultats reçoit la carte standard
+   (.sf-card) ; ces règles ne posent que le repère visuel « hors programme »,
+   le ✕ de retrait et le sélecteur plein écran. Palette et polices existantes
+   seulement : --cyan / --blue, Orbitron pour le HUD, Inter pour le texte. */
+.sf-card.is-extra{
+  border-color: rgba(0,212,255,.42);
+  box-shadow: 0 0 18px rgba(0,212,255,.10) inset;
+}
+.sf-extra-tag{
+  display:block;margin-top:4px;
+  font-family:var(--font-hud);font-size:9px;font-weight:700;
+  letter-spacing:.10em;text-transform:uppercase;color:var(--cyan);
+}
+.sf-extra-remove{
+  flex:0 0 auto;min-width:46px;min-height:46px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,34,68,.10);border:1px solid rgba(255,34,68,.40);
+  border-radius:10px;color:var(--red);
+  font-family:var(--font-hud);font-size:15px;line-height:1;cursor:pointer;
+}
+.sf-extra-remove:active{background:rgba(255,34,68,.20);}
+
+.extra-mv-add-row{margin-top:2px;}
+.extra-mv-add-btn{
+  width:100%;min-height:48px;
+  background:rgba(0,212,255,.06);
+  border:1px dashed rgba(0,212,255,.45);
+  border-radius:12px;color:var(--cyan);
+  font-family:var(--font-hud);font-size:13px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+}
+.extra-mv-add-btn:active{background:rgba(0,212,255,.14);}
+.extra-mv-add-hint{
+  margin-top:6px;text-align:center;
+  font-family:var(--font-main);font-size:12px;color:var(--muted);
+}
+
+/* Sélecteur plein écran. Ne se ferme que par Confirmer ou ✕ : aucun
+   gestionnaire sur le fond, une sélection en cours ne doit pas sauter. */
+.extra-mv-modal{
+  position:fixed;inset:0;z-index:760;
+  background:rgba(2,4,10,.92);
+  display:flex;align-items:stretch;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+}
+.extra-mv-modal.visible{opacity:1;pointer-events:all;}
+.extra-mv-sheet{
+  display:flex;flex-direction:column;
+  width:100%;max-width:680px;height:100%;
+  background:var(--panel);
+  border-left:1px solid rgba(0,212,255,.22);
+  border-right:1px solid rgba(0,212,255,.22);
+  padding:calc(12px + var(--safe-top)) 14px calc(10px + var(--safe-bot));
+}
+.extra-mv-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+}
+.extra-mv-eyebrow{
+  font-family:var(--font-hud);font-size:10px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);
+}
+.extra-mv-title{
+  font-family:var(--font-hud);font-size:17px;font-weight:800;
+  letter-spacing:.04em;color:var(--white);margin-top:3px;
+}
+.extra-mv-close{
+  flex:0 0 auto;min-width:46px;min-height:46px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:12px;color:var(--text2);
+  font-family:var(--font-hud);font-size:16px;line-height:1;cursor:pointer;
+}
+.extra-mv-search{
+  width:100%;min-height:48px;margin-top:12px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:12px;
+  padding:0 12px;color:var(--text);
+  font-family:var(--font-main);
+  font-size:16px; /* 16px minimum : en dessous, iOS zoome le champ tout seul. */
+  -webkit-appearance:none;appearance:none;
+}
+.extra-mv-search:focus{outline:none;border-color:rgba(0,212,255,.55);}
+.extra-mv-list{
+  flex:1 1 auto;min-height:0;margin-top:12px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+}
+.extra-mv-section+.extra-mv-section{margin-top:14px;}
+.extra-mv-section-title{
+  font-family:var(--font-hud);font-size:10px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 6px 2px;
+}
+.extra-mv-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;min-height:48px;margin-bottom:6px;padding:8px 12px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:11px;
+  color:var(--text);font-family:var(--font-main);font-size:15px;
+  text-align:left;cursor:pointer;
+}
+.extra-mv-row-name{min-width:0;overflow-wrap:anywhere;}
+.extra-mv-row-mark{
+  flex:0 0 auto;font-family:var(--font-hud);font-size:15px;color:var(--cyan);
+}
+.extra-mv-row.is-picked{
+  border-color:rgba(0,212,255,.65);background:rgba(0,212,255,.10);
+}
+.extra-mv-row.is-blocked{
+  opacity:.45;cursor:default;
+  border-style:dashed;background:transparent;
+}
+.extra-mv-row-tag{
+  flex:0 0 auto;
+  font-family:var(--font-hud);font-size:9px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+}
+.extra-mv-empty{
+  font-family:var(--font-main);font-size:14px;color:var(--muted);padding:14px 2px;
+}
+.extra-mv-foot{padding-top:10px;border-top:1px solid var(--border2);}
+.extra-mv-confirm{
+  width:100%;min-height:50px;
+  background:rgba(30,144,255,.14);border:1px solid rgba(30,144,255,.45);
+  border-radius:12px;color:var(--blue2);
+  font-family:var(--font-hud);font-size:14px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+}
+.extra-mv-confirm.is-armed{
+  background:rgba(0,212,255,.18);border-color:rgba(0,212,255,.65);color:var(--cyan);
+}
+.extra-mv-foot-note{
+  margin-top:6px;text-align:center;
+  font-family:var(--font-main);font-size:11px;color:var(--muted);
+}
