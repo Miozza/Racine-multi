@@ -1,3 +1,4 @@
+// @ts-check
 // Racine — Brain V2 statistiques locales.
 // Objectif : apprendre par mouvement + intention sans alourdir la saisie utilisateur.
 // Script global volontaire : aucune API externe, aucune IA distante.

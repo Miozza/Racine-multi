@@ -1,3 +1,4 @@
+// @ts-check
 /*
   Coach Beurt V51.62 — API publique moteur de charges.
   Ce fichier ne contient pas la logique profonde : il expose une seule porte d'entrée stable.

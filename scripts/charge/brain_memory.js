@@ -1,8 +1,10 @@
+// @ts-check
 // Racine — Brain V2.1 mémoire locale.
 // Objectif : Brain accumule une expérience par mouvement + intention, sans API externe.
 // Stockage : localStorage isolé par profil actif. Aucun fichier data/*.json n'est modifié.
 
 (function(){
+  /** @type {any} — porte publique construite par assignations successives. */
   var api = window.CoachBrainMemory = window.CoachBrainMemory || {};
   var VERSION = 'brain-memory-v1';
   var MAX_JOURNAL = 120;

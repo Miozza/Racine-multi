@@ -1,3 +1,4 @@
+// @ts-check
 // Racine — mise à l'échelle des charges par utilisateur.
 // Script global volontaire : pas de ES modules. Charge après mouvements.js et
 // avant suggestion.js. N'altère jamais le moteur lui-même : il transforme

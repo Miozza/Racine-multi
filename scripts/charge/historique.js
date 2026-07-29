@@ -1,3 +1,4 @@
+// @ts-check
 // Coach Beurt - historique et signaux du moteur de charges.
 // Script global volontaire : pas de ES modules.
 
@@ -46,10 +47,12 @@ function coachDefaultLoadSeedForMovement(label, targetReps){
   var defaults=(typeof officialCharges==='function')?officialCharges():(window.DEFAULT_CHARGES||{});
   for(var i=0;i<labels.length;i++){
     if(defaults&&defaults[labels[i]]){
+      /** @type {any} — 'n' est redeclare plus bas en chaine (hoisting var). */
       var n=parseLoad(defaults[labels[i]]);
       if(n||n===0)return n;
     }
   }
+  /** @type {any} — meme 'n' que plus haut (hoisting var), type different. */
   var n=coachNormalizeMoveText(labels.join(' '));
   var T=window.COACH_MOVEMENT_TUNING||{};
   return coachFirstMatchingTuningLoad(n, T.defaultLoadSeeds);

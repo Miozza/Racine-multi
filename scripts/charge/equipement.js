@@ -1,3 +1,4 @@
+// @ts-check
 // Coach Beurt V51.63 — extraction prudente moteur de charges.
 // Script global volontaire : pas de ES modules, pas de changement de comportement.
 
