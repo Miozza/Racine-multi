@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23",
+  "generatedAt": "2026-07-29",
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 162,
+    "ACTIF": 175,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -13,6 +13,36 @@
       "size": 1809,
       "lines": 63,
       "role": "(rôle non détaillé dans l'audit — voir fichier)",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": ".gitignore",
+      "size": 494,
+      "lines": 17,
+      "role": "Exclusions git : node_modules, état local de l éditeur, artefacts de test. Versionne explicitement .vscode/tasks.json et .vscode/launch.json.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": ".vscode/launch.json",
+      "size": 1239,
+      "lines": 37,
+      "role": "Outillage éditeur : configurations de débogage navigateur de la PWA (Chrome/Edge). Racine ne se débogue pas sous Node. Jamais servi au client.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": ".vscode/tasks.json",
+      "size": 8045,
+      "lines": 169,
+      "role": "Outillage éditeur : une tâche par validation dev/ et une tâche par défaut qui enchaîne RELEASE_CHECKLIST.md. Jamais servi au client.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],
@@ -496,6 +526,16 @@
       "consumes": []
     },
     {
+      "path": "dev/charge_suggestion_golden_master.js",
+      "size": 8706,
+      "lines": 164,
+      "role": "Validation : golden master des suggestions de charge, détecte toute dérive du moteur.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/client_charge_safety_checks.js",
       "size": 16971,
       "lines": 292,
@@ -560,6 +600,16 @@
       "consumes": []
     },
     {
+      "path": "dev/fixtures/charge_suggestion_golden_master.json",
+      "size": 22315,
+      "lines": 937,
+      "role": "Fixture de référence du golden master des suggestions de charge.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/gear_permissions_checks.js",
       "size": 5182,
       "lines": 86,
@@ -621,6 +671,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/movement_tuning_boundary_checks.js",
+      "size": 4005,
+      "lines": 80,
+      "role": "Validation : aucun seuil par mouvement en dur hors de scripts/charge/movement_tuning.js.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -1378,6 +1438,16 @@
       "consumes": []
     },
     {
+      "path": "docs/superpowers/plans/2026-07-26-charge-suggestion-refactor.md",
+      "size": 53832,
+      "lines": 990,
+      "role": "Plan daté de refonte de la suggestion de charge. Rapport périssable, pas un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "docs/superpowers/specs/2026-07-08-la-saison-design.md",
       "size": 12825,
       "lines": 193,
@@ -1515,6 +1585,16 @@
       ]
     },
     {
+      "path": "jsconfig.json",
+      "size": 328,
+      "lines": 21,
+      "role": "Outillage éditeur : active le vérificateur JS sur app.js, scripts/** et programs/**. Aucun build step, aucune dépendance, jamais servi au client.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "manifest.json",
       "size": 842,
       "lines": 38,
@@ -1533,6 +1613,36 @@
         "icon-192.png",
         "icon-512.png"
       ]
+    },
+    {
+      "path": "package-lock.json",
+      "size": 23967,
+      "lines": 711,
+      "role": "Verrou de versions npm pour Playwright. Aucun rôle runtime.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "package.json",
+      "size": 880,
+      "lines": 36,
+      "role": "Outillage de test : dépendances Playwright et scripts npm. Aucun rôle runtime, l app reste sans build step.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "playwright.config.ts",
+      "size": 474,
+      "lines": 25,
+      "role": "Configuration des tests end-to-end Playwright.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     },
     {
       "path": "programs/arnold_split_2026_adapte.js",
@@ -2529,6 +2639,26 @@
       "consumes": []
     },
     {
+      "path": "scripts/charge/movement_tuning.js",
+      "size": 5602,
+      "lines": 121,
+      "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "COACH_MOVEMENT_TUNING",
+        "coachFirstMatchingTuningLoad",
+        "coachMatchesAnyTuningPattern"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 334
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "scripts/charge/rpe.js",
       "size": 2606,
       "lines": 44,
@@ -3229,6 +3359,16 @@
         "assets/fonts/inter-latin-ext.woff2",
         "assets/fonts/orbitron-latin.woff2"
       ]
+    },
+    {
+      "path": "tests/racine.spec.ts",
+      "size": 206,
+      "lines": 7,
+      "role": "Test end-to-end Playwright de l application.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     }
   ]
 }

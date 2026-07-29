@@ -164,7 +164,9 @@ assert(badNames.size === 0, badNames.size === 0
   : 'Règle des noms violée — ' + [...badNames].slice(0, 6).join(' | '));
 
 // ── 5. Repères moteur : plus de mouvement chargé sans seed ───────────────────
-const seedSrc = read('scripts/charge/historique.js');
+// Les seeds de charge par mouvement vivent dans movement_tuning.js (autorité
+// unique des seuils par mouvement), plus dans historique.js.
+const seedSrc = read('scripts/charge/movement_tuning.js');
 ['hip thrust','db rdl','goblet','pull through','kb swing','farmer carry','landmine']
   .forEach(k => assert(seedSrc.includes(k), 'Seed moteur présent pour : ' + k));
 

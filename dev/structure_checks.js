@@ -48,9 +48,16 @@ const detectedModeReason = forcedUpdatePackage ? 'update (--update-package)' : (
 const allowedRootFiles = new Set([
   'app.js','index.html','styles.css','manifest.json','service-worker.js',
   'README.md','CHANGELOG.md','ETAT_ACTUEL.md','RELEASE_CHECKLIST.md','CLAUDE.md',
-  'apple-touch-icon.png','apple-touch-icon-precomposed.png','icon-180.png','icon-192.png','icon-512.png'
+  'apple-touch-icon.png','apple-touch-icon-precomposed.png','icon-180.png','icon-192.png','icon-512.png',
+  // Outillage de développement. Jamais servi au client, jamais référencé par
+  // index.html, aucune influence sur le runtime de l'app.
+  '.gitignore','jsconfig.json','package.json','package-lock.json','playwright.config.ts'
 ]);
-const allowedDirs = new Set(['programs','scripts','data','dev','docs','.github','.claude','assets']);
+const allowedDirs = new Set([
+  'programs','scripts','data','dev','docs','.github','.claude','assets',
+  // Outillage de développement (voir ci-dessus).
+  '.vscode','tests'
+]);
 
 // 1. Structure racine.
 allFiles.forEach(f => {
