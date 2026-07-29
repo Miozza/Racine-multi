@@ -1,0 +1,168 @@
+{
+  "version": "2.0.0",
+
+  "//": "Racine — outillage de développement uniquement. Aucune dépendance : les scripts dev/ tournent avec le node du système, en CommonJS. Rien ici n'est servi au client.",
+
+  "type": "shell",
+
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+
+  "presentation": {
+    "panel": "shared",
+    "clear": true,
+    "echo": true,
+    "reveal": "always",
+    "focus": false,
+    "showReuseMessage": false
+  },
+
+  "//problemMatcher": "Deux motifs. 1) Les scripts dev/ n'émettent pas de 'fichier:ligne' : ils impriment 'ÉCHEC <script>.js' puis une liste ' - message' ou 'N. message'. Le premier motif accroche donc l'en-tête ÉCHEC (résolu dans dev/) et boucle sur les messages, ce qui rend le script fautif cliquable. Les scripts qui réussissent impriment 'OK ...' et ne déclenchent rien. 2) Le second motif attrape les plantages node (stack trace) avec fichier:ligne:colonne réels.",
+
+  "problemMatcher": [
+    {
+      "owner": "racine",
+      "source": "dev",
+      "severity": "error",
+      "fileLocation": ["relative", "${workspaceFolder}/dev"],
+      "pattern": [
+        {
+          "regexp": "^(?:ÉCHEC|ECHEC)\\s+(\\S+\\.js)\\s*$",
+          "file": 1
+        },
+        {
+          "regexp": "^\\s*(?:-|\\d+\\.)\\s+(.+?)\\s*$",
+          "message": 1,
+          "loop": true
+        }
+      ]
+    },
+    {
+      "owner": "racine-node",
+      "source": "node",
+      "severity": "error",
+      "fileLocation": "absolute",
+      "pattern": [
+        {
+          "regexp": "^(?:Uncaught\\s+)?(\\w*(?:Error|Exception)): (.*)$",
+          "message": 2
+        },
+        {
+          "regexp": "^\\s+at\\s+(?:.*?\\()?(\\/[^\\s()]+\\.js):(\\d+):(\\d+)\\)?\\s*$",
+          "file": 1,
+          "line": 2,
+          "column": 3
+        }
+      ]
+    }
+  ],
+
+  "tasks": [
+    {
+      "label": "Racine — serveur local",
+      "detail": "Sert le dépôt sur http://localhost:8080 pour déboguer la PWA. Serveur écrit avec les seuls modules natifs de node (http, fs, path) : aucune dépendance, aucun node_modules requis. Utilisé automatiquement par F5.",
+      "command": "node -e \"const h=require('http'),f=require('fs'),p=require('path');const m={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon','.webmanifest':'application/manifest+json'};console.log('Racine: demarrage du serveur local');h.createServer(function(q,s){var u=decodeURIComponent(q.url.split('?')[0]);if(u==='/')u='/index.html';var fp=p.join(process.cwd(),u);f.readFile(fp,function(e,d){if(e){s.writeHead(404);return s.end('404');}s.writeHead(200,{'Content-Type':m[p.extname(fp).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store'});s.end(d);});}).listen(8080,function(){console.log('Racine: pret sur http://localhost:8080');});\"",
+      "isBackground": true,
+      "presentation": { "panel": "dedicated", "clear": false, "reveal": "silent" },
+      "problemMatcher": {
+        "owner": "racine-serve",
+        "pattern": [{ "regexp": "^__jamais__$", "file": 1, "message": 2 }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Racine: demarrage",
+          "endsPattern": "^Racine: pret sur"
+        }
+      }
+    },
+
+    {
+      "label": "Racine — toutes les vérifications",
+      "detail": "Enchaîne les 36 validations de RELEASE_CHECKLIST.md dans l'ordre et s'arrête au premier échec.",
+      "command": "node dev/multi_profile_checks.js && node dev/ai_import_fallback_smoke.js && node dev/ai_cycle_movement_bridge_smoke.js && node dev/ai_advice_clear_smoke.js && node dev/ai_advice_modal_refresh_smoke.js && node dev/ai_influence_smoke.js && node dev/ai_export_movement_context_smoke.js && node dev/simulate_multi_users.js && node dev/simulate_users.js && node dev/charge_engine_checks.js && node dev/charge_suggestion_golden_master.js && node dev/movement_tuning_boundary_checks.js && node dev/suggest_helper_checks.js && node dev/client_charge_safety_checks.js && node dev/progression_contract_checks.js && node dev/regression_checks.js --full && node dev/structure_checks.js --full && node dev/client_view_checks.js && node dev/program_catalog_checks.js && node dev/season_checks.js && node dev/program_calibration_checks.js && node dev/crossfit_quality_checks.js && node dev/strict_muscle_up_checks.js && node dev/movement_swaps_checks.js && node dev/prescription_checks.js && node dev/repro_bug1_charges_client.js && node dev/reference_seed_checks.js && node dev/reference_seed_stress.js && node dev/json_export_ios_checks.js && node dev/profile_backup_ui_checks.js && node dev/history_progress_checks.js && node dev/gear_permissions_checks.js && node dev/pc_cycle_view_checks.js && node dev/pc_progress_compare_checks.js && node dev/deload_guard_checks.js && node dev/verify-architecture.js",
+      "group": { "kind": "test", "isDefault": true }
+    },
+
+    {
+      "label": "Racine — structure_checks",
+      "detail": "Frontières du repo, fichiers racine autorisés, contrat de version.",
+      "command": "node dev/structure_checks.js --full",
+      "group": "test"
+    },
+    {
+      "label": "Racine — regression_checks",
+      "detail": "Non-régression générale de l'app.",
+      "command": "node dev/regression_checks.js --full",
+      "group": "test"
+    },
+    {
+      "label": "Racine — charge_engine_checks",
+      "detail": "Moteur de charges : Epley, RPE, contexte, arrondi équipement, Brain.",
+      "command": "node dev/charge_engine_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — progression_contract_checks",
+      "detail": "Contrat de progression des charges (principal vs WOD/technique).",
+      "command": "node dev/progression_contract_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — verify-architecture",
+      "detail": "Cohérence entre les fichiers réels et dev/architecture.json.",
+      "command": "node dev/verify-architecture.js",
+      "group": "test"
+    },
+
+    {
+      "label": "Racine — charge_suggestion_golden_master",
+      "detail": "Golden master des suggestions de charge : détecte toute dérive du moteur.",
+      "command": "node dev/charge_suggestion_golden_master.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — movement_tuning_boundary_checks",
+      "detail": "Aucun seuil par mouvement en dur hors de scripts/charge/movement_tuning.js.",
+      "command": "node dev/movement_tuning_boundary_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — client_charge_safety_checks",
+      "detail": "Garde-fous de sécurité des charges côté client.",
+      "command": "node dev/client_charge_safety_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — deload_guard_checks",
+      "detail": "Garde-fou deload et prudence RPE.",
+      "command": "node dev/deload_guard_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — multi_profile_checks",
+      "detail": "Isolation des données entre profils athlètes.",
+      "command": "node dev/multi_profile_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — program_catalog_checks",
+      "detail": "Catalogue des programmes et permissions de visibilité.",
+      "command": "node dev/program_catalog_checks.js",
+      "group": "test"
+    },
+    {
+      "label": "Racine — json_export_ios_checks",
+      "detail": "Compatibilité ascendante de l'export/import JSON, seule sauvegarde du projet.",
+      "command": "node dev/json_export_ios_checks.js",
+      "group": "test"
+    },
+
+    {
+      "label": "Racine — vérification JS (jsconfig)",
+      "detail": "Passe le vérificateur TypeScript sur app.js + scripts/** + programs/** via jsconfig.json. Utilise le tsc déjà présent sur la machine, n'installe rien.",
+      "command": "npx --no-install tsc -p jsconfig.json",
+      "group": "test",
+      "problemMatcher": ["$tsc"]
+    }
+  ]
+}

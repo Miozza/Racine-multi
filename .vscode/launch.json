@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+
+  "//": "Racine est une PWA : elle se débogue dans un NAVIGATEUR, jamais avec le débogueur Node. Lancer app.js sous Node échoue immédiatement sur 'window is not defined', puisque c'est du code navigateur chargé par balise <script>. Le serveur HTTP est indispensable : en file://, le service worker et le chargement de data/ ne fonctionnent pas.",
+
+  "configurations": [
+    {
+      "name": "Racine — déboguer dans Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8080/index.html",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "Racine — serveur local",
+      "sourceMaps": false,
+      "smartStep": false
+    },
+    {
+      "name": "Racine — déboguer dans Edge",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:8080/index.html",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "Racine — serveur local",
+      "sourceMaps": false,
+      "smartStep": false
+    },
+    {
+      "name": "Racine — attacher à un Chrome déjà ouvert",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "url": "http://localhost:8080/*",
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}

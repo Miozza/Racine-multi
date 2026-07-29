@@ -5,5 +5,12 @@ ruvector.db
 
 # Node modules and local editor state
 node_modules/
-.vscode/
 test-results/
+
+# Éditeur : on ignore l'état local de VS Code, mais on versionne l'outillage
+# partagé (tâches de validation + configs de débogage de la PWA).
+# Note git : il faut exclure le CONTENU (.vscode/*) et non le dossier (.vscode/),
+# sinon les négations ci-dessous sont ignorées.
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
