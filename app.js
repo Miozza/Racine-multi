@@ -1,5 +1,5 @@
-// Racine V4.5.22 — completedDays ne mélange plus les programmes lors du suivi hebdo
-var APP_VERSION = "V4.5.22";
+// Racine V4.5.23 — ajouter un mouvement fait hors programme depuis l'écran Résultats
+var APP_VERSION = "V4.5.23";
 
 // Architecture stable
 // programs/*.js = plan prévu
