@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "target": "ES2020",
+    "module": "none",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "strict": false,
+    "noEmit": true
+  },
+  "include": [
+    "app.js",
+    "scripts/**/*.js",
+    "programs/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dev/**",
+    ".git"
+  ]
+}
