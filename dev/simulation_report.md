@@ -1,7 +1,5 @@
 # Rapport simulation multi-utilisateurs — Racine V1.16-multi
 
-Généré: 2026-07-22T19:09:46.744Z
-
 ## Verdict global
 
 - Profils simulés: **10**

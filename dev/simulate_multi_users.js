@@ -483,8 +483,10 @@ function evaluateProfile(persona) {
 }
 
 const results = personas.map(evaluateProfile);
+// Pas d'horodatage dans le rapport : il est réécrit à chaque exécution, et une
+// date mouvante salissait le dépôt à chaque passage des validations. Sans elle,
+// un diff sur simulation_report.* signifie qu'un verdict a réellement change.
 const summary = {
-  generatedAt: new Date().toISOString(),
   version: 'V1.16-multi',
   personas: results.length,
   pass: results.filter(r => r.status === 'PASS').length,
@@ -497,8 +499,6 @@ const summary = {
 function makeMarkdown() {
   const lines = [];
   lines.push('# Rapport simulation multi-utilisateurs — Racine V1.16-multi');
-  lines.push('');
-  lines.push(`Généré: ${summary.generatedAt}`);
   lines.push('');
   lines.push('## Verdict global');
   lines.push('');
