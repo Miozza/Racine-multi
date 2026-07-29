@@ -29,7 +29,7 @@
   var DEFAULT_FORMAT = "3x8";
   var DEFAULT_REPS = 8;
 
-  var chosen = [];          // noms canoniques, dans l'ordre d'ajout
+  var chosen = [];          // noms exacts du catalogue, dans l'ordre d'ajout
   var host = null;          // #sessionFields
   var addWrap = null;       // bloc du bouton « + Ajouter un mouvement »
   var renderCard = null;    // rendu de carte fourni par scripts/session/results.js
@@ -100,13 +100,26 @@
     });
     return names;
   }
+  // Index forme comparable -> nom qui occupe la place. On garde le nom pour
+  // pouvoir dire QUI bloque dans le sélecteur : un grisé sans raison ressemble à
+  // un bug quand le nom affiché n'est pas celui du mouvement programmé
+  // (« Single-Leg Hip Thrust » grisé par « Barbell Hip Thrust »).
+  // Premier inscrit gagne : occupiedNames() pousse la clé avant le nom de bloc,
+  // donc le libellé retenu est déjà nettoyé de son préfixe « A1. ».
   function occupiedIndex(names){
     var idx = {};
-    (names || []).forEach(function(n){ formsOf(n).forEach(function(k){ idx[k] = true; }); });
+    (names || []).forEach(function(n){
+      var label = String(n == null ? "" : n).trim();
+      if(!label) return;
+      formsOf(label).forEach(function(k){ if(!idx[k]) idx[k] = label; });
+    });
     return idx;
   }
-  function isOccupied(idx, name){
-    return formsOf(name).some(function(k){ return !!idx[k]; });
+  // Retourne le nom occupant, ou "" si la place est libre.
+  function occupiedBy(idx, name){
+    var forms = formsOf(name);
+    for(var i = 0; i < forms.length; i++) if(idx[forms[i]]) return idx[forms[i]];
+    return "";
   }
 
   // ── Items de séance ────────────────────────────────────────────────────────
@@ -153,7 +166,7 @@
     var idx = occupiedIndex(occupiedNames(existingItems));
     var out = [];
     chosen.forEach(function(name){
-      if(isOccupied(idx, name)) return; // la saisie programmée reste prioritaire
+      if(occupiedBy(idx, name)) return; // la saisie programmée reste prioritaire
       out.push(buildItem(name));
     });
     return out;
@@ -277,10 +290,14 @@
 
     function rowHtml(name){
       var key = norm(name);
-      if(isOccupied(occupied, name)){
+      var owner = occupiedBy(occupied, name);
+      if(owner){
+        // Même nom : « déjà dans la séance » suffit. Nom différent qui retombe
+        // sur la même capacité : on nomme le mouvement qui occupe la place.
+        var why = (norm(owner) === key) ? "déjà dans la séance" : ("déjà : " + owner);
         return '<button type="button" class="extra-mv-row is-blocked" disabled>'+
           '<span class="extra-mv-row-name">'+esc(name)+'</span>'+
-          '<span class="extra-mv-row-tag">déjà dans la séance</span>'+
+          '<span class="extra-mv-row-tag">'+esc(why)+'</span>'+
         '</button>';
       }
       var on = !!picked[key];
@@ -345,7 +362,7 @@
     function commit(){
       var names = Object.keys(picked).map(function(k){ return picked[k]; });
       names.forEach(function(label){
-        if(isOccupied(occupied, label)) return;
+        if(occupiedBy(occupied, label)) return;
         if(chosen.some(function(n){ return norm(n) === norm(label); })) return;
         chosen.push(label);
         occupied = occupiedIndex(occupiedNames(sessionItems).concat(chosen));

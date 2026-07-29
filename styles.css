@@ -6753,9 +6753,11 @@ body.is-client [data-ai-clear]{display:none!important}
   opacity:.45;cursor:default;
   border-style:dashed;background:transparent;
 }
+/* Le nom du mouvement qui bloque peut être long : l'étiquette plafonne sa
+   largeur et passe à la ligne au lieu d'écraser le nom de la ligne. */
 .extra-mv-row-tag{
-  flex:0 0 auto;
-  font-family:var(--font-hud);font-size:9px;font-weight:700;
+  flex:0 1 auto;max-width:52%;text-align:right;overflow-wrap:anywhere;
+  font-family:var(--font-hud);font-size:9px;font-weight:700;line-height:1.35;
   letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
 }
 .extra-mv-empty{

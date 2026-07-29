@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 176,
+    "ACTIF": 177,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -50,8 +50,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 60539,
-      "lines": 537,
+      "size": 66784,
+      "lines": 563,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -82,7 +82,7 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 6430,
+      "size": 9713,
       "lines": 129,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
@@ -130,7 +130,7 @@
     },
     {
       "path": "app.js",
-      "size": 125378,
+      "size": 125397,
       "lines": 2526,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -147,7 +147,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 366
+          "line": 368
         }
       ],
       "consumes": [
@@ -1023,8 +1023,8 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "size": 10718,
-      "lines": 194,
+      "size": 11094,
+      "lines": 195,
       "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
       "category": "ACTIF",
       "exposes": [],
@@ -1571,8 +1571,8 @@
     },
     {
       "path": "index.html",
-      "size": 21095,
-      "lines": 417,
+      "size": 21242,
+      "lines": 419,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2365,7 +2365,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 344
+          "line": 345
         }
       ],
       "consumes": []
@@ -2383,7 +2383,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 345
+          "line": 346
         }
       ],
       "consumes": []
@@ -2401,7 +2401,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 346
+          "line": 347
         }
       ],
       "consumes": []
@@ -2442,7 +2442,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 359
+          "line": 360
         }
       ],
       "consumes": []
@@ -2460,7 +2460,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 342
+          "line": 343
         }
       ],
       "consumes": []
@@ -2478,7 +2478,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 343
+          "line": 344
         }
       ],
       "consumes": []
@@ -2496,7 +2496,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 340
+          "line": 341
         }
       ],
       "consumes": []
@@ -2514,7 +2514,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 339
+          "line": 340
         }
       ],
       "consumes": []
@@ -2555,7 +2555,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 336
+          "line": 337
         }
       ],
       "consumes": []
@@ -2573,7 +2573,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 353
+          "line": 354
         }
       ],
       "consumes": []
@@ -2591,7 +2591,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 348
+          "line": 349
         },
         {
           "path": "scripts/session/save.js",
@@ -2615,7 +2615,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 335
+          "line": 336
         }
       ],
       "consumes": []
@@ -2633,7 +2633,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 341
+          "line": 342
         }
       ],
       "consumes": []
@@ -2671,7 +2671,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 337
+          "line": 338
         }
       ],
       "consumes": []
@@ -2691,7 +2691,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 338
+          "line": 339
         }
       ],
       "consumes": []
@@ -2710,7 +2710,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 347
+          "line": 348
         }
       ],
       "consumes": []
@@ -2728,7 +2728,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 334
+          "line": 335
         },
         {
           "path": "app.js",
@@ -2751,7 +2751,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 355
+          "line": 356
         }
       ],
       "consumes": []
@@ -2815,7 +2815,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 349
+          "line": 350
         }
       ],
       "consumes": []
@@ -2987,7 +2987,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 350
+          "line": 351
         }
       ],
       "consumes": []
@@ -3066,6 +3066,28 @@
       "consumes": []
     },
     {
+      "path": "scripts/session/extra_movements.js",
+      "size": 16926,
+      "lines": 387,
+      "role": "Mouvements faits hors programme sur l'écran Résultats : liste éphémère, catalogue fermé, sélecteur plein écran, construction des items de séance.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachExtraMovements"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 364
+        }
+      ],
+      "consumes": [
+        "CoachCharge",
+        "RacineMovementSwaps",
+        "CoachProfiles"
+      ]
+    },
+    {
       "path": "scripts/session/index.js",
       "size": 3483,
       "lines": 67,
@@ -3078,15 +3100,15 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 365
+          "line": 367
         }
       ],
       "consumes": []
     },
     {
       "path": "scripts/session/results.js",
-      "size": 25784,
-      "lines": 560,
+      "size": 27810,
+      "lines": 608,
       "role": "Saisie finale des résultats (poids/reps/RPE) ; délègue le résumé à CoachSummary.",
       "category": "ACTIF",
       "exposes": [
@@ -3096,15 +3118,15 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 363
+          "line": 365
         }
       ],
       "consumes": []
     },
     {
       "path": "scripts/session/save.js",
-      "size": 6920,
-      "lines": 151,
+      "size": 7212,
+      "lines": 154,
       "role": "Sauvegarde locale de la séance ; alimente CoachML.recordTrainingVector.",
       "category": "ACTIF",
       "exposes": [
@@ -3114,7 +3136,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 364
+          "line": 366
         }
       ],
       "consumes": [
@@ -3134,7 +3156,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 362
+          "line": 363
         }
       ],
       "consumes": []
@@ -3152,7 +3174,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 361
+          "line": 362
         }
       ],
       "consumes": []
@@ -3206,7 +3228,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 351
+          "line": 352
         }
       ],
       "consumes": []
@@ -3225,7 +3247,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 367
+          "line": 369
         },
         {
           "path": "app.js",
@@ -3248,7 +3270,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 358
+          "line": 359
         }
       ],
       "consumes": []
@@ -3266,7 +3288,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 357
+          "line": 358
         }
       ],
       "consumes": []
@@ -3284,7 +3306,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 356
+          "line": 357
         }
       ],
       "consumes": [
@@ -3304,7 +3326,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 354
+          "line": 355
         },
         {
           "path": "app.js",
@@ -3327,7 +3349,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 360
+          "line": 361
         }
       ],
       "consumes": []
@@ -3352,8 +3374,8 @@
     },
     {
       "path": "styles.css",
-      "size": 219344,
-      "lines": 6616,
+      "size": 225498,
+      "lines": 6781,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],
@@ -3372,8 +3394,8 @@
     },
     {
       "path": "tests/racine.spec.ts",
-      "size": 206,
-      "lines": 7,
+      "size": 366,
+      "lines": 9,
       "role": "Test end-to-end Playwright de l application.",
       "category": "ACTIF",
       "exposes": [],
