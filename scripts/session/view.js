@@ -407,19 +407,22 @@ function renderGuidedResultPanel(e){
         "<input class='guided-result-input guided-mini-input' data-key='"+escHtml(key)+"' data-guided-field='rpe' type='number' inputmode='decimal' min='1' max='10' step='0.5' value='"+escHtml(guidedNumberText(rpeVal))+"'/>"+
         "<button type='button' class='guided-step-btn plus' data-key='"+escHtml(key)+"' data-guided-step='rpe' data-step='0.5' data-min='1' data-max='10'>+</button>"+
         "</div></div>";
-  html+="</div>"; // ferme guided-step-grid
-  // Note dictée du mouvement : tout vit dans scripts/session/voice_note.js
-  // (lecture/écriture via setGuidedResult, concaténation, écoute déléguée).
-  // Si le module manque, la saisie poids/reps/RPE reste intacte.
-  var noteHtml="";
-  try{
-    if(window.CoachVoiceNote && typeof CoachVoiceNote.blockHtml==='function'){
-      noteHtml=CoachVoiceNote.blockHtml(key, e.title)||"";
-    }
-  }catch(err){ noteHtml=""; }
-  html+=noteHtml;
-  html+="</div>"; // ferme guided-result-panel
+  html+="</div></div>";
   return html;
+}
+
+// Bouton note du mouvement : petit rond dans la ligne du titre, à côté du `?`
+// du tuto. Il n'occupe aucune hauteur propre, donc il ne déplace aucun champ
+// poids/reps/RPE. Toute la logique vit dans scripts/session/voice_note.js ; si
+// le module manque, la séance reste parfaitement saisissable.
+function guidedNoteButtonHtml(e){
+  try{
+    if(window.CoachVoiceNote && typeof CoachVoiceNote.buttonHtml==='function'){
+      var key=e.key || guidedExerciseKey(e.title);
+      return CoachVoiceNote.buttonHtml(key, e.title)||"";
+    }
+  }catch(err){}
+  return "";
 }
 
 function renderGuidedExerciseList(exercises){
@@ -430,7 +433,7 @@ function renderGuidedExerciseList(exercises){
     var restSec=parseRestToSeconds(e.rest);
     html+="<div class='guided-ex-card'>"+
           "<div class='guided-ex-main'>"+
-            "<div class='guided-ex-title'><span>"+escHtml(typeof displayMovementName==='function'?displayMovementName(e.title):e.title)+"</span>"+tutorialButtonHtml(e.title)+"</div>"+
+            "<div class='guided-ex-title'><span>"+escHtml(typeof displayMovementName==='function'?displayMovementName(e.title):e.title)+"</span>"+tutorialButtonHtml(e.title)+guidedNoteButtonHtml(e)+"</div>"+
             "<div class='guided-ex-grid'>";
     if(e.format)html+="<div><span>Format</span><strong>"+escHtml(e.format)+"</strong></div>";
     if(e.load){

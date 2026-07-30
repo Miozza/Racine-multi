@@ -6780,55 +6780,69 @@ body.is-client [data-ai-clear]{display:none!important}
 }
 
 /* ═══════════════════════════════════════════
-   Note dictée par mouvement — séance guidée
+   Note par mouvement — séance guidée
    scripts/session/voice_note.js
-   Palette et polices existantes uniquement :
-   Orbitron pour le HUD, Inter pour le texte dicté.
+   Le bouton vit dans la ligne du titre, à côté du `?` du tuto : même gabarit,
+   donc aucune hauteur ajoutée et aucun champ déplacé. Le reste est dans la
+   modale (.tuto-modal, partagée avec le tuto et l'explication de charge).
+   Palette et polices existantes uniquement.
    ═══════════════════════════════════════════ */
-.gvn-block{
-  margin-top:7px;padding-top:7px;
-  border-top:1px solid rgba(0,212,255,.16);
-}
-.gvn-head{display:flex;align-items:center;gap:8px;}
-/* Cible tactile ≥ 44 px, mais largeur limitée : le coût vertical reste un seul
-   rang de 44 px même quand quatre mouvements partagent l'écran iPhone. */
-.gvn-toggle{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  min-height:44px;min-width:44px;padding:0 14px;
-  background:rgba(30,144,255,.12);
-  border:1px solid rgba(30,144,255,.42);
-  border-radius:12px;
+.gvn-btn-mini{
+  flex-shrink:0;
+  width:30px;height:30px;border-radius:999px;
+  border:1px solid var(--blue);
+  background:rgba(30,144,255,.10);
   color:var(--blue2);
-  font-family:var(--font-hud);font-size:11px;font-weight:800;
-  letter-spacing:.10em;text-transform:uppercase;
+  font-family:var(--font-hud);font-size:13px;font-weight:900;line-height:1;
+  padding:0;cursor:pointer;
+  box-shadow:0 0 10px rgba(30,144,255,.12);
+  -webkit-tap-highlight-color:transparent;
+}
+.gvn-btn-mini:active{transform:scale(.92);background:rgba(30,144,255,.22);}
+/* Une note existe : le bouton se remplit franchement, sans changer de gabarit.
+   C'est le seul signal — la note ne s'affiche plus dans la mise en page — donc
+   il doit se lire d'un coup d'œil à 20-24 px. */
+.gvn-btn-mini.has-notes{
+  border-color:var(--cyan);
+  background:var(--cyan);
+  color:var(--bg);
+  box-shadow:0 0 14px rgba(0,212,255,.55);
+}
+.gvn-btn-mini.has-notes:active{background:var(--cyan);transform:scale(.92);}
+/* Mêmes tailles que le `?` du tuto dans la séance : rien ne bouge. */
+.guided-ex-title .gvn-btn-mini{width:24px;height:24px;min-width:24px;font-size:13px;}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-title .gvn-btn-mini,
+.guided-ex-list:has(.guided-ex-card:nth-child(4)) .guided-ex-title .gvn-btn-mini{
+  width:20px;height:20px;min-width:20px;font-size:11px;
+}
+
+/* ── Contenu de la modale ── */
+.gvn-list{display:flex;flex-direction:column;gap:6px;margin:12px 0 4px;}
+.gvn-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 6px 8px 10px;
+  background:var(--panel2);
+  border:1px solid rgba(0,212,255,.22);border-radius:11px;
+}
+.gvn-item-text{
+  flex:1 1 auto;min-width:0;overflow-wrap:anywhere;
+  font-family:var(--font-main);font-size:14px;line-height:1.35;color:var(--text2);
+}
+.gvn-item-del{
+  flex:0 0 auto;width:38px;height:38px;border-radius:10px;
+  background:rgba(255,34,68,.10);border:1px solid rgba(255,34,68,.42);
+  color:var(--red);
+  font-family:var(--font-hud);font-size:13px;font-weight:900;line-height:1;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
-.gvn-toggle.has-notes{
-  background:rgba(0,212,255,.16);border-color:rgba(0,212,255,.62);color:var(--cyan);
+.gvn-item-del:active{background:rgba(255,34,68,.24);}
+.gvn-empty{
+  margin:12px 0 4px;
+  font-family:var(--font-main);font-size:13px;color:var(--muted);
 }
-.gvn-block.is-open .gvn-toggle{
-  background:rgba(0,212,255,.20);border-color:rgba(0,212,255,.70);color:var(--cyan);
-}
-.gvn-ico{font-size:15px;line-height:1;}
-.gvn-count{
-  display:inline-flex;align-items:center;justify-content:center;
-  min-width:19px;height:19px;padding:0 5px;border-radius:9px;
-  background:rgba(0,212,255,.22);
-  font-family:var(--font-hud);font-size:10px;font-weight:900;color:var(--cyan);
-}
-/* Récapitulatif : visible même panneau fermé — la note appartient au mouvement. */
-.gvn-recap{
-  display:flex;flex-direction:column;gap:3px;margin-top:6px;
-}
-.gvn-line{
-  font-family:var(--font-main);font-size:13px;line-height:1.35;
-  color:var(--text2);overflow-wrap:anywhere;
-}
-.gvn-line::before{content:"› ";color:var(--cyan);}
-.gvn-panel{margin-top:7px;}
 /* 16px obligatoire : en dessous, iOS zoome tout seul à la mise au point. */
 .gvn-input{
-  width:100%;min-height:60px;padding:9px 10px;
+  width:100%;min-height:84px;margin-top:10px;padding:10px 11px;
   background:var(--panel2);
   border:1px solid rgba(0,212,255,.34);border-radius:11px;
   color:var(--text);
@@ -6837,53 +6851,20 @@ body.is-client [data-ai-clear]{display:none!important}
 }
 .gvn-input::placeholder{color:var(--muted);opacity:.72;}
 .gvn-input:focus{outline:none;border-color:rgba(0,212,255,.72);}
-.gvn-block.is-listening .gvn-input{
-  border-color:rgba(0,212,255,.85);
-  box-shadow:0 0 0 1px rgba(0,212,255,.35);
+.gvn-hint{
+  margin-top:6px;
+  font-family:var(--font-main);font-size:11px;line-height:1.35;color:var(--muted);
 }
-.gvn-actions{display:flex;gap:8px;margin-top:7px;}
-.gvn-btn{
-  flex:1 1 0;min-height:44px;padding:0 10px;
-  background:rgba(30,144,255,.12);
-  border:1px solid rgba(30,144,255,.42);border-radius:12px;
-  color:var(--blue2);
+.gvn-modal-actions{display:flex;gap:8px;margin-top:10px;}
+.gvn-modal-btn{
+  flex:1 1 0;min-height:46px;padding:0 10px;border-radius:12px;
   font-family:var(--font-hud);font-size:11px;font-weight:800;
   letter-spacing:.08em;text-transform:uppercase;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
-.gvn-btn.gvn-add{
-  background:rgba(0,212,255,.16);border-color:rgba(0,212,255,.55);color:var(--cyan);
+.gvn-modal-btn.gvn-add{
+  background:rgba(0,212,255,.16);border:1px solid rgba(0,212,255,.55);color:var(--cyan);
 }
-.gvn-block.is-listening .gvn-mic{
-  background:rgba(0,212,255,.24);border-color:rgba(0,212,255,.80);color:var(--cyan);
-}
-/* Reconnaissance déclarée inerte pour la session : le bouton disparaît partout,
-   y compris sur les blocs rendus plus tard. Le micro du clavier reste le chemin. */
-body.gvn-reco-dead .gvn-mic{display:none;}
-.gvn-status{
-  margin-top:6px;
-  font-family:var(--font-main);font-size:11px;line-height:1.35;color:var(--muted);
-}
-/* Blocs à plusieurs mouvements : on resserre le chrome de la note, jamais la
-   cible tactile (elle reste ≥ 44 px). Même logique que la compression déjà en
-   place sur .guided-result-panel quand 2+ cartes partagent l'écran. */
-.guided-ex-list:has(.guided-ex-card:nth-child(2)) .gvn-block,
-.guided-ex-list:has(.guided-ex-card:nth-child(3)) .gvn-block,
-.guided-ex-list:has(.guided-ex-card:nth-child(4)) .gvn-block{
-  margin-top:4px;padding-top:4px;
-}
-.guided-ex-list:has(.guided-ex-card:nth-child(2)) .gvn-toggle,
-.guided-ex-list:has(.guided-ex-card:nth-child(3)) .gvn-toggle,
-.guided-ex-list:has(.guided-ex-card:nth-child(4)) .gvn-toggle{
-  padding:0 11px;font-size:10px;gap:6px;
-}
-.guided-ex-list:has(.guided-ex-card:nth-child(2)) .gvn-recap,
-.guided-ex-list:has(.guided-ex-card:nth-child(3)) .gvn-recap,
-.guided-ex-list:has(.guided-ex-card:nth-child(4)) .gvn-recap{
-  margin-top:4px;gap:2px;
-}
-.guided-ex-list:has(.guided-ex-card:nth-child(2)) .gvn-line,
-.guided-ex-list:has(.guided-ex-card:nth-child(3)) .gvn-line,
-.guided-ex-list:has(.guided-ex-card:nth-child(4)) .gvn-line{
-  font-size:12px;
+.gvn-modal-btn.gvn-clear{
+  background:rgba(255,34,68,.10);border:1px solid rgba(255,34,68,.42);color:var(--red);
 }

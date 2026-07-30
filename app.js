@@ -1,5 +1,5 @@
-// Racine V4.5.24 — note dictée par mouvement dans la séance guidée
-var APP_VERSION = "V4.5.24";
+// Racine V4.5.25 — note par mouvement : petit bouton + modale, avec effacement
+var APP_VERSION = "V4.5.25";
 
 // Architecture stable
 // programs/*.js = plan prévu
