@@ -1,5 +1,5 @@
-// Racine V4.5.25 — note par mouvement : petit bouton + modale, avec effacement
-var APP_VERSION = "V4.5.25";
+// Racine V4.5.26 — bouton Notes élargi + note limitée à sa séance
+var APP_VERSION = "V4.5.26";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -6787,16 +6787,28 @@ body.is-client [data-ai-clear]{display:none!important}
    modale (.tuto-modal, partagée avec le tuto et l'explication de charge).
    Palette et polices existantes uniquement.
    ═══════════════════════════════════════════ */
+/* Pastille large : l'inscription « Notes » rend la cible évidente et plus
+   facile à toucher. La HAUTEUR reste celle du `?` du tuto à chaque palier —
+   c'est elle qui fixe la hauteur de la ligne du titre, donc rien ne bouge. */
 .gvn-btn-mini{
   flex-shrink:0;
-  width:30px;height:30px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  height:30px;padding:0 11px;border-radius:999px;
   border:1px solid var(--blue);
   background:rgba(30,144,255,.10);
   color:var(--blue2);
-  font-family:var(--font-hud);font-size:13px;font-weight:900;line-height:1;
-  padding:0;cursor:pointer;
+  font-family:var(--font-hud);font-size:11px;font-weight:900;line-height:1;
+  letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
+  cursor:pointer;
   box-shadow:0 0 10px rgba(30,144,255,.12);
   -webkit-tap-highlight-color:transparent;
+}
+.gvn-mini-ico{font-size:13px;line-height:1;}
+.gvn-mini-count{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:15px;height:15px;padding:0 4px;border-radius:8px;
+  background:rgba(4,6,15,.34);
+  font-size:9px;font-weight:900;line-height:1;
 }
 .gvn-btn-mini:active{transform:scale(.92);background:rgba(30,144,255,.22);}
 /* Une note existe : le bouton se remplit franchement, sans changer de gabarit.
@@ -6809,11 +6821,23 @@ body.is-client [data-ai-clear]{display:none!important}
   box-shadow:0 0 14px rgba(0,212,255,.55);
 }
 .gvn-btn-mini.has-notes:active{background:var(--cyan);transform:scale(.92);}
-/* Mêmes tailles que le `?` du tuto dans la séance : rien ne bouge. */
-.guided-ex-title .gvn-btn-mini{width:24px;height:24px;min-width:24px;font-size:13px;}
+/* Même HAUTEUR que le `?` du tuto à chaque palier de densité : la largeur
+   grandit avec l'inscription, la ligne du titre garde sa hauteur exacte. */
+.guided-ex-title .gvn-btn-mini{height:24px;padding:0 8px;font-size:10px;gap:4px;}
+/* Le glyphe saute dès qu'un deuxième mouvement partage l'écran : chaque pixel
+   de largeur repris à la pastille est un pixel que le nom du mouvement garde,
+   donc une ligne de titre qui ne passe pas à deux lignes. */
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-title .gvn-mini-ico,
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-title .gvn-mini-ico,
+.guided-ex-list:has(.guided-ex-card:nth-child(4)) .guided-ex-title .gvn-mini-ico{
+  display:none;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-title .gvn-btn-mini{
+  padding:0 8px;letter-spacing:.03em;
+}
 .guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-title .gvn-btn-mini,
 .guided-ex-list:has(.guided-ex-card:nth-child(4)) .guided-ex-title .gvn-btn-mini{
-  width:20px;height:20px;min-width:20px;font-size:11px;
+  height:20px;padding:0 6px;font-size:9px;gap:3px;letter-spacing:.02em;
 }
 
 /* ── Contenu de la modale ── */
