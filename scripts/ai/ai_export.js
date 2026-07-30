@@ -55,6 +55,55 @@
     }catch(e){}
     return '';
   }
+  // Notes dictées pendant la séance (scripts/session/voice_note.js).
+  // Lecture directe de state.history : la note n'entre jamais dans athlete_state
+  // ni dans le moteur de charges — besoin purement consultatif (CLAUDE.md §3.2).
+  var NOTES_LIMIT = 6;
+  function historySessions(){
+    try{
+      var h = window.state && window.state.history;
+      return Array.isArray(h) ? h : [];
+    }catch(e){ return []; }
+  }
+  // Apparier une clé de résultat au nom du mouvement passe par le libellé
+  // canonique du moteur, pas par la chaîne brute.
+  function movementMatchKey(v){
+    var raw = str(v);
+    if(!raw) return '';
+    try{
+      if(typeof window.canonicalMovementLabel === 'function'){
+        var label = window.canonicalMovementLabel(raw);
+        if(label) return normMove(label);
+      }
+    }catch(e){}
+    return normMove(raw);
+  }
+  function sessionNotesFor(label){
+    var target = movementMatchKey(label);
+    if(!target) return [];
+    var out = [];
+    var sessions = historySessions();
+    for(var i=sessions.length-1; i>=0 && out.length<NOTES_LIMIT; i--){
+      var s = sessions[i] || {};
+      var res = s.results || s.resultats || {};
+      var date = str(s.date);
+      var keys = Object.keys(res || {});
+      for(var j=0; j<keys.length && out.length<NOTES_LIMIT; j++){
+        var r = res[keys[j]] || {};
+        var note = str(r.note);
+        if(!note) continue;
+        if(movementMatchKey(keys[j]) !== target) continue;
+        // Une seule chaîne, dictées successives séparées par ' · '.
+        var parts = note.split(/\s*·\s*/);
+        for(var k=0; k<parts.length && out.length<NOTES_LIMIT; k++){
+          var chunk = str(parts[k]);
+          if(!chunk) continue;
+          out.push((date ? date + ' — ' : '') + chunk);
+        }
+      }
+    }
+    return out;
+  }
   var PROMPT_LOG_KEY = "racine_ai_prompt_log_v1";
 
   function readPromptLog(){
@@ -326,6 +375,15 @@
     lines.push('');
     lines.push('HISTORIQUE CIBLÉ');
     lines = lines.concat(recentRowsText(hint, 8));
+    var notes = sessionNotesFor(hint.name || hint.label || hint.movement);
+    if(notes.length){
+      lines.push('');
+      lines.push('NOTES DE SÉANCE');
+      lines.push('Observations dictées par l’athlète pendant la séance, du plus récent au plus ancien.');
+      lines.push('Transcription automatique et non relue : l’intention prime sur la formulation, corrige mentalement les fautes.');
+      lines.push('Ces notes portent le qualitatif que le RPE unique ne peut pas porter (série par série, appui, technique, inconfort).');
+      notes.forEach(function(n){ lines.push('- '+n); });
+    }
     lines.push('');
     lines.push('QUESTION');
     lines.push('Analyse la décision de Brain pour ce mouvement. Est-ce que tu es d’accord? Si tu proposerais une autre approche, explique le risque et garde ton avis consultatif.');
@@ -420,6 +478,7 @@
   api.PROMPT_VERSION = PROMPT_VERSION;
   api.RESPONSE_START = RESPONSE_START;
   api.RESPONSE_END = RESPONSE_END;
+  api.sessionNotesFor = sessionNotesFor;
   api.buildMovementPrompt = buildMovementPrompt;
   api.buildGlobalPrompt = buildGlobalPrompt;
   api.promptMetaForId = promptMetaForId;

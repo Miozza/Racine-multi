@@ -407,7 +407,18 @@ function renderGuidedResultPanel(e){
         "<input class='guided-result-input guided-mini-input' data-key='"+escHtml(key)+"' data-guided-field='rpe' type='number' inputmode='decimal' min='1' max='10' step='0.5' value='"+escHtml(guidedNumberText(rpeVal))+"'/>"+
         "<button type='button' class='guided-step-btn plus' data-key='"+escHtml(key)+"' data-guided-step='rpe' data-step='0.5' data-min='1' data-max='10'>+</button>"+
         "</div></div>";
-  html+="</div></div>";
+  html+="</div>"; // ferme guided-step-grid
+  // Note dictée du mouvement : tout vit dans scripts/session/voice_note.js
+  // (lecture/écriture via setGuidedResult, concaténation, écoute déléguée).
+  // Si le module manque, la saisie poids/reps/RPE reste intacte.
+  var noteHtml="";
+  try{
+    if(window.CoachVoiceNote && typeof CoachVoiceNote.blockHtml==='function'){
+      noteHtml=CoachVoiceNote.blockHtml(key, e.title)||"";
+    }
+  }catch(err){ noteHtml=""; }
+  html+=noteHtml;
+  html+="</div>"; // ferme guided-result-panel
   return html;
 }
 

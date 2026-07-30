@@ -1,5 +1,5 @@
-// Racine V4.5.23 — ajouter un mouvement fait hors programme depuis l'écran Résultats
-var APP_VERSION = "V4.5.23";
+// Racine V4.5.24 — note dictée par mouvement dans la séance guidée
+var APP_VERSION = "V4.5.24";
 
 // Architecture stable
 // programs/*.js = plan prévu
