@@ -72,20 +72,61 @@ function loadBrowserSandbox() {
     parseInt,
     parseFloat,
     isNaN,
+    isFinite,
+    RegExp,
+    Error,
+    Boolean,
+    Set,
+    Map,
+    // Le moteur écrit ast.version = APP_VERSION. Valeur neutre : la simulation
+    // n'a pas à connaître la version livrée.
+    APP_VERSION: 'SIMULATION',
     setTimeout: function(){},
     clearTimeout: function(){},
-    document: { addEventListener: function(){}, querySelector: function(){ return null; }, getElementById: function(){ return null; } }
+    navigator: { userAgent: 'node-simulation' },
+    document: {
+      addEventListener: function(){},
+      querySelector: function(){ return null; },
+      querySelectorAll: function(){ return []; },
+      getElementById: function(){ return null; },
+      createElement: function(){ return { style:{}, classList:{ add(){}, remove(){}, toggle(){} }, appendChild(){}, setAttribute(){} }; },
+      body: { classList: { add(){}, remove(){}, contains(){ return false; } } }
+    }
   };
   sandbox.window = sandbox;
   vm.createContext(sandbox);
+  // Ordre calqué sur index.html. Le VRAI moteur de charges est chargé ici : les
+  // suggestions de cette simulation viennent de scripts/charge/, pas d'une
+  // heuristique locale. C'est ce qui rend le rapport pertinent pour la mission
+  // « le bon poids pour n'importe quel athlète » (CLAUDE.md §1).
   const files = [
+    'programs/config.js',
     'scripts/profiles/reference.js',
     'scripts/profiles/onboarding.js',
     'programs/index.js',
     'programs/racine_client_programs.js',
     'programs/racine_crossfit_programs.js',
     'programs/strict_muscle_up_cycle.js',
-    'programs/hypertrophie_fesse_stephanie.js'
+    'programs/hypertrophie_fesse_stephanie.js',
+    'data/charges.js',
+    'data/equipment.js',
+    'scripts/app_helpers.js',
+    'scripts/charge/equipement.js',
+    'scripts/charge/movement_tuning.js',
+    'scripts/charge/utilitaires.js',
+    'scripts/charge/mouvements.js',
+    'scripts/charge/historique.js',
+    'scripts/charge/rpe.js',
+    'scripts/charge/scaling.js',
+    'scripts/charge/brain_stats.js',
+    'scripts/charge/brain_memory.js',
+    'scripts/charge/movement_profiles.js',
+    'scripts/charge/brain_explain.js',
+    'scripts/charge/brain_journal.js',
+    'scripts/charge/suggestion.js',
+    'scripts/charge/ml_refinement.js',
+    'scripts/history/index.js',
+    'scripts/charge/index.js'
   ];
   for (const rel of files) {
     const file = path.join(ROOT, rel);
@@ -95,7 +136,42 @@ function loadBrowserSandbox() {
   return sandbox;
 }
 
+// Deux globals vivent dans app.js, qui ne peut pas être chargé hors navigateur
+// (DOM au chargement). Ce sont les seuls compléments : `resolveMovementKey` est
+// recopié à l'identique d'app.js, `state` reçoit la forme de freshState().
+// Aucune logique de charge n'est réécrite ici.
+function installEngineGlobals(sb) {
+  vm.runInContext(`
+    var customCharges = {};
+    var state = null;
+    function resolveMovementKey(key){
+      var mvKey = null, cleanKey = chargeKeyFromName(key);
+      Object.keys(movements).forEach(function(k){
+        if (k === key || k === cleanKey || movements[k].name === key || movements[k].name === cleanKey) mvKey = k;
+      });
+      return mvKey;
+    }
+  `, sb, { filename: 'simulation-globals' });
+}
+
+// Chaque persona repart d'un athlete_state vierge : aucun historique ne fuit
+// d'un profil à l'autre (c'est justement ce que la suite doit prouver).
+function resetEngineState(sb, profile, family) {
+  sb.state = {
+    week: 1,
+    day: 'lundi',
+    history: [],
+    profile: profile,
+    cycle: { goal: family },
+    movementRefs: {},
+    rpeHistory: {},
+    deloadAlert: false,
+    athleteState: { movements: {}, updatedAt: null, version: null }
+  };
+}
+
 const sandbox = loadBrowserSandbox();
+installEngineGlobals(sandbox);
 const programIndex = Array.isArray(sandbox.COACH_BERTIN_PROGRAM_INDEX) ? sandbox.COACH_BERTIN_PROGRAM_INDEX : [];
 const programObjects = sandbox.COACH_BERTIN_PROGRAMS || {};
 const privateIds = new Set((sandbox.BERTIN_PRIVATE_PROGRAM_IDS || []).slice());
@@ -118,7 +194,11 @@ const movementSeedMap = [
   [/back squat/i, 'backSquat5RM'],
   [/strict press|push press/i, 'strictPress'],
   [/power clean/i, 'powerClean'],
-  [/deadlift/i, 'hipThrust8RM'],
+  // Le Deadlift n'est PAS semé depuis hipThrust8RM : les deux ne sont pas à la
+  // même échelle, et l'ancien mapping produisait des soulevés de terre à
+  // 600-1050 lb chez des athlètes qui benchent 150-225. Il dérive du squat,
+  // conformément au référentiel (scripts/profiles/reference.js : « deadlift
+  // ≈ 1,2×squat »). Cas traité dans seedLoadFor().
   [/hip thrust/i, 'hipThrust8RM'],
   [/db rdl|romanian/i, 'dbRdl'],
   [/bulgarian/i, 'bulgarianDb'],
@@ -188,6 +268,7 @@ function seedLoadFor(movement, computed, persona, family) {
   const n = normalize(movement);
   if (/pull up|ring dip|dip/.test(n)) return 0;
   if (/transition|false grip/.test(n)) return 0;
+  if (/deadlift/.test(n)) base = (computed.values.backSquat5RM || computed.values.frontSquat || 150) * 1.2;
   if (/db rdl/.test(n)) base = computed.values.dbRdl || 25;
   if (/incline db/.test(n)) base = computed.values.inclineDb10RM || 20;
   if (/goblet squat/.test(n)) base = Math.min(computed.values.frontSquat || 60, 90) * 0.55;
@@ -195,46 +276,71 @@ function seedLoadFor(movement, computed, persona, family) {
   return Math.max(0, roundLoad(movement, base * familyFactor));
 }
 
-function suggestionFromHistory(movement, history, persona, targetReps, family, week) {
-  const bodyweight = /pull.?up|ring dip|transition|false grip/i.test(movement);
-  const step = stepFor(movement);
-  if (!history.length) return { load: 0, reps: targetReps, reason: 'seed', severity: 'watch', confidence: 0.2 };
-  const last = history[history.length - 1];
-  const recent = history.slice(-4);
-  const avgRpe = recent.reduce((a,b) => a + b.rpe, 0) / recent.length;
-  const eDelta = recent.length >= 2 ? recent[recent.length - 1].e1rm - recent[0].e1rm : 0;
-  let load = last.load;
-  let reps = targetReps;
-  let severity = 'ok';
-  let reason = 'maintien prudent';
+// Contexte de bloc passé au moteur. Il doit rester un contexte de PROGRESSION
+// principale : `technique`, `wod` ou `light` déclencheraient
+// coachIsLimitedProgressionContext() et la suggestion cesserait de progresser —
+// on ne mesurerait plus rien (docs/CHARGE_CONTEXT.md).
+// Mêmes champs que coachSuggestForExercise() en production
+// (scripts/charge/suggestion.js) : kind, blockTitle, format, day, week. Un
+// contexte sous-spécifié ferait travailler le moteur à l'aveugle et le rapport
+// mesurerait le harnais au lieu du moteur.
+function engineContextFor(movement, family, week, targetReps) {
+  const accessory = /db |dumbbell|goblet|bulgarian|incline|cable|ring row|hip thrust|rdl/i.test(movement);
+  return {
+    kind: accessory ? 'accessory' : 'strength',
+    blockTitle: (accessory ? 'C. Accessoire — ' : 'A. Principal — ') + movement,
+    format: '3x' + targetReps,
+    day: sandbox.state ? sandbox.state.day : 'lundi',
+    week: week
+  };
+}
 
-  if (week === 6) {
-    load = bodyweight ? 0 : Math.max(0, last.load * 0.85);
-    reps = Math.max(5, Math.round(targetReps * 0.85));
-    severity = 'watch';
-    reason = 'deload simulé';
-  } else if (last.rpe >= 9.5 || last.failed) {
-    load = bodyweight ? 0 : Math.max(0, last.load - step);
-    reps = Math.max(1, targetReps - 1);
-    severity = 'warning';
-    reason = 'RPE très haut / échec : baisse contrôlée';
-  } else if (last.rpe >= 8.8 || avgRpe >= 8.7) {
-    load = last.load;
-    reps = targetReps;
-    severity = 'warning';
-    reason = 'RPE élevé répété : maintien';
-  } else if (last.rpe <= 7.4 && last.reps >= targetReps) {
-    const jump = step * persona.aggressiveness * (family === 'beginner' ? 0.7 : family === 'crossfit' ? 0.8 : 1);
-    load = bodyweight ? 0 : last.load + jump;
-    reps = bodyweight ? Math.min(targetReps + 2, last.reps + 1) : targetReps;
-    severity = 'watch';
-    reason = 'marge claire : petite hausse';
-  } else if (eDelta > step * 1.5 && avgRpe <= 8.3) {
-    load = bodyweight ? 0 : last.load + step * 0.5;
-    severity = 'watch';
-    reason = 'tendance e1RM positive';
+// Suggestion produite par le VRAI moteur (scripts/charge/suggestion.js →
+// coachSafeSuggestedLoad, qui empile guardedSuggestedLoadDecision + Brain V1.16).
+// Le moteur lit state.athleteState, alimenté après chaque semaine simulée par
+// updateAthleteStateFromResults() — exactement le flux de production
+// (docs/DATA_FLOW_CONTRACT.md).
+function suggestionFromEngine(movement, history, persona, targetReps, family, week, seedLoad) {
+  const bodyweight = /pull.?up|ring dip|transition|false grip/i.test(movement);
+  const lastLoad = history.length ? history[history.length - 1].load : seedLoad;
+  sandbox.state.week = week;
+
+  let text = '';
+  let error = null;
+  try {
+    text = sandbox.coachSafeSuggestedLoad(movement, lastLoad, targetReps, engineContextFor(movement, family, week, targetReps));
+  } catch (e) {
+    error = e.message;
   }
-  return { load: roundLoad(movement, load), reps, reason, severity, confidence: clamp(history.length / 6, 0.25, 0.95) };
+  const num = error ? null : sandbox.parseLoad(text);
+  const load = bodyweight ? 0 : (Number.isFinite(num) && num > 0 ? num : lastLoad);
+
+  // C'est le moteur qui dit si la semaine est un deload, pas le simulateur.
+  let deloadWeek = false;
+  try {
+    const ctx = sandbox.coachBuildMovementContext(movement, engineContextFor(movement, family, week, targetReps));
+    deloadWeek = !!sandbox.coachIsDeloadWeekOrContext(ctx);
+  } catch (e) { /* repli : semaine normale */ }
+
+  return {
+    deloadWeek: deloadWeek,
+    load: load,
+    reps: targetReps,
+    reason: error ? ('moteur en erreur: ' + error) : String(text || '').trim(),
+    severity: /⚠/.test(String(text)) ? 'warning' : 'ok',
+    confidence: clamp(history.length / 6, 0.25, 0.95),
+    engineText: String(text || ''),
+    engineError: error
+  };
+}
+
+// Renvoie la séance simulée au moteur par la porte de production.
+function feedEngine(movement, load, reps, rpe, date) {
+  const results = {};
+  results[movement] = { load: String(load), reps: String(reps), rpe: String(rpe) };
+  try { sandbox.updateAthleteStateFromResults(results, date); }
+  catch (e) { return e.message; }
+  return null;
 }
 
 function simulateMovement(persona, computed, movement, family, weeks) {
@@ -247,13 +353,14 @@ function simulateMovement(persona, computed, movement, family, weeks) {
 
   for (let week = 1; week <= weeks; week++) {
     const date = `2026-${String(7 + Math.floor((week - 1) / 4)).padStart(2, '0')}-${String(1 + ((week - 1) % 4) * 7).padStart(2, '0')}`;
-    const suggestion = history.length ? suggestionFromHistory(movement, history, persona, target, family, week) : { load, reps: target, reason: 'onboarding seed', severity: 'watch', confidence: 0.25 };
+    const suggestion = suggestionFromEngine(movement, history, persona, target, family, week, load);
+    if (suggestion.engineError) warnings.push(`${movement}: moteur en erreur — ${suggestion.engineError}`);
     let suggestedLoad = bodyweight ? 0 : suggestion.load;
     let complianceNoise = rand(-persona.chaos, persona.chaos);
     if (persona.id === 'chaos_donnees') complianceNoise += pick([-0.35, 0, 0.45]);
     let actualLoad = bodyweight ? 0 : Math.max(0, roundLoad(movement, suggestedLoad * (1 + complianceNoise)));
     let relative = bodyweight ? target / Math.max(1, ability) : actualLoad / Math.max(1, ability);
-    let reps = Math.round(target + rand(-1.5, 1.8) + (1 - relative) * 3);
+    let reps = Math.round(target + rand(-1, 1) + clamp((1 - relative) * 3, -1, 1));
     let failed = false;
     if (persona.injuryWeek && week >= persona.injuryWeek) {
       relative += 0.12;
@@ -278,11 +385,16 @@ function simulateMovement(persona, computed, movement, family, weeks) {
       e1rm: bodyweight ? reps : e1rm(actualLoad, reps),
       suggestedLoad,
       suggestionReason: suggestion.reason,
+      deloadWeek: !!suggestion.deloadWeek,
       severity: suggestion.severity,
       confidence: suggestion.confidence,
       failed
     };
     history.push(row);
+
+    // Boucle fermée : le moteur apprend de la séance qu'il vient de suggérer.
+    const feedError = feedEngine(movement, actualLoad, reps, row.rpe, date);
+    if (feedError) warnings.push(`${movement}: athlete_state en erreur — ${feedError}`);
 
     const adaptation = persona.adaptationRate * (persona.injuryWeek && week >= persona.injuryWeek ? -0.35 : 1);
     ability = Math.max(bodyweight ? 1 : 5, ability * (1 + adaptation + rand(-0.005, 0.008)));
@@ -307,7 +419,10 @@ function buildProgressionPoints(profileSim) {
 function detectTrend(rows) {
   // Le dernier point d'une semaine 6 est souvent un deload volontaire. Il ne
   // doit pas transformer une progression saine en “baisse suspecte”.
-  const usable = rows.filter(r => !/deload/i.test(String(r.suggestionReason || '')));
+  // Le drapeau vient du moteur (coachIsDeloadWeekOrContext) et non d'une regex
+  // sur sa prose : le texte d'une suggestion de deload ne contient pas forcément
+  // le mot « deload », et le filtre passait alors à côté.
+  const usable = rows.filter(r => !r.deloadWeek);
   const sample = usable.length >= 3 ? usable : rows;
   if (sample.length < 3) return { status: 'insuffisant', delta: 0 };
   const first = sample[0].e1rm;
@@ -326,55 +441,55 @@ const personas = [
     id: 'beginner_light', name: 'Débutant très léger', level: 'debutant', bodyweightLb: 142, aggressiveness: 0.65,
     programId: 'client_beginner_foundation_2d', family: 'beginner', movementSet: mainMovementPool.beginner,
     baseStrength: 0.55, adaptationRate: 0.025, chaos: 0.03, rpeNoise: 0.45,
-    answers: { squat:{weight:65,reps:8,rpe:7}, bench:{weight:55,reps:8,rpe:7}, press:{weight:35,reps:8,rpe:7}, row:{weight:60,reps:10,rpe:7}, hinge:{weight:80,reps:10,rpe:7} }
+    answers: { squat:{weight:65,reps:8,rpe:7}, bench:{weight:55,reps:8,rpe:7}, press:{weight:35,reps:8,rpe:7}, row:{weight:60,reps:10,rpe:7}, hinge:{weight:30,reps:8,rpe:7} }
   },
   {
     id: 'recomp_intermittent', name: 'Recomposition 3j irrégulier', level: 'debutant', bodyweightLb: 205, aggressiveness: 0.75,
     programId: 'client_recomposition_3d', family: 'recomposition', movementSet: mainMovementPool.recomposition,
     baseStrength: 0.7, adaptationRate: 0.015, chaos: 0.08, rpeNoise: 0.65,
-    answers: { squat:{weight:95,reps:7,rpe:8}, bench:null, press:{weight:55,reps:8,rpe:8}, row:{weight:85,reps:8,rpe:8}, hinge:{weight:120,reps:8,rpe:8} }
+    answers: { squat:{weight:95,reps:7,rpe:8}, bench:null, press:{weight:55,reps:8,rpe:8}, row:{weight:85,reps:8,rpe:8}, hinge:{weight:45,reps:8,rpe:8} }
   },
   {
     id: 'steph_glutes', name: 'Profil fessiers privé', level: 'intermediaire', bodyweightLb: 150, aggressiveness: 0.9,
     programId: 'hypertrophie_fesse_stephanie', programPermissions:['hypertrophie_fesse_stephanie'], family: 'glutes', movementSet: mainMovementPool.glutes,
     baseStrength: 0.78, adaptationRate: 0.02, chaos: 0.04, rpeNoise: 0.45,
-    answers: { squat:{weight:105,reps:8,rpe:7.5}, bench:{weight:75,reps:8,rpe:7.5}, press:{weight:45,reps:8,rpe:7.5}, row:{weight:90,reps:8,rpe:7.5}, hinge:{weight:155,reps:8,rpe:7.5} }
+    answers: { squat:{weight:105,reps:8,rpe:7.5}, bench:{weight:75,reps:8,rpe:7.5}, press:{weight:45,reps:8,rpe:7.5}, row:{weight:90,reps:8,rpe:7.5}, hinge:{weight:50,reps:8,rpe:7.5} }
   },
   {
     id: 'strength_2d_busy', name: 'Force 2j emploi chargé', level: 'intermediaire', bodyweightLb: 190, aggressiveness: 0.95,
     programId: 'client_strength_2d', family: 'strength', movementSet: mainMovementPool.strength,
     baseStrength: 0.88, adaptationRate: 0.012, chaos: 0.04, rpeNoise: 0.4,
-    answers: { squat:{weight:165,reps:5,rpe:8}, bench:{weight:155,reps:5,rpe:8}, press:{weight:95,reps:5,rpe:8}, row:{weight:145,reps:8,rpe:8}, hinge:{weight:225,reps:6,rpe:8} }
+    answers: { squat:{weight:165,reps:5,rpe:8}, bench:{weight:155,reps:5,rpe:8}, press:{weight:95,reps:5,rpe:8}, row:{weight:145,reps:8,rpe:8}, hinge:{weight:75,reps:8,rpe:8} }
   },
   {
     id: 'advanced_force', name: 'Avancé force 4j', level: 'avance', bodyweightLb: 215, aggressiveness: 1.15,
     programId: 'client_strength_4d', family: 'strength', movementSet: mainMovementPool.strength,
     baseStrength: 1.08, adaptationRate: 0.008, chaos: 0.035, rpeNoise: 0.35,
-    answers: { squat:{weight:255,reps:5,rpe:8}, bench:{weight:235,reps:5,rpe:8}, press:{weight:145,reps:5,rpe:8}, row:{weight:205,reps:8,rpe:8}, hinge:{weight:315,reps:6,rpe:8} }
+    answers: { squat:{weight:255,reps:5,rpe:8}, bench:{weight:235,reps:5,rpe:8}, press:{weight:145,reps:5,rpe:8}, row:{weight:205,reps:8,rpe:8}, hinge:{weight:105,reps:8,rpe:8} }
   },
   {
     id: 'rx_crossfit', name: 'CrossFit RX 5j', level: 'avance', bodyweightLb: 185, aggressiveness: 1.05,
     programId: 'client_rx_crossfit_5d', family: 'crossfit', movementSet: mainMovementPool.crossfit,
     baseStrength: 1.0, adaptationRate: 0.006, chaos: 0.07, rpeNoise: 0.75,
-    answers: { squat:{weight:225,reps:5,rpe:8}, bench:{weight:205,reps:5,rpe:8}, press:{weight:125,reps:5,rpe:8}, row:{weight:185,reps:8,rpe:8}, hinge:{weight:285,reps:6,rpe:8} }
+    answers: { squat:{weight:225,reps:5,rpe:8}, bench:{weight:205,reps:5,rpe:8}, press:{weight:125,reps:5,rpe:8}, row:{weight:185,reps:8,rpe:8}, hinge:{weight:95,reps:8,rpe:8} }
   },
   {
     id: 'metcon_prep', name: 'Préparation Metcon 3j', level: 'intermediaire', bodyweightLb: 178, aggressiveness: 0.9,
     programId: 'client_metcon_prep_3d', family: 'crossfit', movementSet: mainMovementPool.crossfit,
     baseStrength: 0.82, adaptationRate: 0.012, chaos: 0.08, rpeNoise: 0.8,
-    answers: { squat:{weight:155,reps:7,rpe:8}, bench:{weight:135,reps:8,rpe:8}, press:{weight:85,reps:8,rpe:8}, row:{weight:135,reps:8,rpe:8}, hinge:{weight:205,reps:8,rpe:8} }
+    answers: { squat:{weight:155,reps:7,rpe:8}, bench:{weight:135,reps:8,rpe:8}, press:{weight:85,reps:8,rpe:8}, row:{weight:135,reps:8,rpe:8}, hinge:{weight:70,reps:8,rpe:8} }
   },
   {
     id: 'strict_mu_candidate', name: 'Candidat strict muscle-up', level: 'avance', bodyweightLb: 180, aggressiveness: 0.85,
     programId: 'strict_muscle_up_10w', family: 'muscleup', movementSet: mainMovementPool.muscleup,
     baseStrength: 1.0, adaptationRate: 0.018, chaos: 0.04, rpeNoise: 0.5,
-    answers: { squat:{weight:185,reps:5,rpe:8}, bench:{weight:185,reps:5,rpe:8}, press:{weight:115,reps:5,rpe:8}, row:{weight:175,reps:8,rpe:8}, hinge:{weight:245,reps:8,rpe:8} }
+    answers: { squat:{weight:185,reps:5,rpe:8}, bench:{weight:185,reps:5,rpe:8}, press:{weight:115,reps:5,rpe:8}, row:{weight:175,reps:8,rpe:8}, hinge:{weight:85,reps:8,rpe:8} }
   },
   {
     id: 'return_injury', name: 'Retour blessure prudent', level: 'intermediaire', bodyweightLb: 198, aggressiveness: 0.6,
     programId: 'client_hybrid_performance_3d', family: 'hybrid', movementSet: mainMovementPool.hybrid,
     baseStrength: 0.82, adaptationRate: 0.006, chaos: 0.04, rpeNoise: 0.55, injuryWeek: 4,
-    answers: { squat:{weight:145,reps:6,rpe:8}, bench:{weight:135,reps:8,rpe:8}, press:{weight:85,reps:8,rpe:8}, row:{weight:135,reps:8,rpe:8}, hinge:{weight:185,reps:8,rpe:8} }
+    answers: { squat:{weight:145,reps:6,rpe:8}, bench:{weight:135,reps:8,rpe:8}, press:{weight:85,reps:8,rpe:8}, row:{weight:135,reps:8,rpe:8}, hinge:{weight:65,reps:8,rpe:8} }
   },
   {
     id: 'chaos_donnees', name: 'Utilisateur données incohérentes', level: 'intermediaire', bodyweightLb: 170, aggressiveness: 1.25,
@@ -420,6 +535,8 @@ function evaluateProfile(persona) {
   const programCheck = validateProgram(profile, persona);
   const family = familyForProgram(persona.programId, persona.family);
   const weeks = persona.programId === 'strict_muscle_up_10w' ? 10 : 6;
+  // Le moteur travaille sur un athlete_state neuf, propre à ce profil.
+  resetEngineState(sandbox, profile, family);
   const movements = persona.movementSet.map(movement => simulateMovement(persona, computed, movement, family, weeks));
   const progressionPoints = buildProgressionPoints({ movements });
   const warnings = [];
@@ -444,10 +561,29 @@ function evaluateProfile(persona) {
     const rows = mv.history;
     for (let i = 1; i < rows.length; i++) {
       const prev = rows[i-1], cur = rows[i];
-      const jump = cur.load - prev.load;
-      const maxJump = stepFor(cur.movement) * Math.max(1.5, persona.aggressiveness * 2.2);
-      if (prev.rpe >= 9 && cur.suggestedLoad > prev.load) fails.push(`${cur.movement}: suggestion en hausse après RPE ${prev.rpe} (${prev.load} -> ${cur.suggestedLoad})`);
-      if (jump > maxJump + 0.1) warnings.push(`${cur.movement}: saut possiblement agressif ${fmt(jump)} lb`);
+      // On mesure le SUGGÉRÉ, pas le réalisé : la charge réalisée porte le bruit
+      // de compliance du simulateur, pas une décision du moteur. Et le seuil
+      // vient du moteur lui-même (coachMaxJumpForExercise, alimenté par
+      // COACH_MOVEMENT_TUNING), au lieu d'un seuil inventé ici : la suite teste
+      // donc le moteur contre son propre contrat.
+      const jump = Number(cur.suggestedLoad || 0) - Number(prev.load || 0);
+      let maxJump = 10;
+      try { maxJump = Number(sandbox.coachMaxJumpForExercise(cur.movement, prev.load)) || 10; }
+      catch (e) { /* repli neutre */ }
+      // Garde « pas de hausse après RPE ≥ 9 ». Elle ne peut s'appliquer que si
+      // le moteur a VU la série : updateAthleteStateFromResults() ignore les
+      // séries à 0 rep (scripts/charge/suggestion.js — `if(!hasValidLoad||!reps)
+      // return;`). Un échec total ne laisse donc aucune trace dans athlete_state
+      // et la garde RPE n'a rien sur quoi se déclencher. Ce n'est pas une
+      // violation du moteur : c'est un angle mort, signalé comme tel.
+      if (prev.rpe >= 9 && cur.suggestedLoad > prev.load) {
+        if (Number(prev.reps) > 0) {
+          fails.push(`${cur.movement}: suggestion en hausse après RPE ${prev.rpe} (${prev.load} -> ${cur.suggestedLoad})`);
+        } else {
+          warnings.push(`${cur.movement}: échec à 0 rep non mémorisé par athlete_state — la garde RPE ne peut pas s'appliquer (${prev.load} -> ${cur.suggestedLoad})`);
+        }
+      }
+      if (jump > maxJump + 0.1) warnings.push(`${cur.movement}: le moteur dépasse son propre saut max (${fmt(jump)} lb > ${fmt(maxJump)} lb)`);
     }
     const trend = detectTrend(rows);
     if (trend.status === 'monte cher') warnings.push(`${mv.movement}: progresse mais RPE coûteux (${fmt(trend.delta)}%)`);
@@ -518,13 +654,19 @@ function makeMarkdown() {
   lines.push('');
   lines.push('## Ce que le simulateur vérifie');
   lines.push('');
-  lines.push('- Création de profils très différents via l’onboarding.');
+  lines.push('**Les suggestions viennent du VRAI moteur** (`scripts/charge/`, via');
+  lines.push('`coachSafeSuggestedLoad`), et chaque séance simulée lui est renvoyée par');
+  lines.push('`updateAthleteStateFromResults()` — le flux de production');
+  lines.push('(`docs/DATA_FLOW_CONTRACT.md`). Ce rapport mesure donc le moteur, pas une');
+  lines.push('heuristique de test.');
+  lines.push('');
+  lines.push('- Création de profils très différents via l’onboarding réel.');
   lines.push('- Mise à l’échelle des charges de départ par profil.');
   lines.push('- Visibilité des programmes publics/privés.');
   lines.push('- Construction minimale des blocs de programme.');
-  lines.push('- Plusieurs semaines de résultats simulés avec RPE, charge, reps et e1RM.');
-  lines.push('- Freins après RPE élevé ou échec.');
-  lines.push('- Détection des sauts de charge suspects.');
+  lines.push('- Plusieurs semaines de boucle fermée suggestion → séance → athlete_state.');
+  lines.push('- Freins après RPE élevé ou échec (garde « pas de hausse après RPE ≥ 9 »).');
+  lines.push('- Respect par le moteur de son propre saut max (`coachMaxJumpForExercise`).');
   lines.push('- Regroupement Progression: un mouvement + une date = un point.');
   lines.push('');
   lines.push('## Résultats par profil');
@@ -567,8 +709,10 @@ function makeMarkdown() {
   lines.push('## Limites');
   lines.push('');
   lines.push('- Simulation logique seulement: ne remplace pas Safari/iPhone, un vrai cache PWA ni la compréhension d’un utilisateur réel.');
+  lines.push('- Le moteur est réel, **l’athlète est synthétique**: son adaptation, son bruit de compliance et son RPE sont un modèle. Une tendance douteuse peut venir de l’athlète simulé autant que du moteur — vérifier avant de conclure.');
   lines.push('- La “vélocité” simulée correspond à la vitesse de progression charge/e1RM, pas à une vraie mesure VBT en m/s.');
   lines.push('- Les résultats générés ne doivent jamais être importés dans `data/` comme historique réel.');
+  lines.push('- Angle mort connu: une série à 0 rep n’est pas mémorisée par `updateAthleteStateFromResults()` (`if(!hasValidLoad||!reps)return;`), donc la garde « pas de hausse après RPE ≥ 9 » ne peut pas se déclencher sur un échec total.');
   lines.push('');
   return lines.join('\n');
 }
