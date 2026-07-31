@@ -1,5 +1,5 @@
-// Racine V4.5.27 — un échec total (0 rep) est mémorisé et freine la suggestion
-var APP_VERSION = "V4.5.27";
+// Racine V4.5.28 — un frein de sécurité survit à la couche Brain
+var APP_VERSION = "V4.5.28";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -3,12 +3,12 @@
 ## Verdict global
 
 - Profils simulés: **10**
-- PASS: **4**
-- WARN: **6**
+- PASS: **10**
+- WARN: **0**
 - FAIL: **0**
 - Programmes couverts: `client_beginner_foundation_2d`, `client_recomposition_3d`, `hypertrophie_fesse_stephanie`, `client_strength_2d`, `client_strength_4d`, `client_rx_crossfit_5d`, `client_metcon_prep_3d`, `strict_muscle_up_10w`, `client_hybrid_performance_3d`, `client_hypertrophy_5d`
 
-Verdict: **WARN contrôlé** — logique exploitable, mais certains profils méritent une surveillance terrain.
+Verdict: **PASS** — simulation virtuelle propre.
 
 ## Ce que le simulateur vérifie
 
@@ -39,13 +39,13 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Goblet Squat | 5×9 | 5×10 | 6.7 | stable (0%) |
-| Incline DB Press | 3×10 | 3×10 | 7 | stable (-2.5%) |
-| Ring Row | 20×9 | 15×10 | 7.3 | stable (0%) |
-| Hip Thrust | 30×9 | 25×8 | 7.1 | stable (0%) |
-| Strict Press | 5×10 | 5×8 | 6.6 | stable (0%) |
+| Goblet Squat | 5×8 | 5×8 | 6.8 | stable (0%) |
+| Incline DB Press | 3×10 | 3×10 | 7 | stable (0%) |
+| Ring Row | 20×8 | 20×9 | 7.4 | stable (2.6%) |
+| Hip Thrust | 30×9 | 30×9 | 7.1 | stable (0%) |
+| Strict Press | 5×9 | 5×9 | 6.4 | stable (0%) |
 
-### WARN — Recomposition 3j irrégulier
+### PASS — Recomposition 3j irrégulier
 
 - Profil: `recomp_intermittent`, niveau `debutant`, agressivité `0.75`
 - Programme: `client_recomposition_3d`
@@ -55,14 +55,11 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Front Squat | 25×5 | 20×7 | 7.3 | progression propre (5.7%) |
-| Incline DB Press | 5×9 | 5×9 | 7 | stable (-2.6%) |
-| Hip Thrust | 75×10 | 50×10 | 7.5 | baisse suspecte (-11.3%) |
-| Ring Row | 35×10 | 30×9 | 7.6 | stable (-2.5%) |
-| DB RDL | 18×9 | 15×10 | 7.6 | stable (0%) |
-
-**Alertes**
-- Hip Thrust: baisse suspecte non attendue
+| Front Squat | 25×6 | 25×5 | 7.3 | stable (-2.8%) |
+| Incline DB Press | 5×9 | 5×8 | 7 | stable (-2.6%) |
+| Hip Thrust | 75×9 | 75×10 | 7.6 | stable (2.6%) |
+| Ring Row | 35×9 | 35×10 | 7.3 | stable (2.6%) |
+| DB RDL | 18×8 | 18×10 | 7.6 | progression propre (5.3%) |
 
 ### PASS — Profil fessiers privé
 
@@ -74,11 +71,11 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Hip Thrust | 125×8 | 110×10 | 7.8 | progression propre (12%) |
-| DB RDL | 30×8 | 25×9 | 7.7 | stable (2.6%) |
-| Bulgarian Split Squat | 8×9 | 5×9 | 7.1 | stable (0%) |
-| Goblet Squat | 15×9 | 10×10 | 7.2 | stable (0%) |
-| Cable Pull Through | 60×9 | 50×9 | 7.7 | stable (2.6%) |
+| Hip Thrust | 120×8 | 120×8 | 7.7 | stable (0%) |
+| DB RDL | 30×9 | 30×10 | 7.8 | stable (2.6%) |
+| Bulgarian Split Squat | 8×9 | 8×9 | 7.2 | stable (0%) |
+| Goblet Squat | 15×10 | 15×8 | 7.1 | stable (reps variables) (-5%) |
+| Cable Pull Through | 60×10 | 60×9 | 7.7 | stable (-2.5%) |
 
 ### PASS — Force 2j emploi chargé
 
@@ -90,13 +87,13 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Back Squat | 95×7 | 85×7 | 7.6 | stable (4.6%) |
-| Bench Press | 115×7 | 95×6 | 7.9 | progression propre (5.8%) |
-| Deadlift | 185×4 | 145×6 | 8.5 | progression propre (8.7%) |
-| Strict Press | 75×6 | 60×6 | 7.7 | stable (0%) |
-| Barbell Row | 115×9 | 95×10 | 8.2 | stable (1.7%) |
+| Back Squat | 90×5 | 90×6 | 7.6 | stable (2.9%) |
+| Bench Press | 115×5 | 115×6 | 7.9 | stable (2.9%) |
+| Deadlift | 180×5 | 180×6 | 8.3 | stable (2.9%) |
+| Strict Press | 75×7 | 75×7 | 7.8 | stable (0%) |
+| Barbell Row | 120×8 | 120×9 | 8.3 | stable (2.6%) |
 
-### WARN — Avancé force 4j
+### PASS — Avancé force 4j
 
 - Profil: `advanced_force`, niveau `avance`, agressivité `1.15`
 - Programme: `client_strength_4d`
@@ -106,17 +103,13 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Back Squat | 215×6 | 165×5 | 8.4 | baisse suspecte (-4.4%) |
-| Bench Press | 255×6 | 220×6 | 8.6 | stable (4.8%) |
-| Deadlift | 380×4 | 315×5 | 9.3 | stable lourd (0%) |
-| Strict Press | 170×5 | 125×6 | 8.8 | stable lourd (-3.2%) |
-| Barbell Row | 225×8 | 170×9 | 8.8 | baisse suspecte (-8.9%) |
+| Back Squat | 220×6 | 175×7 | 8.5 | baisse assumée (RPE élevé) (-18.2%) |
+| Bench Press | 260×5 | 260×4 | 8.6 | stable (-2.9%) |
+| Deadlift | 390×5 | 360×6 | 9.2 | baisse assumée (RPE élevé) (-5.1%) |
+| Strict Press | 165×5 | 165×5 | 8.7 | stable lourd (0%) |
+| Barbell Row | 230×8 | 230×8 | 8.9 | stable lourd (0%) |
 
-**Alertes**
-- Back Squat: baisse suspecte non attendue
-- Barbell Row: baisse suspecte non attendue
-
-### WARN — CrossFit RX 5j
+### PASS — CrossFit RX 5j
 
 - Profil: `rx_crossfit`, niveau `avance`, agressivité `1.05`
 - Programme: `client_rx_crossfit_5d`
@@ -126,17 +119,13 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Power Clean | 100×5 | 70×4 | 7.8 | baisse suspecte (-12.6%) |
-| Front Squat | 145×5 | 125×7 | 8.5 | progression propre (6.4%) |
-| Push Press | 100×6 | 65×6 | 8.3 | baisse suspecte (-10%) |
-| Deadlift | 260×5 | 200×6 | 9 | stable lourd (3.8%) |
-| Pull-Up | 6 reps | 6 reps | 8 | progression propre (16.7%) |
+| Power Clean | 100×3 | 100×4 | 8.1 | stable (3%) |
+| Front Squat | 140×7 | 140×5 | 8.3 | stable (reps variables) (-5.4%) |
+| Push Press | 100×6 | 100×5 | 8.4 | stable (-2.8%) |
+| Deadlift | 260×4 | 250×6 | 9.1 | stable lourd (1.8%) |
+| Pull-Up | 6 reps | 7 reps | 7.9 | stable (16.7%) |
 
-**Alertes**
-- Power Clean: baisse suspecte non attendue
-- Push Press: baisse suspecte non attendue
-
-### WARN — Préparation Metcon 3j
+### PASS — Préparation Metcon 3j
 
 - Profil: `metcon_prep`, niveau `intermediaire`, agressivité `0.9`
 - Programme: `client_metcon_prep_3d`
@@ -146,17 +135,13 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Power Clean | 55×3 | 40×4 | 7.6 | baisse suspecte (-6.3%) |
-| Front Squat | 70×6 | 50×7 | 7.6 | baisse suspecte (-7.1%) |
-| Push Press | 50×6 | 40×6 | 7.4 | stable (0%) |
-| Deadlift | 140×6 | 130×5 | 8.5 | progression propre (11.3%) |
-| Pull-Up | 6 reps | 7 reps | 8.3 | stable (0%) |
+| Power Clean | 50×5 | 50×4 | 7.4 | stable (-2.9%) |
+| Front Squat | 70×6 | 70×7 | 7.7 | stable (2.8%) |
+| Push Press | 55×6 | 55×6 | 7.5 | stable (0%) |
+| Deadlift | 145×6 | 145×6 | 8.5 | stable (0%) |
+| Pull-Up | 7 reps | 7 reps | 8.6 | stable (0%) |
 
-**Alertes**
-- Power Clean: baisse suspecte non attendue
-- Front Squat: baisse suspecte non attendue
-
-### WARN — Candidat strict muscle-up
+### PASS — Candidat strict muscle-up
 
 - Profil: `strict_mu_candidate`, niveau `avance`, agressivité `0.85`
 - Programme: `strict_muscle_up_10w`
@@ -166,15 +151,11 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Strict Pull-Up | 8 reps | 7 reps | 8 | baisse suspecte (-12.5%) |
-| Weighted Pull-Up | 6 reps | 6 reps | 8 | stable (0%) |
-| Ring Dip | 7 reps | 7 reps | 8.1 | stable (0%) |
-| False Grip Row | 9 reps | 9 reps | 8.6 | stable (0%) |
-| Transition Drill | 8 reps | 9 reps | 8.7 | monte cher (12.5%) |
-
-**Alertes**
-- Strict Pull-Up: baisse suspecte non attendue
-- Transition Drill: progresse mais RPE coûteux (12.5%)
+| Strict Pull-Up | 6 reps | 7 reps | 8.2 | stable (16.7%) |
+| Weighted Pull-Up | 6 reps | 8 reps | 8 | progression propre (33.3%) |
+| Ring Dip | 7 reps | 6 reps | 8 | stable (-14.3%) |
+| False Grip Row | 9 reps | 9 reps | 8.7 | stable (0%) |
+| Transition Drill | 9 reps | 9 reps | 8.7 | stable lourd (0%) |
 
 ### PASS — Retour blessure prudent
 
@@ -186,13 +167,13 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Front Squat | 60×6 | 50×4 | 7.8 | stable (0%) |
-| Push Press | 55×5 | 45×6 | 8.1 | stable (-2.9%) |
-| Power Clean | 50×4 | 40×3 | 8.1 | stable (0%) |
-| Barbell Row | 90×8 | 70×7 | 8.8 | stable lourd (0%) |
-| Weighted Pull-up | 6 reps | 6 reps | 9.1 | baisse suspecte (-16.7%) |
+| Front Squat | 60×7 | 60×5 | 8.1 | stable (reps variables) (-5.4%) |
+| Push Press | 55×5 | 55×5 | 8.4 | stable (0%) |
+| Power Clean | 50×4 | 50×3 | 7.9 | stable (-2.9%) |
+| Barbell Row | 90×8 | 90×8 | 8.8 | stable lourd (0%) |
+| Weighted Pull-up | 7 reps | 5 reps | 9.1 | stable (reps variables) (-28.6%) |
 
-### WARN — Utilisateur données incohérentes
+### PASS — Utilisateur données incohérentes
 
 - Profil: `chaos_donnees`, niveau `intermediaire`, agressivité `1.25`
 - Programme: `client_hypertrophy_5d`
@@ -202,15 +183,12 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Bench Press | 15×10 | 25×9 | 8.2 | progression propre (58.3%) |
-| Front Squat | 75×9 | 10×10 | 7.1 | baisse suspecte (-72.6%) |
-| Barbell Row | 230×9 | 355×7 | 9.3 | monte cher (122.4%) |
-| Hip Thrust | 295×8 | 180×10 | 9.3 | baisse suspecte (-23.5%) |
-| DB RDL | 90×8 | 23×8 | 8.4 | baisse suspecte (-80.6%) |
-| Incline DB Press | 3×8 | 3×8 | 7.7 | progression propre (110.5%) |
-
-**Alertes**
-- Barbell Row: progresse mais RPE coûteux (122.4%)
+| Bench Press | 10×10 | 5×10 | 7.2 | baisse suspecte (-50%) |
+| Front Squat | 125×9 | 110×9 | 7.9 | baisse suspecte (-12%) |
+| Barbell Row | 120×8 | 155×9 | 8.1 | progression propre (32.6%) |
+| Hip Thrust | 390×8 | 365×8 | 9.5 | baisse assumée (RPE élevé) (-6.4%) |
+| DB RDL | 35×10 | 18×8 | 7.4 | baisse suspecte (-52.5%) |
+| Incline DB Press | 3×10 | 8×8 | 7.9 | progression propre (185%) |
 
 ## Limites
 

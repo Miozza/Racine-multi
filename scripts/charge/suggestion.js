@@ -704,9 +704,23 @@ function updateAthleteStateFromResults(results,dateStr){
     var targetReps=Number(planned.reps||planned.targetMin)||reps;
     // La plage vient des reps PRESCRITES quand rien n'est sorti : repRange(0)
     // renverrait "strength" et classerait un 8-reps rate dans la mauvaise plage.
-    // 8 = cible neutre par defaut quand ni realise ni prescrit n'est connu
-    // (mouvement hors programme sans planned).
-    var range=repRange(reps||targetReps||8);
+    // Sans prescription connue (mouvement hors programme, resultat non enrichi),
+    // on classe dans la plage ou le mouvement est REELLEMENT travaille — sa fiche
+    // la plus recente. Une plage par defaut ferait atterrir le cap a cote : un
+    // Back Squat travaille en force verrait son echec classe en hypertrophie, et
+    // la suggestion des 5 reps ignorerait le cap.
+    var range;
+    if(reps||targetReps){
+      range=repRange(reps||targetReps);
+    }else{
+      var knownRanges=(ast.movements[label]&&ast.movements[label].ranges)||{};
+      var newestRange="",newestRangeDate="";
+      Object.keys(knownRanges).forEach(function(rk){
+        var d=String((knownRanges[rk]&&knownRanges[rk].lastUpdated)||"");
+        if(!newestRange||d>newestRangeDate){newestRange=rk;newestRangeDate=d;}
+      });
+      range=newestRange||repRange(8);
+    }
     var cls=classifyPerformance(r,{name:label,context:resultContext,bodyweightMovement:bodyweightMovement,reps:targetReps,targetMin:planned.targetMin,targetMax:planned.targetMax});
     var oneRM=epley1RM(load,reps);
     var capacityLoad=load;
@@ -809,6 +823,15 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     var ctx = (context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
     var isLimited = (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
     if(isLimited) return base.loadText;
+
+    // Brain raffine une progression normale ; il ne doit jamais DEFAIRE un frein.
+    // Quand la pile de regles a deja pose un avertissement (cap
+    // recalibrating/watch, RPE haut repete, echec), sa decision fait foi.
+    // Sans ce garde-fou, un echec total cappe a 175 lb par
+    // guardedSuggestedLoadDecision() ressortait a 220 lb apres la couche Brain —
+    // exactement la charge qui venait d'echouer. Le frein doit survivre au
+    // raffinement.
+    if(base.severity==='warning'||base.severity==='critical') return base.loadText;
 
     var isDeload = (typeof coachIsDeloadWeekOrContext==='function') ? coachIsDeloadWeekOrContext(ctx) : false;
 
