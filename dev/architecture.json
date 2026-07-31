@@ -893,8 +893,8 @@
     },
     {
       "path": "dev/simulate_multi_users.js",
-      "size": 29216,
-      "lines": 615,
+      "size": 36532,
+      "lines": 758,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -925,8 +925,8 @@
     },
     {
       "path": "dev/simulation_report.json",
-      "size": 60758,
-      "lines": 2126,
+      "size": 61260,
+      "lines": 2199,
       "role": "Artefact généré (écrit) par dev/simulate_multi_users.js. Rapport de simulation, non relu comme entrée.",
       "category": "ACTIF",
       "exposes": [],
@@ -941,8 +941,8 @@
     },
     {
       "path": "dev/simulation_report.md",
-      "size": 10430,
-      "lines": 247,
+      "size": 10121,
+      "lines": 222,
       "role": "Artefact généré (écrit) par dev/simulate_multi_users.js. Rapport de simulation lisible, non relu comme entrée.",
       "category": "ACTIF",
       "exposes": [],
