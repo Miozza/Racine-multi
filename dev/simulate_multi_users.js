@@ -335,15 +335,23 @@ function suggestionFromEngine(movement, history, persona, targetReps, family, we
 }
 
 // Renvoie la séance simulée au moteur par la porte de production.
-function feedEngine(movement, load, reps, rpe, date) {
+function feedEngine(movement, load, reps, rpe, date, targetReps, context) {
   const results = {};
-  results[movement] = { load: String(load), reps: String(reps), rpe: String(rpe) };
+  results[movement] = {
+    load: String(load), reps: String(reps), rpe: String(rpe),
+    // En production, save.js appelle enrichSessionResults() AVANT
+    // updateAthleteStateFromResults() : le résultat porte donc sa prescription.
+    // Sans elle, une série à 0 rep n'a plus de cible et le moteur ne sait plus
+    // dans quelle plage classer l'échec.
+    planned: { name: movement, reps: targetReps, targetMin: targetReps, targetMax: targetReps,
+               kind: context.kind, format: context.format, context: null }
+  };
   try { sandbox.updateAthleteStateFromResults(results, date); }
   catch (e) { return e.message; }
   return null;
 }
 
-function simulateMovement(persona, computed, movement, family, weeks) {
+function simulateMovement(persona, computed, movement, family, weeks, isFirstMovement) {
   const target = targetRepsFor(movement, family);
   const bodyweight = /pull.?up|ring dip|transition|false grip/i.test(movement);
   let load = seedLoadFor(movement, computed, persona, family);
@@ -356,8 +364,19 @@ function simulateMovement(persona, computed, movement, family, weeks) {
     const suggestion = suggestionFromEngine(movement, history, persona, target, family, week, load);
     if (suggestion.engineError) warnings.push(`${movement}: moteur en erreur — ${suggestion.engineError}`);
     let suggestedLoad = bodyweight ? 0 : suggestion.load;
-    let complianceNoise = rand(-persona.chaos, persona.chaos);
-    if (persona.id === 'chaos_donnees') complianceNoise += pick([-0.35, 0, 0.45]);
+    // L'athlète charge ce que Racine prescrit. Un bruit de charge appliqué
+    // CHAQUE semaine faisait cliquet : le moteur repart de la charge réalisée,
+    // donc chaque tirage négatif devenait la nouvelle base et ne remontait
+    // jamais — une dérive fabriquée par le simulateur, que detectTrend()
+    // imputait ensuite au moteur. La variabilité réelle vit dans les reps et le
+    // RPE, pas dans le poids qu'on met sur la barre.
+    // Seul le profil « données incohérentes » dévie sur la charge — c'est sa
+    // raison d'être. Pour les autres, l'irrégularité passe par le RPE et les
+    // reps (`rpeNoise`), pas par un poids tiré au hasard : même une seule
+    // déviation négative reste définitive, puisque le moteur repart à juste
+    // titre de ce qui a réellement été soulevé.
+    let complianceNoise = 0;
+    if (persona.id === 'chaos_donnees') complianceNoise = rand(-persona.chaos, persona.chaos) + pick([-0.35, 0, 0.45]);
     let actualLoad = bodyweight ? 0 : Math.max(0, roundLoad(movement, suggestedLoad * (1 + complianceNoise)));
     let relative = bodyweight ? target / Math.max(1, ability) : actualLoad / Math.max(1, ability);
     let reps = Math.round(target + rand(-1, 1) + clamp((1 - relative) * 3, -1, 1));
@@ -367,6 +386,14 @@ function simulateMovement(persona, computed, movement, family, weeks) {
       reps -= 1;
     }
     if (persona.id === 'chaos_donnees' && week === 3) {
+      reps = 0;
+      failed = true;
+    }
+    // Echec total delibere sur un profil COHERENT : la barre est chargee, aucune
+    // rep ne sort. C'est le scenario que V4.5.27 corrige, et sans lui cette
+    // suite y est aveugle — un test de mutation neutralisant
+    // coachRuleAthleteStateCap() passait au vert.
+    if (persona.failWeek && week === persona.failWeek && isFirstMovement && !bodyweight) {
       reps = 0;
       failed = true;
     }
@@ -393,7 +420,7 @@ function simulateMovement(persona, computed, movement, family, weeks) {
     history.push(row);
 
     // Boucle fermée : le moteur apprend de la séance qu'il vient de suggérer.
-    const feedError = feedEngine(movement, actualLoad, reps, row.rpe, date);
+    const feedError = feedEngine(movement, actualLoad, reps, row.rpe, date, target, engineContextFor(movement, family, week, target));
     if (feedError) warnings.push(`${movement}: athlete_state en erreur — ${feedError}`);
 
     const adaptation = persona.adaptationRate * (persona.injuryWeek && week >= persona.injuryWeek ? -0.35 : 1);
@@ -428,9 +455,32 @@ function detectTrend(rows) {
   const first = sample[0].e1rm;
   const last = sample[sample.length - 1].e1rm;
   const deltaPct = first ? ((last - first) / first) * 100 : 0;
+  // Poids du corps : e1rm vaut le NOMBRE DE REPS (entier, 5 à 10 typiquement).
+  // Une rep d'écart y pèse 10 à 20 %, donc les seuils en pourcentage — calibrés
+  // pour des charges — crient au loup sur une variation d'une seule rep. On
+  // exige un écart d'au moins 2 reps avant de parler de tendance.
+  const bodyweightSample = sample.every(r => !Number(r.load));
+  if (bodyweightSample && Math.abs(last - first) < 2) {
+    const avgRpeBw = sample.reduce((a,b) => a + b.rpe, 0) / sample.length;
+    return { status: avgRpeBw >= 8.7 ? 'stable lourd' : 'stable', delta: deltaPct };
+  }
   const avgRpe = sample.reduce((a,b) => a + b.rpe, 0) / sample.length;
   if (deltaPct > 5 && avgRpe <= 8.6) return { status: 'progression propre', delta: deltaPct };
   if (deltaPct > 5 && avgRpe > 8.6) return { status: 'monte cher', delta: deltaPct };
+  // Une baisse sous RPE élevé n'est pas suspecte : c'est la prudence RPE du
+  // moteur qui fait son travail (« pas de hausse après RPE ≥ 9 », descente
+  // contrôlée). Ce test doit passer AVANT « baisse suspecte », sinon un
+  // Deadlift à RPE 9,4 ramené de 390 à 350 lb — exactement le comportement
+  // attendu — remonte comme une alerte.
+  // e1RM = charge × (1 + reps/30) : à charge CONSTANTE, deux reps d'écart
+  // suffisent à faire bouger l'e1RM de ~7 %, donc à franchir le seuil. Or le
+  // sujet de cette suite est ce que le moteur SUGGÈRE. Tant que la charge n'a
+  // pas baissé, une variation de reps n'est pas une baisse.
+  const firstLoad = Number(sample[0].load) || 0;
+  const lastLoad = Number(sample[sample.length - 1].load) || 0;
+  const loadDropped = firstLoad > 0 && lastLoad < firstLoad;
+  if (deltaPct < -4 && !loadDropped) return { status: 'stable (reps variables)', delta: deltaPct };
+  if (deltaPct < -4 && avgRpe >= 8.7) return { status: 'baisse assumée (RPE élevé)', delta: deltaPct };
   if (deltaPct < -4) return { status: 'baisse suspecte', delta: deltaPct };
   if (avgRpe >= 8.7) return { status: 'stable lourd', delta: deltaPct };
   return { status: 'stable', delta: deltaPct };
@@ -462,7 +512,7 @@ const personas = [
     answers: { squat:{weight:165,reps:5,rpe:8}, bench:{weight:155,reps:5,rpe:8}, press:{weight:95,reps:5,rpe:8}, row:{weight:145,reps:8,rpe:8}, hinge:{weight:75,reps:8,rpe:8} }
   },
   {
-    id: 'advanced_force', name: 'Avancé force 4j', level: 'avance', bodyweightLb: 215, aggressiveness: 1.15,
+    id: 'advanced_force', name: 'Avancé force 4j', level: 'avance', bodyweightLb: 215, aggressiveness: 1.15, failWeek: 4,
     programId: 'client_strength_4d', family: 'strength', movementSet: mainMovementPool.strength,
     baseStrength: 1.08, adaptationRate: 0.008, chaos: 0.035, rpeNoise: 0.35,
     answers: { squat:{weight:255,reps:5,rpe:8}, bench:{weight:235,reps:5,rpe:8}, press:{weight:145,reps:5,rpe:8}, row:{weight:205,reps:8,rpe:8}, hinge:{weight:105,reps:8,rpe:8} }
@@ -537,7 +587,7 @@ function evaluateProfile(persona) {
   const weeks = persona.programId === 'strict_muscle_up_10w' ? 10 : 6;
   // Le moteur travaille sur un athlete_state neuf, propre à ce profil.
   resetEngineState(sandbox, profile, family);
-  const movements = persona.movementSet.map(movement => simulateMovement(persona, computed, movement, family, weeks));
+  const movements = persona.movementSet.map((movement, mi) => simulateMovement(persona, computed, movement, family, weeks, mi === 0));
   const progressionPoints = buildProgressionPoints({ movements });
   const warnings = [];
   const fails = [];
@@ -570,18 +620,27 @@ function evaluateProfile(persona) {
       let maxJump = 10;
       try { maxJump = Number(sandbox.coachMaxJumpForExercise(cur.movement, prev.load)) || 10; }
       catch (e) { /* repli neutre */ }
-      // Garde « pas de hausse après RPE ≥ 9 ». Elle ne peut s'appliquer que si
-      // le moteur a VU la série : updateAthleteStateFromResults() ignore les
-      // séries à 0 rep (scripts/charge/suggestion.js — `if(!hasValidLoad||!reps)
-      // return;`). Un échec total ne laisse donc aucune trace dans athlete_state
-      // et la garde RPE n'a rien sur quoi se déclencher. Ce n'est pas une
-      // violation du moteur : c'est un angle mort, signalé comme tel.
+      // Garde « pas de hausse après RPE ≥ 9 ».
+      // Depuis V4.5.27 un échec total (0 rep) EST mémorisé et pose un cap. Une
+      // hausse au-dessus de la charge échouée reste néanmoins possible quand
+      // l'historique est incohérent — echouer à 47,5 lb après avoir réussi
+      // 60 lb la semaine d'avant. Le moteur s'appuie alors sur la référence
+      // réellement démontrée, ce qui se défend : on signale l'observation sans
+      // la qualifier de violation.
       if (prev.rpe >= 9 && cur.suggestedLoad > prev.load) {
         if (Number(prev.reps) > 0) {
           fails.push(`${cur.movement}: suggestion en hausse après RPE ${prev.rpe} (${prev.load} -> ${cur.suggestedLoad})`);
         } else {
-          warnings.push(`${cur.movement}: échec à 0 rep non mémorisé par athlete_state — la garde RPE ne peut pas s'appliquer (${prev.load} -> ${cur.suggestedLoad})`);
+          warnings.push(`${cur.movement}: suggestion au-dessus de la charge échouée à 0 rep (${prev.load} -> ${cur.suggestedLoad}) — historique incohérent, à vérifier`);
         }
+      }
+      // Echec total sur un profil COHERENT : la suggestion suivante doit
+      // descendre sous la charge echouee. Sans cette assertion, neutraliser
+      // coachRuleAthleteStateCap() passait cette suite au vert (verifie par
+      // test de mutation).
+      if (Number(prev.reps) === 0 && Number(prev.load) > 0 && persona.id !== 'chaos_donnees'
+          && Number(cur.suggestedLoad) >= Number(prev.load)) {
+        fails.push(`${cur.movement}: apres un echec total a ${prev.load} lb (0 rep), le moteur repropose ${cur.suggestedLoad} lb`);
       }
       if (jump > maxJump + 0.1) warnings.push(`${cur.movement}: le moteur dépasse son propre saut max (${fmt(jump)} lb > ${fmt(maxJump)} lb)`);
     }
@@ -602,10 +661,15 @@ function evaluateProfile(persona) {
   const movementSummaries = movements.map(mv => {
     const rows = mv.history;
     const trend = detectTrend(rows);
+    // Début/Fin affichés hors semaine de deload, comme la tendance. Sinon le
+    // tableau montrait « 100×5 → 70×4 » à côté d'un verdict « stable », et on
+    // lisait une chute là où le moteur avait simplement appliqué son deload.
+    const shown = rows.filter(r => !r.deloadWeek);
+    const shownRows = shown.length >= 2 ? shown : rows;
     return {
       movement: mv.movement,
-      first: rows[0],
-      last: rows[rows.length - 1],
+      first: shownRows[0],
+      last: shownRows[shownRows.length - 1],
       avgRpe: rows.reduce((a,b) => a + b.rpe, 0) / rows.length,
       trend
     };
@@ -729,7 +793,24 @@ const report = {
     warnings: r.warnings,
     fails: r.fails,
     progressionPointCount: r.progressionPoints.length,
-    movementSummaries: r.movementSummaries.map(m => ({ movement:m.movement, first:m.first, last:m.last, avgRpe:m.avgRpe, trend:m.trend }))
+    movementSummaries: r.movementSummaries.map(m => ({ movement:m.movement, first:m.first, last:m.last, avgRpe:m.avgRpe, trend:m.trend })),
+    // Trace semaine par semaine : suggéré / réalisé / RPE / raison du moteur.
+    // Sans elle, trier une alerte oblige à rejouer le profil à la main — c'est
+    // le minimum pour distinguer une décision du moteur d'un bruit de l'athlète
+    // simulé (voir Limites).
+    movementTraces: r.movements.map(mv => ({
+      movement: mv.movement,
+      target: mv.target,
+      weeks: mv.history.map((h, i) => ({
+        week: i + 1,
+        suggested: h.suggestedLoad,
+        load: h.load,
+        reps: h.reps,
+        rpe: h.rpe,
+        deloadWeek: !!h.deloadWeek,
+        reason: String(h.suggestionReason || '').slice(0, 160)
+      }))
+    }))
   }))
 };
 

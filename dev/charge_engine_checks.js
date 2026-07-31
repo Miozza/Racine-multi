@@ -458,6 +458,54 @@ try {
   assert(deadBugDiag.noLoadUseful === true, 'Dead Bug est reconnu comme mouvement sans charge utile.');
   assert(!deadBugDiag.alerts.some(a => a.code === 'data_low'), 'Dead Bug ne declenche pas d alerte donnees faibles.');
 
+  // 14. Echec total (0 rep) : la charge engagee sans aucune rep sortie est le
+  // signal d'echec le plus fort. Avant V4.5.27 elle n'etait ni classee ni
+  // memorisee (`if(!hasValidLoad||!reps)return;`), et le moteur reproposait la
+  // charge exacte qui venait d'echouer.
+  resetState();
+  ctx.state.day = 'lundi';
+  const failCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'strength', blockTitle:'A. Principal', format:'3x8', day:'lundi', week:3 });
+  const failPlanned = { name:'Bench Press', load:135, reps:8, targetMin:8, targetMax:8, kind:'strength', format:'3x8', context:failCtx };
+  ctx.state.athleteState.movements['Bench Press'] = {
+    ranges: { hypertrophy: { currentLoad:135, actualLoad:135, currentReps:8, actualReps:8, rpe:7.5, confidence:0.8, status:'success' } },
+    history: [
+      { date:'2026-06-01', load:135, reps:8, rpe:7.5, range:'hypertrophy', status:'success', context:failCtx },
+      { date:'2026-06-08', load:135, reps:8, rpe:7.5, range:'hypertrophy', status:'success', context:failCtx }
+    ]
+  };
+  const beforeFail = ctx.state.athleteState.movements['Bench Press'].history.length;
+
+  const failCls = ctx.classifyPerformance({ load:'135 lb', reps:0, rpe:10 }, failPlanned);
+  assert(failCls.status === 'major_fail', 'Une charge engagee avec 0 rep est classee major_fail.');
+  const noRpeCls = ctx.classifyPerformance({ load:'135 lb', reps:0, rpe:0 }, failPlanned);
+  assert(noRpeCls.status === 'major_fail', '0 rep reste un echec meme si le RPE n a pas ete saisi.');
+
+  ctx.updateAthleteStateFromResults({
+    'Bench Press': { load:'135 lb', reps:0, rpe:10, planned:failPlanned }
+  }, '2026-06-15');
+  const failMv = ctx.state.athleteState.movements['Bench Press'];
+  assert(failMv.history.length === beforeFail + 1, 'L echec total est memorise dans athlete_state.');
+  // Plage prise sur les reps PRESCRITES : repRange(0) renverrait "strength".
+  assert(!!failMv.ranges.hypertrophy && failMv.ranges.hypertrophy.status === 'recalibrating',
+    'L echec total classe le mouvement en recalibrating dans la plage prescrite.');
+  assert(failMv.ranges.hypertrophy.currentLoad > 0 && failMv.ranges.hypertrophy.currentLoad < 135,
+    'La capacite retombe sous la charge echouee sans jamais valoir 0 (Epley n a aucun signal a 0 rep).');
+  assert(failMv.ranges.hypertrophy.estimated1RM > 0,
+    'Un echec total n ecrase pas la derniere estimation 1RM par un zero.');
+
+  const afterFail = ctx.guardedSuggestedLoadDecision('Bench Press', '135 lb', 8, failCtx);
+  assert(afterFail.loadNum < 135, 'Apres un echec total, le moteur ne repropose pas la charge qui vient d echouer.');
+  assert(afterFail.loadNum <= failMv.ranges.hypertrophy.currentLoad,
+    'La suggestion respecte le cap pose par l echec : une seance controlee ANTERIEURE ne le neutralise pas.');
+
+  // Contre-epreuve : une reference controlee POSTERIEURE au cap doit, elle,
+  // continuer de le neutraliser (comportement d origine preserve).
+  ctx.updateAthleteStateFromResults({
+    'Bench Press': { load:'135 lb', reps:8, rpe:7.5, planned:failPlanned }
+  }, '2026-06-22');
+  const recovered = ctx.guardedSuggestedLoadDecision('Bench Press', '135 lb', 8, failCtx);
+  assert(recovered.loadNum >= 135, 'Une seance controlee posterieure a l echec redonne la main a la reference reelle.');
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

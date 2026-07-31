@@ -1,5 +1,5 @@
-// Racine V4.5.26 — bouton Notes élargi + note limitée à sa séance
-var APP_VERSION = "V4.5.26";
+// Racine V4.5.28 — un frein de sécurité survit à la couche Brain
+var APP_VERSION = "V4.5.28";
 
 // Architecture stable
 // programs/*.js = plan prévu

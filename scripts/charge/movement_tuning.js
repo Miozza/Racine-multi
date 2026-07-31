@@ -48,6 +48,13 @@
     },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },
+    // updateAthleteStateFromResults() — suggestion.js
+    // Echec total (charge engagee, 0 rep sortie). Epley n'a aucun signal a
+    // 0 rep : epley1RM(load,0) vaut 0. Quand aucune charge recente maitrisee
+    // n'existe sous la charge echouee, la capacite retombe a ce pourcentage de
+    // la charge tentee. Cale sur le cas voisin deja teste (1 rep sur 8 a RPE 10
+    // ramene 135 lb a 110 lb, soit ~0.81).
+    failedAttemptMultiplier: 0.80,
     // Bloc "allowLiftFromHistory" de guardedSuggestedLoadDecision() — suggestion.js
     liftFromHistoryThresholds: {
       default: {gap:20, maxRpe:8},
