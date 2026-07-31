@@ -45,6 +45,15 @@
   // la séance (un renderGuidedSession() remettrait le timer à zéro).
   var sourceBtn = null;
 
+  // Portée d'une note : UNE séance = un programme + une semaine + un jour.
+  // guidedResultCache, lui, est indexé par nom de mouvement seulement et
+  // survit tant que la page est ouverte : sans ce garde-fou, une note écrite
+  // lundi S1 réapparaîtrait sous le même mouvement mercredi ou en S2, et
+  // resterait là après avoir abandonné la séance. On ne touche que le champ
+  // `note` : les poids/reps/RPE gardent leur comportement d'origine.
+  var ownedKeys = {};   // clés dont ce module a écrit la note dans le contexte courant
+  var ownedCtx = null;  // contexte auquel ces notes appartiennent
+
   // ── Utilitaires ────────────────────────────────────────────────────────────
   function esc(v){
     if(typeof escHtml === "function"){
@@ -92,6 +101,7 @@
     var next = current ? (current + SEPARATOR + add) : add;
     if(next.length > MAX_NOTE) next = next.slice(0, MAX_NOTE).trim();
     writeNote(key, next);
+    ownedKeys[key] = true;
     return next;
   }
   // Effacement d'une observation. Une chaîne vide reste une écriture valide :
@@ -104,29 +114,72 @@
     parts.splice(index, 1);
     var next = parts.join(SEPARATOR);
     writeNote(key, next);
+    if(!next) delete ownedKeys[key];
     return next;
   }
   function clearNote(key){
     writeNote(key, "");
+    delete ownedKeys[key];
     return "";
+  }
+
+  // ── Portée de séance ───────────────────────────────────────────────────────
+  function sessionContextKey(){
+    try{
+      var s = window.state || {};
+      var cycle = s.cycle;
+      if(cycle && typeof cycle === "object") cycle = cycle.goal || cycle.id || "";
+      return [String(cycle||""), String(s.week||""), String(s.day||"")].join("|");
+    }catch(e){ return ""; }
+  }
+  // Abandon de séance ou changement de programme/semaine/jour : les notes du
+  // contexte précédent sont retirées du cache. Une chaîne vide est ignorée par
+  // collectSessionResults(), donc rien ne part dans la séance sauvegardée.
+  function dropSessionNotes(){
+    Object.keys(ownedKeys).forEach(function(k){ writeNote(k, ""); });
+    ownedKeys = {};
+  }
+  function syncSessionContext(){
+    var ctx = sessionContextKey();
+    if(ownedCtx === ctx) return;
+    if(ownedCtx !== null) dropSessionNotes();
+    ownedCtx = ctx;
   }
 
   // ── Petit bouton dans la ligne du titre (zéro impact sur la mise en page) ──
   function buttonHtml(key, label){
     key = String(key==null?"":key).trim();
     if(!key) return "";
+    syncSessionContext();
     var name = String(label==null?key:label);
-    var has = noteParts(readNote(key)).length > 0;
-    return "<button type='button' class='gvn-btn-mini" + (has?" has-notes":"") + "'"
+    var count = noteParts(readNote(key)).length;
+    var h = "<button type='button' class='gvn-btn-mini" + (count?" has-notes":"") + "'"
       + " data-gvn-open='1'"
       + " data-gvn-key='" + esc(key) + "'"
       + " data-gvn-label='" + esc(name) + "'"
       + " aria-label='" + esc("Note de séance — " + name) + "'"
-      + " title='" + esc("Note de séance — " + name) + "'>✎</button>";
+      + " title='" + esc("Note de séance — " + name) + "'>";
+    h += "<span class='gvn-mini-ico' aria-hidden='true'>✎</span>";
+    h += "<span class='gvn-mini-label'>Notes</span>";
+    if(count) h += "<span class='gvn-mini-count'>" + count + "</span>";
+    h += "</button>";
+    return h;
   }
   function refreshSourceButton(key){
     if(!sourceBtn) return;
-    sourceBtn.classList.toggle("has-notes", noteParts(readNote(key)).length > 0);
+    var count = noteParts(readNote(key)).length;
+    sourceBtn.classList.toggle("has-notes", count > 0);
+    var badge = sourceBtn.querySelector(".gvn-mini-count");
+    if(count){
+      if(!badge){
+        badge = document.createElement("span");
+        badge.className = "gvn-mini-count";
+        sourceBtn.appendChild(badge);
+      }
+      badge.textContent = String(count);
+    } else if(badge && badge.parentNode){
+      badge.parentNode.removeChild(badge);
+    }
   }
 
   // ── Modale (même popup que le tuto : .tuto-modal / .tuto-modal-inner) ──────
@@ -296,4 +349,6 @@
   api.clearNote = clearNote;
   api.noteParts = noteParts;
   api.openModal = openModal;
+  api.dropSessionNotes = dropSessionNotes;
+  api.sessionContextKey = sessionContextKey;
 })();

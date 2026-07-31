@@ -313,6 +313,15 @@ function openGuidedSession(){
 
 function closeGuidedSession(){
   stopGuidedTimer();
+  // Abandon de séance : les notes du mouvement partent avec elle. Sans ça
+  // elles resteraient dans guidedResultCache — qui n'est indexé que par nom de
+  // mouvement — et réapparaîtraient au prochain entraînement. Poids/reps/RPE
+  // gardent leur comportement d'origine (le cache leur survit volontairement).
+  try{
+    if(window.CoachVoiceNote && typeof CoachVoiceNote.dropSessionNotes==='function'){
+      CoachVoiceNote.dropSessionNotes();
+    }
+  }catch(e){ /* jamais bloquant */ }
   var el=$("guidedSession");
   if(el){ el.classList.add("hidden"); el.innerHTML=""; }
   document.body.classList.remove("guided-session-active");
