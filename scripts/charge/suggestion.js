@@ -538,7 +538,15 @@ function coachRuleAthleteStateCap(ctx){
     if(capLoad===null||capLoad===undefined)capLoad=Number(capLoadRaw)||0;
     var hasCapLoad=(capLoad||capLoad===0);
     // Ne pas laisser un cap faible ecraser une reference reelle controlee clairement superieure.
-    var ignoreLowCap=ctx.bestControlled&&hasCapLoad&&ctx.bestControlled.load>=capLoad+15&&ctx.bestControlled.rpe<=8.5;
+    // La reference doit etre PLUS RECENTE que le cap — ce que la raison affichee
+    // affirmait deja sans que la condition le verifie. Sans ce test, un echec
+    // total (0 rep) posait bien un cap "recalibrating", mais une seance
+    // controlee ANTERIEURE le faisait ignorer : le moteur reproposait la charge
+    // qui venait d'echouer. Une reference d'avant l'echec ne prouve plus rien.
+    var capDate=String((ctx.cap&&ctx.cap.lastUpdated)||"");
+    var controlledDate=String((ctx.bestControlled&&ctx.bestControlled.row&&ctx.bestControlled.row.date)||"");
+    var controlledIsNewer=!capDate||!controlledDate||controlledDate>capDate;
+    var ignoreLowCap=ctx.bestControlled&&hasCapLoad&&ctx.bestControlled.load>=capLoad+15&&ctx.bestControlled.rpe<=8.5&&controlledIsNewer;
     if(hasCapLoad&&capLoad>0&&ctx.suggested>capLoad&&!ignoreLowCap){ctx.suggested=capLoad;ctx.mode="down";ctx.severity="warning";ctx.reason="Mouvement sous surveillance dans athlete_state : charge cappee jusqu'a confirmation.";}
     else if(ignoreLowCap&&!ctx.isDeload){ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;ctx.reason="Cap athlete_state ignore : historique reel controle plus recent/plus fiable que le cap faible.";}
   }
@@ -643,7 +651,14 @@ function classifyPerformance(actual, planned){
   var targetReps=Number((planned&&planned.reps)||actual.targetMin||actual.targetMax)||reps||1;
   var ratio=targetReps?reps/targetReps:1;
   var status="logged";
-  if(hasLoad&&reps&&rpe>=9.5&&ratio<0.60)status="major_fail";
+  // Echec total : la charge a ete engagee et aucune rep n'est sortie. C'est le
+  // signal d'echec le plus fort qui existe, et il ne depend pas du RPE saisi —
+  // l'athlete qui repose la barre ne pense pas toujours a noter 10. Sans cette
+  // branche, un 0 rep restait "logged", donc non memorise par
+  // updateAthleteStateFromResults(), et le moteur reproposait la charge exacte
+  // qui venait d'echouer.
+  if(hasLoad&&!reps)status="major_fail";
+  else if(hasLoad&&reps&&rpe>=9.5&&ratio<0.60)status="major_fail";
   else if(hasLoad&&reps&&rpe>=9&&ratio<1)status="failed";
   else if(hasLoad&&reps&&rpe<=7&&ratio>=1)status="easy_success";
   else if(hasLoad&&reps&&rpe>=9)status="hard_success";
@@ -680,16 +695,39 @@ function updateAthleteStateFromResults(results,dateStr){
     var resultContext=planned.context||((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(label,{kind:planned.kind,format:planned.format,day:(state&&state.day),week:(state&&state.week)}):null);
     var bodyweightMovement=!!planned.bodyweightMovement || (typeof coachIsBodyweightExternalLoadMovement==='function'&&coachIsBodyweightExternalLoadMovement(label,resultContext));
     var hasValidLoad=(load>0)||(load===0&&bodyweightMovement);
-    if(!hasValidLoad||!reps)return;
-    var range=repRange(reps);
+    // Un 0 rep n'est un echec que s'il a ete SAISI. Un champ reps absent est une
+    // ligne incomplete, pas une tentative ratee : on continue de l'ignorer.
+    var repsProvided=(r.reps!==undefined&&r.reps!==null&&String(r.reps).trim()!=='');
+    var failedAttempt=hasValidLoad&&!reps&&repsProvided;
+    if(!hasValidLoad||(!reps&&!failedAttempt))return;
     var limitedResultContext=(typeof coachIsLimitedProgressionContext==='function')?coachIsLimitedProgressionContext(resultContext):false;
     var targetReps=Number(planned.reps||planned.targetMin)||reps;
+    // La plage vient des reps PRESCRITES quand rien n'est sorti : repRange(0)
+    // renverrait "strength" et classerait un 8-reps rate dans la mauvaise plage.
+    // 8 = cible neutre par defaut quand ni realise ni prescrit n'est connu
+    // (mouvement hors programme sans planned).
+    var range=repRange(reps||targetReps||8);
     var cls=classifyPerformance(r,{name:label,context:resultContext,bodyweightMovement:bodyweightMovement,reps:targetReps,targetMin:planned.targetMin,targetMax:planned.targetMax});
     var oneRM=epley1RM(load,reps);
     var capacityLoad=load;
     var confidence=0.65;
     var status=cls.status;
-    if(cls.status==="major_fail"){
+    if(failedAttempt){
+      // Epley n'a aucun signal ici (epley1RM(load,0)=0) : le laisser piloter la
+      // recalibration ecrirait une capacite de 0 lb dans athlete_state. On
+      // repart de la meilleure charge recente REELLEMENT maitrisee sous la
+      // charge echouee ; sans historique exploitable, repli prudent sur un
+      // pourcentage de la charge tentee (COACH_MOVEMENT_TUNING).
+      var prevMv=ast.movements[label];
+      var controlled=(typeof coachRecentBestControlledLoad==='function')
+        ? coachRecentBestControlledLoad((prevMv&&prevMv.history)||[], 8.5, label, resultContext)
+        : null;
+      var fallbackPct=((window.COACH_MOVEMENT_TUNING||{}).failedAttemptMultiplier)||0.80;
+      var recovered=(controlled&&controlled.load>0&&controlled.load<load)?controlled.load:(load*fallbackPct);
+      capacityLoad=roundLoadForExercise(label, recovered, "down")||roundLoadForExercise(label, recovered, "nearest")||load;
+      confidence=0.30;
+      status="recalibrating";
+    }else if(cls.status==="major_fail"){
       capacityLoad=roundLoadForExercise(label, estimateLoadForRepsFrom1RM(oneRM,targetReps), "nearest")||load;
       confidence=0.35;
       status="recalibrating";
@@ -726,7 +764,13 @@ function updateAthleteStateFromResults(results,dateStr){
         rpe:rpe,
         confidence:confidence,
         status:status,
-        estimated1RM:Math.round(oneRM),
+        // Un echec total donne oneRM=0 : ne pas ecraser la derniere estimation
+        // valide par un zero, qui ferait passer le mouvement pour inconnu. A
+        // defaut d'estimation stockee (fiche ancienne ou migree), on la reconstruit
+        // depuis la derniere performance reelle de la plage.
+        estimated1RM:oneRM
+          ?Math.round(oneRM)
+          :(Number(prev.estimated1RM)||Math.round(epley1RM(Number(prev.actualLoad)||0,Number(prev.actualReps)||0))||0),
         lastUpdated:dateStr,
         planned:planned||null
       };

@@ -1971,8 +1971,7 @@
         "hipThrust8RM": 335
       },
       "warnings": [
-        "Front Squat: échec à 0 rep non mémorisé par athlete_state — la garde RPE ne peut pas s'appliquer (25 -> 40)",
-        "Barbell Row: progresse mais RPE coûteux (50.4%)"
+        "Barbell Row: progresse mais RPE coûteux (122.4%)"
       ],
       "fails": [],
       "progressionPointCount": 36,
@@ -2032,21 +2031,21 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Front Squat",
-            "load": 15,
+            "load": 10,
             "reps": 10,
-            "rpe": 6.2,
-            "e1rm": 20,
-            "suggestedLoad": 25,
-            "suggestionReason": "25 lb",
+            "rpe": 6.1,
+            "e1rm": 13.333333333333332,
+            "suggestedLoad": 15,
+            "suggestionReason": "15 lb",
             "deloadWeek": true,
             "severity": "ok",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 7.116666666666667,
+          "avgRpe": 7.066666666666667,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -58.97435897435898
+            "delta": -72.64957264957266
           }
         },
         {
@@ -2068,21 +2067,21 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Barbell Row",
-            "load": 240,
-            "reps": 8,
-            "rpe": 8.8,
-            "e1rm": 304,
-            "suggestedLoad": 285,
-            "suggestionReason": "285 lb",
+            "load": 355,
+            "reps": 7,
+            "rpe": 9.8,
+            "e1rm": 437.83333333333337,
+            "suggestedLoad": 420,
+            "suggestionReason": "420 lb",
             "deloadWeek": true,
             "severity": "ok",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 9.016666666666667,
+          "avgRpe": 9.316666666666668,
           "trend": {
             "status": "monte cher",
-            "delta": 50.3901895206243
+            "delta": 122.40802675585284
           }
         },
         {
@@ -2104,21 +2103,21 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Hip Thrust",
-            "load": 190,
+            "load": 180,
             "reps": 10,
-            "rpe": 8.7,
-            "e1rm": 253.33333333333331,
-            "suggestedLoad": 185,
-            "suggestionReason": "185 lb",
+            "rpe": 8.6,
+            "e1rm": 240,
+            "suggestedLoad": 175,
+            "suggestionReason": "175 lb",
             "deloadWeek": true,
             "severity": "ok",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 9.283333333333331,
+          "avgRpe": 9.266666666666667,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -19.982158786797495
+            "delta": -23.46119536128456
           }
         },
         {
@@ -2140,21 +2139,21 @@
           "last": {
             "date": "2026-08-08",
             "movement": "DB RDL",
-            "load": 25,
+            "load": 22.5,
             "reps": 8,
-            "rpe": 8.1,
-            "e1rm": 31.666666666666664,
-            "suggestedLoad": 17.5,
-            "suggestionReason": "17.5 lb / main",
+            "rpe": 8,
+            "e1rm": 28.5,
+            "suggestedLoad": 15,
+            "suggestionReason": "15 lb / main",
             "deloadWeek": true,
             "severity": "ok",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.466666666666667,
+          "avgRpe": 8.383333333333333,
           "trend": {
             "status": "baisse suspecte",
-            "delta": -75
+            "delta": -80.55555555555557
           }
         },
         {

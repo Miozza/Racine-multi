@@ -203,15 +203,14 @@ heuristique de test.
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Bench Press | 15×10 | 25×9 | 8.2 | progression propre (58.3%) |
-| Front Squat | 75×9 | 15×10 | 7.1 | baisse suspecte (-59%) |
-| Barbell Row | 230×9 | 240×8 | 9 | monte cher (50.4%) |
-| Hip Thrust | 295×8 | 190×10 | 9.3 | baisse suspecte (-20%) |
-| DB RDL | 90×8 | 25×8 | 8.5 | baisse suspecte (-75%) |
+| Front Squat | 75×9 | 10×10 | 7.1 | baisse suspecte (-72.6%) |
+| Barbell Row | 230×9 | 355×7 | 9.3 | monte cher (122.4%) |
+| Hip Thrust | 295×8 | 180×10 | 9.3 | baisse suspecte (-23.5%) |
+| DB RDL | 90×8 | 23×8 | 8.4 | baisse suspecte (-80.6%) |
 | Incline DB Press | 3×8 | 3×8 | 7.7 | progression propre (110.5%) |
 
 **Alertes**
-- Front Squat: échec à 0 rep non mémorisé par athlete_state — la garde RPE ne peut pas s'appliquer (25 -> 40)
-- Barbell Row: progresse mais RPE coûteux (50.4%)
+- Barbell Row: progresse mais RPE coûteux (122.4%)
 
 ## Limites
 

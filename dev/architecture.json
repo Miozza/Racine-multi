@@ -50,8 +50,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 75745,
-      "lines": 592,
+      "size": 78799,
+      "lines": 604,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -82,7 +82,7 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 12883,
+      "size": 14926,
       "lines": 128,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
@@ -130,7 +130,7 @@
     },
     {
       "path": "app.js",
-      "size": 125380,
+      "size": 125392,
       "lines": 2525,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -511,8 +511,8 @@
     },
     {
       "path": "dev/charge_engine_checks.js",
-      "size": 30093,
-      "lines": 473,
+      "size": 33418,
+      "lines": 521,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -925,8 +925,8 @@
     },
     {
       "path": "dev/simulation_report.json",
-      "size": 61260,
-      "lines": 2199,
+      "size": 61150,
+      "lines": 2198,
       "role": "Artefact généré (écrit) par dev/simulate_multi_users.js. Rapport de simulation, non relu comme entrée.",
       "category": "ACTIF",
       "exposes": [],
@@ -941,8 +941,8 @@
     },
     {
       "path": "dev/simulation_report.md",
-      "size": 10121,
-      "lines": 222,
+      "size": 10015,
+      "lines": 221,
       "role": "Artefact généré (écrit) par dev/simulate_multi_users.js. Rapport de simulation lisible, non relu comme entrée.",
       "category": "ACTIF",
       "exposes": [],
@@ -2640,8 +2640,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 5615,
-      "lines": 122,
+      "size": 6066,
+      "lines": 128,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2698,8 +2698,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 58426,
-      "lines": 1051,
+      "size": 61614,
+      "lines": 1094,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [

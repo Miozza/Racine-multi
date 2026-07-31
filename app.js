@@ -1,5 +1,5 @@
-// Racine V4.5.26 — bouton Notes élargi + note limitée à sa séance
-var APP_VERSION = "V4.5.26";
+// Racine V4.5.27 — un échec total (0 rep) est mémorisé et freine la suggestion
+var APP_VERSION = "V4.5.27";
 
 // Architecture stable
 // programs/*.js = plan prévu
