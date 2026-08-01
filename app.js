@@ -1,5 +1,5 @@
-// Racine V4.5.28 — un frein de sécurité survit à la couche Brain
-var APP_VERSION = "V4.5.28";
+// Racine V4.5.29 — mesurer si Brain se trompe de moins en moins
+var APP_VERSION = "V4.5.29";
 
 // Architecture stable
 // programs/*.js = plan prévu

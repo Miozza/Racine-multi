@@ -506,6 +506,58 @@ try {
   const recovered = ctx.guardedSuggestedLoadDecision('Bench Press', '135 lb', 8, failCtx);
   assert(recovered.loadNum >= 135, 'Une seance controlee posterieure a l echec redonne la main a la reference reelle.');
 
+  // 15. Memoire Brain : mesurer si Brain se trompe DE MOINS EN MOINS.
+  // La precision a vie se fige avec le volume ; seules la fenetre glissante et
+  // la courbe mensuelle montrent une amelioration.
+  const MEM = ctx.CoachBrainMemory;
+  if(MEM && typeof MEM.updateFromResult === 'function'){
+    // Migration ascendante : un profil ecrit avant le schema 2 ne perd rien.
+    const legacyKey = 'racine::__pending__::brain-memory-v1';
+    ctx.localStorage.setItem(legacyKey, JSON.stringify({
+      version:'brain-memory-v1', updatedAt:'2026-01-01T00:00:00Z',
+      profiles:{ 'bench press::strength': { label:'Bench Press', intent:'strength', sensitivity:'high',
+        sessions:40, testedPredictions:30, successfulPredictions:18, lastLearning:'garde-moi' } },
+      journal:[{ a:1 }]
+    }));
+    const migrated = MEM.read();
+    const legacy = migrated.profiles['bench press::strength'];
+    assert(migrated.schema === 2, 'La memoire Brain est migree au schema 2.');
+    assert(legacy && legacy.sessions === 40 && legacy.successfulPredictions === 18,
+      'La migration preserve les compteurs a vie deja accumules.');
+    assert(legacy.lastLearning === 'garde-moi' && migrated.journal.length === 1,
+      'La migration ne perd ni le journal ni les champs inconnus.');
+    assert(Array.isArray(legacy.recentOutcomes) && legacy.recentOutcomes.length === 0,
+      'Un profil migre demarre sa fenetre vide : on n inventerait pas un passe.');
+    assert(MEM.recentPrecision(legacy) === null,
+      'Pas de chiffre de precision recente tant que l echantillon est trop court.');
+
+    // Brain s'ameliore : 10 predictions ratees, puis 10 reussies.
+    MEM.clear();
+    const memPlanned = { name:'Front Squat', load:150, reps:5, targetMin:5, targetMax:5,
+      kind:'strength', format:'3x5', context:{ label:'Front Squat', kind:'strength', intents:[], primaryIntent:'' } };
+    function feedMemory(ok, month, day){
+      MEM.updateFromResult('Front Squat',
+        { load:'150', reps: ok ? '5' : '3', rpe:'8.5', planned: memPlanned },
+        { date: '2026-' + month + '-' + String(day).padStart(2,'0') });
+    }
+    for(let i = 1; i <= 10; i++) feedMemory(false, '03', i);
+    const worst = MEM.getProfile('Front Squat','strength');
+    assert(MEM.recentPrecision(worst) === 0, 'Dix predictions ratees donnent une precision recente de 0.');
+    for(let i = 1; i <= 10; i++) feedMemory(true, '05', i);
+    const better = MEM.getProfile('Front Squat','strength');
+    assert(MEM.recentPrecision(better) === 1,
+      'Apres dix reussites, la fenetre glissante voit le progres (100 %).');
+    assert(Math.round(better.precision * 100) === 50,
+      'La precision a vie, elle, reste diluee par le passe (50 %) — c est pourquoi la fenetre existe.');
+
+    const trend = MEM.precisionTrend();
+    assert(trend.length === 2 && trend[0].month === '2026-03' && trend[1].month === '2026-05',
+      'La courbe mensuelle porte un point par mois, du plus ancien au plus recent.');
+    assert(trend[0].precision === 0 && trend[1].precision === 100,
+      'Chaque point mesure SON mois, sans dilution par les mois precedents.');
+    MEM.clear();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

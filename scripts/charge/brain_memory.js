@@ -6,8 +6,22 @@
 (function(){
   /** @type {any} — porte publique construite par assignations successives. */
   var api = window.CoachBrainMemory = window.CoachBrainMemory || {};
+  // ATTENTION : VERSION fait partie de la CLE de stockage (voir storageKey()).
+  // La changer orphelinerait toute la memoire deja accumulee. Le schema du
+  // CONTENU evolue donc separement, via SCHEMA + migrateMemory() (CLAUDE.md §2.1).
   var VERSION = 'brain-memory-v1';
+  var SCHEMA = 2;
   var MAX_JOURNAL = 120;
+  // Fenetre glissante d'issues de prediction : c'est elle qui montre si Brain se
+  // trompe DE MOINS EN MOINS. La precision a vie, elle, se fige avec le volume —
+  // apres 200 predictions, dix bonnes seances recentes ne la deplacent plus.
+  // 10 predictions testees ~= 1,5 a 2,5 mois sur un mouvement fait 1-2x/semaine.
+  // A 20 la fenetre couvrait 3 a 5 mois : elle noyait le progres qu'elle est
+  // censee montrer. Elle reste bruitee a ce volume, d'ou `precisionSample`
+  // expose a cote pour qu'on lise le chiffre avec sa taille d'echantillon.
+  var MAX_RECENT_OUTCOMES = 10;
+  var MIN_RECENT_OUTCOMES = 5;   // en dessous, la fenetre ne veut rien dire
+  var MAX_TREND_MONTHS = 24;
 
   function nowIso(){ try{return new Date().toISOString();}catch(e){return String(Date.now());} }
   function clamp(v,min,max){ v=Number(v); if(isNaN(v))v=min; return Math.max(min,Math.min(max,v)); }
@@ -31,7 +45,24 @@
     }catch(e){}
     return 'racine::__pending__::' + VERSION;
   }
-  function defaultMemory(){ return { version: VERSION, updatedAt: null, profiles: {}, journal: [] }; }
+  function defaultMemory(){ return { version: VERSION, schema: SCHEMA, updatedAt: null, profiles: {}, journal: [] }; }
+  // Migration ascendante, non destructive. Les profils d'avant le schema 2 n'ont
+  // ni fenetre glissante ni courbe mensuelle : on les initialise VIDES plutot que
+  // d'inventer un passe. La courbe demarre donc au premier resultat qui suit la
+  // mise a jour — on ne peut pas la reconstruire, les issues par prediction
+  // n'etaient pas stockees, seulement leurs totaux.
+  function migrateMemory(data){
+    if(!data || typeof data !== 'object') return data;
+    var profiles = data.profiles || {};
+    Object.keys(profiles).forEach(function(k){
+      var p = profiles[k];
+      if(!p || typeof p !== 'object') return;
+      if(!Array.isArray(p.recentOutcomes)) p.recentOutcomes = [];
+      if(!Array.isArray(p.precisionTrend)) p.precisionTrend = [];
+    });
+    data.schema = SCHEMA;
+    return data;
+  }
   function read(){
     try{
       var raw = localStorage.getItem(storageKey());
@@ -41,7 +72,7 @@
       data.version = data.version || VERSION;
       data.profiles = data.profiles || {};
       data.journal = Array.isArray(data.journal) ? data.journal : [];
-      return data;
+      return migrateMemory(data);
     }catch(e){ return defaultMemory(); }
   }
   function write(mem){
@@ -71,6 +102,12 @@
       lastDate: null,
       loadSteps: [],
       rpeValues: [],
+      // Issues des MAX_RECENT_OUTCOMES dernieres predictions testees : 1 = reussie,
+      // 0 = ratee. Donne la precision recente, celle qui bouge encore.
+      recentOutcomes: [],
+      // Un point par mois : {m:'2026-07', t:testees, s:reussies}. La precision du
+      // mois vaut s/t — mesure propre a la periode, non diluee par le passe.
+      precisionTrend: [],
       confidence: 0.50,
       precision: 0.60,
       ambition: 0.60,
@@ -78,6 +115,37 @@
       knowledge: 0.10,
       lastLearning: ''
     };
+  }
+  function monthKey(dateStr){
+    var s = String(dateStr || '');
+    var m = s.match(/^(\d{4})-(\d{2})/);
+    if(m) return m[1] + '-' + m[2];
+    try{
+      var d = new Date();
+      var mm = String(d.getMonth() + 1); if(mm.length < 2) mm = '0' + mm;
+      return d.getFullYear() + '-' + mm;
+    }catch(e){ return '0000-00'; }
+  }
+  function recordMonthlyPoint(p, dateStr, ok){
+    var key = monthKey(dateStr);
+    var trend = Array.isArray(p.precisionTrend) ? p.precisionTrend : [];
+    var last = trend.length ? trend[trend.length - 1] : null;
+    if(last && last.m === key){
+      last.t = (last.t || 0) + 1;
+      if(ok) last.s = (last.s || 0) + 1;
+    }else{
+      trend.push({ m: key, t: 1, s: ok ? 1 : 0 });
+    }
+    p.precisionTrend = trend.slice(-MAX_TREND_MONTHS);
+  }
+  // Precision de la fenetre glissante. `null` tant qu'il n'y a pas assez de
+  // predictions testees : mieux vaut pas de chiffre qu'un chiffre sur deux points.
+  function recentPrecision(p){
+    var out = (p && Array.isArray(p.recentOutcomes)) ? p.recentOutcomes : [];
+    if(out.length < MIN_RECENT_OUTCOMES) return null;
+    var sum = 0;
+    for(var i = 0; i < out.length; i++) sum += Number(out[i]) ? 1 : 0;
+    return Math.round((sum / out.length) * 100) / 100;
   }
   function getProfile(label,intent){
     var mem = read();
@@ -147,9 +215,15 @@
     if(plannedLoad > 0 && usedLoad > 0){
       if(Math.abs(usedLoad - plannedLoad) <= 0.01){
         p.testedPredictions += 1;
-        if(!plannedReps || usedReps >= plannedReps){ p.successfulPredictions += 1; learning.push('prediction_testee_reussie'); }
+        var predictionOk = (!plannedReps || usedReps >= plannedReps);
+        if(predictionOk){ p.successfulPredictions += 1; learning.push('prediction_testee_reussie'); }
         if(plannedReps && usedReps < plannedReps){ p.underPredictions += 1; learning.push('prediction_trop_ambitieuse'); }
         if(plannedReps && usedReps >= plannedReps + 2){ p.overPredictions += 1; learning.push('prediction_trop_prudente'); }
+        // Fenetre glissante + point du mois : les deux seules mesures qui
+        // montrent une amelioration. Elles n'entrent PAS dans la decision de
+        // charge — ce sont des instruments, pas une nouvelle regle de moteur.
+        p.recentOutcomes = (p.recentOutcomes || []).concat([predictionOk ? 1 : 0]).slice(-MAX_RECENT_OUTCOMES);
+        recordMonthlyPoint(p, sessionMeta && sessionMeta.date, predictionOk);
       }else if(usedLoad < plannedLoad){
         p.humanOverrideDown += 1; learning.push('proposition_non_testee_charge_baissee');
       }else if(usedLoad > plannedLoad){
@@ -187,7 +261,15 @@
       ambition: Math.round((p.ambition || 0) * 100),
       knowledge: Math.round((p.knowledge || 0) * 100),
       rpeReliability: Math.round((p.rpeReliability || 0) * 100),
-      lastLearning: p.lastLearning || ''
+      lastLearning: p.lastLearning || '',
+      // Instruments de suivi, jamais d'entree dans le calcul de charge :
+      // precisionRecent = fenetre glissante (null tant qu'elle n'est pas
+      // significative), trend = un point par mois.
+      precisionRecent: (function(){ var r = recentPrecision(p); return r === null ? null : Math.round(r * 100); })(),
+      precisionSample: (p.recentOutcomes || []).length,
+      precisionTrend: (p.precisionTrend || []).map(function(pt){
+        return { month: pt.m, tested: pt.t || 0, precision: pt.t ? Math.round((pt.s / pt.t) * 100) : null };
+      })
     };
     // Fusion prudente : la mémoire influence, mais ne remplace pas l'analyse immédiate.
     stats.confidenceRaw = clamp((stats.confidenceRaw * 0.70) + ((p.confidence || 0.50) * 0.30), 0.25, 0.96);
@@ -214,6 +296,26 @@
   api.updateFromResult = updateFromResult;
   api.updateFromSessionResults = updateFromSessionResults;
   api.enrichStats = enrichStats;
+  api.recentPrecision = recentPrecision;
+  // Courbe d'apprentissage tous mouvements confondus : « est-ce que Brain se
+  // trompe moins qu'il y a deux mois ? ». Agrege les points mensuels de tous les
+  // profils, du plus ancien au plus recent.
+  api.precisionTrend = function(){
+    var mem = read();
+    var byMonth = {};
+    Object.keys(mem.profiles || {}).forEach(function(k){
+      ((mem.profiles[k] || {}).precisionTrend || []).forEach(function(pt){
+        if(!pt || !pt.m) return;
+        var b = byMonth[pt.m] || (byMonth[pt.m] = { month: pt.m, tested: 0, success: 0 });
+        b.tested += Number(pt.t) || 0;
+        b.success += Number(pt.s) || 0;
+      });
+    });
+    return Object.keys(byMonth).sort().map(function(m){
+      var b = byMonth[m];
+      return { month: m, tested: b.tested, precision: b.tested ? Math.round((b.success / b.tested) * 100) : null };
+    });
+  };
   api.exportSummary = exportSummary;
   api.clear = clear;
 })();
