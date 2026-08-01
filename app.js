@@ -1,5 +1,5 @@
-// Racine V4.5.29 — mesurer si Brain se trompe de moins en moins
-var APP_VERSION = "V4.5.29";
+// Racine V4.5.30 — programme de transition « Retour au travail »
+var APP_VERSION = "V4.5.30";
 
 // Architecture stable
 // programs/*.js = plan prévu

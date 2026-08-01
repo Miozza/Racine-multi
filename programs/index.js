@@ -76,7 +76,8 @@
   // moteur de suggestion sur signal de fatigue, jamais comme successeur normal.
   var transitionPrograms = [
     { id: "transition_deload_3d", file: "programs/transition_weeks.js", name: "Transition — Semaine Deload",   objective: "transition", frequency: 3, suggestedNext: [], phase: 0, macroRole: "transition_cycle", macroStatus: "décharge entre cycles",   durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["deload", "récupération", "transition"] },
-    { id: "transition_tests_3d",  file: "programs/transition_weeks.js", name: "Transition — Semaine de Tests", objective: "transition", frequency: 3, suggestedNext: [], phase: 0, macroRole: "transition_cycle", macroStatus: "recalibrage références", durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["tests", "recalibrage", "transition"] }
+    { id: "transition_tests_3d",  file: "programs/transition_weeks.js", name: "Transition — Semaine de Tests", objective: "transition", frequency: 3, suggestedNext: [], phase: 0, macroRole: "transition_cycle", macroStatus: "recalibrage références", durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["tests", "recalibrage", "transition"] },
+    { id: "retour_au_travail",    file: "programs/retour_au_travail.js", name: "Retour au travail",           objective: "transition", frequency: 4, suggestedNext: [], phase: 0, macroRole: "transition_cycle", macroStatus: "reprise après pause",     durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["reprise", "retour après pause", "transition"] }
   ];
 
   var specializedPrograms = [

@@ -77,7 +77,7 @@ newlyPrivateIds.forEach(id => {
   const entry = index.find(p => p && p.id === id) || {};
   assert(entry.visibility === 'private', id + ' est privé.');
 });
-assert(index.filter(p => p && p.visibility === 'public').length === 29, 'Les 29 programmes publics restants demeurent accessibles à tous.');
+assert(index.filter(p => p && p.visibility === 'public').length === 30, 'Les 30 programmes publics restants demeurent accessibles à tous.');
 assert(!appSource.includes('item.visibility || "public"'), 'Une visibilité absente ne doit jamais devenir publique.');
 for(let wk = 1; wk <= (Number(stephEntry.durationWeeks) || 4); wk++){
   steph.days.forEach(day => {

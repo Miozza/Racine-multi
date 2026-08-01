@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 178,
+    "ACTIF": 180,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -831,6 +831,22 @@
       "path": "dev/reference_seed_stress.js",
       "size": 8665,
       "lines": 147,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/retour_au_travail_checks.js",
+      "size": 13343,
+      "lines": 224,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -2205,6 +2221,33 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 311
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/retour_au_travail.js",
+      "size": 14067,
+      "lines": 222,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "dayIntentions",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 314
         },
         {
           "path": "programs/index.js",
