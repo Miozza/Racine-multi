@@ -1,3 +1,21 @@
+## V4.5.29 — Mesurer si Brain se trompe de moins en moins
+- **L'objectif n'est pas d'implanter Brain.js quand il sera parfait, c'est que Brain se trompe de moins en moins.** La boucle existait déjà : `scripts/charge/brain_memory.js` accumule par mouvement + intention des compteurs à vie (prédictions testées, réussies, trop ambitieuses, trop prudentes, corrections manuelles de l'athlète), qui repartent dans la décision suivante à 30 % de poids (`confidenceRaw × 0,70 + mémoire × 0,30`). Ce qui manquait, c'était de pouvoir **voir la courbe**.
+- **Défaut de forme corrigé** : `precision = réussies / testées` est un ratio **cumulatif**. Après 200 prédictions, dix bonnes séances récentes ne le déplacent presque plus — le progrès réel se noyait dans le passé de débutant. C'est exactement le mauvais outil pour mesurer une amélioration.
+- **Précision glissante** sur les 10 dernières prédictions testées. 10 ≈ 1,5 à 2,5 mois sur un mouvement fait 1-2×/semaine ; à 20, la fenêtre couvrait 3 à 5 mois et noyait le progrès qu'elle est censée montrer. Elle vaut `null` sous 5 prédictions — mieux vaut pas de chiffre qu'un chiffre sur deux points — et `precisionSample` expose la taille d'échantillon à côté, parce qu'à ce volume elle reste bruitée.
+- **Courbe mensuelle** : un point par mois, `{mois, testées, précision}`, 24 mois glissants. Chaque point mesure **son** mois, sans dilution par les précédents. `CoachBrainMemory.precisionTrend()` agrège tous les mouvements pour répondre à « est-ce que je me trompe moins qu'il y a deux mois ».
+- **Vérifié** : dix prédictions ratées puis dix réussies donnent **50 % à vie mais 100 % en fenêtre**, et une courbe **0 % en mars → 100 % en mai**. C'est précisément l'écart entre les deux mesures qui est la courbe d'apprentissage.
+- **Ce sont des instruments, pas des règles** : ni la fenêtre ni la courbe n'entrent dans le calcul de charge. `dev/charge_suggestion_golden_master.js` reste byte-identique.
+
+### Migration (`CLAUDE.md §2.1`)
+- `VERSION` fait partie de la **clé de stockage** (`storageKey()`) et n'a **pas** été touchée : la changer aurait orphelin toute la mémoire déjà accumulée. Le schéma du **contenu** évolue séparément — `SCHEMA = 2` + `migrateMemory()`, appliqué à la lecture.
+- La migration est **non destructive** : compteurs à vie, journal et champs inconnus sont préservés. Vérifié par assertion sur un profil écrit au format d'avant.
+- Les profils migrés démarrent leur fenêtre **vide**. Les issues par prédiction n'étaient pas stockées, seulement leurs totaux : la courbe ne peut pas être reconstruite, elle commence au premier résultat qui suit la mise à jour. Aucun passé inventé.
+
+### Effet de bord utile
+Cela donne le vrai critère pour Brain.js, meilleur que les « 3-6 mois » écrits dans la roadmap — un chiffre qu'aucun document ne justifiait : **si la courbe plafonne trop haut en erreur, une couche ML a un travail à faire ; si elle continue de descendre, elle n'en a pas.** La décision se prendra sur une mesure, pas sur une date.
+
+- **Couverture** : `dev/charge_engine_checks.js` scénario 15, 10 assertions (migration + fenêtre + courbe).
+
 ## V4.5.28 — Un frein de sécurité survit à la couche Brain
 - **Découvert en triant les alertes du simulateur.** Après un échec total à 220 lb, `guardedSuggestedLoadDecision()` décidait correctement **175 lb** (« charge cappée jusqu'à confirmation ») — mais `coachSafeSuggestedLoad()`, qui applique Brain V1.16 par-dessus, ressortait **220 lb** : exactement la charge qui venait d'échouer. Le correctif de la version précédente était donc défait une couche plus haut.
 - **Brain ne peut plus défaire un frein** : il raffine une progression normale, il ne remonte plus une décision que la pile de règles a déjà flaggée `warning`/`critical` (cap `recalibrating`/`watch`, RPE haut répété, échec). Le garde-fou est général — il ne vise pas que le cas 0 rep — et suit le précédent déjà présent dans cette couche (`if(isLimited) return base.loadText;`).
