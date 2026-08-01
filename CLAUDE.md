@@ -218,13 +218,19 @@ Détail persistance : la **sauvegarde est locale uniquement**. Le flux GitHub
 
 ## 4. Conventions de version
 
-Version courante : **`V4.5.18`** (format `Vmajor.mineur.patch`). Autorité :
+Format `Vmajor.mineur.patch`. Autorité :
 `docs/STRUCTURE_CONTRACT.md` § « Contrat de version ».
+
+**La version courante ne se lit pas ici** — elle se lit dans `app.js`
+(`APP_VERSION`, seconde ligne du fichier), la seule source que le contrat oblige à
+tenir à jour. Ce fichier ne fait pas partie de la liste de mise à jour ci-dessous :
+un numéro écrit ici se périmerait en silence et induirait en erreur le prochain
+agent, ce qui est déjà arrivé.
 
 | Type de changement | Incrément |
 |---|---|
-| Changement livré visible ou correction comportementale | patch → `V4.5.19`, `V4.5.20` |
-| Refonte structurelle visible / nouvelle architecture | version majeure → `V5.0.0` |
+| Changement livré visible ou correction comportementale | patch (+1 sur le dernier chiffre) |
+| Refonte structurelle visible / nouvelle architecture | version majeure (`V5.0.0`) |
 | Doc seule, contrat, garde-fou CI, nettoyage sans runtime | pas d'incrément (sauf décision explicite) |
 
 À chaque incrémentation, mettre à jour **ensemble** : `app.js` (`APP_VERSION`),
