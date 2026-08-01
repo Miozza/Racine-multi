@@ -137,6 +137,54 @@ Noms de mouvements : uniquement le nom réel, stable et distinct. Aucune intenti
 intensité ou qualificatif de programmation dans `name` — ça vit dans `format`,
 `load`, `rest`, `note`. Voir la règle des noms dans `docs/STRUCTURE_CONTRACT.md`.
 
+#### Recette — ajouter un programme
+
+Écrite parce qu'un agent a dû la redécouvrir en lisant quinze fichiers. Suivre
+cette liste évite l'exploration ; les détails font toujours autorité dans les
+contrats de § 9.
+
+**Modèle à copier** : `programs/transition_weeks.js` (court, complet, à jour).
+
+**Fichiers à toucher, dans l'ordre :**
+
+1. `programs/<id>.js` — le programme. IIFE, `window.COACH_BERTIN_PROGRAMS.<id> = {…}`.
+2. `programs/index.js` — une entrée. Champs obligatoires pour tout programme
+   **public** : `objective`, `frequency` (1-6), `suggestedNext` (tableau, peut
+   être vide). Sinon `dev/program_catalog_checks.js` refuse.
+3. `index.html` — une balise `<script defer>` avec le cache-bust courant.
+4. `dev/architecture.json` — une entrée par nouveau fichier, sinon
+   `dev/verify-architecture.js` échoue au premier commit.
+5. `dev/program_catalog_checks.js` — le compteur de programmes publics. **Ce
+   n'est pas de la friction** : c'est le tripwire qui force à décider
+   explicitement qu'un programme devient public. Ne pas le rendre automatique.
+6. Un `dev/<id>_checks.js` si le programme a des règles propres à protéger, **et
+   sa ligne dans `RELEASE_CHECKLIST.md`** (`structure_checks.js` exige que tout
+   script `dev/` y soit cité). Viser ~60 lignes : le contrat, pas l'inventaire.
+7. Contrat de version § 4 — patch, et les cinq fichiers ensemble.
+
+**Forme d'un bloc** : `{time, title, tag, kind, text}` ou `{…, exercises:[…]}`.
+`kind` ∈ `warmup · main · secondary · hypertrophy · accessory · technique · core
+· wod · mobility · bonus`. `bonus` est **informatif** : ignoré par la capture de
+résultats et par la séance guidée — c'est le support d'une consigne, pas d'une
+série. Un exercice = `{name, format, load, rest, note}`.
+
+**Charges** : une charge chiffrée est un **%1RM de l'athlète de référence**
+(`scripts/profiles/reference.js` — Back Squat 315, Bench 245, Front Squat 265,
+Strict Press 155, Power Clean 205, Hip Thrust 400, Barbell Row 195,
+Deadlift 375). `scripts/charge/scaling.js` la ramène au niveau réel de l'athlète.
+Ne **jamais** écrire ici une « charge de travail » déjà réduite : la double
+réduction rend les poids ridicules. Un mouvement sans repère se déclare dans
+`scripts/charge/movement_tuning.js` (`defaultLoadSeeds`), jamais en dur ailleurs.
+
+**Semaine légère / deload / reprise** : deux verrous, à poser volontairement.
+`coachIsDeloadWeekOrContext()` lit le libellé et l'objectif de semaine (mots
+`deload`, `récupération`, `facile`) ; `coachExtractMovementIntent()` lit la note
+de l'exercice (`technique`, `léger`, `facile`). Les deux coupent
+l'auto-progression et empêchent le résultat de remplacer une capacité principale.
+
+**Avant de livrer** : `RELEASE_CHECKLIST.md`. Désinstaller `node_modules` avant
+`structure_checks.js` — il parcourt tout l'arbre et ne l'exclut pas.
+
 ### 3.2 Moteur de suggestion de charges — la symbiose
 
 Domaine **prioritaire** (voir Mission § 1). Regroupé dans `scripts/charge/`, porte
