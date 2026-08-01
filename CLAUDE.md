@@ -181,9 +181,14 @@ Deux sens du mot **« Brain »**, à ne pas confondre :
 
 - **Brain (livré)** = la couche locale d'apprentissage/explication déjà en place
   (`scripts/charge/brain_stats.js`, `brain_memory.js`, `brain_explain.js`,
-  `brain_journal.js`), décrite dans `docs/BRAIN.md`.
-- **Brain.js (différé)** = la bibliothèque ML externe ~100 Ko de la roadmap (§ 8),
-  **pas encore construite**. Ne pas l'implémenter (voir § 8).
+  `brain_journal.js`), décrite dans `docs/BRAIN.md`. Elle **apprend déjà** : chaque
+  prédiction testée est enregistrée comme réussie, trop ambitieuse ou trop prudente,
+  et corrige la suivante. Sa progression se lit avec
+  `CoachBrainMemory.precisionTrend()` et `precisionRecent`, pas avec la précision
+  à vie (cumulative, donc figée par le volume).
+- **Brain.js (différé)** = la bibliothèque ML externe ~100 Ko, **pas encore
+  construite**. Ne pas l'implémenter : la décision se prend sur la courbe d'erreur,
+  pas sur une date (voir § 8).
 
 Détail persistance : la **sauvegarde est locale uniquement**. Le flux GitHub
 (`saveToGitHub`) a été retiré du code ; les mentions résiduelles dans
@@ -294,8 +299,38 @@ polices ni la nature « dark HUD » de l'app.
 ## 8. Roadmap (contexte, pas instruction)
 
 - V2 B2C commercial : Supabase + Stripe.
-- Brain.js (~100 Ko) comme couche de raffinement ML au-dessus du moteur Epley + RPE —
-  **différé** jusqu'à 3–6 mois d'historique utilisateur. Ne pas l'implémenter d'ici là.
+
+### Brain.js — un critère, pas une date
+
+L'objectif n'est **pas** d'implanter une couche ML le jour où elle serait parfaite.
+C'est que **Brain se trompe de moins en moins**, séance après séance. Ce mécanisme
+existe déjà et tourne : `scripts/charge/brain_memory.js` accumule par mouvement +
+intention les prédictions testées, réussies, trop ambitieuses, trop prudentes et
+les corrections manuelles de l'athlète, et les reverse dans la décision suivante.
+
+Une version antérieure de ce fichier fixait un seuil de « 3–6 mois d'historique »
+avant d'implémenter Brain.js (~100 Ko). Ce chiffre a été écrit par un agent, n'était
+justifié nulle part dans le dépôt, et décrivait une implantation d'un coup — l'inverse
+de l'objectif. Il est remplacé par un critère mesurable :
+
+> **Brain.js n'a de raison d'être que si la courbe d'erreur plafonne trop haut.**
+> Si elle continue de descendre, la couche ML n'a pas de travail à faire.
+
+Ce que ça veut dire concrètement :
+
+- La courbe se lit avec `CoachBrainMemory.precisionTrend()` (un point par mois) et
+  `precisionRecent` (fenêtre glissante sur les 10 dernières prédictions testées).
+  La **précision à vie** ne sert pas à ça : c'est un ratio cumulatif, il se fige
+  avec le volume et noie le progrès récent.
+- Avant d'envisager Brain.js, il faut **une ligne de base** : la courbe actuelle du
+  moteur de règles. Un modèle qui ne la bat pas sur des données qu'il n'a pas vues
+  n'apporte rien — avec quelques centaines d'observations et des règles déjà bien
+  réglées, c'est le cas le plus fréquent.
+- La mesure est **par athlète**. Deux athlètes de régularité différente n'ont pas le
+  même jeu de données au même moment ; un délai en mois ne veut donc rien dire.
+
+Reste vrai : **ne pas implémenter Brain.js** tant que ce critère n'est pas examiné
+sur des données réelles, et le décider sur la courbe, pas sur le calendrier.
 
 ---
 
