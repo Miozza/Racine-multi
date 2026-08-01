@@ -103,6 +103,7 @@
       {pattern:/wall ball/, load:20},
       {pattern:/walking lunge|lunge/, load:35},
       {pattern:/landmine/, load:70},
+      {pattern:/seated cable row/, load:120},
       {pattern:/one arm db row|db row/, load:65},
       // Mouvements au poids du corps : seed 0 = pas de charge externe.
       {pattern:/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang/, load:0},

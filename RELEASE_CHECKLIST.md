@@ -25,6 +25,7 @@ node dev/client_view_checks.js
 node dev/program_catalog_checks.js
 node dev/season_checks.js
 node dev/program_calibration_checks.js
+node dev/retour_au_travail_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 node dev/movement_swaps_checks.js
