@@ -60,6 +60,17 @@ Ces règles sont obligatoires à partir de V51.24.
 - Les deux-points ont leur propre boîte (`.guided-timer-colon`) avec une marge :
   l'interlettrage négatif du chrono les fondait dans la barre du `1`, et `1:00`
   se lisait `100`. Cette marge doit être incluse dans la mesure de taille.
+- `1`, `4` et `7` n'ont aucune approche à gauche dans Orbitron : ils reçoivent la
+  leur (`.guided-timer-n1/n4/n7`), sinon ils se collent au caractère précédent.
+- **La largeur fixe la police, la hauteur libre est occupée par un étirement
+  vertical.** Cinq caractères sur 402 px ne peuvent pas dépasser ~100 px de haut
+  sans déformer : le vide restant sous les mouvements est comblé en étirant les
+  chiffres, jamais en changeant leur largeur. Le calcul doit rester idempotent —
+  remettre l'étirement à zéro avant toute mesure, sinon il mesure un espace déjà
+  comblé et retombe à 1.
+- L'affichage du chrono est en `pointer-events:none` : ses chiffres débordent
+  visuellement leur boîte et captaient les taps destinés au libellé et aux
+  contrôles. Ne rien y mettre d'interactif.
 - Le timer ne doit jamais dépasser horizontalement.
 - Les boutons du timer doivent rester accessibles.
 
