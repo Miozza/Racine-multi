@@ -1,3 +1,11 @@
+## V4.5.32 — Le chrono retrouve sa taille exacte
+
+- **Correction de V4.5.31.** Le bouton d'édition avait été dessiné en pastille bordée (bordure + padding + `min-height:32px`), ce qui ajoutait **13 px** à la carte timer. `fitGuidedWodTimer()` calcule la taille des chiffres à partir de la place restante : sur une carte dense, les chiffres tombaient de **140 px à 129 px**. Mesuré avant/après sur quatre hauteurs d'écran (874, 760, 667, 600 px).
+- **Le libellé reprend exactement la boîte de l'ancien `<div>`** : aucune bordure, aucun padding vertical, aucune hauteur minimale, aucune marge. Les chiffres retrouvent **140 px partout**, et la position du chrono redevient identique au pixel près à V4.5.30.
+- **La zone tactile reste confortable** sans coûter un pixel : un `::after` en position absolue déborde de 15 px vers le haut (l'espace vide au-dessus du libellé) et de 6 px vers le bas, donc il n'occupe aucune place dans le flux. Vérifié : tap au-dessus du texte, sur le texte et juste sous le texte ouvrent tous la modale.
+- **Le toggle son garde son coin** (`z-index:3`) : il reste cliquable sous la zone tactile élargie du libellé.
+- **Règle inscrite dans le CSS et dans `docs/UI_CONSTRAINTS.md`** : la taille des chiffres du chrono prime sur tout élément ajouté à la carte timer. Rien de ce qui est ajouté ne doit occuper de hauteur dans le flux.
+
 ## V4.5.31 — Timer du WOD éditable en séance
 
 - **Le timer se règle sur le terrain.** Le libellé du timer de la vue séance (« AMRAP 12 min », « EMOM 8 min · bip/1:00 ») devient un bouton `✎` qui ouvre une modale : **durée** (−5 / −1 / +1 / +5 min, bornes 30 s → 120 min), **intervalle des bips** (15 s, 20, 30, 45, 1:00, 1:15, 1:30, 2:00, 2:30, 3:00, 4:00, 5:00) et **sens** (décompte / chrono). Les bips d'intervalle s'activent sur n'importe quel WOD, pas seulement sur ceux dont le texte contient « EMOM ».
