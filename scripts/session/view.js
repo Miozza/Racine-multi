@@ -558,7 +558,11 @@ function renderGuidedSession(){
           "<button type='button' class='guided-timer-label' id='guidedTimerEdit' aria-label='Modifier le timer'>"+
             (typeof guidedTimerLabelHtml==="function" ? guidedTimerLabelHtml(cfg) : escHtml((cfg&&cfg.label)||"Timer"))+
           "</button>"+
-          "<div class='guided-timer-display' id='guidedTimerDisplay'>"+formatGuidedTimerClock(cfg&&cfg.mode==="up"?0:(cfg?cfg.seconds:0))+"</div>"+
+          "<div class='guided-timer-display' id='guidedTimerDisplay'>"+
+            (typeof guidedTimerClockHtml==="function"
+              ? guidedTimerClockHtml(formatGuidedTimerClock(cfg&&cfg.mode==="up"?0:(cfg?cfg.seconds:0)))
+              : escHtml(formatGuidedTimerClock(cfg&&cfg.mode==="up"?0:(cfg?cfg.seconds:0))))+
+          "</div>"+
           "<div class='guided-timer-buttons'>"+
             "<button class='guided-tbtn start' id='guidedTimerStart'>▶</button>"+
             "<button class='guided-tbtn' id='guidedTimerPause'>Ⅱ</button>"+

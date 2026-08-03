@@ -169,13 +169,71 @@ function formatGuidedTimerClock(sec){
   sec=Math.max(0,Math.floor(sec||0));
   return String(Math.floor(sec/60))+":"+String(sec%60).padStart(2,"0");
 }
-function guidedTimerFitSample(text,isCountdown){
-  if(typeof timerMeasureSampleForDisplay === "function") return timerMeasureSampleForDisplay(text,isCountdown);
+// Largeur réelle de chaque chiffre dans la police du timer. Dans Orbitron, un
+// « 1 » fait moins de la moitié d'un « 8 » (36 px contre 83 px à 107 px de
+// police) : mesurer « 88:88 » pour afficher « 11:00 » calibrait le chrono sur
+// une largeur qu'il n'atteindrait jamais, soit 15 % de taille perdus sur tout
+// timer de 10 à 19 minutes.
+// Mesuré en dix exemplaires pour diluer l'arrondi, à taille de référence — seul
+// le classement compte, il ne dépend pas de la taille finale.
+var GUIDED_DIGIT_PROBE_SIZE = 100;
+var guidedDigitWidths = null;
+var guidedDigitWidthProbe = 0;
+function guidedTimerDigitWidths(style){
+  // La police peut arriver après le premier rendu (document.fonts) : on
+  // re-mesure quand la largeur témoin bouge, sans dépendre d'un évènement.
+  var probe = guidedMeasureTimerTextDom("8888888888", GUIDED_DIGIT_PROBE_SIZE, style, -0.055).width;
+  if(!(probe > 0)) return null;
+  if(guidedDigitWidths && Math.abs(probe - guidedDigitWidthProbe) < 1) return guidedDigitWidths;
+  var w = {}, i, c, ok = true;
+  for(i=0;i<10;i++){
+    c = String(i);
+    w[c] = guidedMeasureTimerTextDom(new Array(11).join(c), GUIDED_DIGIT_PROBE_SIZE, style, -0.055).width;
+    if(!(w[c] > 0)) ok = false;
+  }
+  if(!ok) return null;
+  guidedDigitWidths = w;
+  guidedDigitWidthProbe = probe;
+  return w;
+}
+function guidedTimerWidestDigit(style){
+  var w = guidedTimerDigitWidths(style);
+  if(!w) return null;
+  return function(digits){
+    digits = String(digits || "8");
+    var best = digits.charAt(0) || "8", i;
+    for(i=1;i<digits.length;i++){
+      if((w[digits.charAt(i)]||0) > (w[best]||0)) best = digits.charAt(i);
+    }
+    return best;
+  };
+}
+function guidedTimerFitSample(text,isCountdown,style){
+  var opts = { maxMinutes: Math.floor((Number(guidedTimer.duration)||0)/60) };
+  var widest = style ? guidedTimerWidestDigit(style) : null;
+  // Sans mesure fiable (police pas encore chargée), repli sur l'ancien gabarit.
+  if(widest) opts.widestDigit = widest;
+  if(typeof timerMeasureSampleForDisplay === "function") return timerMeasureSampleForDisplay(text,isCountdown,opts);
   text=String(text||"");
   if(isCountdown) return text.length>=2 ? "88" : "8";
   var parts=text.split(":");
   var minuteDigits=(parts[0]||"0").length;
   return minuteDigits>=2 ? "88:88" : "8:88";
+}
+
+// Les deux-points reçoivent leur propre boîte. Dans Orbitron le « 1 » est collé
+// à droite de sa chasse : avec l'interlettrage négatif du chrono, les deux-points
+// se fondaient dans la barre du 1 et disparaissaient — « 1:00 » se lisait « 100 »
+// et « 11:00 » se lisait « 1100 », soit toute la dernière minute de chaque WOD.
+// Une marge de .03em suffit à les décoller ; elle est mesurée avec le reste
+// (guidedMeasureTimerTextDom pose le même balisage), donc le chrono ne déborde pas.
+function guidedTimerClockHtml(text){
+  text=String(text==null?"":text);
+  var i=text.indexOf(":");
+  if(i<0) return guidedTimerEsc(text);
+  return guidedTimerEsc(text.slice(0,i))
+       + "<span class='guided-timer-colon'>:</span>"
+       + guidedTimerEsc(text.slice(i+1));
 }
 
 function syncGuidedTimerButtons(){
@@ -199,7 +257,10 @@ function syncGuidedTimerButtons(){
 // RÈGLE VERROUILLÉE — Timer WOD en vue séance.
 // Format obligatoire : minutes sans zéro inutile (9:12, 8:00, 0:45, 10:00, 60:00).
 // Secondes toujours à 2 chiffres.
-// Taille : mesurer un gabarit stable par format (8:88 / 88:88) et viser 95 % de la largeur utile.
+// Taille : mesurer un GABARIT — le plus large affichage qui peut réellement
+// apparaître dans ce timer (voir guidedTimerFitSample) — et viser 95 % de la
+// largeur utile. Jamais la forme exacte des chiffres affichés : la taille doit
+// rester stable pendant toute une phase de format, pas changer à chaque seconde.
 // Ne pas revenir à 09:12 / 08:00 / 00:45. Ne pas utiliser une taille fixe.
 var guidedTimerMeasureEl = null;
 function guidedGetTimerMeasureEl(){
@@ -218,7 +279,9 @@ function guidedGetTimerMeasureEl(){
 function guidedMeasureTimerTextDom(text, size, sourceStyle, letterSpacingEm){
   try{
     var m=guidedGetTimerMeasureEl();
-    m.textContent=String(text || "00:00");
+    // Même balisage que l'affichage réel (deux-points dans leur propre boîte),
+    // sinon la mesure ignorerait leur marge et le chrono déborderait.
+    m.innerHTML=guidedTimerClockHtml(String(text || "00:00"));
     m.style.fontFamily=sourceStyle ? sourceStyle.fontFamily : "Orbitron, monospace";
     m.style.fontWeight=sourceStyle ? sourceStyle.fontWeight : "900";
     m.style.fontStyle=sourceStyle ? sourceStyle.fontStyle : "normal";
@@ -276,7 +339,7 @@ function fitGuidedWodTimer(){
 
   var isCountdown=d.classList.contains("countdown");
   var text=String(d.textContent || (isCountdown ? "10" : "0:00"));
-  var measureText=guidedTimerFitSample(text,isCountdown);
+  var measureText=guidedTimerFitSample(text,isCountdown,displayStyle);
   var letterSpacingEm=-0.055;
   var minSize=isCountdown ? 84 : 78;
   var maxSize=isCountdown ? 260 : 240;
@@ -322,7 +385,7 @@ function updateGuidedTimerDisplay(){
     d.textContent=String(guidedTimer.countdownRemaining);
     d.classList.add("countdown");
   } else {
-    d.textContent=formatGuidedTimerClock(guidedTimerCurrentValue());
+    d.innerHTML=guidedTimerClockHtml(formatGuidedTimerClock(guidedTimerCurrentValue()));
     d.classList.remove("countdown");
   }
   updateGuidedEmomVisualWarning();

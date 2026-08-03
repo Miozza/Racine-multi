@@ -48,7 +48,18 @@ Ces règles sont obligatoires à partir de V51.24.
 - Les secondes restent toujours à deux chiffres.
 - La taille du timer ne doit pas être fixe.
 - La taille doit viser environ 95 % de la largeur interne disponible.
-- La taille doit rester stable par format : utiliser un gabarit de mesure (`8:88` ou `88:88`) plutôt que la forme exacte des chiffres affichés.
+- La taille doit rester stable par format : mesurer un **gabarit**, jamais la forme
+  exacte des chiffres affichés — sinon le chrono change de taille à chaque seconde.
+- Le gabarit est le plus large affichage **qui peut réellement apparaître dans ce
+  timer**, pas `88:88` par défaut. Dans Orbitron un `1` fait moins de la moitié
+  d'un `8` : un timer de 11 min mesuré sur `88:88` perdait 15 % de taille pour une
+  largeur qu'il n'atteindrait jamais. Le gabarit reste constant pendant toute une
+  phase de format (`10:00` → `10:00`, puis `0:00` sous la barre des 10 minutes).
+- Le gabarit doit rester un **majorant** de tout affichage possible du timer :
+  jamais plus étroit que le pire cas, sinon le chrono déborde.
+- Les deux-points ont leur propre boîte (`.guided-timer-colon`) avec une marge :
+  l'interlettrage négatif du chrono les fondait dans la barre du `1`, et `1:00`
+  se lisait `100`. Cette marge doit être incluse dans la mesure de taille.
 - Le timer ne doit jamais dépasser horizontalement.
 - Les boutons du timer doivent rester accessibles.
 

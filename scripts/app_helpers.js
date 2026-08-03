@@ -55,9 +55,29 @@ function formatTimerDisplay(sec){
   sec=Math.max(0,Math.floor(Number(sec)||0));
   return String(Math.floor(sec/60))+":"+String(sec%60).padStart(2,"0");
 }
-function timerMeasureSampleForDisplay(text,isCountdown){
+// Gabarit de mesure du timer — il reste un GABARIT (stable pour toute une phase
+// de format, jamais la forme exacte affichée), mais il n'invente plus des
+// chiffres impossibles. Un timer de 11 min n'affichera jamais « 88:88 », et
+// dans Orbitron un « 1 » fait moins de la moitié d'un « 8 » : supposer des
+// « 8 » partout coûtait jusqu'à 15 % de taille de chrono.
+// `opts.maxMinutes` borne les minutes possibles ; `opts.widestDigit(chiffres)`
+// désigne le plus large d'un ensemble, mesuré dans la police réelle. Sans
+// `widestDigit`, le repli renvoie « 8 » partout — soit exactement l'ancien
+// comportement (`88:88` / `8:88` / `88` / `8`).
+function timerMeasureSampleForDisplay(text,isCountdown,opts){
   text=String(text||"");
-  if(isCountdown)return text.length>=2?"88":"8";
-  var parts=text.split(":");
-  return ((parts[0]||"0").length>=2)?"88:88":"8:88";
+  var widest=(opts&&typeof opts.widestDigit==="function")?opts.widestDigit:function(){return "8";};
+  var range=function(a,b){var s="",i;for(i=a;i<=b;i++)s+=String(i);return s;};
+  // Décompte de départ : « 10 », puis 9 → 1.
+  if(isCountdown)return text.length>=2?(widest("1")+widest("0")):widest(range(1,9));
+  var minuteDigits=((text.split(":")[0])||"0").length;
+  var maxMin=Math.max(0,Math.floor(Number(opts&&opts.maxMinutes)||0));
+  // Les secondes parcourent 00 → 59 quelle que soit la durée.
+  var seconds=widest(range(0,5))+widest(range(0,9));
+  if(minuteDigits>=2){
+    var hi=Math.max(10,maxMin||99);
+    var hiTens=Math.floor(hi/10);
+    return widest(range(1,hiTens))+widest(hiTens>1?range(0,9):range(0,hi%10))+":"+seconds;
+  }
+  return widest(range(0,Math.min(9,maxMin||9)))+":"+seconds;
 }
