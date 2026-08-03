@@ -52,6 +52,17 @@ Ces règles sont obligatoires à partir de V51.24.
 - Le timer ne doit jamais dépasser horizontalement.
 - Les boutons du timer doivent rester accessibles.
 
+### Timer éditable
+
+- Le libellé du timer est le bouton d'édition (durée, intervalle des bips, sens).
+  L'édition vit dans une modale : aucune rangée de contrôles ne doit être ajoutée
+  à la carte WOD, sous peine de reprendre l'espace du timer ou des boutons de bloc.
+- L'édition ne modifie ni le programme ni les résultats : elle vit dans le bloc de
+  séance et « Rétablir » revient aux valeurs du programme.
+- Les chiffres géants du timer débordent visuellement au-dessus de leur boîte
+  (`line-height` < 1) et capturent le tap. Tout contrôle placé dans cette zone doit
+  être positionné au-dessus de ce débordement.
+
 ### Accessibilité vue séance
 
 - Les boutons `Précédent` et `Bloc suivant` doivent toujours rester accessibles en portrait iPhone.

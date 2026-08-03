@@ -6892,3 +6892,144 @@ body.is-client [data-ai-clear]{display:none!important}
 .gvn-modal-btn.gvn-clear{
   background:rgba(255,34,68,.10);border:1px solid rgba(255,34,68,.42);color:var(--red);
 }
+
+/* ═══════════════════════════════════════════
+   Timer WOD éditable — durée, bips d'intervalle, sens
+   - Le libellé du timer devient le bouton d'édition (pastille + ✎).
+     Il reste centré entre le toggle son (coin gauche) et le badge EMOM
+     (coin droit) : aucune rangée de contrôles n'est ajoutée à la carte,
+     donc le timer géant et les boutons de bloc gardent leur place.
+   - L'édition elle-même vit dans une modale .tuto-modal (gros contrôles).
+   ═══════════════════════════════════════════ */
+button.guided-timer-label{
+  /* Les chiffres géants du timer débordent visuellement vers le haut
+     (line-height 0.82) et capturent le tap sur la zone du libellé.
+     Positionner le bouton le remet au-dessus de ce débordement. */
+  position:relative;
+  z-index:2;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  max-width:calc(100% - 118px);
+  min-height:32px;
+  margin:0 auto;
+  padding:2px 12px;
+  border:1px solid rgba(30,144,255,.42);
+  border-radius:999px;
+  background:rgba(30,144,255,.08);
+  color:var(--orange);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+button.guided-timer-label:active{ background:rgba(30,144,255,.20); }
+.guided-timer-label-text{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.guided-timer-pencil{
+  flex:0 0 auto;
+  font-size:.86em;
+  color:var(--cyan);
+  opacity:.85;
+}
+
+.guided-timer-editor .gte-row{ margin-top:12px; }
+.guided-timer-editor .gte-row.off .gte-value{ opacity:.45; }
+.guided-timer-editor .gte-label{
+  font-family:var(--font-hud);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--cyan);
+  margin-bottom:6px;
+}
+.guided-timer-editor .gte-controls{ display:grid; gap:6px; }
+.guided-timer-editor .gte-controls.dur{ grid-template-columns:1fr 1fr 1.7fr 1fr 1fr; }
+.guided-timer-editor .gte-controls.int{ grid-template-columns:1fr 1.7fr 1fr 1fr; }
+.guided-timer-editor .gte-btn{
+  min-height:52px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text);
+  font-family:var(--font-hud);
+  font-size:19px;
+  font-weight:900;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.guided-timer-editor .gte-btn:active{ background:rgba(30,144,255,.20); }
+.guided-timer-editor .gte-controls.int .gte-btn{ font-size:24px; }
+.guided-timer-editor .gte-toggle.on{
+  color:var(--cyan);
+  border-color:var(--blue);
+  background:rgba(30,144,255,.18);
+}
+.guided-timer-editor .gte-value{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--blue);
+  border-radius:10px;
+  background:rgba(30,144,255,.10);
+  font-family:var(--font-hud);
+  font-size:clamp(17px, 5vw, 24px);
+  font-weight:900;
+  color:var(--white);
+  font-variant-numeric:tabular-nums;
+}
+.guided-timer-editor .gte-chips{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.guided-timer-editor .gte-chip{
+  min-height:48px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text2);
+  font-family:var(--font-hud);
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.guided-timer-editor .gte-chip.active{
+  color:var(--cyan);
+  border-color:var(--blue);
+  background:rgba(30,144,255,.18);
+}
+.guided-timer-editor .gte-hint{
+  margin-top:10px;
+  font-family:var(--font-main);
+  font-size:12px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.guided-timer-editor .gte-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:12px;
+}
+.guided-timer-editor .gte-action{
+  min-height:52px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text);
+  font-family:var(--font-hud);
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.guided-timer-editor .gte-action.primary{
+  color:var(--cyan);
+  border-color:var(--blue);
+  background:rgba(30,144,255,.22);
+}
+.guided-timer-editor .gte-action.disabled{ opacity:.42; }
