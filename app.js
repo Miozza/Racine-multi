@@ -1,5 +1,5 @@
-// Racine V4.5.34 — programme de transition « Retour au travail »
-var APP_VERSION = "V4.5.34";
+// Racine V4.5.35 — programme de transition « Retour au travail »
+var APP_VERSION = "V4.5.35";
 
 // Architecture stable
 // programs/*.js = plan prévu

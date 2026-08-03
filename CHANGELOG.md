@@ -1,3 +1,13 @@
+## V4.5.35 — Le chrono occupe toute la hauteur libre
+
+- **La largeur reste la contrainte qui fixe la police, la hauteur vide est enfin utilisée.** Une chaîne de 5 caractères sur 402 px d'écran ne peut pas dépasser ~100 px de haut sans déformer les glyphes — mesuré, il restait jusqu'à **230 px de vide** entre les mouvements et la carte timer. Les chiffres s'étirent maintenant verticalement pour l'occuper : sur un WOD à deux mouvements, l'étirement atteint 3,4× et le trou disparaît complètement.
+- **La largeur ne bouge pas d'un pixel** : l'étirement est purement vertical, la police reste celle calculée par la largeur. Vérifié seconde par seconde sur 7 durées (8 à 60 min) : remplissage maximal 94 % de la largeur utile, aucun débordement.
+- **Effet de bord bienvenu** : la hauteur du chrono ne change plus au passage sous les 10 minutes. Les deux phases de format remplissent le même espace, seule la largeur des chiffres change.
+- **Calcul idempotent** : l'étirement est remis à zéro avant chaque mesure (`guidedResetTimerStretch`, la taille issue de la largeur étant mémorisée dans `data-fit-size`), sinon la passe suivante mesurerait un espace déjà comblé et l'étirement retomberait à 1. Vérifié : trois passes consécutives donnent exactement le même résultat.
+- **`pointer-events:none` sur l'affichage.** Les chiffres débordent visuellement leur boîte (interlettrage serré, puis étirement) et ce débordement vide captait les taps du libellé. C'était corrigé au coup par coup avec un `z-index` ; c'est maintenant traité à la racine, l'affichage n'ayant aucun contenu interactif. Vérifié : libellé, toggle son, ▶, Ⅱ, ↻, Précédent, Bloc suivant et les cartes de mouvement reçoivent tous leur tap.
+- **Variante écartée** : agrandir la police puis compresser par `scaleX`. Le texte débordait alors très largement sa boîte avant transformation et `text-align:center` ne le recentrait pas — les chiffres partaient hors écran à droite. Documenté dans le code pour ne pas y revenir.
+- Garde-fou `GUIDED_TIMER_MAX_STRETCH` à 3,5 : une seule constante à baisser (2 ou 2,5) pour un étirement plus sage.
+
 ## V4.5.34 — Les chiffres étroits ne se collent plus à leur voisin
 
 - **`1`, `4` et `7` n'ont aucune approche à gauche dans Orbitron.** Mesuré glyphe par glyphe à 120 px : les chiffres larges (`0 2 3 5 6 8 9`) portent 6 à 9 px d'approche de chaque côté, mais l'encre du `1` occupe toute sa chasse (`0→46` sur 47), celle du `4` (`0→82` sur 88) et du `7` (`0→72` sur 79) démarre au bord. Avec l'interlettrage négatif du chrono, **20 paires sur 100 se chevauchaient** : `11` de 6 px, `14`, `17`, puis `41 44 47 61 64 67 71 74 77 37` et tous les `1x`. « 21:00 » se lisait comme un bloc.

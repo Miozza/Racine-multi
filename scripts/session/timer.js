@@ -316,6 +316,12 @@ function fitGuidedWodTimer(){
   // Ne pas reflow pendant un pinch zoom Safari : on garde le zoom natif.
   if(typeof guidedViewportScale === "function" && guidedViewportScale()>1.02) return;
 
+  // Repartir SANS étirement avant toute mesure : l'étirement vertical posé à la
+  // passe précédente a comblé l'espace libre, donc le mesurer tel quel ferait
+  // retomber le calcul à 1 dès la deuxième passe. Reset + reflow = fonction
+  // idempotente, deux appels de suite donnent le même résultat.
+  guidedResetTimerStretch(d);
+
   var boxStyle=window.getComputedStyle ? window.getComputedStyle(box) : null;
   var displayStyle=window.getComputedStyle ? window.getComputedStyle(d) : null;
   var padLeft=boxStyle ? parseFloat(boxStyle.paddingLeft)||0 : 0;
@@ -369,9 +375,72 @@ function fitGuidedWodTimer(){
   d.style.setProperty("overflow","visible","important");
   d.style.setProperty("white-space","nowrap","important");
   d.style.setProperty("text-align","center","important");
+  // Les chiffres débordent visuellement leur boîte (line-height serré, puis
+  // étirement vertical) : sans ça, ce débordement vide capterait les taps
+  // destinés au libellé, aux mouvements ou aux boutons. L'affichage n'a aucun
+  // contenu interactif, il n'a donc rien à recevoir.
+  d.style.setProperty("pointer-events","none","important");
   d.style.setProperty("letter-spacing",(letterSpacingEm)+"em","important");
   d.style.setProperty("font-size",size+"px","important");
-  d.style.setProperty("line-height","0.82","important");
+  d.style.setProperty("line-height",String(GUIDED_TIMER_LINE_HEIGHT),"important");
+  // Taille issue de la largeur : c'est elle que guidedResetTimerStretch() doit
+  // restaurer avant de mesurer, sinon la passe suivante mesurerait la police
+  // déjà étirée et l'étirement s'emballerait.
+  d.setAttribute("data-fit-size", String(size));
+
+  guidedStretchTimerToFreeHeight(d, box, prev, size);
+}
+
+// ── Occupation de la hauteur libre ──────────────────────────────────────────
+// La largeur reste la contrainte qui fixe la taille de police (règle verrouillée) :
+// une chaîne de 5 caractères sur 402 px d'écran ne peut pas dépasser ~100 px de
+// haut sans déformer les glyphes. Tout ce qui reste est de la hauteur vide — et
+// comme la carte timer est collée en bas (margin-top:auto), cet espace libre est
+// entièrement au-dessus d'elle. Les chiffres l'occupent en s'étirant en hauteur.
+//
+// Mécanique : scaleY sur les chiffres + hauteur de ligne multipliée d'autant,
+// pour que la boîte de mise en page grandisse exactement comme eux (l'encre d'un
+// chiffre fait 0.72em pour une ligne de 0.82em : elle reste dedans). La police,
+// elle, ne bouge pas — c'est la largeur qui l'a fixée.
+// Variante écartée : agrandir la police puis compresser par scaleX. Le texte
+// déborde alors très largement sa boîte avant transformation, et `text-align`
+// ne le recentre pas — les chiffres partaient hors écran à droite.
+// Le rectangle visuel d'un élément transformé vaut k fois sa boîte : il déborde
+// donc en haut et en bas. C'est du vide, mais ça capterait le tap ; d'où
+// `pointer-events:none` sur l'affichage, qui n'a aucun contenu interactif.
+var GUIDED_TIMER_LINE_HEIGHT = 0.82;
+var GUIDED_TIMER_MAX_STRETCH = 3.5;   // garde-fou, pas une cible
+var GUIDED_TIMER_STRETCH_MARGIN = 10; // air laissé sous les mouvements
+function guidedResetTimerStretch(d){
+  if(!d || !d.style) return;
+  var base=Number(d.getAttribute("data-fit-size"))||0;
+  if(base>0) d.style.setProperty("font-size",base+"px","important");
+  d.style.setProperty("line-height",String(GUIDED_TIMER_LINE_HEIGHT),"important");
+  d.style.setProperty("transform","none","important");
+  // Force le recalcul de la mise en page avant toute mesure.
+  void d.offsetHeight;
+}
+function guidedStretchTimerToFreeHeight(d, box, prev, size){
+  if(!d || !box || !(size>0)) return;
+  guidedResetTimerStretch(d);
+  var naturalH=d.getBoundingClientRect ? d.getBoundingClientRect().height : 0;
+  if(!(naturalH>0)) return;
+
+  var free=0;
+  try{
+    if(prev && prev.getBoundingClientRect && box.getBoundingClientRect){
+      free=box.getBoundingClientRect().top - prev.getBoundingClientRect().bottom - GUIDED_TIMER_STRETCH_MARGIN;
+    }
+  }catch(e){}
+  if(!(free>0)) return;
+
+  var stretch=(naturalH+free)/naturalH;
+  if(stretch>GUIDED_TIMER_MAX_STRETCH) stretch=GUIDED_TIMER_MAX_STRETCH;
+  if(stretch<=1.01) return;
+
+  d.style.setProperty("line-height",String(GUIDED_TIMER_LINE_HEIGHT*stretch),"important");
+  d.style.setProperty("transform","scaleY("+stretch.toFixed(4)+")","important");
+  d.style.setProperty("transform-origin","center","important");
 }
 function refitGuidedWodTimerSoon(){
   requestAnimationFrame(function(){
