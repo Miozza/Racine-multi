@@ -6895,10 +6895,16 @@ body.is-client [data-ai-clear]{display:none!important}
 
 /* ═══════════════════════════════════════════
    Timer WOD éditable — durée, bips d'intervalle, sens
-   - Le libellé du timer devient le bouton d'édition (pastille + ✎).
-     Il reste centré entre le toggle son (coin gauche) et le badge EMOM
-     (coin droit) : aucune rangée de contrôles n'est ajoutée à la carte,
-     donc le timer géant et les boutons de bloc gardent leur place.
+   - Le libellé du timer devient le bouton d'édition (texte + ✎).
+   - RÈGLE VERROUILLÉE : la taille des chiffres du chrono prime sur tout.
+     fitGuidedWodTimer() la calcule à partir de la place restante, donc le
+     bouton doit occuper EXACTEMENT la boîte de l'ancien <div> : aucune
+     hauteur minimale, aucun padding vertical, aucune bordure, aucune marge.
+     Une pastille bordée coûtait 13 px de hauteur, soit jusqu'à 11 px de
+     police en moins sur une carte dense. Ne pas la réintroduire.
+     La zone tactile est agrandie par un ::after en position absolue :
+     il n'occupe aucune place dans le flux, donc il ne coûte aucun pixel
+     de chrono.
    - L'édition elle-même vit dans une modale .tuto-modal (gros contrôles).
    ═══════════════════════════════════════════ */
 button.guided-timer-label{
@@ -6907,34 +6913,40 @@ button.guided-timer-label{
      Positionner le bouton le remet au-dessus de ce débordement. */
   position:relative;
   z-index:2;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  max-width:calc(100% - 118px);
-  min-height:32px;
-  margin:0 auto;
-  padding:2px 12px;
-  border:1px solid rgba(30,144,255,.42);
-  border-radius:999px;
-  background:rgba(30,144,255,.08);
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
   color:var(--orange);
+  text-align:center;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
-button.guided-timer-label:active{ background:rgba(30,144,255,.20); }
+/* Zone tactile confortable sans occuper de place : déborde vers le haut
+   (espace vide au-dessus du libellé) et à peine sur les chiffres. */
+button.guided-timer-label::after{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  top:-15px;
+  bottom:-6px;
+}
+button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 .guided-timer-label-text{
-  min-width:0;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  display:inline;
+  overflow-wrap:anywhere;
 }
 .guided-timer-pencil{
-  flex:0 0 auto;
+  margin-left:6px;
   font-size:.86em;
   color:var(--cyan);
-  opacity:.85;
+  opacity:.9;
 }
+/* Le toggle son garde la main sur son coin malgré la zone tactile du libellé. */
+.guided-sound-toggle{ z-index:3; }
 
 .guided-timer-editor .gte-row{ margin-top:12px; }
 .guided-timer-editor .gte-row.off .gte-value{ opacity:.45; }

@@ -54,6 +54,12 @@ Ces règles sont obligatoires à partir de V51.24.
 
 ### Timer éditable
 
+- **La taille des chiffres du chrono prime sur tout.** `fitGuidedWodTimer()` la
+  calcule à partir de la place restante : tout élément ajouté à la carte timer qui
+  occupe de la hauteur dans le flux la fait baisser. Une pastille bordée autour du
+  libellé a coûté 13 px de carte, soit 11 px de police sur une carte dense. Ce qui
+  s'ajoute là doit être en position absolue ou reprendre exactement la boîte
+  existante.
 - Le libellé du timer est le bouton d'édition (durée, intervalle des bips, sens).
   L'édition vit dans une modale : aucune rangée de contrôles ne doit être ajoutée
   à la carte WOD, sous peine de reprendre l'espace du timer ou des boutons de bloc.
