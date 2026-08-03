@@ -1,3 +1,16 @@
+## V4.5.31 — Timer du WOD éditable en séance
+
+- **Le timer se règle sur le terrain.** Le libellé du timer de la vue séance (« AMRAP 12 min », « EMOM 8 min · bip/1:00 ») devient un bouton `✎` qui ouvre une modale : **durée** (−5 / −1 / +1 / +5 min, bornes 30 s → 120 min), **intervalle des bips** (15 s, 20, 30, 45, 1:00, 1:15, 1:30, 2:00, 2:30, 3:00, 4:00, 5:00) et **sens** (décompte / chrono). Les bips d'intervalle s'activent sur n'importe quel WOD, pas seulement sur ceux dont le texte contient « EMOM ».
+- **Le programme n'est jamais réécrit.** L'édition vit dans l'objet `cfg` du bloc (`guidedSessionState.blocks[i].timer`) : elle survit à la navigation entre blocs et disparaît à la fermeture de la séance. Les valeurs du programme sont conservées (`baseSeconds`, `baseMode`, `baseIsEmom`, `baseIntervalSec`) et « Rétablir » y revient d'un tap. **Aucune clé de stockage n'est créée, aucun schéma persisté ne change** (`CLAUDE.md §2.1`).
+- **La capture de résultats n'est pas touchée** : `collectSessionExercises()` continue de lire la durée du programme (`b.time`) pour estimer les rounds. Un timer raccourci sur le terrain ne modifie donc ni l'historique, ni `athlete_state`, ni le moteur de charges.
+- **Libellé et kicker suivent l'édition** : le mot de tête du programme est conservé (AMRAP / EMOM / CAP / Timer), seule la durée change — un WOD raccourci n'annonce plus « AMRAP 12 min ».
+- **Correction — bips d'intervalle décalés en décompte.** Ils se calaient sur `remaining % 60`, ce qui décalait tous les bips quand la durée n'était pas un multiple de l'intervalle (un cap de 10:30 bipait à 30 s, 1:30, 2:30…). Ils se calent maintenant sur le temps écoulé, dans les deux sens.
+- **Correction — double signal en fin de WOD** : le dernier bip d'intervalle tombait en même temps que le signal de fin quand la durée était un multiple de l'intervalle. Le bip d'intervalle s'arrête avant le dernier tic.
+- **Correction — le libellé du timer n'était pas cliquable.** Les chiffres géants (`line-height: 0.82`) débordent visuellement vers le haut et capturaient le tap sur la zone du libellé ; le bouton est repositionné au-dessus de ce débordement.
+- **Layout séance intact** : aucune rangée de contrôles n'est ajoutée à la carte WOD (l'édition vit dans une modale `.tuto-modal`, comme le tuto et l'explication de charge), donc le timer géant, Start/Pause/Reset et les boutons de bloc gardent leur place en portrait iPhone (`docs/UI_CONSTRAINTS.md`).
+- **Alerte visuelle EMOM adaptée à l'intervalle** : les paliers 30 s / 10 s / 3 s / GO restent identiques à une minute, et se resserrent (moitié du cycle / 5 s / 3 s) sur les intervalles courts pour ne pas peindre tout le cycle en bleu.
+- **Portée** : `scripts/session/timer.js` (domaine timer), `scripts/session/view.js` (deux points d'accroche), `styles.css`. Moteur de charges, Brain, Avis IA et sauvegarde ne sont pas touchés.
+
 ## V4.5.30 — Programme de transition « Retour au travail »
 
 - **Nouveau programme public `retour_au_travail`** (`programs/retour_au_travail.js`) : une semaine, quatre séances, pour les athlètes qui reprennent après 2 à 4 semaines d'arrêt ou d'activité très réduite. Full body / technique + conditionnement / bas du corps / haut du corps + WOD court.

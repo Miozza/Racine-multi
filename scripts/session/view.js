@@ -313,6 +313,7 @@ function openGuidedSession(){
 
 function closeGuidedSession(){
   stopGuidedTimer();
+  if(typeof closeGuidedTimerEditor==="function") closeGuidedTimerEditor();
   // Abandon de séance : les notes du mouvement partent avec elle. Sans ça
   // elles resteraient dans guidedResultCache — qui n'est indexé que par nom de
   // mouvement — et réapparaîtraient au prochain entraînement. Poids/reps/RPE
@@ -551,7 +552,12 @@ function renderGuidedSession(){
           // Toggle sons : absolu dans le coin gauche de la carte timer (le badge
           // EMOM occupe le coin droit) — ne déplace aucun contrôle existant.
           "<button type='button' class='guided-sound-toggle"+(soundMuted?" muted":"")+"' id='guidedSoundToggle' aria-label='"+(soundMuted?"Activer les sons du timer":"Couper les sons du timer")+"'>"+(soundMuted?"🔇":"🔊")+"</button>"+
-          "<div class='guided-timer-label'>"+escHtml((cfg&&cfg.label)||"Timer")+(cfg&&cfg.isEmom?" · bip/min":"")+"</div>"+
+          // Le libellé est le bouton d'édition du timer (durée / bips / sens) :
+          // il ouvre une modale, donc aucune rangée de contrôles n'empiète sur
+          // le timer géant ni sur les boutons de bloc. Voir scripts/session/timer.js.
+          "<button type='button' class='guided-timer-label' id='guidedTimerEdit' aria-label='Modifier le timer'>"+
+            (typeof guidedTimerLabelHtml==="function" ? guidedTimerLabelHtml(cfg) : escHtml((cfg&&cfg.label)||"Timer"))+
+          "</button>"+
           "<div class='guided-timer-display' id='guidedTimerDisplay'>"+formatGuidedTimerClock(cfg&&cfg.mode==="up"?0:(cfg?cfg.seconds:0))+"</div>"+
           "<div class='guided-timer-buttons'>"+
             "<button class='guided-tbtn start' id='guidedTimerStart'>▶</button>"+
@@ -606,6 +612,8 @@ function renderGuidedSession(){
     if(start)start.onclick=startGuidedTimer;
     if(pause)pause.onclick=pauseGuidedTimer;
     if(reset)reset.onclick=function(){ resetGuidedTimerState(cfg); };
+    var edit=$("guidedTimerEdit");
+    if(edit)edit.onclick=function(){ if(typeof openGuidedTimerEditor==="function") openGuidedTimerEditor(cfg); };
     var soundBtn=$("guidedSoundToggle");
     if(soundBtn)soundBtn.onclick=function(){
       if(typeof setGuidedSoundMuted!=="function")return;

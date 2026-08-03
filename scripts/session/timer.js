@@ -2,7 +2,7 @@
 // Timer guidé AMRAP/EMOM/For Time de la vue séance.
 // Aucun changement volontaire de comportement : extraction depuis scripts/session/view.js.
 
-var guidedTimer = {duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:"down",label:"",isEmom:false,countdownActive:false,countdownRemaining:10};
+var guidedTimer = {duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:"down",label:"",isEmom:false,intervalSec:60,countdownActive:false,countdownRemaining:10};
 
 // ── Signaux sonores du timer guidé ───────────────────────────────────────────
 // Muet = aucun helper audio appelé, donc aucun nœud Web Audio créé (pas un
@@ -25,34 +25,128 @@ function guidedBipStart(){ if(!guidedSoundMuted() && typeof bipStart==="function
 function guidedBipEmom(){ if(!guidedSoundMuted() && typeof bipEmom==="function") bipEmom(); }
 function guidedBipEnd(){ if(!guidedSoundMuted() && typeof bipEnd==="function") bipEnd(); }
 
+// ── Timer éditable — durée, intervalle de bips, sens ─────────────────────────
+// L'athlète ajuste le timer du WOD sur le terrain (WOD raccourci, EMOM en 90s,
+// cap qui devient chrono). L'édition vit dans l'objet `cfg` du bloc
+// (`guidedSessionState.blocks[i].timer`) : elle survit à la navigation entre
+// blocs et meurt avec la séance. Aucun programme n'est réécrit, aucune clé de
+// stockage n'est créée — le programme reste la référence, récupérable par
+// « Rétablir ».
+var GUIDED_TIMER_MIN_SECONDS = 30;
+var GUIDED_TIMER_MAX_SECONDS = 120 * 60;
+var GUIDED_TIMER_INTERVALS = [15,20,30,45,60,75,90,120,150,180,240,300];
+
+function guidedTimerNormalizeConfig(cfg){
+  if(!cfg || typeof cfg!=="object") return cfg;
+  if(cfg.baseSeconds===undefined) cfg.baseSeconds=Number(cfg.seconds)||0;
+  if(cfg.baseMode===undefined) cfg.baseMode=cfg.mode||"down";
+  if(cfg.baseLabel===undefined) cfg.baseLabel=cfg.label||"Timer";
+  if(cfg.baseIsEmom===undefined) cfg.baseIsEmom=!!cfg.isEmom;
+  if(cfg.baseIntervalSec===undefined) cfg.baseIntervalSec=60;
+  if(cfg.intervalSec===undefined) cfg.intervalSec=cfg.baseIntervalSec;
+  return cfg;
+}
+function guidedTimerClampSeconds(sec){
+  sec=Math.round(Number(sec)||0);
+  if(sec<GUIDED_TIMER_MIN_SECONDS) sec=GUIDED_TIMER_MIN_SECONDS;
+  if(sec>GUIDED_TIMER_MAX_SECONDS) sec=GUIDED_TIMER_MAX_SECONDS;
+  return sec;
+}
+function guidedTimerStepInterval(current, step){
+  var list=GUIDED_TIMER_INTERVALS;
+  var cur=Number(current)||60;
+  var idx=0, best=Infinity, i, d;
+  for(i=0;i<list.length;i++){
+    d=Math.abs(list[i]-cur);
+    if(d<best){best=d;idx=i;}
+  }
+  idx=Math.min(list.length-1, Math.max(0, idx+(step>0?1:-1)));
+  return list[idx];
+}
+function guidedTimerDurationText(sec){
+  sec=Math.max(0,Math.round(Number(sec)||0));
+  return sec%60===0 ? String(sec/60)+" min" : formatGuidedTimerClock(sec);
+}
+function guidedTimerIntervalText(sec){
+  sec=Math.max(0,Math.round(Number(sec)||0));
+  return sec<60 ? String(sec)+"s" : formatGuidedTimerClock(sec);
+}
+// Le mot de tête du programme (AMRAP / EMOM / CAP / Timer) est conservé ;
+// seule la durée suit l'édition. Un WOD raccourci ne doit pas continuer
+// d'annoncer « AMRAP 12 min ».
+function guidedTimerLabelFor(cfg){
+  if(!cfg) return "Timer";
+  var base=String(cfg.baseLabel||cfg.label||"Timer").trim();
+  var head=base.split(/\s+/)[0]||"Timer";
+  return head+" "+guidedTimerDurationText(cfg.seconds);
+}
+function guidedTimerEmomSuffix(cfg){
+  if(!cfg || !cfg.isEmom) return "";
+  return " · bip/"+guidedTimerIntervalText(cfg.intervalSec||60);
+}
+function guidedTimerIsEdited(cfg){
+  if(!cfg) return false;
+  guidedTimerNormalizeConfig(cfg);
+  return (Number(cfg.seconds)||0)!==(Number(cfg.baseSeconds)||0)
+      || (cfg.mode||"down")!==(cfg.baseMode||"down")
+      || !!cfg.isEmom!==!!cfg.baseIsEmom
+      || (Number(cfg.intervalSec)||60)!==(Number(cfg.baseIntervalSec)||60);
+}
+function guidedTimerIntervalTick(){
+  if(!guidedTimer.isEmom) return;
+  var interval=guidedTimerIntervalSeconds();
+  var elapsed=guidedTimerElapsedSeconds();
+  // Pas de bip d'intervalle sur le dernier tic : la fin a déjà son signal.
+  if(elapsed>0 && elapsed<guidedTimer.duration && elapsed%interval===0){
+    guidedBipEmom();vibrate([100,50,100]);
+  }
+}
+
 function resetGuidedTimerState(cfg){
   stopGuidedTimer();
+  guidedTimerNormalizeConfig(cfg);
   guidedTimer.duration=Number(cfg&&cfg.seconds)||0;
   guidedTimer.remaining=guidedTimer.duration;
   guidedTimer.elapsed=0;
   guidedTimer.mode=(cfg&&cfg.mode)||"down";
   guidedTimer.label=(cfg&&cfg.label)||"Timer";
   guidedTimer.isEmom=!!(cfg&&cfg.isEmom);
+  guidedTimer.intervalSec=Number(cfg&&cfg.intervalSec)||60;
   guidedTimer.countdownActive=false;
   guidedTimer.countdownRemaining=10;
   updateGuidedTimerDisplay();
 }
 function guidedTimerCurrentValue(){return guidedTimer.mode==="up"?guidedTimer.elapsed:guidedTimer.remaining;}
+function guidedTimerIntervalSeconds(){
+  var v=Number(guidedTimer&&guidedTimer.intervalSec)||60;
+  return v>0 ? v : 60;
+}
+// Secondes écoulées depuis le départ, quel que soit le sens d'affichage.
+// Les bips d'intervalle s'y accrochent : en décompte, se caler sur `remaining`
+// décalait tous les bips quand la durée n'était pas un multiple de l'intervalle.
+function guidedTimerElapsedSeconds(){
+  var elapsed = guidedTimer.mode==="up" ? guidedTimer.elapsed : (guidedTimer.duration - guidedTimer.remaining);
+  return elapsed>0 ? elapsed : 0;
+}
 
 function guidedEmomMinuteState(){
   if(!guidedTimer || !guidedTimer.isEmom || guidedTimer.countdownActive || !guidedTimer.running) return null;
-  var elapsed = guidedTimer.mode==="up" ? guidedTimer.elapsed : (guidedTimer.duration - guidedTimer.remaining);
-  if(elapsed < 0) elapsed = 0;
+  var elapsed = guidedTimerElapsedSeconds();
+  var interval = guidedTimerIntervalSeconds();
 
-  // Alerte indépendante de la durée totale : chaque minute a son cycle.
-  // 30s restantes = bleu clair, 10s = jaune, 3s = rouge, 0s = flash GO.
-  var secInMinute = elapsed % 60;
+  // Alerte indépendante de la durée totale : chaque intervalle a son cycle.
+  // Sur un intervalle d'une minute : 30s restantes = bleu clair, 10s = jaune,
+  // 3s = rouge, 0s = flash GO. Sur un intervalle court, les paliers se
+  // resserrent pour ne pas peindre tout le cycle en bleu.
+  var secInCycle = elapsed % interval;
+  var yellowAt = interval>=30 ? 10 : 5;
+  var blueAt = interval>=60 ? 30 : Math.floor(interval/2);
 
-  if(elapsed > 0 && secInMinute === 0) return {cls:"emom-go", label:"GO"};
-  var left = 60 - secInMinute;
+  if(elapsed > 0 && secInCycle === 0) return {cls:"emom-go", label:"GO"};
+  var left = interval - secInCycle;
   if(left <= 3) return {cls:"emom-red", label:String(left)};
-  if(left <= 10) return {cls:"emom-yellow", label:"10s"};
-  if(left <= 30) return {cls:"emom-blue", label:"30s"};
+  if(left <= yellowAt) return {cls:"emom-yellow", label:String(yellowAt)+"s"};
+  if(left <= blueAt && blueAt > yellowAt) return {cls:"emom-blue", label:String(blueAt)+"s"};
   return null;
 }
 function updateGuidedEmomVisualWarning(){
@@ -271,12 +365,12 @@ function startGuidedTimer(){
     guidedTimer.interval=setInterval(function(){
       if(guidedTimer.mode==="up"){
         guidedTimer.elapsed=Math.min(guidedTimer.duration,guidedTimer.elapsed+1);
-        if(guidedTimer.isEmom&&guidedTimer.elapsed>0&&guidedTimer.elapsed%60===0){guidedBipEmom();vibrate([100,50,100]);}
+        guidedTimerIntervalTick();
         if(guidedTimer.elapsed>=guidedTimer.duration){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
       } else {
         guidedTimer.remaining=Math.max(0,guidedTimer.remaining-1);
         if(guidedTimer.remaining<=3&&guidedTimer.remaining>0){guidedBipCountdown();vibrate([60]);}
-        if(guidedTimer.isEmom&&guidedTimer.remaining>0&&guidedTimer.remaining%60===0){guidedBipEmom();vibrate([100,50,100]);}
+        guidedTimerIntervalTick();
         if(guidedTimer.remaining<=0){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
       }
       updateGuidedTimerDisplay();
@@ -284,3 +378,150 @@ function startGuidedTimer(){
   });
 }
 function pauseGuidedTimer(){stopGuidedTimer();updateGuidedTimerDisplay();}
+
+// ── Éditeur de timer — modale terrain ────────────────────────────────────────
+// Même coquille que les autres popups (.tuto-modal) : verrou de scroll, fond
+// tapable, gros contrôles utilisables fatigué. Le libellé du timer est le
+// bouton d'ouverture : aucune rangée de contrôles n'est ajoutée à la carte WOD,
+// donc le layout iPhone (timer géant + Start/Pause/Reset + actions de bloc)
+// reste intact.
+var GUIDED_TIMER_EDITOR_ID = "guidedTimerEditorModal";
+var guidedTimerEditorCfg = null;
+
+function guidedTimerEsc(s){
+  return typeof escHtml==="function" ? escHtml(s) : String(s==null?"":s);
+}
+function guidedTimerLabelHtml(cfg){
+  guidedTimerNormalizeConfig(cfg);
+  return "<span class='guided-timer-label-text'>"
+       + guidedTimerEsc((cfg&&cfg.label)||"Timer")
+       + guidedTimerEsc(guidedTimerEmomSuffix(cfg))
+       + "</span><span class='guided-timer-pencil' aria-hidden='true'>✎</span>";
+}
+
+// Toute édition remet le timer à zéro : reprendre un cycle à moitié écoulé sur
+// une nouvelle durée n'a pas de sens lisible en plein WOD.
+function refreshGuidedTimerCard(cfg){
+  if(!cfg) return;
+  resetGuidedTimerState(cfg);
+  var box=document.querySelector(".guided-wod-timer");
+  if(box){
+    box.setAttribute("data-duration",String(cfg.seconds||0));
+    box.setAttribute("data-mode",cfg.mode||"down");
+  }
+  var label=box&&box.querySelector ? box.querySelector(".guided-timer-label") : null;
+  if(label) label.innerHTML=guidedTimerLabelHtml(cfg);
+  var kicker=document.querySelector(".guided-wod-kicker");
+  if(kicker) kicker.textContent=(cfg.label||"WOD");
+  refitGuidedWodTimerSoon();
+}
+function applyGuidedTimerEdit(cfg, patch){
+  if(!cfg) return;
+  guidedTimerNormalizeConfig(cfg);
+  patch=patch||{};
+  if(patch.deltaSeconds) cfg.seconds=guidedTimerClampSeconds((Number(cfg.seconds)||0)+patch.deltaSeconds);
+  if(patch.intervalStep){
+    cfg.isEmom=true; // toucher l'intervalle, c'est demander les bips
+    cfg.intervalSec=guidedTimerStepInterval(cfg.intervalSec, patch.intervalStep);
+  }
+  if(patch.toggleEmom) cfg.isEmom=!cfg.isEmom;
+  if(patch.mode) cfg.mode=(patch.mode==="up"?"up":"down");
+  if(patch.restore){
+    cfg.seconds=cfg.baseSeconds;
+    cfg.mode=cfg.baseMode;
+    cfg.isEmom=cfg.baseIsEmom;
+    cfg.intervalSec=cfg.baseIntervalSec;
+  }
+  cfg.label=guidedTimerLabelFor(cfg);
+  refreshGuidedTimerCard(cfg);
+  refreshGuidedTimerEditor();
+}
+
+function guidedTimerEditorBodyHtml(cfg){
+  guidedTimerNormalizeConfig(cfg);
+  var isEmom=!!cfg.isEmom;
+  var h="";
+  h+="<div class='tuto-topline'>TIMER DU WOD</div>";
+  h+="<div class='tuto-title'>"+guidedTimerEsc(cfg.label||"Timer")+"</div>";
+
+  h+="<div class='gte-row'>";
+  h+="<div class='gte-label'>Durée</div>";
+  h+="<div class='gte-controls dur'>";
+  h+="<button type='button' class='gte-btn' data-gte-dur='-300'>−5</button>";
+  h+="<button type='button' class='gte-btn' data-gte-dur='-60'>−1</button>";
+  h+="<div class='gte-value'>"+guidedTimerEsc(guidedTimerDurationText(cfg.seconds))+"</div>";
+  h+="<button type='button' class='gte-btn' data-gte-dur='60'>+1</button>";
+  h+="<button type='button' class='gte-btn' data-gte-dur='300'>+5</button>";
+  h+="</div></div>";
+
+  h+="<div class='gte-row"+(isEmom?"":" off")+"'>";
+  h+="<div class='gte-label'>Bips d'intervalle</div>";
+  h+="<div class='gte-controls int'>";
+  h+="<button type='button' class='gte-btn' data-gte-int='-1'>−</button>";
+  h+="<div class='gte-value'>"+(isEmom?guidedTimerEsc(guidedTimerIntervalText(cfg.intervalSec)):"—")+"</div>";
+  h+="<button type='button' class='gte-btn' data-gte-int='1'>+</button>";
+  h+="<button type='button' class='gte-btn gte-toggle"+(isEmom?" on":"")+"' data-gte-emom='1' aria-pressed='"+(isEmom?"true":"false")+"'>"+(isEmom?"🔔":"🔕")+"</button>";
+  h+="</div></div>";
+
+  h+="<div class='gte-row'>";
+  h+="<div class='gte-label'>Sens</div>";
+  h+="<div class='gte-chips'>";
+  h+="<button type='button' class='gte-chip"+(cfg.mode!=="up"?" active":"")+"' data-gte-mode='down'>Décompte</button>";
+  h+="<button type='button' class='gte-chip"+(cfg.mode==="up"?" active":"")+"' data-gte-mode='up'>Chrono</button>";
+  h+="</div></div>";
+
+  h+="<div class='gte-hint'>Chaque modification remet le timer à zéro. Le programme n'est pas modifié"
+   + (guidedTimerIsEdited(cfg)?" — « Rétablir » remet "+guidedTimerEsc(guidedTimerDurationText(cfg.baseSeconds))+".":".")
+   + "</div>";
+
+  h+="<div class='gte-actions'>";
+  h+="<button type='button' class='gte-action"+(guidedTimerIsEdited(cfg)?"":" disabled")+"' data-gte-restore='1'>Rétablir</button>";
+  h+="<button type='button' class='gte-action primary' data-gte-close='1'>OK</button>";
+  h+="</div>";
+  return h;
+}
+function refreshGuidedTimerEditor(){
+  var modal=$(GUIDED_TIMER_EDITOR_ID);
+  if(!modal || !guidedTimerEditorCfg) return;
+  var inner=modal.querySelector(".tuto-modal-inner");
+  if(inner) inner.innerHTML=guidedTimerEditorBodyHtml(guidedTimerEditorCfg);
+}
+function closeGuidedTimerEditor(){
+  var modal=$(GUIDED_TIMER_EDITOR_ID);
+  guidedTimerEditorCfg=null;
+  if(!modal) return;
+  modal.classList.remove("visible");
+  setTimeout(function(){
+    if(modal.parentNode) modal.remove();
+    try{ if(typeof unlockBodyScrollForModal==="function") unlockBodyScrollForModal(); }catch(e){}
+  },200);
+}
+function openGuidedTimerEditor(cfg){
+  if(!cfg) return;
+  guidedTimerNormalizeConfig(cfg);
+  var existing=$(GUIDED_TIMER_EDITOR_ID);
+  if(existing) existing.remove();
+
+  guidedTimerEditorCfg=cfg;
+  var modal=document.createElement("div");
+  modal.id=GUIDED_TIMER_EDITOR_ID;
+  modal.className="tuto-modal guided-timer-editor";
+  modal.innerHTML="<div class='tuto-modal-inner'>"+guidedTimerEditorBodyHtml(cfg)+"</div>";
+  modal.addEventListener("click",function(ev){
+    var t=ev&&ev.target;
+    if(!t||!t.closest) return;
+    if(t===modal){ closeGuidedTimerEditor(); return; }
+    var btn=t.closest("button");
+    if(!btn) return;
+    ev.preventDefault();
+    if(btn.hasAttribute("data-gte-close")){ closeGuidedTimerEditor(); return; }
+    if(btn.hasAttribute("data-gte-restore")){ applyGuidedTimerEdit(guidedTimerEditorCfg,{restore:true}); return; }
+    if(btn.hasAttribute("data-gte-dur")){ applyGuidedTimerEdit(guidedTimerEditorCfg,{deltaSeconds:Number(btn.getAttribute("data-gte-dur"))||0}); return; }
+    if(btn.hasAttribute("data-gte-int")){ applyGuidedTimerEdit(guidedTimerEditorCfg,{intervalStep:Number(btn.getAttribute("data-gte-int"))||0}); return; }
+    if(btn.hasAttribute("data-gte-emom")){ applyGuidedTimerEdit(guidedTimerEditorCfg,{toggleEmom:true}); return; }
+    if(btn.hasAttribute("data-gte-mode")){ applyGuidedTimerEdit(guidedTimerEditorCfg,{mode:btn.getAttribute("data-gte-mode")}); return; }
+  });
+  document.body.appendChild(modal);
+  try{ if(typeof lockBodyScrollForModal==="function") lockBodyScrollForModal(); }catch(e){}
+  setTimeout(function(){ modal.classList.add("visible"); },20);
+}
