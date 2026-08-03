@@ -6948,12 +6948,17 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 /* Le toggle son garde la main sur son coin malgré la zone tactile du libellé. */
 .guided-sound-toggle{ z-index:3; }
 
-/* Deux-points du chrono. Dans Orbitron le « 1 » est collé à droite de sa
-   chasse : avec l'interlettrage négatif du timer, les deux-points se fondaient
-   dans la barre du 1 et disparaissaient (« 1:00 » se lisait « 100 »).
-   La marge les décolle ; elle est incluse dans la mesure de taille, donc le
-   chrono ne déborde pas. Ne pas la retirer sans revoir guidedTimerClockHtml(). */
-.guided-timer-colon{ margin-left:.03em; }
+/* Approches manquantes du chrono — voir guidedTimerClockHtml().
+   Mesuré dans Orbitron à 120 px : les chiffres larges portent 6 à 9 px
+   d'approche de chaque côté ; « 1 », « 4 » et « 7 » n'en ont aucune à gauche,
+   et le « 1 » n'en a quasiment aucune à droite (encre 0→46 sur 47 de chasse).
+   Ces marges leur rendent l'écart naturel des autres chiffres (~8 px), ni plus
+   ni moins. Elles sont incluses dans la mesure de taille, donc le chrono ne
+   déborde pas. Ne pas les retirer sans revoir guidedTimerClockHtml(). */
+.guided-timer-colon{ margin-left:.030em; }
+.guided-timer-n1{ margin-left:.050em; margin-right:.066em; }
+.guided-timer-n4{ margin-left:.050em; margin-right:.025em; }
+.guided-timer-n7{ margin-left:.050em; margin-right:.017em; }
 
 .guided-timer-editor .gte-row{ margin-top:12px; }
 .guided-timer-editor .gte-row.off .gte-value{ opacity:.45; }

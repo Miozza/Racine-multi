@@ -221,19 +221,27 @@ function guidedTimerFitSample(text,isCountdown,style){
   return minuteDigits>=2 ? "88:88" : "8:88";
 }
 
-// Les deux-points reçoivent leur propre boîte. Dans Orbitron le « 1 » est collé
-// à droite de sa chasse : avec l'interlettrage négatif du chrono, les deux-points
-// se fondaient dans la barre du 1 et disparaissaient — « 1:00 » se lisait « 100 »
-// et « 11:00 » se lisait « 1100 », soit toute la dernière minute de chaque WOD.
-// Une marge de .03em suffit à les décoller ; elle est mesurée avec le reste
-// (guidedMeasureTimerTextDom pose le même balisage), donc le chrono ne déborde pas.
+// Chaque caractère du chrono peut recevoir sa propre boîte. Mesuré dans Orbitron
+// à 120 px : les chiffres larges (0 2 3 5 6 8 9) portent 6 à 9 px d'approche de
+// chaque côté, mais « 1 », « 4 » et « 7 » n'en ont AUCUNE à gauche — leur encre
+// démarre au bord de leur chasse. Avec l'interlettrage négatif du chrono, ils se
+// collent au caractère précédent : « 11 » se chevauchait de 6 px, « 21 » se lisait
+// comme un seul bloc, et les deux-points disparaissaient dans la barre du 1
+// (« 1:00 » → « 100 », soit toute la dernière minute de chaque WOD).
+// On leur rend l'approche qui leur manque, glyphe par glyphe — jamais par paire :
+// ça reste plus étroit que le gabarit (un « 1 » margé fait 61 px contre 100 pour
+// un « 0 »), donc le chrono ne peut pas déborder. Les marges sont mesurées avec
+// le reste : guidedMeasureTimerTextDom pose exactement le même balisage.
+var GUIDED_TIMER_GLYPH_CLASS = {"1":"guided-timer-n1","4":"guided-timer-n4","7":"guided-timer-n7",":":"guided-timer-colon"};
 function guidedTimerClockHtml(text){
   text=String(text==null?"":text);
-  var i=text.indexOf(":");
-  if(i<0) return guidedTimerEsc(text);
-  return guidedTimerEsc(text.slice(0,i))
-       + "<span class='guided-timer-colon'>:</span>"
-       + guidedTimerEsc(text.slice(i+1));
+  var out="", i, c, cls;
+  for(i=0;i<text.length;i++){
+    c=text.charAt(i);
+    cls=GUIDED_TIMER_GLYPH_CLASS[c];
+    out += cls ? ("<span class='"+cls+"'>"+guidedTimerEsc(c)+"</span>") : guidedTimerEsc(c);
+  }
+  return out;
 }
 
 function syncGuidedTimerButtons(){
@@ -382,7 +390,7 @@ if(typeof window!=="undefined"){
 function updateGuidedTimerDisplay(){
   var d=$("guidedTimerDisplay"); if(!d)return;
   if(guidedTimer.countdownActive){
-    d.textContent=String(guidedTimer.countdownRemaining);
+    d.innerHTML=guidedTimerClockHtml(String(guidedTimer.countdownRemaining));
     d.classList.add("countdown");
   } else {
     d.innerHTML=guidedTimerClockHtml(formatGuidedTimerClock(guidedTimerCurrentValue()));

@@ -1,3 +1,11 @@
+## V4.5.34 — Les chiffres étroits ne se collent plus à leur voisin
+
+- **`1`, `4` et `7` n'ont aucune approche à gauche dans Orbitron.** Mesuré glyphe par glyphe à 120 px : les chiffres larges (`0 2 3 5 6 8 9`) portent 6 à 9 px d'approche de chaque côté, mais l'encre du `1` occupe toute sa chasse (`0→46` sur 47), celle du `4` (`0→82` sur 88) et du `7` (`0→72` sur 79) démarre au bord. Avec l'interlettrage négatif du chrono, **20 paires sur 100 se chevauchaient** : `11` de 6 px, `14`, `17`, puis `41 44 47 61 64 67 71 74 77 37` et tous les `1x`. « 21:00 » se lisait comme un bloc.
+- **Chaque glyphe étroit récupère l'approche qui lui manque**, jamais par paire : `1` (+.050em / +.066em), `4` (+.050em / +.025em), `7` (+.050em / +.017em). L'écart retombe sur les ~8 px naturels des autres chiffres, ni plus ni moins.
+- **Aucun risque de débordement** : un `1` margé fait 61 px contre 100 pour un `0`, donc le texte réel reste toujours plus étroit que le gabarit, qui est construit sur les chiffres les plus larges. Vérifié seconde par seconde sur 7 durées (8 à 60 min) : remplissage maximal 94 % de la largeur utile, aucun dépassement.
+- **Coût mesuré : 122 px → 117 px** sur un timer de 11 min. C'est le prix d'un `11:00` lisible plutôt que d'un bloc unique.
+- Le balisage par caractère est partagé entre l'affichage et la mesure (`guidedTimerClockHtml`), donc les marges sont comptées dans le calcul de taille.
+
 ## V4.5.33 — Chrono plus gros sur les minutes étroites, deux-points enfin visibles
 
 - **Le gabarit de mesure n'invente plus des chiffres impossibles.** La taille du chrono se calcule sur un gabarit (jamais la forme exacte affichée, sinon elle changerait à chaque seconde) — mais ce gabarit était `88:88` en dur. Dans Orbitron, un `1` fait **36 px là où un `8` en fait 83** : un timer de 11 min était donc calibré pour une largeur qu'il n'atteindrait jamais. Le gabarit est maintenant le plus large affichage **qui peut réellement apparaître dans ce timer** (`10:00` pour un timer de 10 à 19 min, `20:00` au-delà, inchangé quand les chiffres larges sont possibles).
