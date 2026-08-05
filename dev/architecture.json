@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 180,
+    "ACTIF": 182,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -629,6 +629,22 @@
       "path": "dev/history_progress_checks.js",
       "size": 4126,
       "lines": 65,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/history_edit_checks.js",
+      "size": 7359,
+      "lines": 113,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -3128,6 +3144,42 @@
         "CoachCharge",
         "RacineMovementSwaps",
         "CoachProfiles"
+      ]
+    },
+    {
+      "path": "scripts/session/history_edit.js",
+      "size": 14263,
+      "lines": 343,
+      "role": "Correction d'une séance déjà enregistrée : rend l'entrée d'historique choisie dans la vue Résultats, fusionne les valeurs corrigées dans le journal brut, puis laisse rebuildRefsFromHistory() reconstruire l'état dérivé.",
+      "category": "ACTIF",
+      "exposes": [
+        "CoachHistoryEdit"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 369
+        },
+        {
+          "path": "app.js",
+          "vector": "global-call",
+          "line": 0
+        },
+        {
+          "path": "scripts/session/results.js",
+          "vector": "global-call",
+          "line": 0
+        },
+        {
+          "path": "scripts/session/save.js",
+          "vector": "global-call",
+          "line": 0
+        }
+      ],
+      "consumes": [
+        "CoachCharge",
+        "state.history"
       ]
     },
     {

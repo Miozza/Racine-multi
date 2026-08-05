@@ -666,6 +666,21 @@ function classifyPerformance(actual, planned){
   return {status:status,ratio:Math.round(ratio*100)/100,targetReps:targetReps};
 }
 
+// Classement d'une ligne de resultat par rapport a ce qui etait prescrit.
+// Extrait de enrichSessionResults() pour rester la seule ecriture de status /
+// performanceRatio / coachNote : une correction de seance passee
+// (scripts/session/history_edit.js) doit reclasser exactement comme la saisie
+// du jour, sans recopier ces regles ailleurs.
+function applyPerformanceClassification(r, planned){
+  if(!r||!planned)return r;
+  var c=classifyPerformance(r,planned);
+  r.status=c.status;r.performanceRatio=c.ratio;
+  if(c.status==="major_fail")r.coachNote="Echec majeur : niveau probablement surestime aujourd'hui. Recalibrage requis.";
+  else if(c.status==="failed")r.coachNote="Echec partiel : ne pas monter la charge avant confirmation.";
+  else if(r.coachNote!==undefined)delete r.coachNote;
+  return r;
+}
+
 function enrichSessionResults(results){
   var plan=plannedMapFromSessionExercises();
   Object.keys(results||{}).forEach(function(key){
@@ -674,10 +689,7 @@ function enrichSessionResults(results){
     var lookup=plan[key]||plan[movementLabelFromKeyOrName(key)]||plan[normalizeExerciseName(key)]||null;
     if(lookup){
       r.planned={load:lookup.load||null,reps:lookup.reps||null,targetMin:lookup.targetMin||null,targetMax:lookup.targetMax||null,format:lookup.format||"",kind:lookup.kind||"",context:lookup.context||null,bodyweightMovement:lookup.bodyweightMovement||false};
-      var c=classifyPerformance(r,lookup);
-      r.status=c.status;r.performanceRatio=c.ratio;
-      if(c.status==="major_fail")r.coachNote="Echec majeur : niveau probablement surestime aujourd'hui. Recalibrage requis.";
-      else if(c.status==="failed")r.coachNote="Echec partiel : ne pas monter la charge avant confirmation.";
+      applyPerformanceClassification(r,lookup);
     }
   });
   return results;

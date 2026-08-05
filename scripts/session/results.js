@@ -172,6 +172,9 @@ function appendSessionEntryCard(item, container){
 }
 
 function renderSessionEntry(){
+  // Édition d'une séance passée : les cartes viennent du journal enregistré,
+  // pas du plan du jour (scripts/session/history_edit.js).
+  if(window.CoachHistoryEdit && CoachHistoryEdit.isActive()){ CoachHistoryEdit.renderFields(); return; }
   var items=collectSessionExercises({includeExtras:true});
   var container=$("sessionFields");if(!container)return;
   container.innerHTML="";
