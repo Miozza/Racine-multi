@@ -1,5 +1,5 @@
-// Racine V4.5.35 — programme de transition « Retour au travail »
-var APP_VERSION = "V4.5.35";
+// Racine V4.5.36 — programme de transition « Retour au travail »
+var APP_VERSION = "V4.5.36";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1692,7 +1692,10 @@ function renderHistory(){
           '<div class="history-date">'+escHtml(s.date||"")+'</div>'+
           '<div class="history-title">'+escHtml(title)+'</div>'+
         '</div>'+
-        '<button type="button" class="history-delete-btn" data-history-index="'+originalIndex+'">Supprimer</button>'+
+        '<div class="history-actions">'+
+          '<button type="button" class="history-edit-btn" data-history-index="'+originalIndex+'">Modifier</button>'+
+          '<button type="button" class="history-delete-btn" data-history-index="'+originalIndex+'">Supprimer</button>'+
+        '</div>'+
       '</div>'+
       (s.note?'<div class="history-note">'+escHtml(s.note)+'</div>':'')+
       '<div class="history-rows">'+rows+'</div>';
@@ -1711,6 +1714,14 @@ function renderHistory(){
   h.querySelectorAll(".history-delete-btn").forEach(function(btn){
     btn.onclick=function(){
       deleteHistorySession(btn.getAttribute("data-history-index"));
+    };
+  });
+
+  // Correction d'une séance déjà enregistrée : on retombe dans l'onglet
+  // Résultats, pré-rempli avec la journée choisie (scripts/session/history_edit.js).
+  h.querySelectorAll(".history-edit-btn").forEach(function(btn){
+    btn.onclick=function(){
+      if(window.CoachHistoryEdit)CoachHistoryEdit.start(btn.getAttribute("data-history-index"));
     };
   });
 }

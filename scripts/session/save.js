@@ -24,6 +24,9 @@ function buildSessionPayload(results){
 }
 
 function returnFromResultsToWod(){
+  // Édition d'une séance passée : retour à l'Historique, et le cache de la
+  // séance en cours est restauré tel quel — jamais vidé au passage.
+  if(window.CoachHistoryEdit && CoachHistoryEdit.isActive()){ CoachHistoryEdit.cancel(); return; }
   guidedResultCache = {};
   try{ if(window.CoachExtraMovements)CoachExtraMovements.clear(); }catch(e){ /* jamais bloquant */ }
   guidedResultsMode=false;
@@ -42,6 +45,9 @@ function setupSessionSave(){
   var btn=$("saveSessionBtn");if(!btn)return;
   btn.onclick=async function(){
     resumeAudio();
+    // Édition d'une séance passée : mise à jour en place de l'entrée
+    // d'historique, aucune nouvelle séance n'est créée.
+    if(window.CoachHistoryEdit && CoachHistoryEdit.isActive()){ CoachHistoryEdit.commit(); return; }
     var results=collectSessionResults();
     var hasData=Object.keys(results).length>0;
     if(!hasData){var s=$("saveStatus");if(s){s.textContent="Aucun résultat saisi.";s.className="session-note";}return;}
