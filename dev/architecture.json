@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 182,
+    "ACTIF": 184,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -491,6 +491,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/amrap_rounds_checks.js",
+      "size": 6974,
+      "lines": 119,
+      "role": "Garde-fous des rounds AMRAP tapés sur le chrono : comptage, classement rapide/lent, temps restant du dernier round, placement du bandeau et transfert vers l'écran Résultats.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -3120,6 +3130,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 332
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/amrap_rounds.js",
+      "size": 9147,
+      "lines": 217,
+      "role": "Rounds AMRAP tapés sur le chrono de la séance guidée : splits, round le plus rapide/lent, temps restant du dernier round entamé, bandeau de séance et panneau Résultats.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAmrapRounds"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 364
         }
       ],
       "consumes": []

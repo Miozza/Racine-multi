@@ -305,6 +305,9 @@ function openGuidedSession(){
   // Comme l’ouverture vient d’un clic utilisateur, iOS/PWA a les meilleures chances d’accepter le Wake Lock.
   guidedWakeLockAuto = !wakeLockWanted;
   requestWakeLock();
+  // Nouvelle séance = nouveaux rounds. Sans ça, le compteur d'un AMRAP
+  // reviendrait tel quel à l'entraînement suivant (même titre de WOD).
+  try{ if(window.CoachAmrapRounds) CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
   guidedSessionState.blocks = buildGuidedSessionBlocks();
   guidedSessionState.index = 0;
   renderGuidedSession();
@@ -323,6 +326,9 @@ function closeGuidedSession(){
       CoachVoiceNote.dropSessionNotes();
     }
   }catch(e){ /* jamais bloquant */ }
+  // Abandon de séance : les rounds tapés partent avec elle, comme les notes.
+  try{ if(window.CoachAmrapRounds) CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
+  if(typeof setGuidedTimerRoundKey==="function") setGuidedTimerRoundKey(null);
   var el=$("guidedSession");
   if(el){ el.classList.add("hidden"); el.innerHTML=""; }
   document.body.classList.remove("guided-session-active");
@@ -547,6 +553,17 @@ function renderGuidedSession(){
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
           "</div>";
     html+=renderGuidedWodMoves(st.moves);
+    // Bandeau des rounds AMRAP : au-dessus de la boîte du chrono, jamais
+    // dedans. Il prend un peu de l'espace libre qui sert à étirer les chiffres
+    // en hauteur, pas de la largeur — la taille de police du chrono, qui se
+    // calcule sur la largeur, reste intacte (docs/UI_CONSTRAINTS.md).
+    var amrapKey=(window.CoachAmrapRounds && CoachAmrapRounds.isAmrapBlock(st))
+      ? CoachAmrapRounds.keyFor(st.title) : null;
+    if(amrapKey){
+      html+="<div class='guided-amrap-strip"+(CoachAmrapRounds.count(amrapKey)?" has-rounds":"")+"' id='guidedAmrapStrip'>"
+          + CoachAmrapRounds.stripHtml(amrapKey)
+          + "</div>";
+    }
     var soundMuted=(typeof guidedSoundMuted==="function")&&guidedSoundMuted();
     html+="<div class='guided-wod-timer' data-duration='"+(cfg?cfg.seconds:0)+"' data-mode='"+(cfg?cfg.mode:"down")+"'>"+
           // Toggle sons : absolu dans le coin gauche de la carte timer (le badge
@@ -568,7 +585,7 @@ function renderGuidedSession(){
             "<button class='guided-tbtn' id='guidedTimerPause'>Ⅱ</button>"+
             "<button class='guided-tbtn' id='guidedTimerReset'>↻</button>"+
           "</div>"+
-          "<div class='guided-timer-hint'>Démarrage 10s · gros affichage lisible à distance</div>"+
+          "<div class='guided-timer-hint'>"+(amrapKey?"Démarrage 10s · touche le chrono pour ajouter un round":"Démarrage 10s · gros affichage lisible à distance")+"</div>"+
           "</div>";
     if(text)html+="<div class='guided-wod-fulltext'>"+escHtml(text)+"</div>";
     if(st.loadHints)html+=st.loadHints.replace(/pc-wod/g,"guided-wod");
@@ -610,12 +627,44 @@ function renderGuidedSession(){
   setupTutorialButtons(el);
   setupLoadInfoButtons(el);
 
+  // Le chrono ne compte des rounds que pour le bloc affiché : quitter le WOD
+  // (ou tomber sur un WOD qui n'est pas un AMRAP) coupe le lien.
+  if(typeof setGuidedTimerRoundKey==="function"){
+    setGuidedTimerRoundKey(st.kind==="wod" ? amrapKey : null);
+  }
+
   if(st.kind==="wod" && cfg){
     resetGuidedTimerState(cfg);
     var start=$("guidedTimerStart"), pause=$("guidedTimerPause"), reset=$("guidedTimerReset");
     if(start)start.onclick=startGuidedTimer;
     if(pause)pause.onclick=pauseGuidedTimer;
-    if(reset)reset.onclick=function(){ resetGuidedTimerState(cfg); };
+    // ↻ relance le WOD depuis le début : les rounds tapés repartent avec lui.
+    if(reset)reset.onclick=function(){
+      resetGuidedTimerState(cfg);
+      if(typeof clearGuidedTimerRounds==="function") clearGuidedTimerRounds();
+    };
+    // Tap n'importe où sur la carte du chrono = +1 round. Les boutons gardent
+    // leur rôle : sans cette exclusion, ▶/Ⅱ/↻, le libellé et le toggle son
+    // ajouteraient un round au passage. L'affichage des chiffres est en
+    // pointer-events:none (UI_CONSTRAINTS), donc son tap arrive bien ici.
+    var timerBox=el.querySelector(".guided-wod-timer");
+    if(timerBox && amrapKey){
+      timerBox.addEventListener("click", function(ev){
+        var t=ev&&ev.target;
+        if(t && t.closest && t.closest("button")) return;
+        if(typeof guidedTimerRoundTap==="function") guidedTimerRoundTap();
+      });
+    }
+    var strip=$("guidedAmrapStrip");
+    if(strip && amrapKey){
+      strip.addEventListener("click", function(ev){
+        var t=ev&&ev.target;
+        var btn=t&&t.closest?t.closest("[data-amrap-undo]"):null;
+        if(!btn) return;
+        ev.preventDefault();
+        if(typeof guidedTimerRoundUndo==="function") guidedTimerRoundUndo();
+      });
+    }
     var edit=$("guidedTimerEdit");
     if(edit)edit.onclick=function(){ if(typeof openGuidedTimerEditor==="function") openGuidedTimerEditor(cfg); };
     var soundBtn=$("guidedSoundToggle");

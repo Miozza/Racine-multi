@@ -519,6 +519,44 @@ function startGuidedTimer(){
 }
 function pauseGuidedTimer(){stopGuidedTimer();updateGuidedTimerDisplay();}
 
+// ── Rounds AMRAP tapés sur le chrono ────────────────────────────────────────
+// Un tap n'importe où sur la carte du chrono (hors boutons) = un round de plus.
+// Le chrono ne stocke rien lui-même : il ne fournit que la seconde affichée et
+// la durée, le comptage vit dans scripts/session/amrap_rounds.js. Le lien avec
+// le WOD courant passe par une clé posée au rendu (view.js), pour que le
+// domaine timer n'ait pas à connaître l'index du bloc affiché.
+var guidedTimerRoundKey = null;
+function setGuidedTimerRoundKey(key){ guidedTimerRoundKey = key || null; }
+function clearGuidedTimerRounds(){
+  if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return;
+  CoachAmrapRounds.reset(guidedTimerRoundKey);
+  CoachAmrapRounds.refreshStrip(guidedTimerRoundKey);
+}
+function guidedTimerRoundTap(){
+  if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return null;
+  // Pendant le décompte de départ, le WOD n'a pas commencé : aucun round.
+  if(guidedTimer.countdownActive) return null;
+  var elapsed = guidedTimerElapsedSeconds();
+  // Chrono à zéro : rien à chronométrer. Un round de moins d'une seconde
+  // n'existe pas, et l'accepter donnerait un split nul qui fausserait le
+  // classement rapide/lent de tout le WOD.
+  if(!(elapsed > 0)) return null;
+  var round = CoachAmrapRounds.tap(guidedTimerRoundKey, elapsed, guidedTimer.duration);
+  if(!round) return null;
+  // Retour discret : rien à l'écran ne bouge sauf le bandeau, aucun son —
+  // le WOD est en cours, l'athlète n'a pas à confirmer quoi que ce soit.
+  vibrate([35]);
+  CoachAmrapRounds.refreshStrip(guidedTimerRoundKey);
+  return round;
+}
+function guidedTimerRoundUndo(){
+  if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return null;
+  var removed = CoachAmrapRounds.undo(guidedTimerRoundKey);
+  if(removed) vibrate([18, 40, 18]);
+  CoachAmrapRounds.refreshStrip(guidedTimerRoundKey);
+  return removed;
+}
+
 // ── Éditeur de timer — modale terrain ────────────────────────────────────────
 // Même coquille que les autres popups (.tuto-modal) : verrou de scroll, fond
 // tapable, gros contrôles utilisables fatigué. Le libellé du timer est le
@@ -574,6 +612,9 @@ function applyGuidedTimerEdit(cfg, patch){
   }
   cfg.label=guidedTimerLabelFor(cfg);
   refreshGuidedTimerCard(cfg);
+  // L'édition remet le chrono à zéro : les rounds déjà tapés se rapportaient à
+  // l'ancienne durée, leur temps restant ne veut plus rien dire.
+  clearGuidedTimerRounds();
   refreshGuidedTimerEditor();
 }
 

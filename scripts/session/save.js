@@ -29,6 +29,9 @@ function returnFromResultsToWod(){
   if(window.CoachHistoryEdit && CoachHistoryEdit.isActive()){ CoachHistoryEdit.cancel(); return; }
   guidedResultCache = {};
   try{ if(window.CoachExtraMovements)CoachExtraMovements.clear(); }catch(e){ /* jamais bloquant */ }
+  // Les rounds tapés au chrono ont déjà rejoint la ligne de résultat : ils ne
+  // doivent pas se reporter sur la prochaine ouverture de séance.
+  try{ if(window.CoachAmrapRounds)CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
   guidedResultsMode=false;
   document.body.classList.remove("guided-results-active");
   document.body.classList.remove("results-view-active");

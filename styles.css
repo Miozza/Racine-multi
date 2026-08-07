@@ -7115,3 +7115,192 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   background:rgba(30,144,255,.22);
 }
 .guided-timer-editor .gte-action.disabled{ opacity:.42; }
+
+/* ═══════════════════════════════════════════
+   Rounds AMRAP tapés sur le chrono — vue séance + résultats
+   Voir scripts/session/amrap_rounds.js.
+
+   Le bandeau vit AU-DESSUS de la boîte du chrono, jamais dedans : la taille
+   des chiffres se calcule sur la largeur disponible (règle verrouillée,
+   docs/UI_CONSTRAINTS.md) et n'est donc pas touchée. Le bandeau prend une
+   part de la hauteur libre qui sert à étirer les chiffres — d'où sa hauteur
+   volontairement basse, une seule ligne, jamais deux.
+   ═══════════════════════════════════════════ */
+.guided-amrap-strip{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-height:26px;
+  margin:0 0 3px;
+  padding:0 2px;
+}
+.guided-amrap-hint{
+  flex:1;
+  min-width:0;
+  text-align:center;
+  font-family:var(--font-main);
+  font-size:11px;
+  letter-spacing:.02em;
+  color:var(--muted);
+  opacity:.6;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.guided-amrap-count{
+  flex:0 0 auto;
+  display:flex;
+  align-items:baseline;
+  gap:3px;
+  font-family:var(--font-hud);
+  font-size:20px;
+  font-weight:900;
+  line-height:1;
+  color:var(--cyan);
+  text-shadow:0 0 12px rgba(0,212,255,.35);
+}
+.guided-amrap-count span{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+/* Les splits défilent horizontalement : un AMRAP de 15 rounds ne doit pas
+   passer sur deux lignes, ça coûterait la hauteur du chrono. */
+.guided-amrap-chips{
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.guided-amrap-chips::-webkit-scrollbar{ display:none; }
+.guided-amrap-chip{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:baseline;
+  gap:3px;
+  padding:2px 6px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  font-family:var(--font-hud);
+  font-size:12px;
+  font-weight:900;
+  line-height:1.15;
+  color:var(--text2);
+  white-space:nowrap;
+}
+.guided-amrap-chip b{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color:var(--muted);
+}
+.guided-amrap-chip.fast{
+  color:var(--gold);
+  border-color:rgba(255,215,0,.55);
+  background:rgba(255,215,0,.10);
+}
+.guided-amrap-chip.fast b{ color:rgba(255,215,0,.75); }
+.guided-amrap-chip.slow{
+  color:var(--red);
+  border-color:rgba(255,34,68,.55);
+  background:rgba(255,34,68,.10);
+}
+.guided-amrap-chip.slow b{ color:rgba(255,110,140,.85); }
+.guided-amrap-undo{
+  flex:0 0 auto;
+  min-width:34px;
+  min-height:26px;
+  padding:0 6px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:rgba(0,0,0,.30);
+  color:var(--muted);
+  font-size:14px;
+  line-height:1;
+  cursor:pointer;
+}
+.guided-amrap-undo:active{ background:var(--panel2); color:var(--text); }
+
+/* ── Écran résultats : journal des rounds ─────────────────────────────────── */
+.wod-rounds-log{
+  margin:8px 0 4px;
+  padding:9px 10px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(255,255,255,.025);
+}
+.wod-rounds-log-head{
+  font-family:var(--font-hud);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+.wod-rounds-log-head strong{ color:var(--cyan); font-size:14px; }
+.wod-rounds-log-list{
+  display:grid;
+  gap:3px;
+}
+.wod-round-line{
+  display:grid;
+  grid-template-columns:38px auto 1fr;
+  align-items:baseline;
+  gap:8px;
+  padding:3px 6px;
+  border-radius:7px;
+  background:rgba(255,255,255,.02);
+  color:var(--text2);
+}
+.wod-round-no{
+  font-family:var(--font-hud);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color:var(--muted);
+}
+.wod-round-split{
+  font-family:var(--font-hud);
+  font-size:17px;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+.wod-round-tag{
+  font-family:var(--font-main);
+  font-size:11px;
+  color:var(--muted);
+  text-align:right;
+}
+.wod-round-line.fast{
+  background:rgba(255,215,0,.10);
+  box-shadow:inset 2px 0 0 var(--gold);
+}
+.wod-round-line.fast .wod-round-split,
+.wod-round-line.fast .wod-round-tag{ color:var(--gold); }
+.wod-round-line.slow{
+  background:rgba(255,34,68,.10);
+  box-shadow:inset 2px 0 0 var(--red);
+}
+.wod-round-line.slow .wod-round-split,
+.wod-round-line.slow .wod-round-tag{ color:var(--red); }
+.wod-rounds-left{
+  margin-top:8px;
+  font-family:var(--font-main);
+  font-size:12px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.wod-rounds-left strong{
+  font-family:var(--font-hud);
+  font-size:15px;
+  color:var(--cyan);
+}
