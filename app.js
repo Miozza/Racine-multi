@@ -1,5 +1,5 @@
-// Racine V4.5.38 — un cycle terminé se classe « terminé »
-var APP_VERSION = "V4.5.38";
+// Racine V4.5.39 — corriger la date de fin d’un cycle
+var APP_VERSION = "V4.5.39";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1548,6 +1548,7 @@ function renderCycleCard(c, idx, type){
     html+='<button type="button" class="btn-ghost resume-archived-cycle-btn" data-idx="'+idx+'">Reprendre</button> '+
       '<button type="button" class="btn-ghost restore-archived-cycle-btn" data-idx="'+idx+'">Remettre en pause</button> '+
       '<button type="button" class="btn-ghost toggle-archived-status-btn" data-idx="'+idx+'">Changer le statut</button> '+
+      '<button type="button" class="btn-ghost edit-archived-date-btn" data-idx="'+idx+'">📅 Changer la date</button> '+
       '<button type="button" class="btn-danger delete-archived-cycle-btn" data-idx="'+idx+'">Supprimer</button>';
   }
   html+='</div>';
@@ -1596,6 +1597,7 @@ function renderFocusDetails(){
   Array.prototype.forEach.call(fd.querySelectorAll('.resume-archived-cycle-btn'),function(btn){btn.onclick=function(){resumeArchivedCycle(Number(btn.getAttribute('data-idx')));};});
   Array.prototype.forEach.call(fd.querySelectorAll('.restore-archived-cycle-btn'),function(btn){btn.onclick=function(){restoreArchivedCycleToPaused(Number(btn.getAttribute('data-idx')));};});
   Array.prototype.forEach.call(fd.querySelectorAll('.toggle-archived-status-btn'),function(btn){btn.onclick=function(){toggleArchivedCycleStatus(Number(btn.getAttribute('data-idx')));};});
+  Array.prototype.forEach.call(fd.querySelectorAll('.edit-archived-date-btn'),function(btn){btn.onclick=function(){editArchivedCycleDate(Number(btn.getAttribute('data-idx')));};});
   Array.prototype.forEach.call(fd.querySelectorAll('.delete-archived-cycle-btn'),function(btn){btn.onclick=function(){deleteArchivedCycle(Number(btn.getAttribute('data-idx')));};});
 }
 // Carte « Terminer ce cycle » — toujours présente dans l'onglet Cycle, pas
@@ -1715,6 +1717,71 @@ function toggleArchivedCycleStatus(idx){
   if(next==="abandoned")c.reason="Abandonné";
   else if(next==="completed"){c.reason="Cycle terminé";c.completedAt=c.completedAt||nowIso();}
   archived[idx]=c;state.archivedCycles=archived;state.cycleState=buildCycleStatePayload();save();renderCycle();}
+// ── Corriger la date de fin d'un cycle ───────────────────────────────────────
+// Racine inscrit la date du jour où l'athlète CLASSE le cycle. Ce n'est pas
+// forcément le jour où il l'a terminé — un cycle fini le 10 juillet et rangé en
+// août portait la date d'août. La date vit à deux endroits qui doivent rester
+// d'accord : la fiche de cycle (`archivedCycles`, ce que montre l'onglet Cycle)
+// et le journal de Saison (`state.season.cycles`, ce que montre la frise et ce
+// qui borne le compte de PR). Corriger l'une corrige l'autre.
+function cycleEndDateOf(c){
+  return String((c&&(c.completedAt||c.archivedAt||c.pausedAt))||"").slice(0,10);
+}
+// La date de rangement reste connue (`filedAt`) : on corrige la date de fin,
+// on n'efface pas le fait qu'elle a été saisie plus tard.
+function setCycleFicheEndDate(c, iso){
+  if(!c||!iso) return false;
+  if(!c.filedAt) c.filedAt=c.archivedAt||c.pausedAt||nowIso();
+  if(String(c.status||"")==="completed") c.completedAt=iso;
+  else c.archivedAt=iso;
+  c.endEditedAt=nowIso();
+  return true;
+}
+// Aligne les fiches qui portaient l'ancienne date du même programme.
+function syncCycleFicheEndDate(programId, oldIso, newIso){
+  var touched=0;
+  (state.archivedCycles||[]).forEach(function(f){
+    if(f&&f.id===programId&&cycleEndDateOf(f)===oldIso&&setCycleFicheEndDate(f,newIso)) touched++;
+  });
+  return touched;
+}
+function openCycleEndDateEditor(label, currentIso, minIso, onPicked){
+  var opts={
+    topline:"DATE DE FIN",
+    title:String(label||"Cycle"),
+    hint:"Racine inscrit la date du jour où tu classes le cycle. Corrige-la ici si tu l'as terminé un autre jour — la frise Saison et le compte de PR suivent.",
+    value:currentIso||todayIsoDate(),
+    max:todayIsoDate(),
+    confirmLabel:"Enregistrer",
+    onConfirm:onPicked
+  };
+  if(minIso) opts.min=minIso;
+  if(typeof openDatePickerModal==="function"){ openDatePickerModal(opts); return; }
+  // Repli sans la modale : ne jamais bloquer la correction.
+  var raw=prompt("Date de fin de « "+label+" » (AAAA-MM-JJ)", opts.value);
+  if(raw===null) return;
+  var iso=String(raw).trim().slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)){ alert("Format attendu : AAAA-MM-JJ (exemple : 2026-07-10)."); return; }
+  onPicked(iso);
+}
+function editArchivedCycleDate(idx){
+  var archived=state.archivedCycles||[], c=archived[idx];
+  if(!c) return;
+  var current=cycleEndDateOf(c);
+  var start=String(c.activeCycleStartDate||"").slice(0,10)||null;
+  openCycleEndDateEditor((c.label||c.id), current, start, function(iso){
+    // Retrouver l'entrée de journal AVANT de toucher la fiche : elle se
+    // reconnaît à l'ancienne date.
+    var j=(window.CoachSeason&&CoachSeason.findCycleIndex)?CoachSeason.findCycleIndex(state,c.id,current):-1;
+    setCycleFicheEndDate(c, iso);
+    if(j>=0&&!CoachSeason.setCycleEnd(state,j,iso)){
+      alert("La fiche est corrigée, mais la frise Saison a refusé cette date : elle est antérieure au début du cycle.");
+    }
+    state.cycleState=buildCycleStatePayload();
+    save();
+    renderCycle();
+  });
+}
 function deleteArchivedCycle(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
   if(!c)return;

@@ -704,3 +704,59 @@ function setupTutorialButtons(scope){
     };
   });
 }
+
+// ─── Choix d'une date — modale terrain ──────────────────────────────────────
+// Un `prompt()` obligerait à taper « 2026-07-10 » au clavier texte sur iPhone.
+// Un `<input type="date">` ouvre la roue native : c'est le seul contrôle de
+// date utilisable d'une main en salle (docs/UI_CONSTRAINTS.md — éviter les
+// petits contrôles précis). Même coquille que les autres popups (.tuto-modal) :
+// verrou de scroll, fond tapable, gros boutons.
+// Aucune logique métier ici : la modale rend une date valide (AAAA-MM-JJ) à
+// son appelant, elle ne sait pas ce qu'il en fait.
+function openDatePickerModal(opts){
+  opts = opts || {};
+  var existing = document.getElementById("racineDatePicker");
+  if(existing) existing.remove();
+
+  var modal = document.createElement("div");
+  modal.id = "racineDatePicker";
+  modal.className = "tuto-modal racine-date-picker";
+  modal.innerHTML =
+    '<div class="tuto-modal-inner">'+
+      '<div class="tuto-topline">'+escapeHtml(opts.topline||"DATE")+'</div>'+
+      '<div class="tuto-title">'+escapeHtml(opts.title||"Choisir une date")+'</div>'+
+      (opts.hint?'<p class="rdp-hint">'+escapeHtml(opts.hint)+'</p>':'')+
+      '<input type="date" id="racineDatePickerInput" class="input-field rdp-input"'+
+        ' value="'+escapeHtml(opts.value||"")+'"'+
+        (opts.min?' min="'+escapeHtml(opts.min)+'"':'')+
+        (opts.max?' max="'+escapeHtml(opts.max)+'"':'')+'/>'+
+      '<p class="rdp-error" id="racineDatePickerError"></p>'+
+      '<div class="rdp-actions">'+
+        '<button type="button" class="btn-ghost" id="racineDatePickerCancel">Annuler</button>'+
+        '<button type="button" class="btn-accent" id="racineDatePickerOk">'+escapeHtml(opts.confirmLabel||"Confirmer")+'</button>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(modal);
+  lockBodyScrollForModal();
+  setTimeout(function(){ modal.classList.add("visible"); },20);
+
+  var input = document.getElementById("racineDatePickerInput");
+  var err = document.getElementById("racineDatePickerError");
+  function close(){
+    modal.classList.remove("visible");
+    setTimeout(function(){ modal.remove(); unlockBodyScrollForModal(); },220);
+  }
+  function fail(msg){ if(err) err.textContent = msg; }
+  document.getElementById("racineDatePickerCancel").onclick = close;
+  modal.addEventListener("click", function(e){ if(e.target===modal) close(); });
+  document.getElementById("racineDatePickerOk").onclick = function(){
+    var iso = String((input && input.value) || "").slice(0,10);
+    // Safari peut rendre une chaîne vide quand rien n'est choisi : ne jamais
+    // laisser passer une date vide, elle effacerait l'information corrigée.
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)){ fail("Choisis une date."); return; }
+    if(opts.min && iso < opts.min){ fail("Date trop ancienne (au plus tôt "+opts.min+")."); return; }
+    if(opts.max && iso > opts.max){ fail("Date trop récente (au plus tard "+opts.max+")."); return; }
+    close();
+    if(typeof opts.onConfirm === "function") opts.onConfirm(iso);
+  };
+}

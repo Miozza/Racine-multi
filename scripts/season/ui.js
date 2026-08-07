@@ -184,6 +184,7 @@
       var offset = journal.length - shown.length; // indices réels dans state.season.cycles
       shown.forEach(function(c, i){
         html += '<div class="season-tl-item season-tl-done">'+
+          '<button type="button" class="season-tl-edit" data-season-date="'+(offset + i)+'" aria-label="Corriger la date de fin" title="Corriger la date de fin">📅</button>'+
           '<button type="button" class="season-tl-del" data-season-del="'+(offset + i)+'" aria-label="Retirer ce cycle de la saison" title="Retirer ce cycle">✕</button>'+
           '<strong>'+esc(programLabel(c.programId))+'</strong>'+
           '<span>'+esc(String(c.weeksDone || "?"))+' sem.'+(c.prCount ? ' · '+esc(String(c.prCount))+' PR' : '')+(c.endIso ? ' · fini le '+esc(c.endIso) : '')+(c.reconstructed ? ' · reconstruit' : '')+'</span>'+
@@ -203,6 +204,29 @@
     }
     html += '</div>';
     host.innerHTML = html;
+
+    // Corriger la date de fin depuis la frise. L'entrée de journal est la
+    // référence ici ; la fiche de cycle correspondante suit (app.js possède
+    // les fiches, ce module ne fait que la frise).
+    Array.prototype.forEach.call(host.querySelectorAll("[data-season-date]"), function(btn){
+      btn.onclick = function(){
+        var idx = Number(btn.getAttribute("data-season-date"));
+        var entry = (state.season && state.season.cycles) ? state.season.cycles[idx] : null;
+        if(!entry || typeof openCycleEndDateEditor !== "function") return;
+        var current = String(entry.endIso || "").slice(0, 10);
+        var start = String(entry.startIso || "").slice(0, 10) || null;
+        openCycleEndDateEditor(programLabel(entry.programId), current, start, function(iso){
+          if(!CoachSeason.setCycleEnd(state, idx, iso)){
+            window.alert("Date refusée : elle est antérieure au début du cycle ("+(start||"?")+").");
+            return;
+          }
+          if(typeof syncCycleFicheEndDate === "function") syncCycleFicheEndDate(entry.programId, current, iso);
+          if(typeof buildCycleStatePayload === "function") state.cycleState = buildCycleStatePayload();
+          if(typeof save === "function") save();
+          if(typeof renderCycle === "function") renderCycle(); else api.renderTimeline();
+        });
+      };
+    });
 
     Array.prototype.forEach.call(host.querySelectorAll("[data-season-del]"), function(btn){
       btn.onclick = function(){

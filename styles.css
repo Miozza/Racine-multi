@@ -7342,3 +7342,49 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   .cycle-finish-card{ flex-direction:column; align-items:stretch; gap:10px; }
   .cycle-finish-btn{ width:100%; min-height:46px; }
 }
+
+/* ═══════════════════════════════════════════
+   Corriger la date de fin d'un cycle
+   Racine inscrit la date du jour où le cycle est CLASSÉ ; ce n'est pas
+   forcément le jour où il a été terminé. Deux points d'entrée pour la même
+   correction : la fiche de cycle et la frise Saison.
+   ═══════════════════════════════════════════ */
+.season-tl-done { padding-right: 58px; }
+.season-tl-edit {
+  position: absolute; right: 28px; top: 8px;
+  width: 24px; height: 24px; padding: 0;
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 6px;
+  font-size: 11px; line-height: 1; cursor: pointer;
+}
+.season-tl-edit:hover { color: var(--cyan); border-color: var(--cyan); }
+
+/* Modale de choix de date (scripts/ui_modals.js). Le champ natif ouvre la
+   roue iOS : pas de saisie au clavier texte pour une date. */
+.racine-date-picker .rdp-hint {
+  font-family: var(--font-main);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 8px 0 12px;
+}
+.racine-date-picker .rdp-input {
+  width: 100%;
+  min-height: 52px;
+  font-family: var(--font-hud);
+  font-size: 18px;
+  letter-spacing: .04em;
+}
+.racine-date-picker .rdp-error {
+  min-height: 16px;
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--red);
+}
+.racine-date-picker .rdp-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.racine-date-picker .rdp-actions button { min-height: 52px; }

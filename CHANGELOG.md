@@ -1,3 +1,13 @@
+## V4.5.39 — Corriger la date de fin d'un cycle
+
+- **Racine inscrivait la date du jour où on classe le cycle, pas celle où on l'a terminé.** Un cycle fini le 10 juillet et rangé en août portait la date d'août, sans aucun moyen de la corriger : « Changer le statut » ne touchait que terminé / archivé / abandonné.
+- **Un bouton « 📅 Changer la date » à deux endroits** — sur la fiche de cycle (onglet Cycle) et sur chaque entrée de la frise Saison. Ce sont les deux endroits qui affichent cette date, et **corriger l'un corrige l'autre** : plus jamais deux dates différentes pour un même cycle.
+- **Le compte de PR suit.** Le journal de Saison borne les PR d'un cycle par ses dates de début et de fin : déplacer la fin sans recalculer laisserait un chiffre qui ne correspond plus à la fenêtre affichée. `CoachSeason.setCycleEnd()` recalcule. Vérifié : ramener une fin du 7 août au 10 juillet fait passer la frise de « 2 PR » à « 1 PR », le PR du 20 juillet sortant de la fenêtre.
+- **Une roue de date, pas une chaîne à taper.** La modale utilise un `<input type="date">` : sur iPhone, ça ouvre le sélecteur natif au lieu d'obliger à écrire « 2026-07-10 » au clavier texte (`docs/UI_CONSTRAINTS.md` — éviter les petits contrôles précis). Boutons à 52 px, fond tapable, verrou de scroll, même coquille que les autres popups.
+- **Bornes et refus explicites** : pas plus tôt que le début du cycle, pas plus tard qu'aujourd'hui, jamais vide (une date vide effacerait l'information corrigée). Une fin antérieure au début est refusée plutôt qu'écrite — une fenêtre inversée donnerait 0 PR sans que personne ne comprenne pourquoi.
+- **Rien n'est effacé** : la date de rangement est conservée dans `filedAt`. On corrige la date de fin sans perdre le fait qu'elle a été saisie plus tard.
+- **Portée** : `scripts/ui_modals.js` (modale de date générique `openDatePickerModal`, aucune logique métier), `scripts/season/index.js` (`setCycleEnd`, `findCycleIndex`), `scripts/season/ui.js` (frise), `app.js` (fiches), `styles.css`. Garde-fou étendu : `dev/cycle_finish_checks.js`.
+
 ## V4.5.38 — Un cycle terminé se classe « terminé », pas « en pause »
 
 - **Il manquait une sortie.** Racine n'en avait que trois : pause (récupérable), archivé, abandonné. Un cycle mené jusqu'au bout n'est aucune des trois — d'où l'absence de bouton pour terminer un cycle, et la proposition de « mettre en pause » ou « archiver » un programme pourtant fini au moment d'en démarrer un autre. Le vocabulaire existait déjà à moitié : `cycleStatusLabel()` savait dire « Terminé », mais rien n'écrivait jamais ce statut.
