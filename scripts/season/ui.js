@@ -139,18 +139,20 @@
     document.getElementById("seasonCloseBtn").onclick = closeSeasonGate;
   };
 
-  // Archive le cycle terminé puis démarre le programme choisi — mêmes
-  // mutations que saveCycle()/archiveActiveCycle() d'app.js, sans confirm()
-  // supplémentaire : le choix dans l'écran EST la confirmation.
+  // Classe le cycle qui s'achève puis démarre le programme choisi, sans
+  // confirm() supplémentaire : le choix dans l'écran EST la confirmation.
+  // La sortie appliquée appartient à app.js (closeActiveCycleBefore) — c'est
+  // lui qui possède la machine à états des cycles. Arriver ici depuis l'écran
+  // Fin de cycle veut dire « terminé » : ce cycle ne doit jamais atterrir dans
+  // les cycles archivés ou en pause comme s'il avait été interrompu.
   function startProgram(id){
     if(!window.focusConfigs || !focusConfigs[id]){ alert("Programme introuvable."); return; }
     var today = todayIsoDate();
-    if(window.CoachSeason) CoachSeason.recordCycleEnd(state, today);
-    state.archivedCycles = state.archivedCycles || [];
-    state.archivedCycles.push(Object.assign(
-      snapshotCurrentCycle("Cycle terminé — enchaîné via l'écran Fin de cycle"),
-      {archivedAt: nowIso(), status: "archived"}
-    ));
+    if(typeof closeActiveCycleBefore === "function"){
+      closeActiveCycleBefore(focusConfigs[id].label || id, true);
+    } else if(window.CoachSeason){
+      CoachSeason.recordCycleEnd(state, today);
+    }
     state.cycle.goal = id;
     state.missingCycle = null;
     if(typeof previewCycleGoal !== "undefined") previewCycleGoal = id;
