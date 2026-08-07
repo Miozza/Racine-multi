@@ -116,6 +116,39 @@
     return (state && state.season && Array.isArray(state.season.cycles)) ? state.season.cycles.slice() : [];
   };
 
+  // Correction manuelle de la date de fin d'un cycle du journal. Comme
+  // removeCycle(), c'est l'athlète qui corrige — le journal reste « on
+  // n'écrase jamais tout seul ». Le compte de PR est RECALCULÉ : il est borné
+  // par les dates du cycle, donc déplacer la fin sans le refaire laisserait un
+  // chiffre qui ne correspond plus à la fenêtre affichée.
+  api.setCycleEnd = function(state, index, endIso){
+    if(!state || !state.season || !Array.isArray(state.season.cycles)) return false;
+    var i = Number(index);
+    if(!isFinite(i) || i < 0 || i >= state.season.cycles.length) return false;
+    var iso = String(endIso || "").slice(0, 10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+    var c = state.season.cycles[i];
+    // Une fin avant le début n'existe pas : refuser plutôt que d'écrire une
+    // fenêtre inversée, qui donnerait 0 PR sans que personne ne comprenne.
+    if(c.startIso && iso < String(c.startIso).slice(0, 10)) return false;
+    c.endIso = iso;
+    c.prCount = countPrsBetween(state, c.startIso, iso);
+    c.endEditedAt = new Date().toISOString();
+    return true;
+  };
+
+  // Retrouve l'entrée de journal correspondant à une fiche de cycle (même
+  // programme, même date de fin). La plus récente en cas d'égalité : deux
+  // passages du même programme se distinguent par leur date.
+  api.findCycleIndex = function(state, programId, endIso){
+    var list = (state && state.season && Array.isArray(state.season.cycles)) ? state.season.cycles : [];
+    var iso = String(endIso || "").slice(0, 10);
+    for(var i = list.length - 1; i >= 0; i--){
+      if(list[i] && list[i].programId === programId && String(list[i].endIso || "").slice(0, 10) === iso) return i;
+    }
+    return -1;
+  };
+
   // Retrait manuel d'une entrée du journal (cycle démarré par accident, doublon…).
   // Action déclenchée par l'athlète uniquement — ce n'est pas une réécriture
   // automatique : le journal reste « on n'écrase jamais tout seul ». N'affecte

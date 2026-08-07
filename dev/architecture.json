@@ -595,9 +595,9 @@
     },
     {
       "path": "dev/cycle_finish_checks.js",
-      "size": 7015,
-      "lines": 99,
-      "role": "Garde-fous de la sortie « terminé » d'un cycle : statut completed, bouton toujours atteignable dans l'onglet Cycle, porte unique closeActiveCycleBefore(), écran Fin de cycle, vocabulaire et champ additif activeCycleFinishedAt.",
+      "size": 9908,
+      "lines": 134,
+      "role": "Garde-fous de la sortie « terminé » d'un cycle et de la correction de sa date de fin : statut completed, porte unique closeActiveCycleBefore(), écran Fin de cycle, date corrigeable des deux côtés (fiche + journal de saison) avec recalcul du compte de PR.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],

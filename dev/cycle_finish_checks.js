@@ -95,5 +95,40 @@ assert(/state\.activeCycleFinishedAt = p\.activeCycleFinishedAt/.test(app), 'app
 assert(!/localStorage/.test(app.slice(app.indexOf('function markActiveCycleFinished'), app.indexOf('function finishActiveCycle'))),
   'app.js : aucune clé de stockage créée pour cette sortie');
 
+// ── 7. Corriger la date de fin ─────────────────────────────────────────────
+// Racine inscrit la date du jour où le cycle est CLASSÉ, pas celle où il a été
+// terminé. La correction doit exister, et surtout toucher les DEUX endroits qui
+// portent cette date, sinon l'app en affiche deux différentes pour un cycle.
+const seasonIdx = read('scripts/season/index.js');
+const modals = read('scripts/ui_modals.js');
+
+assert(/api\.setCycleEnd = function/.test(seasonIdx), 'season/index.js : setCycleEnd() corrige le journal de saison');
+assert(/c\.prCount = countPrsBetween\(state, c\.startIso, iso\)/.test(seasonIdx),
+  'season/index.js : le compte de PR est recalculé — il est borné par les dates du cycle');
+assert(/if\(c\.startIso && iso < String\(c\.startIso\)\.slice\(0, 10\)\) return false;/.test(seasonIdx),
+  'season/index.js : une fin antérieure au début est refusée, pas écrite');
+assert(/api\.findCycleIndex = function/.test(seasonIdx), 'season/index.js : la fiche retrouve son entrée de journal');
+
+assert(/function editArchivedCycleDate\(/.test(app), 'app.js : correction depuis la fiche de cycle');
+assert(/edit-archived-date-btn/.test(app), 'app.js : bouton « Changer la date » sur la fiche');
+assert(/if\(!c\.filedAt\) c\.filedAt=c\.archivedAt\|\|c\.pausedAt\|\|nowIso\(\);/.test(app),
+  'app.js : la date de rangement est conservée (filedAt) — on corrige, on n\'efface pas');
+assert(/function syncCycleFicheEndDate\(/.test(app), 'app.js : les fiches suivent une correction faite depuis la frise');
+assert(/CoachSeason\.findCycleIndex\(state,c\.id,current\)[\s\S]{0,200}setCycleFicheEndDate\(c, iso\)/.test(app),
+  'app.js : l\'entrée de journal est retrouvée AVANT de changer la fiche (elle se reconnaît à l\'ancienne date)');
+assert(/data-season-date=/.test(seasonUi) && /CoachSeason\.setCycleEnd\(state, idx, iso\)/.test(seasonUi),
+  'season/ui.js : correction depuis la frise Saison');
+assert(/syncCycleFicheEndDate\(entry\.programId, current, iso\)/.test(seasonUi),
+  'season/ui.js : corriger la frise corrige aussi la fiche');
+
+assert(/function openDatePickerModal\(/.test(modals) && /type="date"/.test(modals),
+  'ui_modals.js : champ date natif (roue iOS), pas une saisie clavier d\'une chaîne ISO');
+assert(/if\(!\/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$\/\.test\(iso\)\)\{ fail\("Choisis une date\."\); return; \}/.test(modals),
+  'ui_modals.js : une date vide ne passe jamais (elle effacerait l\'information)');
+assert(/opts\.max && iso > opts\.max/.test(modals), 'ui_modals.js : bornes min/max respectées');
+assert(/\.racine-date-picker \.rdp-actions button \{ min-height: 52px; \}/.test(css),
+  'styles.css : boutons de la modale utilisables au pouce');
+assert(/\.season-tl-edit \{/.test(css), 'styles.css : bouton de correction stylé dans la frise');
+
 console.log(failures ? '\nÉCHEC : ' + failures + ' contrôle(s)' : '\nTous les contrôles passent.');
 process.exit(failures ? 1 : 0);
