@@ -27,6 +27,7 @@ Objectif : éviter qu'un écran appelle un autre écran sans propriétaire clair
 - **Session guidée** (`scripts/session/view.js` et `scripts/session/timer.js`) possède le mode plein écran terrain : blocs guidés, timer AMRAP/EMOM/For Time et progression pendant l’exécution.
 - **Résultats** (`scripts/session/results.js`) possède la saisie finale : champs poids/reps/RPE, collecte de résultats, résumé affiché après sauvegarde.
 - **Mouvements hors programme** (`scripts/session/extra_movements.js`, `window.CoachExtraMovements`) possède l'ajout d'un mouvement fait aujourd'hui mais absent du programme : liste éphémère, catalogue fermé, sélecteur plein écran et construction des items de séance. `results.js` ne porte que les points d'accroche (carte, ✕, bouton d'ajout).
+- **Rounds AMRAP** (`scripts/session/amrap_rounds.js`, `window.CoachAmrapRounds`) possède le comptage des rounds tapés sur le chrono : splits, round le plus rapide/lent, temps restant du dernier round entamé, bandeau de séance et panneau Résultats. Le chrono ne fournit que la seconde affichée et la durée; `results.js` ne porte que la reprise du compte et les champs durables de la ligne WOD. Mémoire vive seulement, aucune clé de stockage.
 - **App** (`app.js`) choisit la vue, tient l’état courant et appelle les API publiques. Il ne doit pas redevenir propriétaire du rendu détaillé d’un écran.
 
 État actuel : certaines fonctions de rendu historiques se croisent encore entre WOD+, PC et Session. Ce contrat décrit la destination avant tout déplacement de code; il ne justifie pas une nouvelle couche ou un nouveau fichier.
@@ -146,7 +147,7 @@ node dev/prescription_checks.js
 
 ### V51.50 — Domaine session
 
-`session/` contient `view.js`, `timer.js`, `results.js`, `extra_movements.js`, `save.js`, `index.js`. Le timer guidé appartient à `scripts/session/timer.js`; le rendu de séance appartient à `scripts/session/view.js`.
+`session/` contient `view.js`, `timer.js`, `amrap_rounds.js`, `results.js`, `extra_movements.js`, `save.js`, `index.js`. Le timer guidé appartient à `scripts/session/timer.js`; le rendu de séance appartient à `scripts/session/view.js`.
 
 
 ## Domaine state

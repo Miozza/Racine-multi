@@ -91,6 +91,18 @@ Ces règles sont obligatoires à partir de V51.24.
   (`line-height` < 1) et capturent le tap. Tout contrôle placé dans cette zone doit
   être positionné au-dessus de ce débordement.
 
+### Rounds AMRAP tapés sur le chrono
+
+- Sur un WOD AMRAP, toute la carte du chrono est le compteur : un tap ajoute un
+  round. Les boutons (▶ Ⅱ ↻, libellé d'édition, toggle son) en sont exclus —
+  sans cette exclusion, chaque action du chrono ajouterait un round au passage.
+- Le bandeau des rounds vit **au-dessus** de la boîte du chrono, jamais dedans.
+  La police du chrono se calcule sur la largeur : elle n'est donc pas touchée.
+  Le bandeau prend une part de la hauteur libre servant à étirer les chiffres,
+  d'où sa contrainte : une seule ligne, splits en défilement horizontal.
+- Le retour d'un tap reste discret : vibration courte, aucun son, aucune
+  modale. Le WOD est en cours, l'athlète n'a rien à confirmer.
+
 ### Accessibilité vue séance
 
 - Les boutons `Précédent` et `Bloc suivant` doivent toujours rester accessibles en portrait iPhone.

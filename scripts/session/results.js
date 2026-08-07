@@ -189,6 +189,11 @@ function renderSessionEntry(){
 
       var wodInner = '';
 
+      // Rounds tapés sur le chrono pendant la séance (scripts/session/amrap_rounds.js).
+      // Ils ne remplacent pas la saisie : ils la pré-remplissent, et l'athlète
+      // garde le dernier mot sur la pastille sélectionnée.
+      var amrapLog = (item.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.stats(item.key) : null;
+
       if(item.isEmom){
         wodInner += '<div class="wod-expected">EMOM — <strong>RPE seulement</strong></div>';
       } else if(item.isAmrap){
@@ -210,13 +215,21 @@ function renderSessionEntry(){
 
       if(item.isAmrap && item.wodRounds.max > 1){
         var r2 = item.wodRounds;
-        wodInner += '<span class="sf-label">ROUNDS COMPLÉTÉS</span>';
+        // La borne haute des pastilles est une estimation. Un compte réellement
+        // tapé au chrono la dépasse parfois : il doit rester sélectionnable,
+        // sinon le transfert automatique proposerait un round non cliquable.
+        var chipMax = Math.max(r2.max+2, amrapLog ? amrapLog.count : 0);
+        wodInner += '<span class="sf-label">ROUNDS COMPLÉTÉS'+(amrapLog?' — repris du chrono':'')+'</span>';
         wodInner += '<div class="sf-chips" id="wod_rounds_'+item.key+'">';
-        for(var ri=0; ri<=r2.max+2; ri++){
+        for(var ri=0; ri<=chipMax; ri++){
           var inRange = ri>=r2.min && ri<=r2.max;
           wodInner += '<button type="button" class="sf-chip'+(inRange?' target':'')+'" data-round="'+ri+'">'+ri+'</button>';
         }
         wodInner += '</div>';
+      }
+
+      if(amrapLog){
+        wodInner += CoachAmrapRounds.resultsHtml(item.key);
       }
 
       if(item.isAmrap && item.wodMoves && item.wodMoves.length){
@@ -240,6 +253,15 @@ function renderSessionEntry(){
         wodInner += '<div class="sf-divider">— ou saisie libre —</div>';
         wodInner += '<input class="sf-input" id="wod_free_'+item.key
           +'" data-key="'+item.key+'" data-field="result" type="text" inputmode="text" placeholder="ex: 4 rounds + 1 burpees + 0 row + 0 sit-ups"/>';
+        // Champs durables du WOD : le nombre de rounds ne dépend plus d'une
+        // relecture de la phrase de résultat, et les splits du chrono suivent
+        // la séance dans le journal (donc dans l'export JSON).
+        wodInner += '<input class="sf-input" id="wod_rounds_value_'+item.key+'" data-key="'+item.key+'" data-field="rounds" type="hidden" value=""/>';
+        if(amrapLog){
+          wodInner += '<input class="sf-input" data-key="'+item.key+'" data-field="roundSplits" type="hidden" value="'+escHtml(CoachAmrapRounds.splitsText(item.key))+'"/>';
+          var remTxt = CoachAmrapRounds.remainingText(item.key);
+          if(remTxt) wodInner += '<input class="sf-input" data-key="'+item.key+'" data-field="lastRoundRemaining" type="hidden" value="'+escHtml(remTxt)+'"/>';
+        }
       } else if(item.isEmom){
         wodInner += '<input class="sf-input" id="wod_free_'+item.key+'" data-key="'+item.key+'" data-field="result" type="hidden" value="EMOM complété"/>';
       }
@@ -261,7 +283,13 @@ function renderSessionEntry(){
       card.innerHTML += wodInner;
 
       (function(it){
-        var selectedRounds = it.isAmrap && it.wodRounds ? it.wodRounds.def : 0;
+        // Rounds tapés au chrono > estimation du programme : si l'athlète a
+        // compté pendant le WOD, c'est son compte qui arrive pré-sélectionné.
+        var tappedRounds = (it.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.count(it.key) : 0;
+        var amrapSuffix = (it.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.resultSuffix(it.key) : '';
+        var selectedRounds = tappedRounds > 0
+          ? tappedRounds
+          : (it.isAmrap && it.wodRounds ? it.wodRounds.def : 0);
         var selectedMvReps = {};
         if(it.wodMoves) it.wodMoves.forEach(function(_,i){ selectedMvReps[i]=0; });
         var selectedRpe = 8;
@@ -297,7 +325,13 @@ function renderSessionEntry(){
           if(repParts.length) parts.push(repParts.join(' + '));
 
           var resultStr = parts.join(' + ');
+          // Le temps qu'il restait au dernier round entamé suit le résultat
+          // jusque dans l'historique : c'est lui qui donne son sens aux reps
+          // partielles ("6 burpees" ne dit rien sans "il restait 0:42").
+          if(resultStr && amrapSuffix) resultStr += amrapSuffix;
           if(freeInp) freeInp.value = resultStr;
+          var roundsInp = document.getElementById('wod_rounds_value_'+it.key);
+          if(roundsInp) roundsInp.value = selectedRounds > 0 ? String(selectedRounds) : '';
 
           var partialTotal = 0;
           if(it.wodMoves){
