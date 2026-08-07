@@ -7304,3 +7304,41 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   font-size:15px;
   color:var(--cyan);
 }
+
+/* ═══════════════════════════════════════════
+   Sortie « terminé » d'un cycle — onglet Cycle
+   Racine n'avait que trois sorties : pause, archivé, abandonné. Un cycle mené
+   au bout n'est aucune des trois. Cette carte porte la quatrième, et reste
+   visible même quand le détecteur de fin ne s'est pas déclenché — sinon il
+   resterait un chemin où finir un cycle passe par « archiver ».
+   ═══════════════════════════════════════════ */
+.cycle-finish-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:14px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+}
+.cycle-finish-text{ flex:1; font-size:13px; line-height:1.4; }
+.cycle-finish-text strong{ font-family:var(--font-hud); letter-spacing:.04em; }
+.cycle-finish-text span{ color:var(--muted); font-size:12px; }
+.cycle-finish-btn{ white-space:nowrap; }
+/* Cycle allé au bout mais pas encore classé : c'est l'action à faire. */
+.cycle-finish-card.is-done{
+  border-color:var(--green);
+  background:linear-gradient(135deg, rgba(77,255,136,.12), rgba(30,144,255,.10));
+}
+.cycle-finish-card.is-done .cycle-finish-text strong{ color:var(--green); }
+/* Déjà classé terminé : état, plus une action. */
+.cycle-finish-card.is-filed{
+  border-color:rgba(77,255,136,.35);
+  background:rgba(77,255,136,.06);
+}
+.cycle-finish-card.is-filed .cycle-finish-text strong{ color:var(--green); }
+@media (max-width:430px){
+  .cycle-finish-card{ flex-direction:column; align-items:stretch; gap:10px; }
+  .cycle-finish-btn{ width:100%; min-height:46px; }
+}

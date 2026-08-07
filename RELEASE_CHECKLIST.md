@@ -38,6 +38,7 @@ node dev/profile_backup_ui_checks.js
 node dev/history_progress_checks.js
 node dev/history_edit_checks.js
 node dev/amrap_rounds_checks.js
+node dev/cycle_finish_checks.js
 node dev/gear_permissions_checks.js
 node dev/pc_cycle_view_checks.js
 node dev/pc_progress_compare_checks.js

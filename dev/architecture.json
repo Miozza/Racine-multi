@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 184,
+    "ACTIF": 185,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -591,6 +591,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/cycle_finish_checks.js",
+      "size": 7015,
+      "lines": 99,
+      "role": "Garde-fous de la sortie « terminé » d'un cycle : statut completed, bouton toujours atteignable dans l'onglet Cycle, porte unique closeActiveCycleBefore(), écran Fin de cycle, vocabulaire et champ additif activeCycleFinishedAt.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {

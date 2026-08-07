@@ -1,5 +1,5 @@
-// Racine V4.5.37 — programme de transition « Retour au travail »
-var APP_VERSION = "V4.5.37";
+// Racine V4.5.38 — un cycle terminé se classe « terminé »
+var APP_VERSION = "V4.5.38";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -319,7 +319,13 @@ function freshState(){
     deloadAlert: false,    // true si le système détecte fatigue RPE
     athleteState: { movements:{}, updatedAt:null, version:null }, // Force actuelle durable par mouvement
     cycleState: null,      // Où le cycle est rendu, sauvegardable indépendamment des versions
-    activeCycleStartDate: null // Date de départ confirmée du cycle actif (YYYY-MM-DD), indépendante des charges.
+    activeCycleStartDate: null, // Date de départ confirmée du cycle actif (YYYY-MM-DD), indépendante des charges.
+    // Date à laquelle le cycle actif a été classé TERMINÉ (YYYY-MM-DD) ou null.
+    // Champ additif : absent d'un ancien profil = null, donc aucune migration.
+    // Il existe parce qu'un cycle terminé n'est ni une pause ni un abandon —
+    // sans lui, finir un cycle puis en démarrer un autre le rangeait dans les
+    // cycles récupérables comme s'il avait été interrompu.
+    activeCycleFinishedAt: null
   };
 }
 var state = freshState();
@@ -348,6 +354,7 @@ function load(){
       state.athleteState = p.athleteState || { movements:{}, updatedAt:null, version:null };
       state.cycleState   = p.cycleState || null;
       state.activeCycleStartDate = p.activeCycleStartDate || (state.cycleState&&state.cycleState.activeCycleStartDate) || (state.cycleState&&state.cycleState.cycleStartedAt?String(state.cycleState.cycleStartedAt).slice(0,10):null);
+      state.activeCycleFinishedAt = p.activeCycleFinishedAt || (state.cycleState&&state.cycleState.activeCycleFinishedAt) || null;
       // Migration douce vers la cle stable, sans effacer les anciennes cles.
       if(found.migrated)save();
     }
@@ -380,6 +387,7 @@ function buildCycleStatePayload(){
     archivedCycles:state.archivedCycles||[],
     focus:focus()?focus().label:"",
     activeCycleStartDate:cycleStartDateForActive(),
+    activeCycleFinishedAt:state.activeCycleFinishedAt||null,
     cycleStartedAt:cycleStartDateForActive()
   };
 }
@@ -387,6 +395,7 @@ function applyCycleStatePayload(cycleData){
   if(!cycleData||typeof cycleData!=="object")return;
   state.cycleState=cycleData;
   if(cycleData.activeCycle)state.cycle={goal:cycleData.activeCycle};
+  if(cycleData.activeCycleFinishedAt!==undefined)state.activeCycleFinishedAt=cycleData.activeCycleFinishedAt||null;
   if(cycleData.activeWeek)state.week=Math.max(1,Math.min(totalWeeks(),Number(cycleData.activeWeek)||state.week));
   if(cycleData.activeDay)state.day=cycleData.activeDay;
   if(Array.isArray(cycleData.weekTransitions))state.weekTransitions=cycleData.weekTransitions;
@@ -1364,6 +1373,63 @@ function pauseCurrentCycle(reason){
   // Ne pas dédupliquer par id : on peut avoir plusieurs essais du même programme à des semaines différentes.
   state.savedCycles.push(snap);
 }
+
+// ── Sortie « terminé » ───────────────────────────────────────────────────────
+// Un cycle mené jusqu'au bout n'est ni une pause ni un abandon. Racine n'avait
+// que trois sorties (pause, archivé, abandonné) : finir un programme puis en
+// démarrer un autre le rangeait donc dans les cycles récupérables, comme s'il
+// avait été interrompu. `cycleStatusLabel()` savait déjà dire « Terminé » —
+// rien n'écrivait ce statut.
+function isActiveCycleComplete(){
+  if(!window.CoachSeason||typeof CoachSeason.isCycleFinished!=="function")return false;
+  return !!CoachSeason.isCycleFinished(state, totalWeeks(), currentDayOrder().length);
+}
+// Classe le cycle actif comme TERMINÉ : journal de saison + fiche de cycle au
+// statut `completed`. Les séances complétées ne sont PAS effacées — c'est ce
+// qui garde le bandeau « Cycle terminé » visible jusqu'au choix du suivant.
+function markActiveCycleFinished(reason){
+  var today=todayIsoDate();
+  if(window.CoachSeason)CoachSeason.recordCycleEnd(state, today);
+  state.archivedCycles=state.archivedCycles||[];
+  state.archivedCycles.push(Object.assign(
+    snapshotCurrentCycle(reason||"Cycle terminé"),
+    {archivedAt:nowIso(),completedAt:nowIso(),status:"completed"}
+  ));
+  state.activeCycleFinishedAt=today;
+  state.cycleState=buildCycleStatePayload();
+  return today;
+}
+// Ferme le cycle actif avant d'en installer un autre, et choisit la bonne
+// sortie : déjà classé terminé → on ne refile rien (sinon doublon) ; détecté
+// terminé (ou `forceCompleted`, quand l'appelant sait déjà que le cycle est
+// allé au bout) → classé terminé ; sinon → pause récupérable, comportement
+// d'origine. Renvoie "completed" ou "paused" pour que l'appelant sache quoi
+// annoncer.
+function closeActiveCycleBefore(nextLabel, forceCompleted){
+  if(state.activeCycleFinishedAt){ state.activeCycleFinishedAt=null; return "completed"; }
+  if(forceCompleted||isActiveCycleComplete()){
+    markActiveCycleFinished("Cycle terminé — enchaîné sur "+(nextLabel||"un autre programme"));
+    state.activeCycleFinishedAt=null;
+    return "completed";
+  }
+  if(window.CoachSeason)CoachSeason.recordCycleEnd(state, todayIsoDate());
+  pauseCurrentCycle("Remplacé par "+(nextLabel||"un autre programme"));
+  return "paused";
+}
+function finishActiveCycle(){
+  // Déjà terminé : le bouton devient un raccourci vers le bilan.
+  if(state.activeCycleFinishedAt){
+    if(window.CoachSeasonUI)CoachSeasonUI.openEndOfCycle();
+    return;
+  }
+  var label=(focus()&&focus().label)||activeProgramId();
+  if(!confirm("Terminer « "+label+" » ?\n\nIl sera classé TERMINÉ dans ta saison — ni mis en pause, ni abandonné. Tes séances, tes charges et ton historique ne bougent pas."))return;
+  markActiveCycleFinished("Cycle terminé");
+  save();
+  render();
+  renderCycle();
+  if(window.CoachSeasonUI)CoachSeasonUI.openEndOfCycle();
+}
 function populateCycleGoalOptions(){
   var sel=$("cycleGoal");if(!sel)return;
   sel.innerHTML="";
@@ -1459,13 +1525,17 @@ function cycleSmallMeta(c){
   parts.push(CoachUI.escapeHtml(dayLabel(c.day)));
   if(c.completedDays&&c.completedDays.length)parts.push(CoachUI.escapeHtml(c.completedDays.length+' fait'+(c.completedDays.length>1?'s':'')));
   if(c.missedDays&&c.missedDays.length)parts.push(CoachUI.escapeHtml(c.missedDays.length+' manqué'+(c.missedDays.length>1?'s':'')));
-  if(c.archivedAt)parts.push('archivé '+CoachUI.escapeHtml(String(c.archivedAt).slice(0,10)));
+  if(c.status==='completed'&&(c.completedAt||c.archivedAt))parts.push('terminé '+CoachUI.escapeHtml(String(c.completedAt||c.archivedAt).slice(0,10)));
+  else if(c.archivedAt)parts.push('archivé '+CoachUI.escapeHtml(String(c.archivedAt).slice(0,10)));
   else if(c.pausedAt)parts.push('pause '+CoachUI.escapeHtml(String(c.pausedAt).slice(0,10)));
   if(c.reason)parts.push(CoachUI.escapeHtml(c.reason));
   return parts.join(' · ');
 }
 function renderCycleCard(c, idx, type){
-  var cls=(c&&c.status)==='abandoned'?'border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.06)':'border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)';
+  var st=(c&&c.status)||'';
+  var cls=st==='abandoned'?'border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.06)'
+    :st==='completed'?'border:1px solid rgba(77,255,136,.35);background:rgba(77,255,136,.07)'
+    :'border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)';
   var html='<div style="margin-top:8px;padding:10px;'+cls+';border-radius:10px">'+
     '<strong>'+CoachUI.escapeHtml((c&&c.label)||((c&&c.id)||'Cycle'))+'</strong>'+
     (type==='archived'?' <span class="draft-pill">'+CoachUI.escapeHtml(cycleStatusLabel(c))+'</span>':'')+
@@ -1477,7 +1547,7 @@ function renderCycleCard(c, idx, type){
   }else{
     html+='<button type="button" class="btn-ghost resume-archived-cycle-btn" data-idx="'+idx+'">Reprendre</button> '+
       '<button type="button" class="btn-ghost restore-archived-cycle-btn" data-idx="'+idx+'">Remettre en pause</button> '+
-      '<button type="button" class="btn-ghost toggle-archived-status-btn" data-idx="'+idx+'">Archivé/abandonné</button> '+
+      '<button type="button" class="btn-ghost toggle-archived-status-btn" data-idx="'+idx+'">Changer le statut</button> '+
       '<button type="button" class="btn-danger delete-archived-cycle-btn" data-idx="'+idx+'">Supprimer</button>';
   }
   html+='</div>';
@@ -1492,7 +1562,7 @@ function renderSavedCyclesHtml(){
     html+='</div>';
   }
   if(archived.length){
-    html+='<div style="margin-top:14px"><strong>Cycles archivés / abandonnés</strong><br><small>Tu peux les reprendre, les remettre en pause ou les supprimer définitivement.</small>';
+    html+='<div style="margin-top:14px"><strong>Cycles terminés / archivés / abandonnés</strong><br><small>« Changer le statut » fait tourner terminé → archivé → abandonné. Tu peux aussi les reprendre, les remettre en pause ou les supprimer définitivement.</small>';
     archived.slice().reverse().forEach(function(c,i){var idx=archived.length-1-i;html+=renderCycleCard(c,idx,'archived');});
     html+='</div>';
   }
@@ -1528,7 +1598,39 @@ function renderFocusDetails(){
   Array.prototype.forEach.call(fd.querySelectorAll('.toggle-archived-status-btn'),function(btn){btn.onclick=function(){toggleArchivedCycleStatus(Number(btn.getAttribute('data-idx')));};});
   Array.prototype.forEach.call(fd.querySelectorAll('.delete-archived-cycle-btn'),function(btn){btn.onclick=function(){deleteArchivedCycle(Number(btn.getAttribute('data-idx')));};});
 }
-function renderCycle(){populateCycleGoalOptions();ensurePreviewPosition();var csi=$("cycleStartDateInput");if(csi&&!csi.value)csi.value=cycleStartDateForActive();renderFocusDetails();var sc=$("saveCycleBtn");if(sc)sc.textContent=(previewProgramId()===activeProgramId()?"Redémarrer ce programme":"Démarrer ce programme");var nc=$("newCycleBtn");if(nc)nc.textContent="Archiver cycle actif";if(window.CoachSeasonUI)CoachSeasonUI.renderTimeline();}
+// Carte « Terminer ce cycle » — toujours présente dans l'onglet Cycle, pas
+// seulement quand l'app détecte la fin. Le bandeau « Cycle terminé 🎉 » de la
+// vue WOD dépend d'un compte de séances exact ; s'il ne se déclenche pas, il
+// ne doit plus rester aucun chemin où finir un cycle passe par « archiver ».
+function renderCycleFinishCard(){
+  var host=$("cycleFinishCard");
+  if(!host)return;
+  var label=(focus()&&focus().label)||activeProgramId();
+  var done=(state.completedDays||[]).length, total=currentDayOrder().length, tw=totalWeeks();
+  var progress='S'+state.week+' sur '+tw+' · '+done+' séance'+(done>1?'s':'')+' sur '+total+' cette semaine';
+  var filed=!!state.activeCycleFinishedAt, complete=isActiveCycleComplete();
+  var cls='cycle-finish-card'+(filed?' is-filed':(complete?' is-done':''));
+  var title, sub, btnLabel, btnCls;
+  if(filed){
+    title='✓ Cycle terminé';
+    sub=CoachUI.escapeHtml(label)+' · classé terminé le '+CoachUI.escapeHtml(state.activeCycleFinishedAt)+'. Choisis ton prochain programme ci-dessus.';
+    btnLabel='Voir le bilan';btnCls='btn-ghost';
+  } else if(complete){
+    title='🎉 Ce cycle est allé au bout';
+    sub=CoachUI.escapeHtml(label)+' · '+CoachUI.escapeHtml(progress)+'. Classe-le comme terminé — ni pause, ni abandon.';
+    btnLabel='✓ Terminer ce cycle';btnCls='btn-accent';
+  } else {
+    title='Terminer le cycle actif';
+    sub=CoachUI.escapeHtml(label)+' · '+CoachUI.escapeHtml(progress)+'. À utiliser quand tu l\'as mené au bout : il sera classé terminé, pas mis en pause.';
+    btnLabel='✓ Terminer ce cycle';btnCls='btn-ghost';
+  }
+  host.className=cls;
+  host.innerHTML='<div class="cycle-finish-text"><strong>'+title+'</strong><br><span>'+sub+'</span></div>'+
+    '<button type="button" class="'+btnCls+' cycle-finish-btn" id="finishCycleBtn">'+btnLabel+'</button>';
+  var btn=$("finishCycleBtn");
+  if(btn)btn.onclick=finishActiveCycle;
+}
+function renderCycle(){populateCycleGoalOptions();ensurePreviewPosition();var csi=$("cycleStartDateInput");if(csi&&!csi.value)csi.value=cycleStartDateForActive();renderFocusDetails();renderCycleFinishCard();var sc=$("saveCycleBtn");if(sc)sc.textContent=(previewProgramId()===activeProgramId()?"Redémarrer ce programme":"Démarrer ce programme");var nc=$("newCycleBtn");if(nc)nc.textContent="Archiver cycle actif";if(window.CoachSeasonUI)CoachSeasonUI.renderTimeline();}
 function saveCycle(){
   var selected=$("cycleGoal").value;
   if(!selected||!focusConfigs[selected]){alert("Programme introuvable.");return;}
@@ -1537,16 +1639,27 @@ function saveCycle(){
   var wk=calcWeekFromCycleStart(startDate);
   var todayDay=dayFromDateIfProgramDay(todayIsoDate());
   var dayText=todayDay?dayLabel(todayDay):"premier jour du programme";
-  if(!confirm("Démarrer “"+focusConfigs[selected].label+"” comme cycle actif?\n\nDate de départ : "+startDate+"\nPosition calculée : S"+wk+" · "+dayText+"\n\nLe cycle actuel sera mis en pause. Les charges et l’historique réel ne seront pas modifiés."))return;
-  if(window.CoachSeason)CoachSeason.recordCycleEnd(state, todayIsoDate());
-  pauseCurrentCycle("Remplacé par "+focusConfigs[selected].label);
+  // Un cycle terminé ne doit pas s'annoncer comme « mis en pause » : le texte
+  // suit la sortie réellement appliquée par closeActiveCycleBefore().
+  var finished=!!state.activeCycleFinishedAt||isActiveCycleComplete();
+  var fate=finished
+    ? "Le cycle actuel est terminé : il sera classé comme terminé dans ta saison."
+    : "Le cycle actuel sera mis en pause.";
+  if(!confirm("Démarrer “"+focusConfigs[selected].label+"” comme cycle actif?\n\nDate de départ : "+startDate+"\nPosition calculée : S"+wk+" · "+dayText+"\n\n"+fate+" Les charges et l’historique réel ne seront pas modifiés."))return;
+  closeActiveCycleBefore(focusConfigs[selected].label);
   state.cycle.goal=selected;state.missingCycle=null;previewCycleGoal=selected;state.week=1;state.day=(focusConfigs[selected].days||DEFAULT_PROGRAM_DAYS)[0]||"lundi";state.completedDays=[];state.missedDays=[];state.deloadAlert=false;state.activeCycleStartDate=startDate;
   applyCycleStartDate(startDate,{setDayFromToday:true,resetWeekTracking:true});
   resetPreviewPosition(selected);
   save();render();renderCycle();}
 function newCycle(){ archiveActiveCycle(); }
 function archiveActiveCycle(){
-  if(!confirm("Archiver le cycle actif actuel?"))return;
+  // Déjà classé terminé : l'archiver en plus créerait une deuxième fiche pour
+  // le même cycle, l'une « terminée », l'autre « archivée ».
+  if(state.activeCycleFinishedAt){
+    alert("Ce cycle est déjà classé comme terminé ("+state.activeCycleFinishedAt+").\n\nChoisis ton prochain programme pour repartir.");
+    return;
+  }
+  if(!confirm("Archiver le cycle actif actuel?\n\nÀ utiliser pour un cycle qu'on arrête en cours de route. S'il est terminé, utilise plutôt « ✓ Terminer ce cycle »."))return;
   if(window.CoachSeason)CoachSeason.recordCycleEnd(state, todayIsoDate());
   state.archivedCycles=state.archivedCycles||[];
   state.archivedCycles.push(Object.assign(snapshotCurrentCycle("Archivé"),{archivedAt:nowIso(),status:"archived"}));
@@ -1555,8 +1668,8 @@ function resumeSavedCycle(idx){
   var saved=state.savedCycles||[], c=saved[idx];
   if(!c){alert("Cycle introuvable.");return;}
   if(!focusConfigs[c.id]){alert("Programme introuvable : "+c.id+". Restaure le fichier avant de reprendre ce cycle.");return;}
-  if(!confirm("Reprendre “"+(c.label||c.id)+"” S"+c.week+" "+dayLabel(c.day)+"? Le cycle actuel sera mis en pause."))return;
-  pauseCurrentCycle("Mis en pause par reprise d’un autre cycle");
+  if(!confirm("Reprendre “"+(c.label||c.id)+"” S"+c.week+" "+dayLabel(c.day)+"? "+((state.activeCycleFinishedAt||isActiveCycleComplete())?"Le cycle actuel est terminé : il sera classé comme terminé.":"Le cycle actuel sera mis en pause.")))return;
+  closeActiveCycleBefore(c.label||c.id);
   saved.splice(idx,1);state.savedCycles=saved;state.cycle.goal=c.id;state.missingCycle=null;previewCycleGoal=c.id;state.week=Number(c.week)||1;state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);state.completedDays=c.completedDays||[];state.missedDays=c.missedDays||[];state.activeCycleStartDate=c.activeCycleStartDate||state.activeCycleStartDate||todayIsoDate();ensureCurrentDay();state.cycleState=buildCycleStatePayload();resetPreviewPosition(c.id);save();render();renderCycle();}
 function archiveSavedCycle(idx){
   var saved=state.savedCycles||[], c=saved[idx];if(!c)return;
@@ -1572,8 +1685,8 @@ function resumeArchivedCycle(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
   if(!c){alert("Cycle archivé introuvable.");return;}
   if(!focusConfigs[c.id]){alert("Programme introuvable : "+c.id+". Restaure le fichier avant de reprendre ce cycle.");return;}
-  if(!confirm("Reprendre ce cycle archivé? Le cycle actif actuel sera mis en pause."))return;
-  pauseCurrentCycle("Mis en pause par reprise d’un cycle archivé");
+  if(!confirm("Reprendre ce cycle archivé? "+((state.activeCycleFinishedAt||isActiveCycleComplete())?"Le cycle actif est terminé : il sera classé comme terminé.":"Le cycle actif actuel sera mis en pause.")))return;
+  closeActiveCycleBefore(c.label||c.id);
   archived.splice(idx,1);state.archivedCycles=archived;
   state.cycle.goal=c.id;state.missingCycle=null;previewCycleGoal=c.id;state.week=Number(c.week)||1;
   state.day=c.day||((focusConfigs[c.id].days||DEFAULT_PROGRAM_DAYS)[0]);
@@ -1592,11 +1705,15 @@ function restoreArchivedCycleToPaused(idx){
 function toggleArchivedCycleStatus(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
   if(!c)return;
-  var next=(c.status==="abandoned")?"archived":"abandoned";
-  var label=next==="abandoned"?"abandonné":"archivé";
-  if(!confirm("Marquer ce cycle comme "+label+"?"))return;
+  // Rotation à trois états : terminé → archivé → abandonné → terminé.
+  // Un cycle mené au bout doit pouvoir être corrigé sans passer par « abandonné ».
+  var order={completed:"archived",archived:"abandoned",abandoned:"completed"};
+  var next=order[String(c.status||"archived")]||"abandoned";
+  var labels={completed:"terminé",archived:"archivé",abandoned:"abandonné"};
+  if(!confirm("Marquer ce cycle comme "+labels[next]+"?"))return;
   c.status=next;c.statusChangedAt=nowIso();
   if(next==="abandoned")c.reason="Abandonné";
+  else if(next==="completed"){c.reason="Cycle terminé";c.completedAt=c.completedAt||nowIso();}
   archived[idx]=c;state.archivedCycles=archived;state.cycleState=buildCycleStatePayload();save();renderCycle();}
 function deleteArchivedCycle(idx){
   var archived=state.archivedCycles||[], c=archived[idx];
