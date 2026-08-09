@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 188,
+    "ACTIF": 189,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -627,6 +627,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/extra_movements_checks.js",
+      "size": 10059,
+      "lines": 181,
+      "role": "Garde-fous des mouvements hors programme : clé de résultat = nom exact du catalogue, contexte neutre (aucun kind ni titre de bloc), marqueur isExtra, anti-collision par libellé moteur, purge ciblée du cache au retrait. Exécute le vrai module dans un bac à sable.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -3194,8 +3204,8 @@
     },
     {
       "path": "scripts/session/extra_movements.js",
-      "size": 16926,
-      "lines": 387,
+      "size": 17484,
+      "lines": 398,
       "role": "Mouvements faits hors programme sur l'écran Résultats : liste éphémère, catalogue fermé, sélecteur plein écran, construction des items de séance.",
       "category": "ACTIF",
       "exposes": [

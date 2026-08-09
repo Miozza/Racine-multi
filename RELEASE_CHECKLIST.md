@@ -10,6 +10,7 @@ Avant d'importer dans DEV ou de publier une version de test :
 ```bash
 node dev/multi_profile_checks.js
 node dev/migration_checks.js
+node dev/extra_movements_checks.js
 node dev/ai_import_fallback_smoke.js
 node dev/ai_cycle_movement_bridge_smoke.js
 node dev/ai_advice_clear_smoke.js
