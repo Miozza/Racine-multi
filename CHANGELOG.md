@@ -1,3 +1,12 @@
+## V4.5.45 — Le chrono ne grossit plus au premier round
+
+- **Les mouvements étaient bien trop réduits.** Ils tombaient de 185 à 31 px alors que la banderole n'a besoin que de ~52 px. Ils descendent maintenant à 150 px : reps 44 → **38 px**, nom 30 → **26 px**, et la mise en page reste **empilée** — la carte garde exactement la même allure, juste un peu plus serrée.
+- **C'est ce qui faisait grossir le chrono.** Les 133 px libérés en trop ne disparaissaient pas : ils partaient dans l'étirement vertical des chiffres, si bien que taper un premier round faisait bondir le chrono sans que personne ne l'ait demandé. En ne rendant que la hauteur réellement nécessaire, le chrono **ne bouge plus du tout**.
+- **Vérifié à temps affiché égal** — la comparaison n'a de sens qu'à format constant, `10:00` et `5:05` n'ayant pas le même gabarit (règle verrouillée). À `10:50` : police **118 px**, étirement **×3,5**, hauteur des chiffres **1185 px**, boîte timer **435 px** — quatre valeurs strictement identiques avec 0, 4, 8 et 14 rounds.
+- **Règle écrite** dans `docs/UI_CONSTRAINTS.md` : les mouvements rendent la hauteur de la banderole, pas un pixel de plus, et la vérification se fait à temps affiché égal.
+- Testé aussi sur un AMRAP à 4 mouvements : aucun débordement horizontal, aucune erreur console.
+- **Portée** : `styles.css`, `docs/UI_CONSTRAINTS.md`. Garde-fou mis à jour : `dev/amrap_rounds_checks.js`.
+
 ## V4.5.44 — Banderole des rounds : temps plus gros, mouvements récupérés
 
 - **Retour à une banderole d'une ligne**, mais à pastilles hautes (52 px, la taille des rectangles de la grille). ~3 temps visibles, puis défilement collé aux derniers. Compromis assumé : trois temps **vraiment** lisibles valent mieux que douze illisibles, et une ligne coûte deux fois moins de hauteur qu'une grille — 52 px contre 97 à 215 px selon le nombre de rounds.

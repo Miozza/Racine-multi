@@ -132,8 +132,13 @@ Ces règles sont obligatoires à partir de V51.24.
 - La place vient des **cartes de mouvement repliées**, et seulement à partir du
   premier round tapé : avant, l'athlète doit lire ses mouvements en grand. Tant
   qu'aucun round n'est compté, la carte WOD garde exactement son allure
-  d'origine. Repliées ne veut pas dire écrasées : elles restent lisibles à bout
-  de bras (reps 30 px, nom 19 px).
+  d'origine.
+- **Les mouvements ne rendent QUE la hauteur de la banderole** (~52 px), pas un
+  pixel de plus. Toute hauteur libérée en trop part dans l'étirement vertical du
+  chrono, qui se met alors à grossir au premier round sans qu'on l'ait demandé.
+  Vérification : à temps affiché égal, police, étirement et hauteur des chiffres
+  doivent être **identiques** avec et sans rounds. La mise en page reste
+  empilée ; seules les tailles baissent (reps 44 → 38 px, nom 30 → 26 px).
 - Le retour d'un tap reste discret : vibration courte, aucun son, aucune
   modale. Le WOD est en cours, l'athlète n'a rien à confirmer.
 

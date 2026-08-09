@@ -17,7 +17,9 @@
        défilement collé aux derniers. Une pastille ne porte QUE le numéro et
        le temps — pas d'étiquette, la couleur le dit. Numéro en Inter, temps
        en Orbitron. La place vient des cartes de mouvement, qui ne se replient
-       qu'une fois le WOD lancé, et sans être écrasées.
+       qu'une fois le WOD lancé et ne rendent QUE la hauteur de la banderole :
+       toute hauteur libérée en trop part dans l'étirement vertical du chrono,
+       qui se mettrait à grossir au premier round sans qu'on l'ait demandé.
     6. L'écran Résultats reprend le compte tapé et le rend sélectionnable même
        s'il dépasse l'estimation du programme.
     7. Rien n'est persisté par le module : ce qui survit part par la ligne WOD
@@ -113,9 +115,15 @@ assert(!/guided-amrap-tag/.test(mod) && !/guided-amrap-tag/.test(css),
   'la pastille ne porte aucune étiquette — la couleur dit le classement');
 assert(/'<span class=.guided-amrap-no.>' \+ \(i \+ 1\)/.test(mod.replace(/"/g, "'")),
   'amrap_rounds.js : la pastille affiche « 1 », pas « R1 »');
-// Mouvements repliés, pas écrasés.
-assert(/\.guided-wod-moves\.compact \.guided-wod-reps\{[\s\S]{0,80}font-size:30px/.test(css),
-  'styles.css : les mouvements repliés restent lisibles (reps 30 px)');
+// Les mouvements ne rendent QUE la hauteur de la banderole. Toute hauteur
+// libérée en trop part dans l'étirement vertical du chrono, qui se met alors à
+// grossir au premier round sans qu'on l'ait demandé.
+assert(/\.guided-wod-moves\.compact \.guided-wod-reps\{[\s\S]{0,80}font-size:38px/.test(css),
+  'styles.css : les mouvements repliés baissent à peine (reps 38 px, contre 44 pleine taille)');
+assert(/\.guided-wod-moves\.compact \.guided-wod-name\{[\s\S]{0,80}font-size:26px/.test(css),
+  'styles.css : nom de mouvement replié à 26 px, contre 30 pleine taille');
+assert(!/\.guided-wod-moves\.compact\{[\s\S]{0,200}display:flex/.test(css),
+  'styles.css : le repli garde la mise en page empilée, il ne réorganise pas les mouvements');
 // La place vient des cartes de mouvement — et seulement une fois le WOD lancé.
 assert(/renderGuidedWodMoves\(st\.moves, amrapCount>0\)/.test(view),
   'view.js : les mouvements ne se replient qu\'à partir du premier round tapé');
@@ -123,7 +131,7 @@ assert(/function renderGuidedWodMoves\(moves, compact\)/.test(view),
   'view.js : le repli des mouvements est un paramètre, pas un état caché');
 assert(/moves\.classList\.toggle\('compact', !!st\)/.test(mod),
   'amrap_rounds.js : un ↩ qui ramène à zéro round redéplie les mouvements');
-assert(/\.guided-wod-moves\.compact\{/.test(css), 'styles.css : mouvements repliés sur une ligne');
+assert(/\.guided-wod-moves\.compact\{/.test(css), 'styles.css : état replié des mouvements défini');
 assert(/\.guided-session \.guided-actions\{[\s\S]{0,80}min-height:48px !important/.test(css),
   'styles.css : la rangée Précédent/Suivant suit la hauteur des boutons (éléments de grille, sinon ils restent étirés)');
 assert(/t\.closest\("button"\)\) return;/.test(view),
