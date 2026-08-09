@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 189,
+    "ACTIF": 190,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -1102,6 +1102,16 @@
       "consumes": [
         "dev/architecture.json"
       ]
+    },
+    {
+      "path": "dev/voice_note_checks.js",
+      "size": 11817,
+      "lines": 223,
+      "role": "Garde-fous des notes de séance : portée programme+semaine+jour (le bug déjà corrigé une fois), concaténation par « · » en une seule chaîne, retrait qui écrit une chaîne vide, abandon qui ne touche que les notes et jamais poids/reps/RPE, bornes de taille. Exécute le vrai module.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     },
     {
       "path": "dev/wod_moves_checks.js",
