@@ -139,6 +139,14 @@ data/cycle_state.json
 
 `dev/` contient les validations. Un fichier dev doit être appelé dans `RELEASE_CHECKLIST.md` ou justifié par une documentation stable.
 
+Ces validations tournent **automatiquement sur chaque Pull Request**
+(`.github/workflows/checks.yml`). Le workflow lit la liste dans
+`RELEASE_CHECKLIST.md` au lieu de la recopier : un seul propriétaire, et
+`structure_checks.js` exige déjà que tout script de `dev/` y soit cité —
+les deux se verrouillent. Le job n'installe **aucune dépendance** : les
+scripts sont du Node pur et `structure_checks.js` échouerait en présence
+de `node_modules`.
+
 Validations obligatoires :
 
 ```bash
@@ -147,6 +155,32 @@ node dev/charge_engine_checks.js
 node dev/progression_contract_checks.js
 node dev/structure_checks.js
 ```
+
+### Ce qu'une assertion doit épingler
+
+Un garde-fou coûte à chaque retouche du code qu'il surveille. Il ne vaut donc
+que s'il attrape un vrai défaut sans crier à chaque changement légitime.
+
+- **Épingler une borne ou une relation, jamais une égalité cosmétique.**
+  `font-size:27px` oblige à réécrire le test au moindre ajustement ;
+  `temps ≥ 20 px` et `temps > numéro` disent le vrai contrat et y survivent.
+  Mesuré : `dev/amrap_rounds_checks.js` a été réécrit quatre fois en une
+  session pour des renommages, sans qu'aucun bug n'existe.
+- **Préférer l'exécution du code à la regex sur son texte.** Un test qui lit
+  du source épingle une forme d'écriture ; un test qui appelle la fonction
+  épingle un comportement. Les scripts les plus utiles du dépôt
+  (`charge_engine_checks.js`, `reference_seed_stress.js`) n'ont presque aucune
+  assertion textuelle.
+- **Les assertions textuelles légitimes** restent celles qui n'ont pas
+  d'équivalent à l'exécution : ordre de chargement dans `index.html`, absence
+  de `localStorage.clear()`, script `dev/` cité dans `RELEASE_CHECKLIST.md`.
+- **Une règle, un propriétaire.** Le contrat de version appartient à
+  `dev/regression_checks.js` ; `dev/structure_checks.js` s'y délègue et vérifie
+  seulement que le propriétaire fait toujours son travail. Onze assertions y
+  vivaient en double, mot pour mot — deux endroits à corriger pour une seule
+  règle, donc un jour deux règles divergentes.
+- **Un test qui ne peut pas échouer ne protège rien.** Avant de livrer un
+  garde-fou, muter le code qu'il surveille et vérifier qu'il tombe.
 
 ## Rôle de `docs/`
 

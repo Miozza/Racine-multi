@@ -119,22 +119,18 @@ assert(read('docs/STRUCTURE_CONTRACT.md').includes('## Contrat de version'), 'Le
 const app = exists('app.js') ? read('app.js') : '';
 const versionMatch = app.match(/APP_VERSION\s*=\s*"(V\d+\.\d+(?:\.\d+)?(?:-multi)?)"/);
 assert(!!versionMatch, 'app.js conserve APP_VERSION.');
+// Contrat de version : entièrement délégué à dev/regression_checks.js.
+// Les onze assertions vivaient ici ET là-bas, mot pour mot — deux endroits à
+// corriger pour une seule règle. Ce qui reste est un verrou de propriété : si
+// quelqu'un vide regression_checks de ces contrôles, celui-ci le dit.
 if(versionMatch){
-  const version = versionMatch[1];
-  const cache = version.replace(/^V/, '');
-  const headerMatch = app.match(/^\/\/\s*Racine\s+(V\d+\.\d+(?:\.\d+)?(?:-multi)?)/m);
-  assert(!!headerMatch, 'app.js doit garder un commentaire d’en-tête Racine Vx.xx.');
-  assert(headerMatch && headerMatch[1] === version, 'En-tête app.js cohérent avec APP_VERSION : ' + version);
-  assert(index.includes('<title>Racine ' + version + '</title>'), 'index.html affiche la version dans le titre.');
-  assert(index.includes('<footer class="footer">' + version), 'index.html affiche la version dans le footer.');
-  assert(index.includes('?v=' + cache), 'index.html utilise le cache-bust courant.');
-  assert(readme.includes('- Version : `' + version + '`'), 'README.md affiche la version courante.');
-  assert((readme.match(/V\d+\.\d+(?:\.\d+)?(?:-multi)?/g) || []).length === 1, 'README.md ne doit contenir que la version courante.');
-  assert(etat.includes('Version actuelle : ' + version), 'ETAT_ACTUEL.md affiche la version courante.');
-  assert((etat.match(/V\d+\.\d+(?:\.\d+)?(?:-multi)?/g) || []).every(v => v === version), 'ETAT_ACTUEL.md ne doit pas citer d’anciennes versions.');
-  assert(read('CHANGELOG.md').includes('## ' + version), 'CHANGELOG.md contient une entrée pour la version courante.');
-  assert(!/V\d+\.\d+(?:\.\d+)?(?:-multi)?/.test(read('manifest.json')), 'manifest.json ne doit pas porter la version affichée.');
-  assert(!/V\d+\.\d+(?:\.\d+)?(?:-multi)?|v\d+-\d+|\b\d+\.\d+\b/.test(read('service-worker.js')), 'service-worker.js reste déversionné en mode no-cache.');
+  const owner = exists('dev/regression_checks.js') ? read('dev/regression_checks.js') : '';
+  assert(/PROPRIÉTAIRE UNIQUE du contrat de version/.test(owner),
+    'Le contrat de version appartient à dev/regression_checks.js (ne pas le dupliquer ici).');
+  assert(/Version actuelle/.test(owner) || /ETAT_ACTUEL\.md doit afficher la version courante/.test(owner),
+    'regression_checks.js doit toujours vérifier la version dans ETAT_ACTUEL.md.');
+  assert(/CHANGELOG\.md doit contenir une entrée/.test(owner),
+    'regression_checks.js doit toujours vérifier l’entrée CHANGELOG de la version courante.');
 }
 
 // 6. Frontières programs.

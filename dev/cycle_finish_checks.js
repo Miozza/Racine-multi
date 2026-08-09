@@ -38,6 +38,17 @@ const seasonUi = read('scripts/season/ui.js');
 const html = read('index.html');
 const css = read('styles.css');
 
+// Un garde-fou d'interface épingle un CONTRAT, pas un pixel : une borne
+// survit à une retouche de design, une égalité oblige à réécrire le test.
+function cssPx(selector, prop){
+  const sel = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  const rule = css.match(new RegExp(sel + '\\s*\\{([^}]*)\\}'));
+  if(!rule) return null;
+  const v = rule[1].match(new RegExp(prop + '\\s*:\\s*(\\d+(?:\\.\\d+)?)px'));
+  return v ? Number(v[1]) : null;
+}
+
+
 // ── 1. La sortie existe ────────────────────────────────────────────────────
 assert(/function markActiveCycleFinished\(/.test(app), 'app.js : markActiveCycleFinished() existe');
 assert(/status:"completed"/.test(app), 'app.js : la fiche de cycle porte le statut completed');
@@ -126,8 +137,10 @@ assert(/function openDatePickerModal\(/.test(modals) && /type="date"/.test(modal
 assert(/if\(!\/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$\/\.test\(iso\)\)\{ fail\("Choisis une date\."\); return; \}/.test(modals),
   'ui_modals.js : une date vide ne passe jamais (elle effacerait l\'information)');
 assert(/opts\.max && iso > opts\.max/.test(modals), 'ui_modals.js : bornes min/max respectées');
-assert(/\.racine-date-picker \.rdp-actions button \{ min-height: 52px; \}/.test(css),
-  'styles.css : boutons de la modale utilisables au pouce');
+// Le contrat est « utilisable au pouce en salle », pas « 52 px ».
+const dpBtn = cssPx('.racine-date-picker .rdp-actions button', 'min-height');
+assert(dpBtn !== null, 'styles.css : hauteur des boutons de la modale de date mesurable');
+assert(dpBtn >= 44, 'styles.css : boutons de la modale de date utilisables au pouce (≥ 44 px, vu ' + dpBtn + ')');
 assert(/\.season-tl-edit \{/.test(css), 'styles.css : bouton de correction stylé dans la frise');
 
 console.log(failures ? '\nÉCHEC : ' + failures + ' contrôle(s)' : '\nTous les contrôles passent.');
