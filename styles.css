@@ -398,7 +398,20 @@ main.view-active { display: block; }
   border: 1px solid var(--border);
   color: var(--muted);
   transition: all .2s;
+  /* Bouton de sélection de jour : reset d'apparence native, et zone tactile
+     agrandie par un ::after absolu — la pastille ne mesure que 32×26, sous le
+     seuil confortable iPhone, et l'agrandir déplacerait la barre de semaine. */
+  -webkit-appearance: none; appearance: none;
+  padding: 0; margin: 0;
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
+.day-pip::after {
+  content: ""; position: absolute;
+  top: -9px; bottom: -9px; left: -2px; right: -2px;
+}
+.day-pip:active { transform: scale(.94); }
 .day-pip.done    { background: rgba(77,255,136,.1); border-color: var(--green); color: var(--green); }
 .day-pip.current { background: rgba(30,144,255,.15); border-color: var(--blue); color: var(--cyan); }
 
@@ -4323,6 +4336,7 @@ body:has(#resultsView.view-active) .app{
   gap:6px;
 }
 #trainingView .day-pips span,
+#trainingView .day-pips button,
 #trainingView .day-pips .pip{
   width:30px!important;
   height:24px!important;
