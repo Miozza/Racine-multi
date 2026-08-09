@@ -44,6 +44,10 @@
   --purple2:   #a07eff;
   --green:     #4dff88;
   --gold:      #ffd700;
+  /* Podium des rounds AMRAP — or et bronze de médaille, pas jaune/rouge.
+     Volontairement distincts de --gold (utilisé partout ailleurs). */
+  --medal-gold:   #f2c14e;
+  --medal-bronze: #c87137;
   --red:       #ff2244;
   --orange:    #ff6b35;
   --text:      #f0f6ff;
@@ -7225,20 +7229,22 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   letter-spacing:.02em;
   white-space:nowrap;
 }
+/* Podium : or pour la 1re place, bronze pour la dernière. */
 .guided-amrap-cell.fast{
-  border-color:rgba(255,215,0,.60);
-  background:rgba(255,215,0,.11);
+  border-color:rgba(242,193,78,.75);
+  background:rgba(242,193,78,.14);
 }
 .guided-amrap-cell.fast .guided-amrap-split,
-.guided-amrap-cell.fast .guided-amrap-tag{ color:var(--gold); }
-.guided-amrap-cell.fast .guided-amrap-no{ color:rgba(255,215,0,.75); }
+.guided-amrap-cell.fast .guided-amrap-tag{ color:var(--medal-gold); }
+.guided-amrap-cell.fast .guided-amrap-split{ text-shadow:0 0 14px rgba(242,193,78,.55); }
+.guided-amrap-cell.fast .guided-amrap-no{ color:rgba(242,193,78,.85); }
 .guided-amrap-cell.slow{
-  border-color:rgba(255,34,68,.60);
-  background:rgba(255,34,68,.11);
+  border-color:rgba(200,113,55,.75);
+  background:rgba(200,113,55,.16);
 }
 .guided-amrap-cell.slow .guided-amrap-split,
-.guided-amrap-cell.slow .guided-amrap-tag{ color:var(--red); }
-.guided-amrap-cell.slow .guided-amrap-no{ color:rgba(255,110,140,.85); }
+.guided-amrap-cell.slow .guided-amrap-tag{ color:var(--medal-bronze); }
+.guided-amrap-cell.slow .guided-amrap-no{ color:rgba(200,113,55,.90); }
 .guided-amrap-undo{
   flex:0 0 auto;
   min-width:46px;
@@ -7337,17 +7343,18 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   text-align:right;
 }
 .wod-round-line.fast{
-  background:rgba(255,215,0,.10);
-  box-shadow:inset 2px 0 0 var(--gold);
+  background:rgba(242,193,78,.13);
+  box-shadow:inset 2px 0 0 var(--medal-gold);
 }
 .wod-round-line.fast .wod-round-split,
-.wod-round-line.fast .wod-round-tag{ color:var(--gold); }
+.wod-round-line.fast .wod-round-tag{ color:var(--medal-gold); }
+.wod-round-line.fast .wod-round-split{ text-shadow:0 0 12px rgba(242,193,78,.50); }
 .wod-round-line.slow{
-  background:rgba(255,34,68,.10);
-  box-shadow:inset 2px 0 0 var(--red);
+  background:rgba(200,113,55,.15);
+  box-shadow:inset 2px 0 0 var(--medal-bronze);
 }
 .wod-round-line.slow .wod-round-split,
-.wod-round-line.slow .wod-round-tag{ color:var(--red); }
+.wod-round-line.slow .wod-round-tag{ color:var(--medal-bronze); }
 .wod-rounds-left{
   margin-top:8px;
   font-family:var(--font-main);

@@ -1,5 +1,5 @@
-// Racine V4.5.40 — les temps de round passent en grille lisible
-var APP_VERSION = "V4.5.40";
+// Racine V4.5.41 — podium des rounds : or et bronze
+var APP_VERSION = "V4.5.41";
 
 // Architecture stable
 // programs/*.js = plan prévu

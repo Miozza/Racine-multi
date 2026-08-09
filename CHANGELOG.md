@@ -1,3 +1,10 @@
+## V4.5.41 — Podium des rounds : or et bronze
+
+- **Le round le plus rapide passe en or de médaille** (`#f2c14e`) au lieu du jaune, et **le plus lent en bronze** (`#c87137`) au lieu du rouge — sur la grille de la séance comme sur l'écran Résultats.
+- **Les deux teintes sont volontairement écartées, et l'or seul brille.** Premier essai à `#e3b341` / `#cd7f32` : sur fond sombre, or et bronze se confondaient à distance. L'or est éclairci et reçoit une lueur, le bronze est ramené vers le cuivre — c'est la brillance qui sépare les deux métaux sur un podium, pas la teinte.
+- **`--gold` n'est pas touché** : il sert à 37 endroits ailleurs dans l'app. Deux jetons dédiés sont ajoutés, `--medal-gold` et `--medal-bronze`.
+- Changement de couleurs seulement : aucune logique, aucune mesure, aucun autre écran modifié. Portée : `styles.css`.
+
 ## V4.5.40 — Les temps de round passent en grille lisible
 
 - **Le problème n'était pas la hauteur, c'était la largeur.** La bande de pastilles introduite en V4.5.37 affichait les splits à 12 px. L'agrandir ne suffit pas : mesuré sur iPhone 402 px, il ne reste que ~250 px utiles après le compteur et le `↩`, soit **2,6 pastilles lisibles à 21 px**. Sur maquette, dès 4 rounds, R1 et R2 sortaient déjà de l'écran.
