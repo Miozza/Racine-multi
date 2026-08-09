@@ -121,14 +121,15 @@
   // et l'espace vertical libre au-dessus sert d'étirement. Le fit le mesure
   // comme n'importe quel voisin (`prev` dans le calcul de hauteur).
   //
-  // Grille, pas bande défilante : une ligne horizontale ne tient que ~2,6
-  // splits lisibles (250 px utiles / ~95 px par pastille à 21 px). Mesuré :
-  // avec 4 rounds, R1 et R2 sortaient déjà de l'écran. La grille à 4 colonnes
-  // en montre 12 sans rien couper.
+  // Banderole d'une ligne, à pastilles hautes. Elle ne montre que ~3 rounds à
+  // la fois et défile — compromis assumé : mieux vaut trois temps VRAIMENT
+  // lisibles que douze illisibles, et la banderole coûte deux fois moins de
+  // hauteur qu'une grille, donc les mouvements restent grands.
   //
-  // La place vient des cartes de mouvement, qui se replient en une ligne dès le
-  // premier round : le WOD est lancé, l'athlète connaît ses mouvements. Tant
-  // qu'aucun round n'est tapé, la carte garde exactement son allure d'origine.
+  // Une pastille ne porte que deux choses : le numéro du round et son temps.
+  // Pas d'étiquette « le + rapide » — la couleur le dit déjà — et le numéro
+  // est en Inter quand le temps est en Orbitron : deux polices, donc aucune
+  // confusion possible entre un numéro de round et une valeur de chrono.
   var PANEL_ID = 'guidedAmrapPanel';
 
   function panelHtml(key){
@@ -136,21 +137,17 @@
     if(!st){
       return "<div class='guided-amrap-hint'>Touche le chrono → +1 round</div>";
     }
-    var cells = '', i, r, tag;
+    var cells = '', i, r;
     for(i = 0; i < st.rounds.length; i++){
       r = st.rounds[i];
-      tag = i === st.fastestIndex ? 'le + rapide' : (i === st.slowestIndex ? 'le + lent' : '');
       cells += "<div class='guided-amrap-cell" + roundClass(st, i) + "'>"
-             + "<span class='guided-amrap-no'>R" + (i + 1) + "</span>"
+             + "<span class='guided-amrap-no'>" + (i + 1) + "</span>"
              + "<span class='guided-amrap-split'>" + esc(clock(r.split)) + "</span>"
-             + (tag ? "<span class='guided-amrap-tag'>" + tag + "</span>" : "")
              + "</div>";
     }
-    return "<div class='guided-amrap-head'>"
-         + "<div class='guided-amrap-count'>" + st.count + "<span>round" + (st.count > 1 ? 's' : '') + "</span></div>"
-         + "<button type='button' class='guided-amrap-undo' data-amrap-undo='1' aria-label='Retirer le dernier round'>↩</button>"
-         + "</div>"
-         + "<div class='guided-amrap-grid'>" + cells + "</div>";
+    return "<div class='guided-amrap-count'>" + st.count + "<span>round" + (st.count > 1 ? 's' : '') + "</span></div>"
+         + "<div class='guided-amrap-cells'>" + cells + "</div>"
+         + "<button type='button' class='guided-amrap-undo' data-amrap-undo='1' aria-label='Retirer le dernier round'>↩</button>";
   }
 
   // Le panneau se redessine seul après un tap : le reste de la carte WOD (et
@@ -165,9 +162,9 @@
     // c'est leur hauteur qui paie la grille.
     var moves = document.querySelector('.guided-wod-moves');
     if(moves) moves.classList.toggle('compact', !!st);
-    // Au-delà de 12 rounds la grille défile : toujours montrer les derniers.
-    var grid = el.querySelector('.guided-amrap-grid');
-    if(grid) grid.scrollTop = grid.scrollHeight;
+    // La banderole ne montre que ~3 pastilles : toujours coller aux derniers.
+    var cells = el.querySelector('.guided-amrap-cells');
+    if(cells) cells.scrollLeft = cells.scrollWidth;
     if(typeof refitGuidedWodTimerSoon === 'function') refitGuidedWodTimerSoon();
   }
 
