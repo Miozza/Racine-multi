@@ -1,5 +1,5 @@
-// Racine V4.5.43 — podium des rounds : or et bronze
-var APP_VERSION = "V4.5.43";
+// Racine V4.5.44 — banderole des rounds : temps plus gros, mouvements récupérés
+var APP_VERSION = "V4.5.44";
 
 // Architecture stable
 // programs/*.js = plan prévu

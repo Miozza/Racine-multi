@@ -1,3 +1,14 @@
+## V4.5.44 — Banderole des rounds : temps plus gros, mouvements récupérés
+
+- **Retour à une banderole d'une ligne**, mais à pastilles hautes (52 px, la taille des rectangles de la grille). ~3 temps visibles, puis défilement collé aux derniers. Compromis assumé : trois temps **vraiment** lisibles valent mieux que douze illisibles, et une ligne coûte deux fois moins de hauteur qu'une grille — 52 px contre 97 à 215 px selon le nombre de rounds.
+- **Une pastille ne porte plus que le numéro et le temps.** L'étiquette « le + rapide » / « le + lent » disparaît : la couleur or et bronze le dit déjà. Le « R » de « R1 » aussi — il reste `1`, `2`, `3`.
+- **Deux polices pour deux natures.** Le numéro de round passe en **Inter**, le temps reste en **Orbitron** : impossible de confondre un numéro de round avec une valeur de chrono, même du coin de l'œil en plein effort.
+- **Le temps de round passe de 22 à 27 px** — c'est exactement la place libérée par l'étiquette et le préfixe.
+- **Les mouvements récupèrent la hauteur.** Ils étaient trop écrasés : reps de 19 → **30 px**, nom de 15 → **19 px** (contre 44/30 à pleine taille). 19 px et pas 21 : à 21, « WALL BALLS » repassait sur deux lignes et déséquilibrait les cartes. Bloc de 31 → 52 px à deux mouvements, 110 px à quatre.
+- **Le chrono ne bouge pas** : 137 px, sa police se calculant sur la largeur (règle verrouillée). Vérifié à 0, 4, 8 et 14 rounds, et sur un AMRAP à 4 mouvements, sans débordement horizontal ni erreur console.
+- L'écran Résultats garde ses étiquettes « le plus rapide » / « le plus lent » : la place y est disponible et le tableau se lit à froid, pas en plein WOD.
+- **Portée** : `scripts/session/amrap_rounds.js`, `styles.css`, `docs/UI_CONSTRAINTS.md`. Garde-fou mis à jour : `dev/amrap_rounds_checks.js`.
+
 ## V4.5.43 — Podium des rounds : or et bronze
 
 - **Le round le plus rapide passe en or de médaille** (`#f2c14e`) au lieu du jaune, et **le plus lent en bronze** (`#c87137`) au lieu du rouge — sur la grille de la séance comme sur l'écran Résultats.

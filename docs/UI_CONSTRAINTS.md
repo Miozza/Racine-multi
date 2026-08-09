@@ -121,14 +121,19 @@ Ces règles sont obligatoires à partir de V51.24.
   sans cette exclusion, chaque action du chrono ajouterait un round au passage.
 - Le panneau des rounds vit **au-dessus** de la boîte du chrono, jamais dedans.
   La police du chrono se calcule sur la largeur : elle n'est donc pas touchée.
-- Les splits sont en **grille à 4 colonnes**, pas en bande défilante. Mesuré sur
-  402 px : après le compteur et le `↩`, une ligne horizontale ne tient que
-  ~2,6 temps lisibles à 21 px — dès 4 rounds, R1 et R2 sortaient de l'écran.
-  La grille en montre 12, puis défile verticalement.
-- La place vient des **cartes de mouvement, repliées sur une ligne**, et
-  seulement à partir du premier round tapé : avant, l'athlète doit lire ses
-  mouvements en grand. Tant qu'aucun round n'est compté, la carte WOD garde
-  exactement son allure d'origine.
+- Les splits sont sur **une banderole d'une ligne, à pastilles hautes** : ~3
+  temps visibles, puis défilement collé aux derniers. Compromis assumé — trois
+  temps vraiment lisibles valent mieux que douze illisibles, et une ligne coûte
+  deux fois moins de hauteur qu'une grille.
+- Une pastille ne porte que **le numéro et le temps**. Pas d'étiquette
+  « le + rapide » : la couleur le dit déjà, et la place gagnée passe dans la
+  taille du temps. Le numéro est en **Inter**, le temps en **Orbitron** — deux
+  polices, donc aucune confusion entre un numéro de round et un chrono.
+- La place vient des **cartes de mouvement repliées**, et seulement à partir du
+  premier round tapé : avant, l'athlète doit lire ses mouvements en grand. Tant
+  qu'aucun round n'est compté, la carte WOD garde exactement son allure
+  d'origine. Repliées ne veut pas dire écrasées : elles restent lisibles à bout
+  de bras (reps 30 px, nom 19 px).
 - Le retour d'un tap reste discret : vibration courte, aucun son, aucune
   modale. Le WOD est en cours, l'athlète n'a rien à confirmer.
 

@@ -13,9 +13,11 @@
        dont l'athlète disposait pour les reps du round entamé.
     5. Le panneau reste AU-DESSUS de la boîte du chrono, jamais dedans — la
        taille des chiffres se calcule sur la largeur (docs/UI_CONSTRAINTS.md).
-       Les splits sont en grille : une ligne horizontale ne tient que ~2,6
-       temps lisibles sur 402 px. La place vient des cartes de mouvement, qui
-       ne se replient qu'une fois le WOD lancé.
+       Banderole d'une ligne à pastilles hautes : ~3 temps visibles, puis
+       défilement collé aux derniers. Une pastille ne porte QUE le numéro et
+       le temps — pas d'étiquette, la couleur le dit. Numéro en Inter, temps
+       en Orbitron. La place vient des cartes de mouvement, qui ne se replient
+       qu'une fois le WOD lancé, et sans être écrasées.
     6. L'écran Résultats reprend le compte tapé et le rend sélectionnable même
        s'il dépasse l'estimation du programme.
     7. Rien n'est persisté par le module : ce qui survit part par la ligne WOD
@@ -93,12 +95,27 @@ const iPanel = view.indexOf("guided-amrap-panel");
 const iBox = view.indexOf("class='guided-wod-timer'");
 assert(iPanel > -1 && iBox > -1 && iPanel < iBox,
   'view.js : le panneau des rounds est rendu AVANT la boîte du chrono, pas dedans');
-// Grille, pas bande défilante : une ligne horizontale ne tient que ~2,6 splits
-// lisibles sur 402 px. La grille à 4 colonnes en montre 12.
-assert(/grid-template-columns:repeat\(4, minmax\(0, 1fr\)\)/.test(css),
-  'styles.css : les splits sont en grille 4 colonnes, pas en bande défilante');
-assert(/\.guided-amrap-split\{[\s\S]{0,120}font-size:22px/.test(css),
-  'styles.css : les temps de round sont lisibles (22 px), pas 12 px');
+// Banderole d'une ligne : la lisibilité du temps prime sur le nombre de
+// pastilles visibles, et une ligne coûte deux fois moins de hauteur qu'une
+// grille — c'est cette hauteur qui garde les mouvements lisibles.
+assert(/\.guided-amrap-cells\{[\s\S]{0,220}overflow-x:auto/.test(css),
+  'styles.css : les splits sont sur une ligne qui défile, pas en grille');
+assert(/\.guided-amrap-split\{[\s\S]{0,160}font-size:27px/.test(css),
+  'styles.css : le temps de round est gros (27 px)');
+// Deux polices : un numéro de round ne doit jamais se lire comme un chrono.
+assert(/\.guided-amrap-no\{[\s\S]{0,120}font-family:var\(--font-main\)/.test(css),
+  'styles.css : le numéro de round est en Inter, pas en Orbitron comme le temps');
+assert(/\.guided-amrap-split\{[\s\S]{0,60}font-family:var\(--font-hud\)/.test(css),
+  'styles.css : le temps de round reste en Orbitron');
+// L'étiquette « le + rapide » est redondante avec la couleur : elle a été
+// retirée, et la place gagnée est passée dans la taille du temps.
+assert(!/guided-amrap-tag/.test(mod) && !/guided-amrap-tag/.test(css),
+  'la pastille ne porte aucune étiquette — la couleur dit le classement');
+assert(/'<span class=.guided-amrap-no.>' \+ \(i \+ 1\)/.test(mod.replace(/"/g, "'")),
+  'amrap_rounds.js : la pastille affiche « 1 », pas « R1 »');
+// Mouvements repliés, pas écrasés.
+assert(/\.guided-wod-moves\.compact \.guided-wod-reps\{[\s\S]{0,80}font-size:30px/.test(css),
+  'styles.css : les mouvements repliés restent lisibles (reps 30 px)');
 // La place vient des cartes de mouvement — et seulement une fois le WOD lancé.
 assert(/renderGuidedWodMoves\(st\.moves, amrapCount>0\)/.test(view),
   'view.js : les mouvements ne se replient qu\'à partir du premier round tapé');
@@ -118,7 +135,7 @@ assert(/if\(!\(elapsed > 0\)\) return null;/.test(timer),
 assert(/clearGuidedTimerRounds\(\);/.test(timer),
   'timer.js : éditer le chrono remet les rounds à zéro (leur temps restant ne veut plus rien dire)');
 assert(/\.guided-amrap-panel\{/.test(css) && /\.guided-amrap-cell\.fast\{/.test(css) && /\.guided-amrap-cell\.slow\{/.test(css),
-  'styles.css : panneau + couleurs or (rapide) et rouge (lent)');
+  'styles.css : banderole + couleurs or (1re place) et bronze (dernière)');
 assert(/\.wod-round-line\.fast\{/.test(css) && /\.wod-round-line\.slow\{/.test(css),
   'styles.css : mêmes couleurs sur l\'écran Résultats');
 
