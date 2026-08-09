@@ -7267,37 +7267,25 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 .guided-amrap-undo:active{ background:var(--panel2); color:var(--text); }
 
 /* ── Mouvements pendant le WOD ─────────────────────────────────────────────
-   Repliés, pas écrasés : la banderole d'une ligne coûte deux fois moins que
-   la grille, et cette hauteur retourne aux mouvements. Ils gardent leurs
-   couleurs (mv1…mv4) et restent lisibles à bout de bras. Le repli n'arrive
-   qu'au premier round tapé : avant, ils sont à pleine taille. */
+   Ils rendent EXACTEMENT la hauteur de la banderole (~52 px), pas un pixel de
+   plus. C'est ce qui garde le chrono identique avant et après le premier
+   round : toute hauteur libérée en trop part dans son étirement vertical, et
+   les chiffres se mettent à grossir sans qu'on l'ait demandé.
+   Mise en page inchangée (empilés, reps | nom), seules les tailles baissent
+   d'environ 15 %. Le repli n'arrive qu'au premier round tapé. */
 .guided-card.kind-wod .guided-wod-moves.compact{
-  display:flex !important;
-  flex-wrap:wrap;
-  flex:0 0 auto !important;
   gap:6px !important;
   margin:4px 0 6px !important;
 }
 .guided-card.kind-wod .guided-wod-moves.compact .guided-wod-move{
-  display:flex !important;
-  flex:1 1 45%;
-  align-items:baseline;
-  justify-content:center;
-  gap:8px;
-  min-height:52px !important;
-  padding:7px 9px !important;
-  grid-template-columns:none !important;
+  min-height:72px !important;
+  padding:6px 8px !important;
 }
 .guided-card.kind-wod .guided-wod-moves.compact .guided-wod-reps{
-  font-size:30px !important;
-  line-height:1 !important;
+  font-size:38px !important;
 }
 .guided-card.kind-wod .guided-wod-moves.compact .guided-wod-name{
-  /* 19 px et pas 21 : « WALL BALLS » passait sur deux lignes à deux
-     mouvements par rangée, ce qui déséquilibrait les cartes. */
-  font-size:19px !important;
-  line-height:1.02 !important;
-  letter-spacing:0;
+  font-size:26px !important;
 }
 
 /* ── Écran résultats : journal des rounds ─────────────────────────────────── */

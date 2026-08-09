@@ -1,5 +1,5 @@
-// Racine V4.5.44 — banderole des rounds : temps plus gros, mouvements récupérés
-var APP_VERSION = "V4.5.44";
+// Racine V4.5.45 — le chrono ne grossit plus au premier round
+var APP_VERSION = "V4.5.45";
 
 // Architecture stable
 // programs/*.js = plan prévu
