@@ -1,0 +1,97 @@
+# Validations Racine sur chaque Pull Request.
+#
+# Pourquoi : les scripts de dev/ existent depuis longtemps, mais rien ne les
+# lançait automatiquement. Une suite que personne n'exécute ne protège rien —
+# et deux sessions travaillant en parallèle sur ce dépôt ont déjà livré des
+# numéros de version en collision sans que rien ne le signale.
+#
+# ⚠️ AUCUN `npm ci` ICI, VOLONTAIREMENT.
+#    Les 41 scripts sont du Node pur, sans une seule dépendance : ils tournent
+#    sur un checkout nu. Et `dev/structure_checks.js` parcourt tout l'arbre sans
+#    exclure `node_modules` — l'installer ferait échouer la validation.
+#    (Cette contrainte est écrite dans CLAUDE.md § 3.1 « Avant de livrer ».)
+#
+# La liste des scripts n'est PAS recopiée ici : elle est lue dans
+# RELEASE_CHECKLIST.md, qui en reste le propriétaire unique. Ajouter un script
+# à la checklist l'ajoute à la CI, sans toucher à ce fichier. Et comme
+# `structure_checks.js` exige déjà que tout script de dev/ soit cité dans la
+# checklist, les deux se verrouillent mutuellement.
+#
+# Ce workflow ne touche pas à deploy-pages.yml : déploiement et validation
+# restent deux choses séparées.
+name: Validations
+
+on:
+  pull_request:
+  push:
+    # Sur main, la PR a déjà tout validé : inutile de repayer le run.
+    branches-ignore: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checklist:
+    name: RELEASE_CHECKLIST
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Lancer la checklist
+        run: |
+          set -uo pipefail
+
+          # Le bloc ```bash de RELEASE_CHECKLIST.md est la source de vérité.
+          mapfile -t CMDS < <(sed -n '/^```bash$/,/^```$/p' RELEASE_CHECKLIST.md \
+                              | grep '^node dev/' | sed 's/^node //')
+
+          if [ "${#CMDS[@]}" -eq 0 ]; then
+            echo "::error::Aucune commande trouvée dans le bloc bash de RELEASE_CHECKLIST.md."
+            exit 1
+          fi
+
+          echo "### Validations Racine" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Script | Résultat | Durée |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+
+          failed=0
+          for cmd in "${CMDS[@]}"; do
+            script="${cmd%% *}"
+            start=$(date +%s%N)
+            if out=$(node $cmd 2>&1); then
+              status="✅"
+            else
+              status="❌"
+              failed=$((failed + 1))
+              # Le détail ne va dans le journal que pour ce qui a échoué :
+              # 41 scripts verts noieraient l'échec qu'on cherche.
+              echo "::group::ÉCHEC — $cmd"
+              echo "$out"
+              echo "::endgroup::"
+              echo "::error file=$script::$(echo "$out" | grep -m1 -i 'fail\|échec' || echo 'validation en échec')"
+            fi
+            ms=$((($(date +%s%N) - start) / 1000000))
+            echo "| \`$script\` | $status | ${ms} ms |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**${#CMDS[@]} scripts · $failed échec(s)**" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$failed" -gt 0 ]; then
+            echo "$failed script(s) en échec sur ${#CMDS[@]}."
+            exit 1
+          fi
+          echo "${#CMDS[@]} scripts, aucun échec."

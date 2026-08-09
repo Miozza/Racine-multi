@@ -139,6 +139,14 @@ data/cycle_state.json
 
 `dev/` contient les validations. Un fichier dev doit être appelé dans `RELEASE_CHECKLIST.md` ou justifié par une documentation stable.
 
+Ces validations tournent **automatiquement sur chaque Pull Request**
+(`.github/workflows/checks.yml`). Le workflow lit la liste dans
+`RELEASE_CHECKLIST.md` au lieu de la recopier : un seul propriétaire, et
+`structure_checks.js` exige déjà que tout script de `dev/` y soit cité —
+les deux se verrouillent. Le job n'installe **aucune dépendance** : les
+scripts sont du Node pur et `structure_checks.js` échouerait en présence
+de `node_modules`.
+
 Validations obligatoires :
 
 ```bash

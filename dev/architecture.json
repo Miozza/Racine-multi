@@ -4,10 +4,20 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 186,
+    "ACTIF": 187,
     "POINT_ENTREE": 3
   },
   "files": [
+    {
+      "path": ".github/workflows/checks.yml",
+      "size": 3582,
+      "lines": 97,
+      "role": "CI : lance la checklist de validation sur chaque Pull Request. La liste des scripts est LUE dans RELEASE_CHECKLIST.md (propriétaire unique), pas recopiée. Aucun npm ci : les scripts sont du Node pur, et structure_checks.js parcourt tout l'arbre sans exclure node_modules.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
     {
       "path": ".github/workflows/deploy-pages.yml",
       "size": 1809,

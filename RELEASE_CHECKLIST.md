@@ -3,6 +3,10 @@
 
 Avant d'importer dans DEV ou de publier une version de test :
 
+> Ce bloc est **exécuté automatiquement sur chaque Pull Request** par
+> `.github/workflows/checks.yml`, qui le lit ici même — la liste n'est
+> recopiée nulle part ailleurs. Ajouter une ligne l'ajoute à la CI.
+
 ```bash
 node dev/multi_profile_checks.js
 node dev/ai_import_fallback_smoke.js
