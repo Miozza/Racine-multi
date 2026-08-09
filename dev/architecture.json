@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 185,
+    "ACTIF": 186,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -1072,6 +1072,16 @@
       "consumes": [
         "dev/architecture.json"
       ]
+    },
+    {
+      "path": "dev/wod_moves_checks.js",
+      "size": 8692,
+      "lines": 143,
+      "role": "Garde-fous des pastilles de mouvements du WOD (guided-wod-moves) : découpage des segments (« + », « ; », « puis »), étiquette de position, rejet des durées, bornage du nom de mouvement.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     },
     {
       "path": "docs/ARCHITECTURE.md",

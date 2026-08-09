@@ -91,6 +91,29 @@ Ces règles sont obligatoires à partir de V51.24.
   (`line-height` < 1) et capturent le tap. Tout contrôle placé dans cette zone doit
   être positionné au-dessus de ce débordement.
 
+### Pastilles de mouvements du WOD (`guided-wod-moves`)
+
+- **Une pastille = UN mouvement**, jamais une phrase. Le texte du WOD se découpe
+  sur `+`, `;` et « puis » ; une étiquette de position (« minutes paires : »,
+  « station 3 : ») est retirée **seulement si un nombre la suit**, sinon on
+  couperait un vrai texte.
+- **Un nombre suivi d'une unité de temps est une durée, pas des répétitions.**
+  Quand le temps mesure l'effort entier (« 10 à 15 min **de** marche inclinée »),
+  le segment ne produit **aucune** pastille : le bloc affiche son texte complet,
+  c'est le rendu juste. Quand le temps est la dose d'un vrai mouvement
+  (« 20 sec side plank/côté »), la pastille reste et l'unité quitte le nom.
+- **Le nom est borné** : il s'arrête au premier connecteur de consigne
+  (`,` `.` `—` « puis » « si ») et ne dépasse jamais `WOD_NAME_MAX` caractères.
+  `.guided-wod-name` ne tronque pas — sans borne, un texte de programme mal formé
+  déborde de la pastille. « avec » n'est **pas** un connecteur : il appartient à
+  de vrais noms (« Marche avec haltères »).
+- Les plages et pyramides restent entières comme libellé de reps (`8–10`,
+  `21-15-9`). Tout code qui calcule sur `mv.reps` doit donc en extraire un nombre
+  (`wodMoveMaxReps()`), jamais faire d'arithmétique directe sur la chaîne.
+- Ces règles vivent dans `parseWodStructure()` (`app.js`), qui alimente **aussi**
+  la capture de résultats : une erreur d'analyse se voit à deux écrans.
+  Garde-fou : `dev/wod_moves_checks.js`.
+
 ### Rounds AMRAP tapés sur le chrono
 
 - Sur un WOD AMRAP, toute la carte du chrono est le compteur : un tap ajoute un

@@ -1,5 +1,5 @@
-// Racine V4.5.41 — podium des rounds : or et bronze
-var APP_VERSION = "V4.5.41";
+// Racine V4.5.43 — podium des rounds : or et bronze
+var APP_VERSION = "V4.5.43";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -742,6 +742,81 @@ function buildRpeChips(){
   return [6,7,7.5,8,8.5,9,10];
 }
 
+// ── Découpe d'un texte de WOD en segments de mouvement ───────────────────────
+// « + » ne suffisait pas. Les programmes écrivent aussi « ; » et « puis » :
+// « 8 calories vélo ou rameur ; minutes paires : 6 burpees contrôlés » ne se
+// découpait pas, donc le premier mouvement avalait toute la fin de la phrase
+// (pastille « 8 » suivie de quatre lignes de texte) et le second n'avait jamais
+// sa propre pastille.
+function splitWodSegments(text){
+  return String(text||'').split(/\s*\+\s*|\s*;\s*|\s+puis\s+/i);
+}
+
+// « minutes paires : 6 burpees », « station 3 : 12 wall balls » — l'étiquette
+// devant le « : » situe le mouvement, elle n'en fait pas partie. On ne la retire
+// que si ce qui suit commence par un nombre : sinon on couperait un vrai texte.
+function stripWodSegmentLabel(part){
+  var s = String(part||'').trim();
+  var m = s.match(/^([^:]{1,40}):\s*(\d.*)$/);
+  return m ? m[2].trim() : s;
+}
+
+// Unité de temps derrière le nombre. La frontière est un lookahead et non `\b` :
+// « é » n'est pas un caractère de mot en JS, donc `^s\b` matchait « séries » et
+// faisait disparaître « 2 séries progressives de front squat ».
+var WOD_TIME_UNIT_RE = /^(?:min|mins|minutes?|sec|secs|secondes?|s|h|heures?)(?![A-Za-zÀ-ÖØ-öø-ÿ0-9])\s*/i;
+
+// Ce qui suit l'unité décide du sens. « 10 à 15 min DE marche inclinée » : le
+// temps mesure l'effort entier, il n'y a pas de mouvement chiffré → aucune
+// pastille. « 20 sec side plank/côté » : le temps est la dose d'un vrai
+// mouvement → on garde la pastille et on retire seulement l'unité du nom.
+var WOD_DURATION_PREP_RE = /^(?:d'|(?:de|du|des|en|à|a|au|aux|sur|par)(?![A-Za-zÀ-ÖØ-öø-ÿ0-9]))/i;
+
+// Nombre de tête d'un segment. Gère le nombre simple (« 8 burpees »), la plage
+// (« 10 à 15 ») et la pyramide (« 21-15-9 »), et rejette ce qui n'est pas des
+// répétitions. Sans ce rejet, « 10 à 15 min de marche inclinée ou de vélo
+// facile » produisait une pastille « 10 » nommée « à 15 min de marche… ».
+function parseWodLeadingReps(part){
+  var m = String(part||'').trim().match(/^(\d+(?:\s*(?:à|a|to|[-–—])\s*\d+)*)\s*(cal\s+)?(.+)$/i);
+  if(!m) return null;
+  var rest = m[3].trim();
+  var unit = rest.match(WOD_TIME_UNIT_RE);
+  if(unit){
+    var after = rest.slice(unit[0].length).trim();
+    if(!after || WOD_DURATION_PREP_RE.test(after)) return null; // durée pure
+    rest = after;
+  }
+  var nums = (m[1].match(/\d+/g) || []).map(Number);
+  if(!nums.length) return null;
+  // Nombre seul : on garde la fourchette de reps historique (1 à 80).
+  if(nums.length === 1 && (nums[0] < 1 || nums[0] > 80)) return null;
+  if(nums.some(function(n){ return n < 1 || n > 200; })) return null;
+  return {reps: nums.join('–'), isCal: !!m[2], name: rest};
+}
+
+// Fin du nom de mouvement : ce qui suit un connecteur de consigne n'est plus le
+// nom. « avec » est volontairement absent de la liste — il appartient à de vrais
+// noms (« Marche avec haltères »). Filet de sécurité final : une longueur
+// maximale, parce que .guided-wod-name ne tronque pas et déborde de la pastille.
+// 34 : le plus long nom réel des programmes (« banded seated hip
+// abductions/côté ») passe entier ; une phrase de consigne, elle, est coupée.
+var WOD_NAME_MAX = 34;
+function boundWodMoveName(name){
+  var n = String(name||'').trim();
+  // Idempotent : cleanMoveName peut repasser sur un nom déjà borné (addMove le
+  // rappelle), et sans ce garde-fou on empilerait « …… ».
+  if(/…$/.test(n)) return n;
+  var cut = n.search(/,|\.|;|\s[—–-]\s|\s(?:puis|si)\s|\(/i);
+  if(cut > 1) n = n.slice(0, cut).trim();
+  if(n.length > WOD_NAME_MAX){
+    var short = n.slice(0, WOD_NAME_MAX);
+    var sp = short.lastIndexOf(' ');
+    if(sp >= 12) short = short.slice(0, sp);
+    n = short.replace(/[\s,;:.–—-]+$/,'') + '…';
+  }
+  return n.trim();
+}
+
 // ── Analyse la structure d'un WOD pour extraire mouvements + reps + couleurs ──
 function parseWodStructure(text){
   if(!text) return null;
@@ -769,6 +844,10 @@ function parseWodStructure(text){
       .replace(/\s+/g,' ')
       .trim();
 
+    // Dernier rempart : le nom s'arrête au premier connecteur de consigne et ne
+    // dépasse jamais la pastille, quelle que soit la branche d'analyse.
+    n = boundWodMoveName(n);
+
     if(hadCal){
       if(/^row\b/i.test(n)) return 'Cal Row';
       if(/^bike\b/i.test(n)) return 'Cal Bike';
@@ -789,9 +868,14 @@ function parseWodStructure(text){
   // EMOM : "min 1 = 12 cal row ; min 2 = 10 ring rows stricts"
   if(/\bEMOM\b/i.test(raw)){
     var emomPart = raw.split('.')[0];
-    var emomRe = /min\s*\d+\s*=\s*(\d+)\s*(cal\s+)?([^;\.]+)/ig;
+    var emomRe = /min\s*\d+\s*=\s*([^;\.]+)/ig;
     var m;
-    while((m = emomRe.exec(emomPart)) !== null){ addMove(m[1], m[3], !!m[2]); }
+    while((m = emomRe.exec(emomPart)) !== null){
+      // Même lecture du nombre de tête que les autres branches : « 8-10 ring
+      // rows » donnait « 8 » + un nom commençant par « -10 ».
+      var lead = parseWodLeadingReps(m[1]);
+      if(lead) addMove(lead.reps, lead.name, lead.isCal);
+    }
     if(moves.length) return moves;
   }
 
@@ -811,7 +895,8 @@ function parseWodStructure(text){
 
   if(scheme){
     main = main.replace(/^(\d+\s*[-–]\s*\d+\s*[-–]\s*\d+)\s*:?\s*/,'');
-    main.split('+').forEach(function(part){
+    splitWodSegments(main).forEach(function(part){
+      part = stripWodSegmentLabel(part);
       var isCalPart = /^\s*cal\s+/i.test(part);
       part = cleanMoveName(part, isCalPart);
       if(part) addMove(scheme, part, false);
@@ -819,14 +904,12 @@ function parseWodStructure(text){
     if(moves.length) return moves;
   }
 
-  main.split('+').forEach(function(part){
-    part = part.trim();
-    var m = part.match(/^(\d+)\s*(cal\s+)?(.+)$/i);
-    if(!m) return;
-    var reps = Number(m[1]);
-    var name = cleanMoveName(m[3], !!m[2]);
-    if(reps<1||reps>80||name.length<2) return;
-    addMove(reps, name, false);
+  splitWodSegments(main).forEach(function(part){
+    var lead = parseWodLeadingReps(stripWodSegmentLabel(part));
+    if(!lead) return;
+    var name = cleanMoveName(lead.name, lead.isCal);
+    if(name.length<2) return;
+    addMove(lead.reps, name, false);
   });
 
   return moves.length>=1 ? moves : null;
@@ -1194,9 +1277,17 @@ function renderWeekProgress(){
   currentDayOrder().forEach(function(d){
     var done=isDayCompleted(d), missed=isDayMissed(d);
     var meta=currentDayMeta(d);
-    var pip=document.createElement("span");
+    var label=(meta&&meta.label)||d;
+    // Les pips sont des boutons : ils montraient l'état de la semaine sans rien
+    // faire au tap, alors qu'ils sont la cible naturelle pour changer de jour.
+    // Même action que les onglets de jour (renderDays) — aucune autre voie.
+    var pip=document.createElement("button");
+    pip.type="button";
     pip.className="day-pip"+(done?" done":"")+(missed?" missed":"")+(d===state.day?" current":"");
-    pip.title=((meta&&meta.label)||d)+(missed?" — manqué":"");
+    pip.title=label+(missed?" — manqué":"");
+    pip.setAttribute("aria-label","Aller à "+label+(done?" — complété":(missed?" — manqué":"")));
+    if(d===state.day) pip.setAttribute("aria-current","true");
+    pip.onclick=function(){ state.day=d; save(); render(); };
     dc.appendChild(pip);
   });
 }
