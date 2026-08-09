@@ -495,8 +495,8 @@
     },
     {
       "path": "dev/amrap_rounds_checks.js",
-      "size": 6974,
-      "lines": 119,
+      "size": 8469,
+      "lines": 138,
       "role": "Garde-fous des rounds AMRAP tapés sur le chrono : comptage, classement rapide/lent, temps restant du dernier round, placement du bandeau et transfert vers l'écran Résultats.",
       "category": "ACTIF",
       "exposes": [],
@@ -3146,9 +3146,9 @@
     },
     {
       "path": "scripts/session/amrap_rounds.js",
-      "size": 9147,
-      "lines": 217,
-      "role": "Rounds AMRAP tapés sur le chrono de la séance guidée : splits, round le plus rapide/lent, temps restant du dernier round entamé, bandeau de séance et panneau Résultats.",
+      "size": 10299,
+      "lines": 239,
+      "role": "Rounds AMRAP tapés sur le chrono de la séance guidée : splits, round le plus rapide/lent, temps restant du dernier round entamé, panneau en grille 4 colonnes (les mouvements se replient pour lui faire la place) et panneau Résultats.",
       "category": "ACTIF",
       "exposes": [
         "window.CoachAmrapRounds"

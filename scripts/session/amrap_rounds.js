@@ -115,38 +115,59 @@
     return '';
   }
 
-  // ── Bandeau de la carte WOD ────────────────────────────────────────────────
+  // ── Panneau de la carte WOD ────────────────────────────────────────────────
   // Placé AU-DESSUS de la boîte du chrono, jamais dedans : la taille des
   // chiffres se calcule sur la largeur (règle verrouillée, docs/UI_CONSTRAINTS),
-  // et l'espace vertical libre au-dessus sert d'étirement. Le bandeau prend un
-  // peu de cet étirement — il ne touche pas à la taille de police — et le fit
-  // le mesure comme n'importe quel voisin (`prev` dans le calcul de hauteur).
-  function stripHtml(key){
+  // et l'espace vertical libre au-dessus sert d'étirement. Le fit le mesure
+  // comme n'importe quel voisin (`prev` dans le calcul de hauteur).
+  //
+  // Grille, pas bande défilante : une ligne horizontale ne tient que ~2,6
+  // splits lisibles (250 px utiles / ~95 px par pastille à 21 px). Mesuré :
+  // avec 4 rounds, R1 et R2 sortaient déjà de l'écran. La grille à 4 colonnes
+  // en montre 12 sans rien couper.
+  //
+  // La place vient des cartes de mouvement, qui se replient en une ligne dès le
+  // premier round : le WOD est lancé, l'athlète connaît ses mouvements. Tant
+  // qu'aucun round n'est tapé, la carte garde exactement son allure d'origine.
+  var PANEL_ID = 'guidedAmrapPanel';
+
+  function panelHtml(key){
     var st = stats(key);
     if(!st){
       return "<div class='guided-amrap-hint'>Touche le chrono → +1 round</div>";
     }
-    var chips = '', i, r;
+    var cells = '', i, r, tag;
     for(i = 0; i < st.rounds.length; i++){
       r = st.rounds[i];
-      chips += "<span class='guided-amrap-chip" + roundClass(st, i) + "'>"
-             + "<b>R" + (i + 1) + "</b>" + esc(clock(r.split)) + "</span>";
+      tag = i === st.fastestIndex ? 'le + rapide' : (i === st.slowestIndex ? 'le + lent' : '');
+      cells += "<div class='guided-amrap-cell" + roundClass(st, i) + "'>"
+             + "<span class='guided-amrap-no'>R" + (i + 1) + "</span>"
+             + "<span class='guided-amrap-split'>" + esc(clock(r.split)) + "</span>"
+             + (tag ? "<span class='guided-amrap-tag'>" + tag + "</span>" : "")
+             + "</div>";
     }
-    return "<div class='guided-amrap-count'>" + st.count + "<span>round" + (st.count > 1 ? 's' : '') + "</span></div>"
-         + "<div class='guided-amrap-chips'>" + chips + "</div>"
-         + "<button type='button' class='guided-amrap-undo' data-amrap-undo='1' aria-label='Retirer le dernier round'>↩</button>";
+    return "<div class='guided-amrap-head'>"
+         + "<div class='guided-amrap-count'>" + st.count + "<span>round" + (st.count > 1 ? 's' : '') + "</span></div>"
+         + "<button type='button' class='guided-amrap-undo' data-amrap-undo='1' aria-label='Retirer le dernier round'>↩</button>"
+         + "</div>"
+         + "<div class='guided-amrap-grid'>" + cells + "</div>";
   }
 
-  // Le bandeau se redessine seul après un tap : le reste de la carte WOD (et
+  // Le panneau se redessine seul après un tap : le reste de la carte WOD (et
   // surtout le chrono en cours) ne doit pas être re-rendu pour un compteur.
-  function refreshStrip(key){
-    var el = document.getElementById('guidedAmrapStrip');
+  function refreshPanel(key){
+    var el = document.getElementById(PANEL_ID);
     if(!el) return;
     var st = stats(key);
-    el.innerHTML = stripHtml(key);
+    el.innerHTML = panelHtml(key);
     el.classList.toggle('has-rounds', !!st);
-    var chips = el.querySelector('.guided-amrap-chips');
-    if(chips) chips.scrollLeft = chips.scrollWidth;
+    // Les mouvements se replient (ou se redéplient après un ↩) en même temps :
+    // c'est leur hauteur qui paie la grille.
+    var moves = document.querySelector('.guided-wod-moves');
+    if(moves) moves.classList.toggle('compact', !!st);
+    // Au-delà de 12 rounds la grille défile : toujours montrer les derniers.
+    var grid = el.querySelector('.guided-amrap-grid');
+    if(grid) grid.scrollTop = grid.scrollHeight;
     if(typeof refitGuidedWodTimerSoon === 'function') refitGuidedWodTimerSoon();
   }
 
@@ -207,8 +228,9 @@
     count: count,
     stats: stats,
     clock: clock,
-    stripHtml: stripHtml,
-    refreshStrip: refreshStrip,
+    panelId: PANEL_ID,
+    panelHtml: panelHtml,
+    refreshPanel: refreshPanel,
     resultsHtml: resultsHtml,
     resultSuffix: resultSuffix,
     splitsText: splitsText,

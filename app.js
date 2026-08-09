@@ -1,5 +1,5 @@
-// Racine V4.5.39 — corriger la date de fin d’un cycle
-var APP_VERSION = "V4.5.39";
+// Racine V4.5.40 — les temps de round passent en grille lisible
+var APP_VERSION = "V4.5.40";
 
 // Architecture stable
 // programs/*.js = plan prévu

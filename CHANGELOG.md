@@ -1,3 +1,12 @@
+## V4.5.40 — Les temps de round passent en grille lisible
+
+- **Le problème n'était pas la hauteur, c'était la largeur.** La bande de pastilles introduite en V4.5.37 affichait les splits à 12 px. L'agrandir ne suffit pas : mesuré sur iPhone 402 px, il ne reste que ~250 px utiles après le compteur et le `↩`, soit **2,6 pastilles lisibles à 21 px**. Sur maquette, dès 4 rounds, R1 et R2 sortaient déjà de l'écran.
+- **Grille à 4 colonnes** à la place de la bande défilante : temps de round à **22 px** (au lieu de 12), **12 rounds visibles d'un coup**, puis défilement vertical qui reste collé aux derniers. Les cellules or et rouge portent leur étiquette — « le + rapide », « le + lent » — au lieu d'une simple couleur.
+- **La place vient des cartes de mouvement, repliées sur une ligne** (185 px → 31 px), et **seulement à partir du premier round tapé** : une fois le WOD lancé, l'athlète connaît ses mouvements ; avant, il doit les lire en grand. Tant qu'aucun round n'est compté, la carte WOD garde **exactement** son allure d'origine. Un `↩` qui ramène à zéro round les redéplie.
+- **Boutons Précédent / Bloc suivant à 42 px** (au lieu de 48), rangée 54 → 48 px. Il fallait baisser la rangée en même temps : les boutons sont des éléments de grille, donc étirés à la hauteur de `.guided-actions` quelle que soit leur propre `min-height` — en changer un seul ne fait rien. Ils restent confortablement tapables au pouce (`docs/UI_CONSTRAINTS.md`).
+- **La police du chrono n'est jamais touchée.** Elle se calcule sur la largeur (règle verrouillée) : mesurée à 137 px avec 4, 8 et 14 rounds, aucun débordement horizontal, aucune erreur console. La carte à 0 round est identique au pixel près à la version précédente.
+- **Portée** : `scripts/session/amrap_rounds.js` (`stripHtml`/`refreshStrip` → `panelHtml`/`refreshPanel`), `scripts/session/view.js`, `scripts/session/timer.js`, `styles.css`. Garde-fou étendu : `dev/amrap_rounds_checks.js`.
+
 ## V4.5.39 — Corriger la date de fin d'un cycle
 
 - **Racine inscrivait la date du jour où on classe le cycle, pas celle où on l'a terminé.** Un cycle fini le 10 juillet et rangé en août portait la date d'août, sans aucun moyen de la corriger : « Changer le statut » ne touchait que terminé / archivé / abandonné.

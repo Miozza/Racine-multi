@@ -530,7 +530,7 @@ function setGuidedTimerRoundKey(key){ guidedTimerRoundKey = key || null; }
 function clearGuidedTimerRounds(){
   if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return;
   CoachAmrapRounds.reset(guidedTimerRoundKey);
-  CoachAmrapRounds.refreshStrip(guidedTimerRoundKey);
+  CoachAmrapRounds.refreshPanel(guidedTimerRoundKey);
 }
 function guidedTimerRoundTap(){
   if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return null;
@@ -546,14 +546,14 @@ function guidedTimerRoundTap(){
   // Retour discret : rien à l'écran ne bouge sauf le bandeau, aucun son —
   // le WOD est en cours, l'athlète n'a pas à confirmer quoi que ce soit.
   vibrate([35]);
-  CoachAmrapRounds.refreshStrip(guidedTimerRoundKey);
+  CoachAmrapRounds.refreshPanel(guidedTimerRoundKey);
   return round;
 }
 function guidedTimerRoundUndo(){
   if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return null;
   var removed = CoachAmrapRounds.undo(guidedTimerRoundKey);
   if(removed) vibrate([18, 40, 18]);
-  CoachAmrapRounds.refreshStrip(guidedTimerRoundKey);
+  CoachAmrapRounds.refreshPanel(guidedTimerRoundKey);
   return removed;
 }
 
