@@ -1,3 +1,11 @@
+## V4.5.41 — Les carrés de jours sélectionnent le jour
+
+- **Les pips de la barre de semaine ne faisaient rien au tap.** Ils affichent l'état de chaque journée (complétée, manquée, en cours) et sont la cible naturelle pour changer de jour, mais c'étaient de simples `<span>` décoratifs : il fallait descendre aux onglets de jour ou aux flèches ‹ ›.
+- **Ce sont maintenant des boutons de sélection**, avec exactement l'action des onglets de jour (`state.day`, `save()`, `render()`) — aucune seconde voie de sélection, aucun état à tenir d'accord. Toutes les journées sont sélectionnables, pas seulement les complétées.
+- **Zone tactile agrandie sans bouger la mise en page.** La pastille mesure 32×26 px, sous le seuil confortable iPhone, et l'agrandir décalerait la barre de semaine : un `::after` en position absolue porte la zone tapable à 44 px de haut sans occuper de place dans le flux (`docs/UI_CONSTRAINTS.md` — éviter les petits contrôles précis). Le débordement latéral (2 px) reste sous l'écart entre deux pastilles, donc aucune ne vole le tap de sa voisine.
+- **Accessibilité** : `aria-label` annonçant la destination et l'état (« Aller à Jour 2 — complété »), `aria-current` sur la journée affichée. Retour tactile visuel au `:active`.
+- **Portée** : `app.js` (`renderWeekProgress`), `styles.css`. Aucune donnée touchée, aucun schéma modifié.
+
 ## V4.5.40 — Une pastille de WOD = un mouvement
 
 - **Une seule pastille avalait tout le WOD.** `parseWodStructure()` ne découpait le texte que sur « + ». Sur « EMOM 10 min — minutes impaires : 8 calories vélo ou rameur **;** minutes paires : 6 burpees contrôlés », le nom du premier mouvement prenait toute la fin de la phrase — quatre lignes de texte collées au chiffre 8 — et le burpee, qui est la moitié du WOD, n'avait aucune pastille. Le découpage se fait maintenant aussi sur « ; » et « puis ».

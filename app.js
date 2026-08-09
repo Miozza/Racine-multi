@@ -1,5 +1,5 @@
-// Racine V4.5.40 — une pastille de WOD = un mouvement
-var APP_VERSION = "V4.5.40";
+// Racine V4.5.41 — les carrés de jours sélectionnent le jour
+var APP_VERSION = "V4.5.41";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1277,9 +1277,17 @@ function renderWeekProgress(){
   currentDayOrder().forEach(function(d){
     var done=isDayCompleted(d), missed=isDayMissed(d);
     var meta=currentDayMeta(d);
-    var pip=document.createElement("span");
+    var label=(meta&&meta.label)||d;
+    // Les pips sont des boutons : ils montraient l'état de la semaine sans rien
+    // faire au tap, alors qu'ils sont la cible naturelle pour changer de jour.
+    // Même action que les onglets de jour (renderDays) — aucune autre voie.
+    var pip=document.createElement("button");
+    pip.type="button";
     pip.className="day-pip"+(done?" done":"")+(missed?" missed":"")+(d===state.day?" current":"");
-    pip.title=((meta&&meta.label)||d)+(missed?" — manqué":"");
+    pip.title=label+(missed?" — manqué":"");
+    pip.setAttribute("aria-label","Aller à "+label+(done?" — complété":(missed?" — manqué":"")));
+    if(d===state.day) pip.setAttribute("aria-current","true");
+    pip.onclick=function(){ state.day=d; save(); render(); };
     dc.appendChild(pip);
   });
 }
