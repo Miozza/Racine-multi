@@ -1,3 +1,16 @@
+## V4.5.40 — Une pastille de WOD = un mouvement
+
+- **Une seule pastille avalait tout le WOD.** `parseWodStructure()` ne découpait le texte que sur « + ». Sur « EMOM 10 min — minutes impaires : 8 calories vélo ou rameur **;** minutes paires : 6 burpees contrôlés », le nom du premier mouvement prenait toute la fin de la phrase — quatre lignes de texte collées au chiffre 8 — et le burpee, qui est la moitié du WOD, n'avait aucune pastille. Le découpage se fait maintenant aussi sur « ; » et « puis ».
+- **Une étiquette de position n'est pas un nom de mouvement.** « minutes paires : », « station 3 : » sont retirées, mais **seulement si un nombre suit** : sinon on couperait un vrai texte (« Row : rythme facile » reste entier).
+- **Un nombre suivi d'une unité de temps est une durée, pas des répétitions.** « 10 à 15 min de marche inclinée ou de vélo facile » donnait une pastille « 10 » nommée « à 15 min de marche… ». Elle ne produit plus aucune pastille : le bloc affiche son texte complet sous le chrono, ce qui est le rendu juste pour un retour au calme.
+- **Nuance qui évite de perdre un mouvement** : le rejet ne vaut que si le temps mesure l'effort entier (« 10 min **de** marche »). « 20 sec side plank/côté » garde sa pastille — l'unité quitte le nom, le 20 reste le chiffre.
+- **Plages et pyramides lues en entier** : « 8-10 ring rows » et « 2-3 ramp-up sets » donnaient « 8 » suivi d'un nom commençant par « -10 ». La branche EMOM (`min 1 = …`) passe maintenant par la même lecture du nombre de tête que les autres.
+- **Filet de sécurité sur le nom** : il s'arrête au premier connecteur de consigne (`,` `.` `—` « puis » « si ») et ne dépasse jamais 34 caractères, ellipse à l'appui. `.guided-wod-name` ne tronque pas : sans borne, un texte de programme mal formé déborde de la pastille (`docs/UI_CONSTRAINTS.md`). **« avec » n'est volontairement pas un connecteur** — il appartient à de vrais noms (« Marche avec haltères »).
+- **Piège corrigé au passage** : `^s\b` matchait « séries », parce que « é » n'est pas un caractère de mot en JS. « 2 séries progressives de front squat » était lu comme une durée en secondes et disparaissait.
+- **Vérifié par comparaison ancienne/nouvelle analyse sur les 217 textes de blocs de tous les programmes** : 11 différences, toutes des corrections ou des troncatures voulues, aucune régression.
+- **Écran Résultats** : `parseWodStructure()` alimente aussi la capture de résultats, donc les mouvements d'un AMRAP y arrivent corrigés. Les pastilles de reps du dernier round passent par `wodMoveMaxReps()` et ne tombent plus à NaN sur un libellé non numérique (« 21-15-9 »), qui ne produisait alors aucune pastille.
+- **Portée** : `app.js` (`parseWodStructure` et ses quatre helpers), `scripts/session/results.js`. Aucun texte de programme réécrit, aucune clé de stockage touchée, moteur de charges et Brain non concernés. Garde-fou `dev/wod_moves_checks.js`.
+
 ## V4.5.39 — Corriger la date de fin d'un cycle
 
 - **Racine inscrivait la date du jour où on classe le cycle, pas celle où on l'a terminé.** Un cycle fini le 10 juillet et rangé en août portait la date d'août, sans aucun moyen de la corriger : « Changer le statut » ne touchait que terminé / archivé / abandonné.

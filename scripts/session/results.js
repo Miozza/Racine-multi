@@ -1,6 +1,14 @@
 // Coach Beurt V51.63 — session results domain
 // Résultats de séance : collecte, rendu, résumé et références.
 
+// mv.reps est un libellé, pas toujours un nombre : une pyramide « 21–15–9 » ou
+// une plage « 10–15 » donnaient NaN, donc zéro pastille de reps affichée. On
+// retient le plus grand nombre du libellé.
+function wodMoveMaxReps(reps){
+  var nums=(String(reps||"").match(/\d+/g)||[]).map(Number);
+  return nums.length ? Math.max.apply(null, nums) : 0;
+}
+
 function collectSessionExercises(opts){
   var w=buildWorkout(state.day,state.week);
   var items=[];
@@ -235,7 +243,7 @@ function renderSessionEntry(){
       if(item.isAmrap && item.wodMoves && item.wodMoves.length){
         wodInner += '<span class="sf-label">REPS DU DERNIER ROUND — 0 inclus pour corriger</span>';
         item.wodMoves.forEach(function(mv, mi){
-          var maxReps = mv.reps - (mi === item.wodMoves.length-1 ? 1 : 0);
+          var maxReps = wodMoveMaxReps(mv.reps) - (mi === item.wodMoves.length-1 ? 1 : 0);
           var hint = mi < item.wodMoves.length-1
             ? 'si tu complètes les '+mv.reps+' → '+item.wodMoves[mi+1].name+' commence'
             : mv.reps+' = round complet → clique +1 round à la place';
