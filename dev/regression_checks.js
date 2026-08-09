@@ -106,7 +106,13 @@ if(version){
   const serviceWorker = read('service-worker.js');
   const contract = read('docs/STRUCTURE_CONTRACT.md');
 
-  assert(app.includes('// Racine ' + version), 'app.js doit garder un en-tête aligné avec APP_VERSION.');
+  // PROPRIÉTAIRE UNIQUE du contrat de version (docs/STRUCTURE_CONTRACT.md
+  // § « Contrat de version »). structure_checks.js portait les mêmes onze
+  // assertions mot pour mot : deux endroits à corriger pour une seule règle,
+  // donc un jour deux règles divergentes. Ne pas les recopier ailleurs.
+  const header = app.match(/^\/\/\s*Racine\s+(V\d+\.\d+(?:\.\d+)?(?:-multi)?)/m);
+  assert(!!header, 'app.js doit garder un commentaire d’en-tête « // Racine Vx.y.z ».');
+  assert(header && header[1] === version, 'app.js doit garder un en-tête aligné avec APP_VERSION.');
   assert(index.includes('<title>Racine ' + version + '</title>'), 'index.html doit afficher la version dans le titre.');
   assert(index.includes('<footer class="footer">' + version), 'index.html doit afficher la version dans le footer.');
   assert(index.includes('?v=' + cache), 'index.html doit cache-buster les assets avec ?v=' + cache + '.');

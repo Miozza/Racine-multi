@@ -43,6 +43,21 @@ const results = read('scripts/session/results.js');
 const html = read('index.html');
 const css = read('styles.css');
 
+// ── Lecture de valeurs CSS ─────────────────────────────────────────────────
+// Un garde-fou d'interface doit épingler un CONTRAT, pas un pixel. Épingler
+// « font-size:27px » oblige à réécrire le test au moindre ajustement de design
+// — mesuré : ce fichier a été réécrit 4 fois en une session pour des
+// renommages, sans qu'aucun bug n'existe. On teste donc des bornes et des
+// relations : elles survivent aux retouches et cassent quand le contrat casse.
+function cssPx(selector, prop){
+  const sel = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  const rule = css.match(new RegExp(sel + '\\s*\\{([^}]*)\\}'));
+  if(!rule) return null;
+  const v = rule[1].match(new RegExp(prop + '\\s*:\\s*(\\d+(?:\\.\\d+)?)px'));
+  return v ? Number(v[1]) : null;
+}
+
+
 // ── 1. Domaine et chargement ───────────────────────────────────────────────
 assert(/window\.CoachAmrapRounds\s*=/.test(mod), 'amrap_rounds.js : porte publique window.CoachAmrapRounds');
 const iAmrap = html.indexOf('scripts/session/amrap_rounds.js');
@@ -102,8 +117,13 @@ assert(iPanel > -1 && iBox > -1 && iPanel < iBox,
 // grille — c'est cette hauteur qui garde les mouvements lisibles.
 assert(/\.guided-amrap-cells\{[\s\S]{0,220}overflow-x:auto/.test(css),
   'styles.css : les splits sont sur une ligne qui défile, pas en grille');
-assert(/\.guided-amrap-split\{[\s\S]{0,160}font-size:27px/.test(css),
-  'styles.css : le temps de round est gros (27 px)');
+// Le contrat n'est pas « 27 px » : c'est « lisible à bout de bras, et c'est le
+// TEMPS qu'on lit, pas le numéro ».
+const splitPx = cssPx('.guided-amrap-split', 'font-size');
+const noPx = cssPx('.guided-amrap-no', 'font-size');
+assert(splitPx !== null && noPx !== null, 'styles.css : pastille de round mesurable (temps + numéro)');
+assert(splitPx >= 20, 'styles.css : le temps de round reste lisible à bout de bras (≥ 20 px, vu ' + splitPx + ')');
+assert(splitPx > noPx * 1.5, 'styles.css : le temps domine le numéro de round (' + splitPx + ' contre ' + noPx + ')');
 // Deux polices : un numéro de round ne doit jamais se lire comme un chrono.
 assert(/\.guided-amrap-no\{[\s\S]{0,120}font-family:var\(--font-main\)/.test(css),
   'styles.css : le numéro de round est en Inter, pas en Orbitron comme le temps');
@@ -118,10 +138,19 @@ assert(/'<span class=.guided-amrap-no.>' \+ \(i \+ 1\)/.test(mod.replace(/"/g, "
 // Les mouvements ne rendent QUE la hauteur de la banderole. Toute hauteur
 // libérée en trop part dans l'étirement vertical du chrono, qui se met alors à
 // grossir au premier round sans qu'on l'ait demandé.
-assert(/\.guided-wod-moves\.compact \.guided-wod-reps\{[\s\S]{0,80}font-size:38px/.test(css),
-  'styles.css : les mouvements repliés baissent à peine (reps 38 px, contre 44 pleine taille)');
-assert(/\.guided-wod-moves\.compact \.guided-wod-name\{[\s\S]{0,80}font-size:26px/.test(css),
-  'styles.css : nom de mouvement replié à 26 px, contre 30 pleine taille');
+// « Repliés » ne veut pas dire « écrasés ». Planchers volontairement bas
+// (~0,8 fois la pleine taille : 44 px de reps, 30 px de nom) : ils laissent
+// respirer le design et attrapent quand même l'accident réel — les 19/15 px
+// d'une version précédente, qui rendaient tant de hauteur que le chrono se
+// mettait à grossir tout seul au premier round.
+// La vraie vérification est la mesure navigateur à temps affiché égal ; ce
+// plancher n'en est que le fil-piège bon marché.
+const cReps = cssPx('.guided-card.kind-wod .guided-wod-moves.compact .guided-wod-reps', 'font-size');
+const cName = cssPx('.guided-card.kind-wod .guided-wod-moves.compact .guided-wod-name', 'font-size');
+assert(cReps !== null && cName !== null, 'styles.css : tailles des mouvements repliés mesurables');
+assert(cReps >= 34, 'styles.css : mouvements repliés non écrasés (reps ≥ 34 px, vu ' + cReps + ')');
+assert(cName >= 22, 'styles.css : nom de mouvement replié non écrasé (≥ 22 px, vu ' + cName + ')');
+assert(cReps > cName, 'styles.css : le nombre de reps domine le nom, replié comme déplié');
 assert(!/\.guided-wod-moves\.compact\{[\s\S]{0,200}display:flex/.test(css),
   'styles.css : le repli garde la mise en page empilée, il ne réorganise pas les mouvements');
 // La place vient des cartes de mouvement — et seulement une fois le WOD lancé.
@@ -132,8 +161,14 @@ assert(/function renderGuidedWodMoves\(moves, compact\)/.test(view),
 assert(/moves\.classList\.toggle\('compact', !!st\)/.test(mod),
   'amrap_rounds.js : un ↩ qui ramène à zéro round redéplie les mouvements');
 assert(/\.guided-wod-moves\.compact\{/.test(css), 'styles.css : état replié des mouvements défini');
-assert(/\.guided-session \.guided-actions\{[\s\S]{0,80}min-height:48px !important/.test(css),
-  'styles.css : la rangée Précédent/Suivant suit la hauteur des boutons (éléments de grille, sinon ils restent étirés)');
+// Les boutons sont des éléments de grille : ils sont étirés à la hauteur de
+// leur rangée. Baisser l'un sans l'autre ne change rien à l'écran — c'est le
+// piège rencontré, et c'est LUI que le test doit retenir, pas la valeur.
+const navBtn = cssPx('.guided-session .guided-actions .guided-btn', 'min-height');
+const navRow = cssPx('.guided-session .guided-actions', 'min-height');
+assert(navBtn !== null && navRow !== null, 'styles.css : hauteurs de la rangée de navigation mesurables');
+assert(navBtn >= 40, 'styles.css : Précédent/Suivant restent tapables au pouce (≥ 40 px, vu ' + navBtn + ')');
+assert(navRow >= navBtn, 'styles.css : la rangée suit ses boutons (éléments de grille : sinon ils restent étirés)');
 assert(/t\.closest\("button"\)\) return;/.test(view),
   'view.js : un tap sur un bouton du chrono ne compte pas de round');
 assert(/guidedTimerRoundTap/.test(timer) && /countdownActive\) return null;/.test(timer),
