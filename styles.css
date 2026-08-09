@@ -44,6 +44,10 @@
   --purple2:   #a07eff;
   --green:     #4dff88;
   --gold:      #ffd700;
+  /* Podium des rounds AMRAP — or et bronze de médaille, pas jaune/rouge.
+     Volontairement distincts de --gold (utilisé partout ailleurs). */
+  --medal-gold:   #f2c14e;
+  --medal-bronze: #c87137;
   --red:       #ff2244;
   --orange:    #ff6b35;
   --text:      #f0f6ff;
@@ -7134,23 +7138,24 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
    Rounds AMRAP tapés sur le chrono — vue séance + résultats
    Voir scripts/session/amrap_rounds.js.
 
-   Le bandeau vit AU-DESSUS de la boîte du chrono, jamais dedans : la taille
-   des chiffres se calcule sur la largeur disponible (règle verrouillée,
-   docs/UI_CONSTRAINTS.md) et n'est donc pas touchée. Le bandeau prend une
-   part de la hauteur libre qui sert à étirer les chiffres — d'où sa hauteur
-   volontairement basse, une seule ligne, jamais deux.
+   Le panneau vit AU-DESSUS de la boîte du chrono, jamais dedans : la taille
+   des chiffres se calcule sur la largeur (règle verrouillée,
+   docs/UI_CONSTRAINTS.md) et n'est donc pas touchée.
+
+   Grille, pas bande défilante. Mesuré sur iPhone 402 px : après le compteur et
+   le ↩ il reste ~250 px utiles, soit 2,6 pastilles lisibles à 21 px — avec
+   4 rounds, R1 et R2 sortaient déjà de l'écran. Une grille à 4 colonnes en
+   montre 12 sans rien couper.
+
+   La place vient des cartes de mouvement, qui se replient sur une ligne dès le
+   premier round (185 px → ~46 px). Tant qu'aucun round n'est tapé, la carte
+   garde exactement son allure d'origine.
    ═══════════════════════════════════════════ */
-.guided-amrap-strip{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  min-height:26px;
-  margin:0 0 3px;
-  padding:0 2px;
+.guided-amrap-panel{
+  margin:0 0 4px;
 }
 .guided-amrap-hint{
-  flex:1;
-  min-width:0;
+  min-height:22px;
   text-align:center;
   font-family:var(--font-main);
   font-size:11px;
@@ -7161,87 +7166,144 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   white-space:nowrap;
   text-overflow:ellipsis;
 }
+.guided-amrap-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:5px;
+}
 .guided-amrap-count{
-  flex:0 0 auto;
   display:flex;
   align-items:baseline;
-  gap:3px;
+  gap:5px;
   font-family:var(--font-hud);
-  font-size:20px;
+  font-size:30px;
   font-weight:900;
   line-height:1;
   color:var(--cyan);
   text-shadow:0 0 12px rgba(0,212,255,.35);
 }
 .guided-amrap-count span{
-  font-size:9px;
+  font-size:10px;
   font-weight:700;
-  letter-spacing:.08em;
+  letter-spacing:.10em;
   text-transform:uppercase;
   color:var(--muted);
 }
-/* Les splits défilent horizontalement : un AMRAP de 15 rounds ne doit pas
-   passer sur deux lignes, ça coûterait la hauteur du chrono. */
-.guided-amrap-chips{
-  flex:1;
-  min-width:0;
-  display:flex;
-  align-items:center;
-  gap:4px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scrollbar-width:none;
+/* 4 colonnes : 12 rounds visibles d'un coup. Au-delà, la grille défile
+   verticalement et refreshPanel() la garde collée aux derniers rounds —
+   jamais deux fois plus de hauteur, sinon elle mangerait le chrono. */
+.guided-amrap-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:5px;
+  /* 3 rangées pleines = 12 rounds visibles. Une cellule fait 54 px (les
+     cellules or/rouge portent une étiquette et la rangée s'aligne dessus),
+     donc 3*54 + 2*5 de gouttière. Au-delà, la grille défile. */
+  max-height:172px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
-.guided-amrap-chips::-webkit-scrollbar{ display:none; }
-.guided-amrap-chip{
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:baseline;
-  gap:3px;
-  padding:2px 6px;
+.guided-amrap-grid::-webkit-scrollbar{ display:none; }
+.guided-amrap-cell{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  padding:5px 2px;
   border:1px solid var(--border);
-  border-radius:999px;
+  border-radius:9px;
   background:rgba(255,255,255,.03);
-  font-family:var(--font-hud);
-  font-size:12px;
-  font-weight:900;
-  line-height:1.15;
-  color:var(--text2);
-  white-space:nowrap;
+  min-height:44px;
 }
-.guided-amrap-chip b{
+.guided-amrap-no{
+  font-family:var(--font-hud);
   font-size:9px;
   font-weight:700;
-  letter-spacing:.06em;
+  letter-spacing:.08em;
   color:var(--muted);
+  line-height:1;
 }
-.guided-amrap-chip.fast{
-  color:var(--gold);
-  border-color:rgba(255,215,0,.55);
-  background:rgba(255,215,0,.10);
+.guided-amrap-split{
+  font-family:var(--font-hud);
+  font-size:22px;
+  font-weight:900;
+  line-height:1;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
 }
-.guided-amrap-chip.fast b{ color:rgba(255,215,0,.75); }
-.guided-amrap-chip.slow{
-  color:var(--red);
-  border-color:rgba(255,34,68,.55);
-  background:rgba(255,34,68,.10);
+.guided-amrap-tag{
+  font-family:var(--font-main);
+  font-size:8px;
+  line-height:1.1;
+  letter-spacing:.02em;
+  white-space:nowrap;
 }
-.guided-amrap-chip.slow b{ color:rgba(255,110,140,.85); }
+/* Podium : or pour la 1re place, bronze pour la dernière. */
+.guided-amrap-cell.fast{
+  border-color:rgba(242,193,78,.75);
+  background:rgba(242,193,78,.14);
+}
+.guided-amrap-cell.fast .guided-amrap-split,
+.guided-amrap-cell.fast .guided-amrap-tag{ color:var(--medal-gold); }
+.guided-amrap-cell.fast .guided-amrap-split{ text-shadow:0 0 14px rgba(242,193,78,.55); }
+.guided-amrap-cell.fast .guided-amrap-no{ color:rgba(242,193,78,.85); }
+.guided-amrap-cell.slow{
+  border-color:rgba(200,113,55,.75);
+  background:rgba(200,113,55,.16);
+}
+.guided-amrap-cell.slow .guided-amrap-split,
+.guided-amrap-cell.slow .guided-amrap-tag{ color:var(--medal-bronze); }
+.guided-amrap-cell.slow .guided-amrap-no{ color:rgba(200,113,55,.90); }
 .guided-amrap-undo{
   flex:0 0 auto;
-  min-width:34px;
-  min-height:26px;
-  padding:0 6px;
+  min-width:46px;
+  min-height:38px;
+  padding:0 8px;
   border:1px solid var(--border);
-  border-radius:8px;
+  border-radius:9px;
   background:rgba(0,0,0,.30);
   color:var(--muted);
-  font-size:14px;
+  font-size:17px;
   line-height:1;
   cursor:pointer;
 }
 .guided-amrap-undo:active{ background:var(--panel2); color:var(--text); }
+
+/* ── Mouvements repliés pendant le WOD ─────────────────────────────────────
+   C'est cette hauteur qui finance la grille. Le repli n'arrive qu'au premier
+   round tapé : avant, l'athlète doit lire ses mouvements en grand. Les
+   couleurs par mouvement (mv1…mv4) sont conservées. */
+.guided-card.kind-wod .guided-wod-moves.compact{
+  display:flex !important;
+  flex-wrap:wrap;
+  flex:0 0 auto !important;
+  gap:5px !important;
+  margin:4px 0 5px !important;
+}
+.guided-card.kind-wod .guided-wod-moves.compact .guided-wod-move{
+  display:flex !important;
+  flex:1 1 auto;
+  align-items:baseline;
+  justify-content:center;
+  gap:6px;
+  min-height:0 !important;
+  padding:5px 8px !important;
+  grid-template-columns:none !important;
+}
+.guided-card.kind-wod .guided-wod-moves.compact .guided-wod-reps{
+  font-size:19px !important;
+  line-height:1 !important;
+}
+.guided-card.kind-wod .guided-wod-moves.compact .guided-wod-name{
+  font-size:15px !important;
+  line-height:1 !important;
+  letter-spacing:.01em;
+}
 
 /* ── Écran résultats : journal des rounds ─────────────────────────────────── */
 .wod-rounds-log{
@@ -7295,17 +7357,18 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   text-align:right;
 }
 .wod-round-line.fast{
-  background:rgba(255,215,0,.10);
-  box-shadow:inset 2px 0 0 var(--gold);
+  background:rgba(242,193,78,.13);
+  box-shadow:inset 2px 0 0 var(--medal-gold);
 }
 .wod-round-line.fast .wod-round-split,
-.wod-round-line.fast .wod-round-tag{ color:var(--gold); }
+.wod-round-line.fast .wod-round-tag{ color:var(--medal-gold); }
+.wod-round-line.fast .wod-round-split{ text-shadow:0 0 12px rgba(242,193,78,.50); }
 .wod-round-line.slow{
-  background:rgba(255,34,68,.10);
-  box-shadow:inset 2px 0 0 var(--red);
+  background:rgba(200,113,55,.15);
+  box-shadow:inset 2px 0 0 var(--medal-bronze);
 }
 .wod-round-line.slow .wod-round-split,
-.wod-round-line.slow .wod-round-tag{ color:var(--red); }
+.wod-round-line.slow .wod-round-tag{ color:var(--medal-bronze); }
 .wod-rounds-left{
   margin-top:8px;
   font-family:var(--font-main);
@@ -7402,3 +7465,21 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   margin-top: 12px;
 }
 .racine-date-picker .rdp-actions button { min-height: 52px; }
+
+/* Boutons Précédent / Bloc suivant — vue séance.
+   48 px de haut au lieu de 56 : ils restent confortablement tapables au pouce
+   (docs/UI_CONSTRAINTS.md — ces deux boutons doivent rester accessibles en
+   portrait iPhone) et rendent leur hauteur au contenu de la carte. */
+/* `!important` obligatoire : une règle antérieure verrouille déjà 48 px avec
+   la même priorité (« .guided-btn{ min-height: 48px !important } »).
+   La rangée doit suivre : les boutons sont des éléments de grille, donc étirés
+   à la hauteur de `.guided-actions` (52 px + padding) quelle que soit leur
+   propre `min-height`. Baisser l'un sans l'autre ne change rien. */
+.guided-session .guided-actions{
+  min-height:48px !important;
+}
+.guided-session .guided-actions .guided-btn{
+  min-height:42px !important;
+  font-size:15px !important;
+  padding:4px 10px !important;
+}

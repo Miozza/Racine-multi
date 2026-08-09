@@ -1,3 +1,20 @@
+## V4.5.43 — Podium des rounds : or et bronze
+
+- **Le round le plus rapide passe en or de médaille** (`#f2c14e`) au lieu du jaune, et **le plus lent en bronze** (`#c87137`) au lieu du rouge — sur la grille de la séance comme sur l'écran Résultats.
+- **Les deux teintes sont volontairement écartées, et l'or seul brille.** Premier essai à `#e3b341` / `#cd7f32` : sur fond sombre, or et bronze se confondaient à distance. L'or est éclairci et reçoit une lueur, le bronze est ramené vers le cuivre — c'est la brillance qui sépare les deux métaux sur un podium, pas la teinte.
+- **`--gold` n'est pas touché** : il sert à 37 endroits ailleurs dans l'app. Deux jetons dédiés sont ajoutés, `--medal-gold` et `--medal-bronze`.
+- Changement de couleurs seulement : aucune logique, aucune mesure, aucun autre écran modifié. Portée : `styles.css`.
+
+## V4.5.42 — Les temps de round passent en grille lisible
+
+- **Le problème n'était pas la hauteur, c'était la largeur.** La bande de pastilles introduite en V4.5.37 affichait les splits à 12 px. L'agrandir ne suffit pas : mesuré sur iPhone 402 px, il ne reste que ~250 px utiles après le compteur et le `↩`, soit **2,6 pastilles lisibles à 21 px**. Sur maquette, dès 4 rounds, R1 et R2 sortaient déjà de l'écran.
+- **Grille à 4 colonnes** à la place de la bande défilante : temps de round à **22 px** (au lieu de 12), **12 rounds visibles d'un coup**, puis défilement vertical qui reste collé aux derniers. Les cellules or et rouge portent leur étiquette — « le + rapide », « le + lent » — au lieu d'une simple couleur.
+- **La place vient des cartes de mouvement, repliées sur une ligne** (185 px → 31 px), et **seulement à partir du premier round tapé** : une fois le WOD lancé, l'athlète connaît ses mouvements ; avant, il doit les lire en grand. Tant qu'aucun round n'est compté, la carte WOD garde **exactement** son allure d'origine. Un `↩` qui ramène à zéro round les redéplie.
+- **Boutons Précédent / Bloc suivant à 42 px** (au lieu de 48), rangée 54 → 48 px. Il fallait baisser la rangée en même temps : les boutons sont des éléments de grille, donc étirés à la hauteur de `.guided-actions` quelle que soit leur propre `min-height` — en changer un seul ne fait rien. Ils restent confortablement tapables au pouce (`docs/UI_CONSTRAINTS.md`).
+- **La police du chrono n'est jamais touchée.** Elle se calcule sur la largeur (règle verrouillée) : mesurée à 137 px avec 4, 8 et 14 rounds, aucun débordement horizontal, aucune erreur console. La carte à 0 round est identique au pixel près à la version précédente.
+- **Portée** : `scripts/session/amrap_rounds.js` (`stripHtml`/`refreshStrip` → `panelHtml`/`refreshPanel`), `scripts/session/view.js`, `scripts/session/timer.js`, `styles.css`. Garde-fou étendu : `dev/amrap_rounds_checks.js`.
+- Note de version : ces changements étaient numérotés V4.5.40/V4.5.41 sur leur branche. `main` a livré ces deux numéros entre-temps (pastilles de WOD, carrés de jours) ; ils sont décalés en V4.5.42/V4.5.43 à la fusion, sans rien changer au contenu.
+
 ## V4.5.41 — Les carrés de jours sélectionnent le jour
 
 - **Les pips de la barre de semaine ne faisaient rien au tap.** Ils affichent l'état de chaque journée (complétée, manquée, en cours) et sont la cible naturelle pour changer de jour, mais c'étaient de simples `<span>` décoratifs : il fallait descendre aux onglets de jour ou aux flèches ‹ ›.

@@ -377,10 +377,13 @@ function guidedPrev(){
   }
 }
 
-function renderGuidedWodMoves(moves){
+// `compact` replie les mouvements sur une ligne : c'est leur hauteur (185 px
+// sur iPhone) qui finance la grille des splits. Une fois le WOD lancé, les
+// mouvements sont connus ; avant le premier round, ils gardent leur taille.
+function renderGuidedWodMoves(moves, compact){
   var html="";
   if(moves&&moves.length){
-    html+="<div class='guided-wod-moves'>";
+    html+="<div class='guided-wod-moves"+(compact?" compact":"")+"'>";
     moves.slice(0,4).forEach(function(mv){
       html+="<div class='guided-wod-move "+escHtml(mv.color)+"'>"+
             "<div class='guided-wod-reps'>"+escHtml(mv.reps)+"</div>"+
@@ -552,16 +555,18 @@ function renderGuidedSession(){
           "<div class='guided-wod-kicker'>"+escHtml((cfg&&cfg.label)||"WOD")+"</div>"+
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
           "</div>";
-    html+=renderGuidedWodMoves(st.moves);
-    // Bandeau des rounds AMRAP : au-dessus de la boîte du chrono, jamais
-    // dedans. Il prend un peu de l'espace libre qui sert à étirer les chiffres
-    // en hauteur, pas de la largeur — la taille de police du chrono, qui se
-    // calcule sur la largeur, reste intacte (docs/UI_CONSTRAINTS.md).
+    // Panneau des rounds AMRAP : au-dessus de la boîte du chrono, jamais
+    // dedans. La taille de police du chrono se calcule sur la largeur et reste
+    // donc intacte (docs/UI_CONSTRAINTS.md) ; la place des splits vient des
+    // cartes de mouvement, qui se replient en une ligne dès le premier round.
+    // Tant qu'aucun round n'est tapé, la carte garde son allure d'origine.
     var amrapKey=(window.CoachAmrapRounds && CoachAmrapRounds.isAmrapBlock(st))
       ? CoachAmrapRounds.keyFor(st.title) : null;
+    var amrapCount=amrapKey ? CoachAmrapRounds.count(amrapKey) : 0;
+    html+=renderGuidedWodMoves(st.moves, amrapCount>0);
     if(amrapKey){
-      html+="<div class='guided-amrap-strip"+(CoachAmrapRounds.count(amrapKey)?" has-rounds":"")+"' id='guidedAmrapStrip'>"
-          + CoachAmrapRounds.stripHtml(amrapKey)
+      html+="<div class='guided-amrap-panel"+(amrapCount?" has-rounds":"")+"' id='"+CoachAmrapRounds.panelId+"'>"
+          + CoachAmrapRounds.panelHtml(amrapKey)
           + "</div>";
     }
     var soundMuted=(typeof guidedSoundMuted==="function")&&guidedSoundMuted();
@@ -655,9 +660,9 @@ function renderGuidedSession(){
         if(typeof guidedTimerRoundTap==="function") guidedTimerRoundTap();
       });
     }
-    var strip=$("guidedAmrapStrip");
-    if(strip && amrapKey){
-      strip.addEventListener("click", function(ev){
+    var panel=amrapKey?$(CoachAmrapRounds.panelId):null;
+    if(panel){
+      panel.addEventListener("click", function(ev){
         var t=ev&&ev.target;
         var btn=t&&t.closest?t.closest("[data-amrap-undo]"):null;
         if(!btn) return;

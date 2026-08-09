@@ -119,10 +119,16 @@ Ces règles sont obligatoires à partir de V51.24.
 - Sur un WOD AMRAP, toute la carte du chrono est le compteur : un tap ajoute un
   round. Les boutons (▶ Ⅱ ↻, libellé d'édition, toggle son) en sont exclus —
   sans cette exclusion, chaque action du chrono ajouterait un round au passage.
-- Le bandeau des rounds vit **au-dessus** de la boîte du chrono, jamais dedans.
+- Le panneau des rounds vit **au-dessus** de la boîte du chrono, jamais dedans.
   La police du chrono se calcule sur la largeur : elle n'est donc pas touchée.
-  Le bandeau prend une part de la hauteur libre servant à étirer les chiffres,
-  d'où sa contrainte : une seule ligne, splits en défilement horizontal.
+- Les splits sont en **grille à 4 colonnes**, pas en bande défilante. Mesuré sur
+  402 px : après le compteur et le `↩`, une ligne horizontale ne tient que
+  ~2,6 temps lisibles à 21 px — dès 4 rounds, R1 et R2 sortaient de l'écran.
+  La grille en montre 12, puis défile verticalement.
+- La place vient des **cartes de mouvement, repliées sur une ligne**, et
+  seulement à partir du premier round tapé : avant, l'athlète doit lire ses
+  mouvements en grand. Tant qu'aucun round n'est compté, la carte WOD garde
+  exactement son allure d'origine.
 - Le retour d'un tap reste discret : vibration courte, aucun son, aucune
   modale. Le WOD est en cours, l'athlète n'a rien à confirmer.
 

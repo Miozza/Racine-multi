@@ -1,5 +1,5 @@
-// Racine V4.5.41 — les carrés de jours sélectionnent le jour
-var APP_VERSION = "V4.5.41";
+// Racine V4.5.43 — podium des rounds : or et bronze
+var APP_VERSION = "V4.5.43";
 
 // Architecture stable
 // programs/*.js = plan prévu

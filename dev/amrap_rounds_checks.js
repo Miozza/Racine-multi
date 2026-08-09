@@ -11,8 +11,11 @@
     3. Le classement rapide/lent n'existe qu'à partir de deux splits distincts.
     4. Le temps restant retenu est celui du DERNIER round tapé : c'est le temps
        dont l'athlète disposait pour les reps du round entamé.
-    5. Le bandeau reste AU-DESSUS de la boîte du chrono, jamais dedans — la
+    5. Le panneau reste AU-DESSUS de la boîte du chrono, jamais dedans — la
        taille des chiffres se calcule sur la largeur (docs/UI_CONSTRAINTS.md).
+       Les splits sont en grille : une ligne horizontale ne tient que ~2,6
+       temps lisibles sur 402 px. La place vient des cartes de mouvement, qui
+       ne se replient qu'une fois le WOD lancé.
     6. L'écran Résultats reprend le compte tapé et le rend sélectionnable même
        s'il dépasse l'estimation du programme.
     7. Rien n'est persisté par le module : ce qui survit part par la ligne WOD
@@ -86,10 +89,26 @@ R.resetAll();
 assert(R.count(KEY) === 0, 'resetAll() vide le comptage (nouvelle séance)');
 
 // ── 5. Placement dans la carte WOD ─────────────────────────────────────────
-const iStrip = view.indexOf("guidedAmrapStrip");
+const iPanel = view.indexOf("guided-amrap-panel");
 const iBox = view.indexOf("class='guided-wod-timer'");
-assert(iStrip > -1 && iBox > -1 && iStrip < iBox,
-  'view.js : le bandeau des rounds est rendu AVANT la boîte du chrono, pas dedans');
+assert(iPanel > -1 && iBox > -1 && iPanel < iBox,
+  'view.js : le panneau des rounds est rendu AVANT la boîte du chrono, pas dedans');
+// Grille, pas bande défilante : une ligne horizontale ne tient que ~2,6 splits
+// lisibles sur 402 px. La grille à 4 colonnes en montre 12.
+assert(/grid-template-columns:repeat\(4, minmax\(0, 1fr\)\)/.test(css),
+  'styles.css : les splits sont en grille 4 colonnes, pas en bande défilante');
+assert(/\.guided-amrap-split\{[\s\S]{0,120}font-size:22px/.test(css),
+  'styles.css : les temps de round sont lisibles (22 px), pas 12 px');
+// La place vient des cartes de mouvement — et seulement une fois le WOD lancé.
+assert(/renderGuidedWodMoves\(st\.moves, amrapCount>0\)/.test(view),
+  'view.js : les mouvements ne se replient qu\'à partir du premier round tapé');
+assert(/function renderGuidedWodMoves\(moves, compact\)/.test(view),
+  'view.js : le repli des mouvements est un paramètre, pas un état caché');
+assert(/moves\.classList\.toggle\('compact', !!st\)/.test(mod),
+  'amrap_rounds.js : un ↩ qui ramène à zéro round redéplie les mouvements');
+assert(/\.guided-wod-moves\.compact\{/.test(css), 'styles.css : mouvements repliés sur une ligne');
+assert(/\.guided-session \.guided-actions\{[\s\S]{0,80}min-height:48px !important/.test(css),
+  'styles.css : la rangée Précédent/Suivant suit la hauteur des boutons (éléments de grille, sinon ils restent étirés)');
 assert(/t\.closest\("button"\)\) return;/.test(view),
   'view.js : un tap sur un bouton du chrono ne compte pas de round');
 assert(/guidedTimerRoundTap/.test(timer) && /countdownActive\) return null;/.test(timer),
@@ -98,8 +117,8 @@ assert(/if\(!\(elapsed > 0\)\) return null;/.test(timer),
   'timer.js : aucun round tant que le chrono n\'a pas avancé');
 assert(/clearGuidedTimerRounds\(\);/.test(timer),
   'timer.js : éditer le chrono remet les rounds à zéro (leur temps restant ne veut plus rien dire)');
-assert(/\.guided-amrap-strip\{/.test(css) && /\.guided-amrap-chip\.fast\{/.test(css) && /\.guided-amrap-chip\.slow\{/.test(css),
-  'styles.css : bandeau + couleurs or (rapide) et rouge (lent)');
+assert(/\.guided-amrap-panel\{/.test(css) && /\.guided-amrap-cell\.fast\{/.test(css) && /\.guided-amrap-cell\.slow\{/.test(css),
+  'styles.css : panneau + couleurs or (rapide) et rouge (lent)');
 assert(/\.wod-round-line\.fast\{/.test(css) && /\.wod-round-line\.slow\{/.test(css),
   'styles.css : mêmes couleurs sur l\'écran Résultats');
 
