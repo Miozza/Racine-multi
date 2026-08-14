@@ -1,5 +1,5 @@
-// Racine V4.5.50 — le repos se décompte dans sa ligne, chrono du haut sans cadre
-var APP_VERSION = "V4.5.50";
+// Racine V4.5.51 — son des chronos : trois voix au choix, et le bip du premier chargement
+var APP_VERSION = "V4.5.51";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -486,8 +486,30 @@ function getAudioCtx(){
   if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
   return audioCtx;
 }
-// Résume le contexte après interaction utilisateur (requis iOS)
-function resumeAudio(){var ctx=getAudioCtx();if(ctx&&ctx.state==="suspended")ctx.resume();}
+// Résume le contexte après interaction utilisateur (requis iOS).
+//
+// POURQUOI LE DÉBLOCAGE MUET — le bug « pas de bip au premier chargement ».
+// `ctx.resume()` est ASYNCHRONE. Au tout premier démarrage de chrono, le geste
+// crée le contexte à l'état « suspended », demande la reprise, puis
+// `startGuidedTimer()` enchaîne : les premiers bips sont programmés à
+// `ctx.currentTime` alors que la sortie n'est pas encore ouverte, et ils
+// tombent dans le vide. Aux chargements suivants le contexte est déjà en
+// marche, donc tout s'entend — d'où un silence qui ne se reproduit qu'une fois
+// et paraît inexplicable.
+// Le remède standard iOS : jouer un tampon d'UN échantillon muet à l'intérieur
+// même du geste utilisateur. Ça ouvre réellement la sortie, sans aucun son.
+var coachAudioUnlocked=false;
+function resumeAudio(){
+  var ctx=getAudioCtx(); if(!ctx) return;
+  if(ctx.state==="suspended"){ try{ ctx.resume(); }catch(e){} }
+  if(coachAudioUnlocked) return;
+  try{
+    var buf=ctx.createBuffer(1,1,22050);
+    var src=ctx.createBufferSource();
+    src.buffer=buf; src.connect(ctx.destination); src.start(0);
+    coachAudioUnlocked=true;
+  }catch(e){}
+}
 
 // Sortie commune des bips : un limiteur, créé une seule fois par contexte.
 // Sans lui, monter le gain écrête salement dès que deux bips se superposent
@@ -513,6 +535,43 @@ function getAudioMaster(){
 // appelants (0.5 à 0.7) gardent donc leurs proportions entre elles.
 var COACH_BEEP_GAIN=2.4;
 
+// ── Voix des bips ───────────────────────────────────────────────────────────
+// Trois réglages, choisis dans Réglages, écoutables avant de choisir.
+//
+// `pitch` transpose TOUTES les notes d'un même facteur : les mélodies gardent
+// leurs intervalles (le départ monte, la fin descend), seul le registre change.
+// Plancher à 260 Hz : un haut-parleur de téléphone ne restitue presque rien en
+// dessous, transposer plus bas rendrait le bip inaudible au lieu de discret.
+//
+// `tone` est un passe-bas exprimé en multiples de la fondamentale. Une onde
+// carrée porte loin, mais elle emporte tous ses harmoniques impairs jusqu'à
+// l'aigu — c'est ça qui la rend criarde, pas son volume. Couper au-dessus du
+// 2e ou 3e harmonique garde la puissance et enlève l'agression.
+var COACH_BEEP_FLOOR_HZ=260;
+var COACH_BEEP_TONE_MIN=900;
+var COACH_BEEP_TONE_MAX=4000;
+var COACH_BEEP_VOICES={
+  doux:  {label:"Doux",  hint:"Grave et discret",        pitch:0.62, tone:2.0, gain:2.0},
+  moyen: {label:"Moyen", hint:"Équilibré",               pitch:0.78, tone:2.6, gain:2.2},
+  clair: {label:"Clair", hint:"Aigu, perce le bruit",    pitch:1.00, tone:3.4, gain:2.4}
+};
+var COACH_BEEP_VOICE_DEFAULT="doux";
+function coachBeepVoiceId(){
+  try{
+    var v=(typeof state==="object"&&state)?state.guidedSoundVoice:null;
+    if(v&&COACH_BEEP_VOICES[v]) return v;
+  }catch(e){}
+  return COACH_BEEP_VOICE_DEFAULT;
+}
+function coachBeepVoice(){ return COACH_BEEP_VOICES[coachBeepVoiceId()]||COACH_BEEP_VOICES[COACH_BEEP_VOICE_DEFAULT]; }
+function setCoachBeepVoice(id){
+  if(!COACH_BEEP_VOICES[id]) return false;
+  if(typeof state!=="object"||!state) return false;
+  state.guidedSoundVoice=id;
+  if(typeof save==="function") save();
+  return true;
+}
+
 // Deux raisons pour lesquelles les bips s'entendaient mal dans un gym :
 //   1. Onde SINUS — aucune harmonique, donc rien qui perce le bruit ambiant à
 //      travers un haut-parleur de téléphone. Une onde carrée porte la même
@@ -524,18 +583,34 @@ var COACH_BEEP_GAIN=2.4;
 function playBeep(freq,dur,vol,type){
   var ctx=getAudioCtx();if(!ctx)return;
   try{
+    var voice=coachBeepVoice();
     var out=getAudioMaster()||ctx.destination;
     var t=ctx.currentTime;
-    var peak=Math.max(0.001,Math.min(1,(vol||0.4)*COACH_BEEP_GAIN));
-    var osc=ctx.createOscillator(),gain=ctx.createGain();
-    osc.connect(gain);gain.connect(out);
-    osc.type=type||"square";osc.frequency.setValueAtTime(freq,t);
+    var f=Math.max(COACH_BEEP_FLOOR_HZ,(Number(freq)||440)*voice.pitch);
+    var peak=Math.max(0.001,Math.min(1,(vol||0.4)*voice.gain));
+    var osc=ctx.createOscillator(),gain=ctx.createGain(),lp=ctx.createBiquadFilter();
+    lp.type="lowpass";
+    lp.frequency.setValueAtTime(Math.max(COACH_BEEP_TONE_MIN,Math.min(COACH_BEEP_TONE_MAX,f*voice.tone)),t);
+    lp.Q.setValueAtTime(0.7,t);
+    osc.connect(gain);gain.connect(lp);lp.connect(out);
+    osc.type=type||"square";osc.frequency.setValueAtTime(f,t);
     gain.gain.setValueAtTime(0.0001,t);
     gain.gain.exponentialRampToValueAtTime(peak,t+0.008);
     gain.gain.setValueAtTime(peak,t+dur*0.65);
     gain.gain.exponentialRampToValueAtTime(0.001,t+dur);
     osc.start(t);osc.stop(t+dur+0.02);
   }catch(e){}
+}
+
+// Choisir, c'est entendre : le tap sélectionne la voix ET la joue tout de
+// suite. Deux signaux, ceux qu'on entend le plus — le départ (qui monte) et le
+// changement de minute. `resumeAudio()` est appelé DANS le geste utilisateur,
+// donc l'écoute fonctionne dès le premier tap, même au tout premier chargement.
+function playBeepVoicePreview(id){
+  if(id) setCoachBeepVoice(id);
+  resumeAudio();
+  bipStart();
+  setTimeout(function(){ bipEmom(); },800);
 }
 
 // Bip court aigu (countdown 3-2-1)
