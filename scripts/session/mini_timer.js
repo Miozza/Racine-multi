@@ -8,13 +8,18 @@
 // Clean ») tandis que `block.time` est le créneau du bloc (12 min). Prendre
 // `block.time` donnerait un chrono de 12 min pour un EMOM de 8.
 //
-// POURQUOI DANS LA BARRE DU HAUT
+// DEUX CHRONOS, DEUX ENDROITS — ET AUCUN NE COÛTE DE HAUTEUR
 // Ajouter un chrono dans la carte coûterait de la hauteur aux cartes
 // d'exercice, donc aux charges, reps, RPE et recommandations de poids
-// (`.guided-ex-list` partage la hauteur libre entre les cartes). Le mini-chrono
-// prend la place de l'HEURE, déjà présente et déjà à la bonne taille
-// (`.guided-live-clock`, deux boîtes `.glc-hm` / `.glc-sec`). Coût en hauteur :
-// zéro pixel, sur tous les blocs.
+// (`.guided-ex-list` partage la hauteur libre entre les cartes). Aucun des deux
+// n'ajoute quoi que ce soit :
+//   - l'EMOM prend la place de l'HEURE (`.guided-live-clock`), déjà présente et
+//     déjà à la bonne taille ;
+//   - le REPOS se décompte dans le chiffre de la ligne « Repos », qui est déjà
+//     écrit là et déjà à la bonne taille. Un décompte de repos n'a rien à faire
+//     en haut de l'écran : sa place est à côté du mouvement qu'il concerne.
+// Comme ils occupent deux espaces distincts, ils peuvent tourner ensemble : la
+// règle de priorité qui les faisait s'exclure n'a plus d'objet.
 //
 // COMMENT ÇA SE LIT
 // Un EMOM ne se lit pas comme un AMRAP : ce qui compte est le temps restant
@@ -140,9 +145,6 @@
       if(st.elapsed > 0 && st.elapsed < st.duration && st.elapsed % st.intervalSec === 0){
         bip(typeof bipEmom === 'function' ? bipEmom : null, [100, 50, 100]);
       }
-    } else if(st.mode === MODE_REST){
-      var left = st.duration - st.elapsed;
-      if(left > 0 && left <= 3) bip(typeof bipCountdown === 'function' ? bipCountdown : null, [60]);
     }
 
     if(st.elapsed >= st.duration){
@@ -150,9 +152,6 @@
       st.finished = true;
       clearLoop();
       bip(typeof bipEnd === 'function' ? bipEnd : null, [300, 100, 300, 100, 300]);
-      // Le repos rend la barre à l'heure dès qu'il est terminé : il n'a plus
-      // rien à dire. L'EMOM reste affiché (terminé) jusqu'au bloc suivant.
-      if(st.mode === MODE_REST){ disarm(); return; }
     }
     paint();
   }
@@ -164,7 +163,6 @@
     if(!cfg) return false;
     key = String(key || '');
     if(st.mode === MODE_EMOM && st.key === key && st.duration === num(cfg.seconds)) return true;
-    if(st.mode === MODE_REST && st.running) stopSilently();
 
     clearLoop();
     st.mode = MODE_EMOM;
@@ -178,25 +176,105 @@
     return true;
   }
 
-  // Le repos ne s'invite jamais sur un EMOM en cours : c'est l'EMOM qui donne
-  // le tempo, un compte à rebours de repos par-dessus dirait deux choses
-  // contradictoires au même endroit.
-  function startRest(seconds, key){
+  // Le repos vit dans SA ligne, l'EMOM dans la barre du haut : deux endroits
+  // distincts, donc plus aucune raison de les faire s'exclure. La règle de
+  // priorité qui existait tant qu'ils se partageaient la boîte de l'heure n'a
+  // plus d'objet — deux comptes à rebours ne se contredisent que s'ils occupent
+  // le même espace.
+  var restState = {
+    mode: MODE_NONE, key: '', duration: 0, elapsed: 0,
+    running: false, interval: null, host: null, saved: null
+  };
+
+  function restClearLoop(){
+    if(restState.interval && typeof clearInterval === 'function') clearInterval(restState.interval);
+    restState.interval = null;
+  }
+  function restRemaining(){ return Math.max(0, restState.duration - restState.elapsed); }
+  function restRunning(){ return restState.mode === MODE_REST && restState.running; }
+
+  function startRest(seconds, key, host){
     seconds = Math.round(num(seconds));
     if(!(seconds > 0)) return false;
-    if(st.mode === MODE_EMOM && (st.running || st.countdown > 0)) return false;
+    stopRest();                       // un seul repos à la fois
 
-    clearLoop();
-    st.mode = MODE_REST;
-    st.key = String(key || '');
-    st.duration = seconds;
-    st.intervalSec = seconds;
-    st.elapsed = 0;
-    st.running = true;      // un repos démarre tout de suite : il a commencé
-    st.countdown = 0;
-    st.finished = false;
-    startLoop();
-    paint();
+    restState.mode = MODE_REST;
+    restState.key = String(key || '');
+    restState.duration = seconds;
+    restState.elapsed = 0;
+    restState.running = true;         // un repos démarre tout de suite : il a commencé
+    restState.host = host || null;
+    restState.saved = (host && typeof host.innerHTML === 'string') ? host.innerHTML : null;
+    if(typeof setInterval === 'function') restState.interval = setInterval(restTick, 1000);
+    paintRest();
+    return true;
+  }
+
+  // Rendre la ligne telle qu'elle était : le décompte n'écrase jamais la
+  // consigne du programme, il la recouvre le temps du repos.
+  function stopRest(){
+    restClearLoop();
+    if(restState.host && restState.saved !== null){
+      try{ restState.host.innerHTML = restState.saved; }catch(e){}
+      try{ restState.host.classList.remove('is-running', 'is-done'); }catch(e){}
+    }
+    restState.mode = MODE_NONE; restState.key = ''; restState.duration = 0;
+    restState.elapsed = 0; restState.running = false; restState.host = null; restState.saved = null;
+    return true;
+  }
+
+  function restTick(){
+    if(!restRunning()) return;
+    restState.elapsed = Math.min(restState.duration, restState.elapsed + 1);
+    var left = restRemaining();
+    if(left > 0 && left <= 3) bip(typeof bipCountdown === 'function' ? bipCountdown : null, [60]);
+    if(left <= 0){
+      restState.running = false;
+      restClearLoop();
+      bip(typeof bipRestDone === 'function' ? bipRestDone : (typeof bipEnd === 'function' ? bipEnd : null), [300, 100, 300]);
+      paintRest();
+      // La ligne reprend sa consigne d'origine après un temps d'affichage :
+      // « GO » clignotant en permanence deviendrait du bruit.
+      if(typeof setTimeout === 'function') setTimeout(stopRest, 4000);
+      return;
+    }
+    paintRest();
+  }
+
+  function restFaceText(){
+    if(restState.mode !== MODE_REST) return null;
+    var left = restRemaining();
+    if(!restState.running && left <= 0) return 'GO';
+    return left >= 60 ? mmss(left) : String(left);
+  }
+
+  function paintRest(){
+    var host = restState.host;
+    if(!host) return;
+    var face = restFaceText();
+    if(face === null) return;
+    var done = !restState.running;
+    try{
+      host.classList.add('is-running');
+      if(done) host.classList.add('is-done'); else host.classList.remove('is-done');
+      host.innerHTML = "<button type='button' class='guided-rest-pick is-running'"
+        + " aria-label='" + (done ? 'Repos terminé' : 'Annuler le repos') + "'>" + esc(face) + "</button>";
+    }catch(e){}
+  }
+
+  // Re-rendu du même bloc : la ligne a été recréée, on s'y raccroche. Le repos
+  // ne doit pas mourir parce qu'un tap ailleurs a redessiné la carte.
+  function rebindRest(root){
+    if(restState.mode !== MODE_REST) return false;
+    var host = null;
+    try{
+      var row = root && root.querySelector ? root.querySelector("[data-rest-key=\"" + restState.key + "\"]") : null;
+      host = row && row.querySelector ? row.querySelector('.guided-rest-value') : null;
+    }catch(e){}
+    if(!host){ stopRest(); return false; }   // on a changé de bloc : le repos s'arrête
+    restState.host = host;
+    restState.saved = host.innerHTML;
+    paintRest();
     return true;
   }
 
@@ -219,12 +297,9 @@
     return true;
   }
 
-  // Rendre le bloc courant sans tuer un repos qui tourne : on change de bloc,
-  // le repos, lui, continue.
-  function leaveBlock(){
-    if(st.mode === MODE_REST && (st.running || st.countdown > 0)) return false;
-    return disarm();
-  }
+  // Quitter un bloc qui n'a pas d'EMOM. Le repos ne passe pas par ici : il vit
+  // dans sa ligne et c'est rebindRest() qui décide s'il survit au rendu.
+  function leaveBlock(){ return disarm(); }
 
   // ── Contrôles ─────────────────────────────────────────────────────────────
   function start(){
@@ -308,22 +383,24 @@
   // aucun risque de débordement.
   function faceText(){
     if(st.mode === MODE_NONE) return null;
-    if(st.countdown > 0) return {hm:'DÉPART', sec:String(st.countdown), tone:'countdown'};
+    if(st.countdown > 0) return {hm:'PRÊT', sec:String(st.countdown), tone:'countdown'};
 
-    if(st.mode === MODE_REST){
-      var r = remaining();
-      return {hm:'REPOS', sec: r >= 60 ? mmss(r) : String(r), tone: r <= 3 ? 'urgent' : 'rest'};
-    }
     if(!st.running && st.elapsed === 0) return {hm:'EMOM', sec:String(Math.round(st.duration / 60)), tone:'idle'};
     if(st.elapsed >= st.duration) return {hm:'FINI', sec:String(cycleTotal()), tone:'done'};
-    if(!st.running) return {hm:'PAUSE', sec: mmss(cycleRemaining()).replace(/^0:/, ''), tone:'idle'};
 
     // En marche : minute courante / total, et secondes restantes DANS la minute.
+    // Le ton suit l'alerte de la carte — les chiffres virent avec elle. Sans ça
+    // le compteur restait cyan pendant que la carte passait au rouge : deux
+    // signaux contradictoires pour un seul évènement.
+    // En pause, la MÊME face — c'est le ton qui l'éteint. Un libellé « PAUSE »
+    // était le plus large gabarit du bloc et rapetissait l'affichage qu'on
+    // regarde 99 % du temps, pour un état qui dure quelques secondes.
     var left = cycleRemaining();
+    var alert = st.running ? minuteState() : null;
     return {
       hm: String(cycleIndex()) + '/' + String(cycleTotal()),
       sec: left >= 60 ? mmss(left) : String(left),
-      tone: 'run'
+      tone: st.running ? (alert ? alert.cls : 'run') : 'paused'
     };
   }
 
@@ -343,9 +420,11 @@
     });
   }
 
-  // L'heure ne se repeint que si le mini-chrono ne tient pas la place :
-  // c'est ce que `ownsClockSlot()` dit à `updateGlobalClock()`.
-  function ownsClockSlot(){ return st.mode !== MODE_NONE; }
+  // L'heure ne se repeint que si le mini-chrono tient la place : c'est ce que
+  // `ownsClockSlot()` dit à `updateGlobalClock()`. SEUL l'EMOM la prend — le
+  // repos se décompte dans sa propre ligne, donc l'heure reste l'heure pendant
+  // un repos.
+  function ownsClockSlot(){ return st.mode === MODE_EMOM; }
 
   function releaseSlot(){
     var el = clockEl();
@@ -370,6 +449,108 @@
     card.setAttribute('data-emom-warning', state.label);
   }
 
+  // ── Taille de police : mesurée sur la largeur réelle de la bande ──────────
+  // Même règle que le chrono WOD (docs/UI_CONSTRAINTS.md) : on mesure un
+  // GABARIT — le plus large affichage qui peut réellement apparaître pendant ce
+  // bloc — et non le texte du moment. Sinon les chiffres changeraient de taille
+  // à chaque seconde (« 1/9 3 » puis « 1/9 12 »), ce qui est illisible en
+  // action. Le gabarit reste constant tant que le bloc ne change pas.
+  var MINI_MIN_PX = 26;
+  var MINI_MAX_PX = 96;
+  var MINI_LINE_HEIGHT = 0.9;   // doit rester égal au line-height CSS de .is-mini
+  var fitMeasureEl = null;
+  function measureEl(){
+    if(fitMeasureEl && fitMeasureEl.parentNode) return fitMeasureEl;
+    fitMeasureEl = document.createElement('span');
+    fitMeasureEl.setAttribute('aria-hidden','true');
+    fitMeasureEl.style.position = 'fixed';
+    fitMeasureEl.style.left = '-9999px';
+    fitMeasureEl.style.top = '-9999px';
+    fitMeasureEl.style.visibility = 'hidden';
+    fitMeasureEl.style.whiteSpace = 'pre';
+    fitMeasureEl.style.pointerEvents = 'none';
+    document.body.appendChild(fitMeasureEl);
+    return fitMeasureEl;
+  }
+
+  // Toutes les faces que ce bloc peut afficher, du départ à la fin.
+  function fitSamples(){
+    // Le gabarit doit rester un MAJORANT de tout affichage possible, mais
+    // aucune face transitoire ne doit le dominer : sur un EMOM 8, « PAUSE 0:00 »
+    // faisait 9 caractères contre 7 pour l'affichage réel, soit 29 % de taille
+    // perdus en permanence pour un état qui dure trois secondes.
+    var out = ['PRÊT' + '00', 'FINI' + '00'];
+    {
+      var total = cycleTotal() || 1;
+      var interval = st.intervalSec || 60;
+      out.push('EMOM' + String(Math.round(st.duration / 60)));
+      // Le plus large : le numéro de minute le plus long des deux côtés du
+      // « / », et le compteur de secondes à son maximum.
+      out.push(String(total) + '/' + String(total) + (interval >= 60 ? mmss(interval) : String(interval)));
+    }
+    return out;
+  }
+
+  function fitFace(el){
+    if(!el || !el.getBoundingClientRect) return;
+    var host = el.parentNode;
+    var avail = host && host.getBoundingClientRect ? host.getBoundingClientRect().width : 0;
+    if(!(avail > 0)) return;
+
+    // BUDGET DE HAUTEUR. La largeur seule ne suffit pas : une police assez
+    // grande fait grandir la bande, qui pousse la carte vers le bas et reprend
+    // exactement la hauteur qu'on a promis de ne jamais prendre aux charges et
+    // aux reps. Mesuré à 69 px : bande +12 px, carte 721 → 709.
+    // La mesure doit être IDEMPOTENTE — on ramène d'abord la police au plus
+    // petit pour lire la hauteur naturelle de la bande, sinon on mesurerait une
+    // bande déjà agrandie par la passe précédente et la taille s'emballerait.
+    // Même précaution que guidedResetTimerStretch() pour le chrono WOD.
+    var band = null;
+    try{ band = el.closest ? el.closest('.guided-top') : null; }catch(e){}
+    var maxByHeight = MINI_MAX_PX;
+    if(band && band.getBoundingClientRect){
+      el.style.setProperty('font-size', MINI_MIN_PX + 'px', 'important');
+      void band.offsetHeight;
+      var budget = band.getBoundingClientRect().height;
+      // Deux pixels de marge : la boîte de l'inline-flex arrondit au-dessus du
+      // produit police x interligne, et un seul pixel de trop fait grandir la
+      // bande — donc rétrécir la carte.
+      if(budget > 0) maxByHeight = Math.floor((budget - 2) / MINI_LINE_HEIGHT);
+    }
+
+    var cs = null;
+    try{ cs = window.getComputedStyle(el); }catch(e){}
+    // Largeur utilisable = la bande moins le rembourrage et l'écart des deux
+    // fentes. Le rembourrage est volontairement mince : c'est la place rendue
+    // aux chiffres.
+    var padH = cs ? (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) : 0;
+    var gap = cs ? (parseFloat(cs.columnGap || cs.gap) || 0) : 0;
+    var usable = avail - padH - gap - 2;
+    if(!(usable > 0)) return;
+
+    var m = measureEl();
+    var probe = 100;
+    m.style.fontFamily = cs ? cs.fontFamily : 'Orbitron, monospace';
+    m.style.fontWeight = cs ? cs.fontWeight : '950';
+    m.style.letterSpacing = cs ? cs.letterSpacing : 'normal';
+    m.style.fontVariantNumeric = 'tabular-nums';
+    m.style.fontSize = probe + 'px';
+
+    var widest = 0, samples = fitSamples(), i, w;
+    for(i = 0; i < samples.length; i++){
+      m.textContent = samples[i];
+      w = m.getBoundingClientRect().width;
+      if(w > widest) widest = w;
+    }
+    if(!(widest > 0)) return;
+
+    var size = Math.floor(probe * (usable / widest));
+    if(size > maxByHeight) size = maxByHeight;
+    if(size > MINI_MAX_PX) size = MINI_MAX_PX;
+    if(size < MINI_MIN_PX) size = MINI_MIN_PX;
+    el.style.setProperty('font-size', size + 'px', 'important');
+  }
+
   function paint(){
     var el = clockEl();
     var face = faceText();
@@ -378,9 +559,10 @@
     el.setAttribute('data-mini-tone', face.tone);
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    el.setAttribute('aria-label', st.mode === MODE_REST ? 'Minuteur de repos' : 'Chrono EMOM');
+    el.setAttribute('aria-label', 'Chrono EMOM');
     el.innerHTML = '<span class="glc-hm">' + esc(face.hm) + '</span>'
                  + '<span class="glc-sec">' + esc(face.sec) + '</span>';
+    fitFace(el);
     paintCard(minuteState());
   }
 
@@ -426,6 +608,16 @@
     detect: detect,
     armEmom: armEmom,
     startRest: startRest,
+    stopRest: stopRest,
+    rebindRest: rebindRest,
+    restRunning: restRunning,
+    restRemaining: restRemaining,
+    restFaceText: restFaceText,
+    restTick: restTick,
+    restState: function(){
+      return {mode:restState.mode, key:restState.key, duration:restState.duration,
+              elapsed:restState.elapsed, running:restState.running};
+    },
     disarm: disarm,
     leaveBlock: leaveBlock,
     start: start,

@@ -7471,9 +7471,13 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 /* ── Mini-chrono de la barre du haut ────────────────────────────────────────
    EMOM programmé hors bloc WOD + minuteur de repos. Il occupe la boîte de
    l'heure (.guided-live-clock) telle quelle : mêmes deux fentes .glc-hm /
-   .glc-sec, même taille de police, même géométrie. Aucune hauteur n'est prise
-   aux cartes d'exercice, donc rien ne rétrécit sur les charges, les reps, le
-   RPE ni les recommandations de poids.
+   .glc-sec, même géométrie. Aucune hauteur n'est prise aux cartes d'exercice,
+   donc rien ne rétrécit sur les charges, les reps, le RPE ni les
+   recommandations de poids.
+   La TAILLE, elle, n'est plus figée : elle est calculée sur la largeur réelle
+   de la bande (fitFace, mini_timer.js), sur un gabarit constant pendant tout le
+   bloc. Le rembourrage est volontairement mince — c'est de la place rendue aux
+   chiffres.
    L'alerte réelle n'est pas dans ce coin : c'est la bordure de la carte
    (.guided-card.emom-*), qu'on perçoit sans lever les yeux. */
 .guided-live-clock.is-mini{
@@ -7481,74 +7485,152 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
+  /* Toute la bande, pas un coin : les deux fentes se poussent aux extrémités.
+     Le CADRE est retiré — encadrement, fond et rembourrage coûtaient 22 px de
+     largeur, soit une taille de police en moins pour rien. Le mini-chrono n'a
+     pas besoin d'être encadré : il est déjà seul dans la bande, et sa couleur
+     porte l'alerte. */
+  flex:1 1 auto;
+  width:100%;
+  justify-content:space-between !important;
+  padding:0 !important;
+  gap:6px !important;
+  background:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+/* Les deux fentes suivent la taille calculée sur la boîte. Le compteur de
+   minutes est à la MÊME taille que les secondes — c'est la COULEUR qui les
+   distingue, pas la dimension : blanc pour « où j'en suis », cyan pour « combien
+   il reste ». */
+.guided-live-clock.is-mini .glc-hm,
+.guided-live-clock.is-mini .glc-sec{
+  font-size:inherit !important;
+  font-family:var(--font-hud) !important;
+  font-weight:950 !important;
+  line-height:.9 !important;
+  letter-spacing:.01em !important;
+  font-variant-numeric:tabular-nums;
 }
 .guided-live-clock.is-mini .glc-hm{
-  /* Le petit mot est en Inter : même distinction de police que les rounds
-     AMRAP — on ne doit pas confondre l'étiquette et le nombre. */
-  font-family:var(--font-main) !important;
-  font-size:clamp(15px, 3.6vw, 20px) !important;
-  font-weight:800 !important;
-  letter-spacing:.04em !important;
-  color:var(--text2) !important;
-}
-.guided-live-clock.is-mini .glc-sec{
-  font-variant-numeric:tabular-nums;
+  color:var(--white) !important;
+  text-shadow:0 0 12px rgba(255,255,255,.28) !important;
 }
 .guided-live-clock.is-mini[data-mini-tone="idle"] .glc-sec,
 .guided-live-clock.is-mini[data-mini-tone="countdown"] .glc-sec{
   color:var(--white) !important;
-  text-shadow:0 0 10px rgba(255,255,255,.35) !important;
-}
-.guided-live-clock.is-mini[data-mini-tone="urgent"]{
-  border-color:rgba(255,65,100,.85) !important;
-  background:rgba(255,65,100,.12) !important;
+  text-shadow:0 0 12px rgba(255,255,255,.35) !important;
 }
 .guided-live-clock.is-mini[data-mini-tone="urgent"] .glc-sec{
   color:#ff4164 !important;
-  text-shadow:0 0 14px rgba(255,65,100,.75) !important;
+  text-shadow:0 0 16px rgba(255,65,100,.8) !important;
 }
 .guided-live-clock.is-mini[data-mini-tone="done"] .glc-sec{
   color:#00ffb0 !important;
-  text-shadow:0 0 14px rgba(0,255,176,.7) !important;
+  text-shadow:0 0 16px rgba(0,255,176,.7) !important;
+}
+/* Les chiffres virent AVEC la carte. Un compteur resté cyan pendant que la
+   carte passe au rouge, ce sont deux signaux contradictoires pour le même
+   évènement — et c'est le petit qu'on regarde en dernier. */
+.guided-live-clock.is-mini[data-mini-tone="emom-blue"] .glc-sec{
+  color:#8feaff !important;
+  text-shadow:0 0 16px rgba(143,234,255,.75) !important;
+}
+.guided-live-clock.is-mini[data-mini-tone="emom-yellow"] .glc-sec{
+  color:#ffd84a !important;
+  text-shadow:0 0 18px rgba(255,216,74,.85) !important;
+}
+.guided-live-clock.is-mini[data-mini-tone="emom-red"] .glc-sec{
+  color:#ff4164 !important;
+  text-shadow:0 0 22px rgba(255,65,100,.95) !important;
+}
+.guided-live-clock.is-mini[data-mini-tone="emom-go"] .glc-sec,
+.guided-live-clock.is-mini[data-mini-tone="emom-go"] .glc-hm{
+  color:#00ffb0 !important;
+  text-shadow:0 0 22px rgba(0,255,176,.9) !important;
 }
 
-/* Bordure de carte = l'alerte de minute. Mêmes paliers et mêmes couleurs que
-   le chrono WOD (guidedEmomMinuteState) : c'est le même geste appris. */
+/* Bordure de carte = l'alerte de minute. Mêmes paliers que le chrono WOD
+   (guidedEmomMinuteState), mais franchement plus marqués : en action, on ne
+   lit pas les chiffres du coin — on perçoit la carte. L'anneau est posé en
+   box-shadow, jamais en border-width : la mise en page ne bouge pas d'un pixel.
+   L'intensité monte avec l'urgence — bleu < jaune < ROUGE, et le rouge des
+   3 dernières secondes pulse pour se détacher des deux autres. */
 .guided-card.emom-blue{
-  border-color:rgba(120,220,255,.85) !important;
-  box-shadow:0 0 0 1px rgba(120,220,255,.30), 0 0 26px rgba(120,220,255,.22) !important;
+  border-color:rgba(120,220,255,.95) !important;
+  box-shadow:0 0 0 3px rgba(120,220,255,.45), 0 0 42px rgba(120,220,255,.34) !important;
+  background-image:linear-gradient(180deg, rgba(120,220,255,.07), transparent 42%) !important;
 }
 .guided-card.emom-yellow{
-  border-color:rgba(255,216,74,.90) !important;
-  box-shadow:0 0 0 1px rgba(255,216,74,.32), 0 0 30px rgba(255,216,74,.26) !important;
+  border-color:rgba(255,216,74,.98) !important;
+  box-shadow:0 0 0 4px rgba(255,216,74,.50), 0 0 52px rgba(255,216,74,.40) !important;
+  background-image:linear-gradient(180deg, rgba(255,216,74,.10), transparent 46%) !important;
 }
 .guided-card.emom-red{
-  border-color:rgba(255,65,100,.95) !important;
-  box-shadow:0 0 0 2px rgba(255,65,100,.34), 0 0 36px rgba(255,65,100,.34) !important;
+  border-color:rgba(255,65,100,1) !important;
+  box-shadow:0 0 0 6px rgba(255,65,100,.62), 0 0 74px rgba(255,65,100,.58) !important;
+  background-image:linear-gradient(180deg, rgba(255,65,100,.17), transparent 55%) !important;
+  animation:emomCardPulse .5s ease-in-out infinite;
 }
 .guided-card.emom-go{
-  border-color:rgba(0,255,170,.98) !important;
-  box-shadow:0 0 0 2px rgba(0,255,170,.30), 0 0 44px rgba(0,255,170,.45) !important;
+  border-color:rgba(0,255,170,1) !important;
+  box-shadow:0 0 0 5px rgba(0,255,170,.55), 0 0 80px rgba(0,255,170,.60) !important;
+  background-image:linear-gradient(180deg, rgba(0,255,170,.16), transparent 50%) !important;
   animation:emomFlashGo .18s alternate 4;
 }
+/* Pulsation des 3 dernières secondes : seule la LUEUR respire. Ni transform ni
+   dimension — la carte ne doit pas bouger pendant qu'on saisit un poids. */
+@keyframes emomCardPulse{
+  0%,100%{ box-shadow:0 0 0 6px rgba(255,65,100,.62), 0 0 74px rgba(255,65,100,.58); }
+  50%    { box-shadow:0 0 0 8px rgba(255,65,100,.92), 0 0 104px rgba(255,65,100,.92); }
+}
+@media (prefers-reduced-motion: reduce){
+  .guided-card.emom-red, .guided-card.emom-go{ animation:none !important; }
+}
 
-/* La ligne « Repos » chiffrée lance le minuteur. Consigne non chiffrée
-   (« le reste de la minute ») : rien à décompter, rien à toucher. */
-.guided-rest-info.is-tappable{
+/* ── La ligne « Repos » EST le minuteur ─────────────────────────────────────
+   Le chiffre du repos est déjà écrit là, déjà à la bonne taille, et déjà à
+   côté du mouvement qu'il concerne. Le décompte s'y fait sur place : aucune
+   hauteur ajoutée, et rien à aller chercher en haut de l'écran.
+   Chaque temps écrit est sa propre cible. Sur une plage, on choisit une borne
+   et l'autre disparaît pendant le décompte ; ailleurs sur la ligne, c'est la
+   borne la plus longue. Une consigne non chiffrée (« le reste de la minute »)
+   n'a aucune cible : il n'y a rien à décompter. */
+.guided-rest-info[data-rest-longest]{
   cursor:pointer;
   border-radius:8px;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
 }
-.guided-rest-info.is-tappable strong{
-  color:var(--cyan) !important;
+/* Le bouton reprend EXACTEMENT la typographie de la valeur qu'il remplace :
+   c'est le même chiffre, pas un contrôle ajouté. Aucune boîte, aucun
+   rembourrage — donc pas un pixel de hauteur en plus. */
+.guided-rest-pick{
+  appearance:none;
+  -webkit-appearance:none;
+  background:none;
+  border:0;
+  margin:0;
+  padding:0;
+  font:inherit;
+  color:var(--cyan);
+  line-height:inherit;
+  cursor:pointer;
   text-decoration:underline;
   text-decoration-style:dotted;
   text-underline-offset:3px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
-.guided-rest-info.is-tappable.is-running strong{
-  color:#00ffb0 !important;
+.guided-rest-pick:active{ opacity:.6; }
+.guided-rest-value.is-running .guided-rest-pick{
+  color:#00ffb0;
   text-decoration:none;
+  text-shadow:0 0 16px rgba(0,255,176,.55);
+}
+.guided-rest-value.is-done .guided-rest-pick{
+  color:#00ffb0;
+  animation:emomFlashGo .22s alternate 6;
 }
 
 

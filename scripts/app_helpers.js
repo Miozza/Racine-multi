@@ -29,6 +29,57 @@ function parseRestToSeconds(s){
   var m=String(s||"").match(/(\d+):(\d+)/);if(!m)return 0;
   return Number(m[1])*60+Number(m[2]);
 }
+
+// Découpe une consigne de repos en segments, en marquant ceux qui sont un temps
+// réellement décomptable. Sert à rendre CHAQUE temps tapable là où il est écrit,
+// sans toucher au texte qui l'entoure (« 0:30 avant C2 » doit rester lisible).
+//
+// Trois formes existent dans le catalogue, comptées sur les 83 consignes
+// distinctes de tous les programmes :
+//   - `m:ss`, seul ou en plage — 3757 occurrences (« 1:00 », « 1:00-2:30 ») ;
+//   - `N sec`, seul ou en plage —  380 occurrences (« 90 sec », « 60-90 sec »,
+//     « 90–120 sec » avec un tiret DEMI-CADRATIN) ; `parseRestToSeconds` les
+//     ignorait toutes, faute de `:` ;
+//   - non chiffrée — « au besoin », « le reste de la minute », « qualité »,
+//     « — » : rien à décompter, aucun segment tapable.
+// Bornes : sous 5 s ce n'est pas un repos, au-delà de 15 min c'est une erreur
+// de saisie. Hors bande, le segment reste du texte.
+var COACH_REST_MIN_SECONDS = 5;
+var COACH_REST_MAX_SECONDS = 15 * 60;
+function coachRestPicks(text){
+  var s = String(text == null ? "" : text);
+  var out = [], last = 0, m, rx = null;
+
+  if(/\d+:\d{2}/.test(s)){
+    rx = /(\d+):(\d{2})/g;
+  } else if(/\d+\s*(?:[-–—]\s*\d+\s*)?sec\b/i.test(s)){
+    // Le nombre ne compte que s'il précède réellement l'unité : sinon un
+    // « 3 séries ... 60 sec » ferait de 3 un temps de repos.
+    rx = /(\d+)(?=\s*(?:[-–—]\s*\d+\s*)?sec\b)/g;
+  }
+
+  if(rx){
+    while((m = rx.exec(s))){
+      var sec = m[2] !== undefined ? (Number(m[1]) * 60 + Number(m[2])) : Number(m[1]);
+      if(!(sec >= COACH_REST_MIN_SECONDS && sec <= COACH_REST_MAX_SECONDS)) sec = 0;
+      if(m.index > last) out.push({text:s.slice(last, m.index), sec:0});
+      out.push({text:m[0], sec:sec});
+      last = m.index + m[0].length;
+    }
+  }
+  if(last < s.length) out.push({text:s.slice(last), sec:0});
+  return out;
+}
+
+// Sur une plage, c'est le temps LE PLUS LONG qui fait foi : une consigne
+// « 1:00-2:30 » veut dire « au moins une minute, jusqu'à deux et demie ». Partir
+// sur la borne basse pousse à reprendre trop tôt — et c'était le comportement
+// de `parseRestToSeconds`, qui retenait le premier nombre rencontré.
+function coachRestLongestSeconds(text){
+  var picks = coachRestPicks(text), best = 0, i;
+  for(i = 0; i < picks.length; i++){ if(picks[i].sec > best) best = picks[i].sec; }
+  return best;
+}
 function cleanLine(s){return String(s||"").replace(/\s+/g," ").trim();}
 
 // Le moteur de charges peut renvoyer une PHRASE à la place d'une charge : un

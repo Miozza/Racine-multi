@@ -472,13 +472,29 @@ function renderGuidedExerciseList(exercises){
         ? "<div class='guided-load-message'><span>Poids</span><em>"+escHtml(e.load)+"</em></div>"
         : "<div class='guided-load-info-line'><span>Poids</span><strong class='accent guided-load-value'>"+escHtml(e.load)+loadInfoButtonHtml(e,e.load)+"</strong></div>";
     }
-    // La ligne « Repos » lance le minuteur dans la barre du haut quand la
-    // consigne est chiffrée (« 1:00 »). Une consigne non chiffrée (« le reste
-    // de la minute ») reste un simple texte : rien à décompter.
+    // La ligne « Repos » EST le minuteur : chaque temps écrit s'y touche et s'y
+    // décompte sur place. C'est le bon endroit — le chiffre du repos est déjà là
+    // et déjà à la bonne taille, alors que prendre l'heure de la barre du haut
+    // déplaçait l'information loin du mouvement.
+    // Sur une plage, chaque borne est sa propre cible : on choisit, et le temps
+    // écarté disparaît pendant le décompte. Toucher le mot « Repos » prend la
+    // borne la plus longue. Le texte autour (« avant C2 », « sec ») n'est jamais
+    // tapable : ce n'est pas un temps.
     if(e.rest&&e.rest!=="—"){
-      html+= restSec>0
-        ? "<div class='guided-rest-info is-tappable' data-mini-rest='"+restSec+"' role='button' tabindex='0' aria-label='Démarrer le minuteur de repos'><span>Repos</span><strong>"+escHtml(e.rest)+"</strong></div>"
-        : "<div class='guided-rest-info'><span>Repos</span><strong>"+escHtml(e.rest)+"</strong></div>";
+      var picks=(typeof coachRestPicks==="function")?coachRestPicks(e.rest):[];
+      var longest=(typeof coachRestLongestSeconds==="function")?coachRestLongestSeconds(e.rest):0;
+      var restKey=(e.key||guidedExerciseKey(e.title))+"#"+idx;
+      var inner="";
+      picks.forEach(function(seg){
+        inner+= seg.sec>0
+          ? "<button type='button' class='guided-rest-pick' data-rest-sec='"+seg.sec+"' aria-label='Démarrer un repos de "+seg.text+"'>"+escHtml(seg.text)+"</button>"
+          : escHtml(seg.text);
+      });
+      if(!inner) inner=escHtml(e.rest);
+      html+="<div class='guided-rest-info"+(longest>0?" has-picks":"")+"' data-rest-key='"+escHtml(restKey)+"'"
+          + (longest>0?" data-rest-longest='"+longest+"'":"")
+          + "><span"+(longest>0?" role='button' tabindex='0' aria-label='Démarrer le repos le plus long'":"")+">Repos</span>"
+          + "<strong class='guided-rest-value'>"+inner+"</strong></div>";
     }
     html+="</div>";
     html+=renderGuidedResultPanel(e);
@@ -667,17 +683,41 @@ function renderGuidedSession(){
     else CoachMiniTimer.leaveBlock();
     CoachMiniTimer.bind();
     if(CoachMiniTimer.ownsClockSlot()) CoachMiniTimer.paint();
-    Array.prototype.forEach.call(el.querySelectorAll("[data-mini-rest]"),function(row){
-      function go(ev){
-        if(ev&&ev.preventDefault)ev.preventDefault();
-        // Refusé pendant un EMOM : c'est lui qui donne le tempo, deux comptes
-        // à rebours au même endroit se contrediraient.
-        if(!CoachMiniTimer.startRest(Number(row.getAttribute("data-mini-rest"))||0, "rest")) return;
-        row.classList.add("is-running");
+    // Un repos en cours se raccroche à sa ligne recréée ; s'il n'y en a plus
+    // (on a changé de bloc), il s'arrête de lui-même.
+    CoachMiniTimer.rebindRest(el);
+
+    // Chaque temps écrit est sa propre cible. Toucher un décompte en cours
+    // l'annule — c'est le même bouton, il n'y a rien de plus à apprendre.
+    Array.prototype.forEach.call(el.querySelectorAll(".guided-rest-info[data-rest-longest]"),function(row){
+      var host=row.querySelector(".guided-rest-value");
+      function lancer(sec){
+        if(CoachMiniTimer.restRunning() || row.classList.contains("is-running")){
+          CoachMiniTimer.stopRest();
+          return;
+        }
+        CoachMiniTimer.startRest(sec, row.getAttribute("data-rest-key"), host);
       }
-      row.addEventListener("click", go);
+      row.addEventListener("click", function(ev){
+        var t=ev&&ev.target;
+        var pick=t&&t.closest?t.closest(".guided-rest-pick"):null;
+        if(pick){
+          ev.preventDefault();
+          lancer(Number(pick.getAttribute("data-rest-sec"))||0);
+          return;
+        }
+        // Ailleurs sur la ligne (le mot « Repos », le texte autour) : la borne
+        // la plus longue. Une plage veut dire « au moins X, jusqu'à Y » —
+        // partir sur la borne basse pousse à reprendre trop tôt.
+        ev.preventDefault();
+        lancer(Number(row.getAttribute("data-rest-longest"))||0);
+      });
       row.addEventListener("keydown", function(ev){
-        if(ev&&(ev.key==="Enter"||ev.key===" ")) go(ev);
+        if(!ev||(ev.key!=="Enter"&&ev.key!==" "))return;
+        ev.preventDefault();
+        var t=ev.target, pick=t&&t.closest?t.closest(".guided-rest-pick"):null;
+        lancer(pick ? (Number(pick.getAttribute("data-rest-sec"))||0)
+                    : (Number(row.getAttribute("data-rest-longest"))||0));
       });
     });
   }
