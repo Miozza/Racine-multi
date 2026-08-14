@@ -171,9 +171,25 @@ chrono, mais **pas au prix de la hauteur des cartes d'exercice**.
   « où j'en suis », cyan pour « combien il reste ». Les deux sont en
   `--font-hud` : ce sont deux valeurs numériques, pas une étiquette et une
   valeur.
-- **Le rembourrage est de la place rendue aux chiffres.** La boîte occupe 100 %
-  de la bande (`flex:1`, `justify-content:space-between`) et son rembourrage
-  reste mince. À 390 px de large, la police atteint ~46 px.
+- **RÈGLE VERROUILLÉE — la hauteur de la bande est un budget, pas une
+  conséquence.** La largeur seule ne suffit pas à borner la police : au-delà
+  d'un certain corps, la bande grandit, pousse la carte et reprend exactement la
+  hauteur qu'on a promis de ne jamais prendre aux charges et aux reps (mesuré à
+  69 px : bande +12 px, carte 721 → 709). La taille est donc plafonnée par
+  `hauteur de bande / line-height`. La mesure du budget doit être **idempotente** :
+  ramener la police au minimum avant de lire la hauteur naturelle de la bande,
+  comme `guidedResetTimerStretch()` pour le chrono WOD.
+- **Aucun cadre autour du mini-chrono.** Encadrement, fond et rembourrage
+  coûtaient 22 px de largeur, soit une taille de police perdue pour rien. Il est
+  déjà seul dans la bande, et l'alerte est portée par la couleur des chiffres.
+  La boîte occupe 100 % de la bande (`flex:1`, `justify-content:space-between`).
+  À 390 px de large, la police atteint **55 px**.
+- **Aucune face transitoire ne doit dominer le gabarit.** `DÉPART`, `PAUSE`,
+  `FINI` n'apparaissent que quelques secondes ; les inclure au gabarit rapetissait
+  en permanence l'affichage qu'on regarde 99 % du temps (« PAUSE 0:00 » = 9
+  caractères contre 7 pour un EMOM 8, soit 29 % de taille perdus). La pause
+  n'a plus de libellé du tout : c'est le **ton** qui l'éteint, la face ne change
+  pas.
 - **L'alerte se lit sur la carte, pas sur les chiffres.** La bordure de
   `.guided-card` se peint aux mêmes paliers que le chrono WOD (bleu 30 s,
   jaune 10 s, rouge 3 s, flash GO). Sans ce couplage, un compteur dans un coin
@@ -192,8 +208,34 @@ chrono, mais **pas au prix de la hauteur des cartes d'exercice**.
   `text` du bloc, **jamais de `block.time`** (créneau du bloc : 12 min pour un
   EMOM de 8). Le mot AMRAP seul ne déclenche rien : `3×AMRAP propre` et
   `AMRAP @ 205 lb` sont des séries menées à l'échec.
-- **Priorité.** Pendant un EMOM en cours, la ligne « Repos » ne prend pas la
-  barre : deux comptes à rebours au même endroit se contrediraient.
+### Le minuteur de repos vit dans sa ligne
+
+- **RÈGLE VERROUILLÉE — le décompte de repos s'affiche dans le chiffre de la
+  ligne « Repos », pas dans la barre du haut.** Ce chiffre est déjà écrit là,
+  déjà à la bonne taille, et déjà à côté du mouvement qu'il concerne : le
+  décompte ne coûte donc **aucune hauteur** et n'oblige pas à regarder ailleurs.
+- **Il RECOUVRE la consigne du programme, il ne l'écrase jamais.** Le contenu
+  d'origine est mémorisé et rendu tel quel à l'annulation comme à la fin.
+- **Chaque temps écrit est sa propre cible.** Sur une plage (`1:00-2:30`), les
+  deux bornes se touchent séparément et la borne choisie remplace l'autre
+  pendant le décompte. Ailleurs sur la ligne, c'est la **borne la plus longue** :
+  une plage veut dire « au moins X, jusqu'à Y », partir sur la basse pousse à
+  reprendre trop tôt. Le texte de contexte (« avant C2 », « sec ») n'est jamais
+  une cible : ce n'est pas un temps.
+- **Trois formes de consigne existent** et `coachRestPicks()` (helpers partagés)
+  est le seul endroit qui les lit : `m:ss` (3757 occurrences), `N sec` avec
+  tiret simple ou demi-cadratin (380 — que `parseRestToSeconds` ignorait toutes),
+  et non chiffrée (« au besoin », « le reste de la minute »), qui n'a aucune
+  cible. Bornes de vraisemblance : 5 s à 15 min.
+- **Le découpage ne réécrit jamais la consigne** : la concaténation des segments
+  rendus doit être identique à la chaîne source.
+- **Un repos survit au re-rendu de son bloc** (il se raccroche par sa clé) et
+  s'arrête quand on change de bloc : il appartient au mouvement en face duquel
+  il est écrit.
+- **Plus de règle de priorité entre les deux chronos.** Elle n'existait que
+  tant qu'ils se partageaient la boîte de l'heure. Depuis qu'ils occupent deux
+  espaces distincts, ils tournent ensemble : deux comptes à rebours ne se
+  contredisent que s'ils sont au même endroit.
 
 ### Accessibilité vue séance
 

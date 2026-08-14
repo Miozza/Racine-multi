@@ -1,5 +1,5 @@
-// Racine V4.5.49 — mini-chrono plein format, alerte plus franche, bips audibles
-var APP_VERSION = "V4.5.49";
+// Racine V4.5.50 — le repos se décompte dans sa ligne, chrono du haut sans cadre
+var APP_VERSION = "V4.5.50";
 
 // Architecture stable
 // programs/*.js = plan prévu

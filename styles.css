@@ -7485,12 +7485,19 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
-  /* Toute la bande, pas un coin : les deux fentes se poussent aux extrémités. */
+  /* Toute la bande, pas un coin : les deux fentes se poussent aux extrémités.
+     Le CADRE est retiré — encadrement, fond et rembourrage coûtaient 22 px de
+     largeur, soit une taille de police en moins pour rien. Le mini-chrono n'a
+     pas besoin d'être encadré : il est déjà seul dans la bande, et sa couleur
+     porte l'alerte. */
   flex:1 1 auto;
   width:100%;
   justify-content:space-between !important;
-  padding:2px 10px 1px !important;
-  gap:10px !important;
+  padding:0 !important;
+  gap:6px !important;
+  background:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
 }
 /* Les deux fentes suivent la taille calculée sur la boîte. Le compteur de
    minutes est à la MÊME taille que les secondes — c'est la COULEUR qui les
@@ -7514,10 +7521,6 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   color:var(--white) !important;
   text-shadow:0 0 12px rgba(255,255,255,.35) !important;
 }
-.guided-live-clock.is-mini[data-mini-tone="urgent"]{
-  border-color:rgba(255,65,100,.85) !important;
-  background:rgba(255,65,100,.12) !important;
-}
 .guided-live-clock.is-mini[data-mini-tone="urgent"] .glc-sec{
   color:#ff4164 !important;
   text-shadow:0 0 16px rgba(255,65,100,.8) !important;
@@ -7533,27 +7536,13 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   color:#8feaff !important;
   text-shadow:0 0 16px rgba(143,234,255,.75) !important;
 }
-.guided-live-clock.is-mini[data-mini-tone="emom-yellow"]{
-  border-color:rgba(255,216,74,.75) !important;
-  background:rgba(255,216,74,.12) !important;
-}
 .guided-live-clock.is-mini[data-mini-tone="emom-yellow"] .glc-sec{
   color:#ffd84a !important;
   text-shadow:0 0 18px rgba(255,216,74,.85) !important;
 }
-.guided-live-clock.is-mini[data-mini-tone="emom-red"]{
-  border-color:rgba(255,65,100,.95) !important;
-  background:rgba(255,65,100,.18) !important;
-  box-shadow:0 0 26px rgba(255,65,100,.45) !important;
-}
 .guided-live-clock.is-mini[data-mini-tone="emom-red"] .glc-sec{
   color:#ff4164 !important;
   text-shadow:0 0 22px rgba(255,65,100,.95) !important;
-}
-.guided-live-clock.is-mini[data-mini-tone="emom-go"]{
-  border-color:rgba(0,255,170,.95) !important;
-  background:rgba(0,255,170,.18) !important;
-  box-shadow:0 0 30px rgba(0,255,170,.5) !important;
 }
 .guided-live-clock.is-mini[data-mini-tone="emom-go"] .glc-sec,
 .guided-live-clock.is-mini[data-mini-tone="emom-go"] .glc-hm{
@@ -7599,23 +7588,49 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   .guided-card.emom-red, .guided-card.emom-go{ animation:none !important; }
 }
 
-/* La ligne « Repos » chiffrée lance le minuteur. Consigne non chiffrée
-   (« le reste de la minute ») : rien à décompter, rien à toucher. */
-.guided-rest-info.is-tappable{
+/* ── La ligne « Repos » EST le minuteur ─────────────────────────────────────
+   Le chiffre du repos est déjà écrit là, déjà à la bonne taille, et déjà à
+   côté du mouvement qu'il concerne. Le décompte s'y fait sur place : aucune
+   hauteur ajoutée, et rien à aller chercher en haut de l'écran.
+   Chaque temps écrit est sa propre cible. Sur une plage, on choisit une borne
+   et l'autre disparaît pendant le décompte ; ailleurs sur la ligne, c'est la
+   borne la plus longue. Une consigne non chiffrée (« le reste de la minute »)
+   n'a aucune cible : il n'y a rien à décompter. */
+.guided-rest-info[data-rest-longest]{
   cursor:pointer;
   border-radius:8px;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
 }
-.guided-rest-info.is-tappable strong{
-  color:var(--cyan) !important;
+/* Le bouton reprend EXACTEMENT la typographie de la valeur qu'il remplace :
+   c'est le même chiffre, pas un contrôle ajouté. Aucune boîte, aucun
+   rembourrage — donc pas un pixel de hauteur en plus. */
+.guided-rest-pick{
+  appearance:none;
+  -webkit-appearance:none;
+  background:none;
+  border:0;
+  margin:0;
+  padding:0;
+  font:inherit;
+  color:var(--cyan);
+  line-height:inherit;
+  cursor:pointer;
   text-decoration:underline;
   text-decoration-style:dotted;
   text-underline-offset:3px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
-.guided-rest-info.is-tappable.is-running strong{
-  color:#00ffb0 !important;
+.guided-rest-pick:active{ opacity:.6; }
+.guided-rest-value.is-running .guided-rest-pick{
+  color:#00ffb0;
   text-decoration:none;
+  text-shadow:0 0 16px rgba(0,255,176,.55);
+}
+.guided-rest-value.is-done .guided-rest-pick{
+  color:#00ffb0;
+  animation:emomFlashGo .22s alternate 6;
 }
 
 
