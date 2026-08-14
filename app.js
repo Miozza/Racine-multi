@@ -1,5 +1,5 @@
-// Racine V4.5.46 — mini-chrono EMOM et minuteur de repos dans la barre du haut
-var APP_VERSION = "V4.5.46";
+// Racine V4.5.47 — un profil non calibré ne recouvre plus la carte de séance
+var APP_VERSION = "V4.5.47";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -1,3 +1,13 @@
+## V4.5.47 — Un profil non calibré ne recouvre plus la carte de séance
+
+- **Le moteur peut renvoyer une phrase à la place d'une charge.** Un profil non calibré reçoit « Profil non calibré : complète la calibration avant d'utiliser les charges suggérées. » — 88 caractères — **pour chaque mouvement**.
+- **Cette phrase atterrissait dans la fente de la charge**, dimensionnée pour « 185 lb » : **41 px** en séance guidée, **31 px** sur WOD+. Elle s'enroulait sur huit lignes en Orbitron et recouvrait le reste de la carte, jusqu'à **masquer les champs poids / reps / RPE**. L'écran était inutilisable tant que la calibration n'était pas faite.
+- **Le message se lit maintenant comme ce qu'il est** : un avertissement encadré, en texte courant (13-16 px), dans sa propre fente. La carte garde sa hauteur (648 px), le panneau Résultat reste visible, aucun débordement horizontal.
+- **Le texte du moteur est conservé mot pour mot** : les vues ne le recopient pas, il change juste de fente. **Aucune décision de charge n'est touchée** — c'est de l'affichage seulement.
+- **Le test interroge le moteur, il ne devine pas sur le texte.** `coachLoadIsMessage()` demande `coachProfileNeedsCalibration()` : tant que le profil n'est pas calibré, **rien** ne prend la fente de la charge de référence, même une valeur courte. Un filet de longueur (> 40 caractères) couvre tout futur message — la plus longue charge réelle du catalogue fait 33 caractères (« 185 → 205 → 215 → 225 si autorisé »), le seuil est posé au-dessus.
+- **Une seule règle, un seul propriétaire** : le test vit dans `scripts/app_helpers.js` et sert aux deux vues touchées par le même défaut. Un profil calibré ne change en rien — valeur cyan à 47 px, vérifiée.
+- **Portée** : `scripts/app_helpers.js`, `scripts/session/view.js`, `scripts/view_wodplus.js`, `styles.css`, `index.html`. Garde-fou étendu : `dev/client_charge_safety_checks.js` (côté affichage du contrat de calibration, exécuté sur le vrai code), 9 mutations testées, 9 attrapées.
+
 ## V4.5.46 — Chrono EMOM hors WOD et minuteur de repos, sans un pixel pris aux charges
 
 - **Un EMOM programmé ailleurs qu'en bloc WOD n'avait aucun chrono.** Le vendredi de `phase2_fable5`, « A. Power Clean vitesse » est un bloc `kind:"main"` — or `buildGuidedSessionBlocks()` ne construisait `obj.timer` que pour les blocs `kind:"wod"`.

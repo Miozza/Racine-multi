@@ -468,7 +468,9 @@ function renderGuidedExerciseList(exercises){
             "<div class='guided-ex-grid'>";
     if(e.format)html+="<div><span>Format</span><strong>"+escHtml(e.format)+"</strong></div>";
     if(e.load){
-      html+="<div class='guided-load-info-line'><span>Poids</span><strong class='accent guided-load-value'>"+escHtml(e.load)+loadInfoButtonHtml(e,e.load)+"</strong></div>";
+      html+= coachLoadIsMessage(e.load)
+        ? "<div class='guided-load-message'><span>Poids</span><em>"+escHtml(e.load)+"</em></div>"
+        : "<div class='guided-load-info-line'><span>Poids</span><strong class='accent guided-load-value'>"+escHtml(e.load)+loadInfoButtonHtml(e,e.load)+"</strong></div>";
     }
     // La ligne « Repos » lance le minuteur dans la barre du haut quand la
     // consigne est chiffrée (« 1:00 »). Une consigne non chiffrée (« le reste

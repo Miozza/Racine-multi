@@ -141,6 +141,63 @@ try{
   errors.push('Test profil non calibré impossible : ' + (error && error.stack ? error.stack : error));
 }
 
+// ── Côté affichage du même contrat ─────────────────────────────────────────
+// Le blocage renvoie une PHRASE de 88 caractères. La fente « Poids » de la
+// séance guidée est dimensionnée pour « 185 lb » (41 px sur iPhone) : la phrase
+// s'y enroulait sur huit lignes et recouvrait la carte entière, jusqu'à masquer
+// les champs de saisie. Le message doit sortir de cette fente — sans jamais y
+// faire sortir une vraie charge, sinon le contrat de lisibilité s'inverse.
+try{
+  const sandbox = {console:{log(){},warn(){},error(){}}};
+  sandbox.window = sandbox;
+  vm.runInNewContext(read('scripts/app_helpers.js'), sandbox, {filename:'app_helpers.js'});
+  const isMessage = sandbox.coachLoadIsMessage;
+  assert(typeof isMessage === 'function', 'Les vues savent distinguer une charge d’un message.');
+
+  // Profil calibré : tout ce que le moteur renvoie reste une charge.
+  sandbox.coachProfileNeedsCalibration = () => false;
+  ['185 lb', '185 lb ↑', 'poids du corps', '40-45 lb / main', '0-20 lb', '≈60 % du cycle précédent',
+   '185 → 205 → 215 → 225 si autorisé']
+    .forEach(v => assert(isMessage(v) === false, 'Charge réelle affichée dans la fente Poids : ' + v));
+  assert(isMessage('') === false && isMessage(null) === false, 'Une charge absente n’est pas traitée comme un message.');
+
+  // La plus longue charge réelle du catalogue fait 33 caractères : le filet de
+  // sécurité doit se déclencher au-dessus, pas dessus.
+  assert(isMessage('x'.repeat(34)) === false, 'Le filet ne se déclenche pas sur une charge longue mais plausible.');
+  assert(isMessage('x'.repeat(60)) === true, 'Un texte trop long pour être une charge est traité comme un message.');
+
+  // Profil non calibré : le message du moteur sort de la fente Poids.
+  sandbox.coachProfileNeedsCalibration = () => true;
+  assert(isMessage('Profil non calibré : complète la calibration avant d’utiliser les charges suggérées.') === true,
+    'Le message de calibration ne s’affiche pas dans la fente dimensionnée pour « 185 lb ».');
+  // Le test interroge le moteur, il ne devine pas sur la longueur : tant que le
+  // profil n’est pas calibré, RIEN ne s’affiche comme une charge de référence,
+  // même court. Sans cette assertion, le filet de longueur suffirait à faire
+  // passer les contrôles et la cause réelle ne serait plus surveillée.
+  assert(isMessage('185 lb') === true,
+    'Profil non calibré : même une valeur courte ne prend pas la fente de la charge de référence.');
+
+  const source = read('scripts/session/view.js');
+  assert(/coachLoadIsMessage\(e\.load\)/.test(source),
+    'La liste d’exercices consulte bien ce test avant d’écrire dans la fente Poids.');
+  assert(/guided-load-message/.test(source) && /guided-load-message/.test(read('styles.css')),
+    'Le message a sa propre fente, stylée en texte courant.');
+  // Même défaut, même cause, sur la vue WOD+ : la charge y est réglée à 31 px.
+  const wodplus = read('scripts/view_wodplus.js');
+  assert(/coachLoadIsMessage\(shown\)/.test(wodplus),
+    'WOD+ consulte le même test avant d’écrire dans sa boîte de charge.');
+  assert(wodplus.indexOf('coachLoadIsMessage(shown)') < wodplus.indexOf('wodplus-loadbox'),
+    'WOD+ écarte le message AVANT de choisir la boîte de charge, pas après.');
+  // Commentaires retirés : ils CITENT le message, ils ne le produisent pas.
+  const code = source.split('\n')
+    .filter(line => !/^\s*(\/\/|\*|\/\*)/.test(line))
+    .map(line => line.replace(/\/\/.*$/, '')).join('\n');
+  assert(!/Profil non calibré/.test(code),
+    'La vue ne recopie pas le texte du moteur : une seule formulation, celle du moteur.');
+}catch(error){
+  errors.push('Test affichage d’un message de charge impossible : ' + (error && error.stack ? error.stack : error));
+}
+
 try{
   // Régression : un profil réel onboardé (registre ET state.profile.onboarded)
   // peut perdre sa copie locale de scaleRatios (migration partielle, state
