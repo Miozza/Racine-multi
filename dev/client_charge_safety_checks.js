@@ -123,9 +123,11 @@ try{
   assert(engine.canonicalMovementLabel('Weighted Pull-up') === 'Weighted Pull-up', 'Weighted Pull-up garde son nom stable distinct.');
   assert(engine.coachMovementEquipmentFamily('Weighted Pull-up') === 'bodyweight', 'Weighted Pull-up garde sa famille poids du corps distincte.');
   assert(typeof engine.coachProfileNeedsCalibration === 'function', 'Le moteur expose coachProfileNeedsCalibration.');
+  // Sans table de niveaux disponible, aucun repère n'existe : le blocage reste
+  // le comportement sûr. Le moteur n'invente jamais un ratio.
   engine.state.profile = {onboarded:false, scaleRatios:null};
   const blocked = engine.guardedSuggestedLoadDecision('Back Squat', '165 lb', 8, {});
-  assert(blocked && blocked.blocked === true, 'Un profil client non calibré est bloqué.');
+  assert(blocked && blocked.blocked === true, 'Sans repère de niveau, un profil non calibré est bloqué.');
   assert(blocked && blocked.loadNum === null && !/\d+\s*lb/.test(blocked.loadText || ''), 'Le blocage ne présente aucune charge numérique comme fiable.');
   assert(blocked && /Profil non calibré/.test(blocked.loadText || ''), 'Le blocage explique que le profil doit être calibré.');
 
@@ -139,6 +141,99 @@ try{
   assert(typeof engine.coachProfileNeedsCalibration === 'function' && engine.coachProfileNeedsCalibration() === false, 'Une migration ancienne sans profil garde le ratio neutre compatible.');
 }catch(error){
   errors.push('Test profil non calibré impossible : ' + (error && error.stack ? error.stack : error));
+}
+
+// ── Profil non calibré : estimation de niveau plutôt que blocage ───────────
+// Un profil sans ratios de test n'est pas un profil sans information : son
+// NIVEAU déclaré donne une estimation grossière mais bornée. Le danger n'a
+// jamais été l'absence de calibration — c'était l'ancien repli « ratio 1 », qui
+// servait la charge de l'athlète de référence (Back Squat 315) à un débutant.
+// Ce test verrouille les trois propriétés : une charge sort, elle est bornée
+// par le niveau, et elle ne se présente jamais comme une capacité mesurée.
+try{
+  const engine = loadChargeEngine();
+  // La VRAIE table de niveaux, chargée depuis son propriétaire. Si le moteur
+  // recopiait les seuils au lieu de les lire, la mutation de ce fichier ne se
+  // verrait pas ici.
+  vm.runInNewContext(read('scripts/profiles/reference.js'), engine, {filename:'reference.js'});
+  vm.runInNewContext(read('scripts/profiles/onboarding.js'), engine, {filename:'onboarding.js'});
+  const levels = engine.CoachOnboarding && engine.CoachOnboarding.EXPERIENCE_LEVELS;
+  assert(levels && levels.debutant && levels.avance, 'La table des niveaux est lisible par le moteur.');
+
+  const PROGRAMME = 165;   // « 165 lb » = %1RM de l'athlète de référence
+  function suggereFor(level){
+    engine.state.profile = {onboarded:false, scaleRatios:null, experienceLevel:level};
+    return engine.guardedSuggestedLoadDecision('Back Squat', PROGRAMME + ' lb', 8, {});
+  }
+
+  const debutant = suggereFor('debutant');
+  assert(debutant && debutant.blocked !== true, 'Un profil non calibré reçoit une charge au lieu d’une phrase.');
+  assert(debutant && debutant.loadNum > 0, 'Cette charge est un nombre exploitable.');
+  assert(!/Profil non calibré/.test(debutant.loadText || ''),
+    'La phrase de blocage ne s’affiche plus à la place de la charge.');
+
+  // Bornes, pas égalité au pixel : l'arrondi équipement s'applique après.
+  const attenduDebutant = PROGRAMME * levels.debutant.fallbackRatio;
+  assert(Math.abs(debutant.loadNum - attenduDebutant) <= 10,
+    'Débutant : la charge suit le repère de son niveau (' + debutant.loadNum + ' lb pour ~' + Math.round(attenduDebutant) + ').');
+  assert(debutant.loadNum < PROGRAMME,
+    'Débutant : JAMAIS la charge de l’athlète de référence — c’est ce qui rendait l’ancien repli dangereux.');
+
+  const avance = suggereFor('avance');
+  assert(avance.loadNum > debutant.loadNum,
+    'Un avancé reçoit plus lourd qu’un débutant : le niveau déclaré pèse réellement.');
+  assert(avance.loadNum <= PROGRAMME * levels.avance.fallbackRatio + 10,
+    'Avancé : le repère plafonne au niveau de l’athlète de référence, il ne le dépasse pas.');
+
+  const intermediaire = suggereFor('intermediaire');
+  assert(intermediaire.loadNum > debutant.loadNum && intermediaire.loadNum < avance.loadNum,
+    'Les trois niveaux restent ordonnés : débutant < intermédiaire < avancé.');
+
+  // Niveau absent ou inconnu : repli sur intermédiaire, comme ratiosFromValues.
+  const sansNiveau = suggereFor(undefined);
+  assert(sansNiveau.loadNum === intermediaire.loadNum,
+    'Un profil sans niveau déclaré est traité comme intermédiaire, jamais comme l’athlète de référence.');
+
+  // Marquage : une estimation ne se présente jamais comme une mesure.
+  [debutant, intermediaire, avance].forEach(d => {
+    assert(d.severity !== 'ok',
+      'Une estimation de niveau sort en surveillance, jamais en « ok » : ce n’est pas une capacité mesurée.');
+    assert(/non calibré/i.test(d.reason || ''),
+      'La raison lue par le bouton (!) dit que le profil n’est pas calibré.');
+  });
+
+  // Le profil reste non calibré : l'app doit pouvoir continuer d'inviter à
+  // calibrer. Une estimation ne vaut pas une calibration.
+  engine.state.profile = {onboarded:false, scaleRatios:null, experienceLevel:'debutant'};
+  assert(engine.coachProfileNeedsCalibration() === true,
+    'Recevoir une estimation ne fait pas passer le profil pour calibré.');
+
+  // Un profil calibré n'est pas touché par ce chemin.
+  engine.state.profile = {scaleRatios:{_lowerBody:0.9,_overall:0.9}, experienceLevel:'debutant'};
+  engine.CoachProfiles = {getActive(){ return {onboarded:true}; }};
+  const calibre = engine.guardedSuggestedLoadDecision('Back Squat', PROGRAMME + ' lb', 8, {});
+  assert(Math.abs(calibre.loadNum - PROGRAMME * 0.9) <= 10,
+    'Un profil calibré garde ses ratios de test : le niveau déclaré ne les écrase pas.');
+  assert(!/non calibré/i.test(calibre.reason || ''),
+    'Un profil calibré n’est jamais marqué comme estimation de niveau.');
+
+  // Le clamp de bande couvre AUSSI ce chemin. Les trois niveaux réels
+  // (0.45 / 0.75 / 1.00) tombent déjà dans [0.25, 1.6], donc rien ne le
+  // prouverait sans un seuil hors bande : c'est exactement le scénario du
+  // Deadlift à 600 lb, mais par le repère de niveau au lieu des ratios stockés.
+  engine.CoachOnboarding.EXPERIENCE_LEVELS.absurde = {label:'Test', fallbackRatio:4.0};
+  engine.state.profile = {onboarded:false, scaleRatios:null, experienceLevel:'absurde'};
+  delete engine.CoachProfiles;
+  const horsBande = engine.guardedSuggestedLoadDecision('Back Squat', PROGRAMME + ' lb', 8, {});
+  assert(horsBande.loadNum <= PROGRAMME * 1.6 + 10,
+    'Un repère de niveau hors bande est borné comme n’importe quel ratio (' + horsBande.loadNum + ' lb, pas ' + (PROGRAMME * 4) + ').');
+  delete engine.CoachOnboarding.EXPERIENCE_LEVELS.absurde;
+
+  const scaling = read('scripts/charge/scaling.js');
+  assert(/CoachOnboarding/.test(scaling) && !/fallbackRatio\s*[:=]\s*0?\.\d/.test(scaling),
+    'Le moteur LIT la table des niveaux, il ne recopie pas ses seuils.');
+}catch(error){
+  errors.push('Test estimation de niveau impossible : ' + (error && error.stack ? error.stack : error));
 }
 
 // ── Côté affichage du même contrat ─────────────────────────────────────────
@@ -166,16 +261,17 @@ try{
   assert(isMessage('x'.repeat(34)) === false, 'Le filet ne se déclenche pas sur une charge longue mais plausible.');
   assert(isMessage('x'.repeat(60)) === true, 'Un texte trop long pour être une charge est traité comme un message.');
 
-  // Profil non calibré : le message du moteur sort de la fente Poids.
-  sandbox.coachProfileNeedsCalibration = () => true;
+  // Le message résiduel du moteur (aucun repère de niveau disponible) sort de
+  // la fente Poids par sa seule longueur.
   assert(isMessage('Profil non calibré : complète la calibration avant d’utiliser les charges suggérées.') === true,
     'Le message de calibration ne s’affiche pas dans la fente dimensionnée pour « 185 lb ».');
-  // Le test interroge le moteur, il ne devine pas sur la longueur : tant que le
-  // profil n’est pas calibré, RIEN ne s’affiche comme une charge de référence,
-  // même court. Sans cette assertion, le filet de longueur suffirait à faire
-  // passer les contrôles et la cause réelle ne serait plus surveillée.
-  assert(isMessage('185 lb') === true,
-    'Profil non calibré : même une valeur courte ne prend pas la fente de la charge de référence.');
+  // Contrepartie indispensable : l'estimation de niveau servie à un profil NON
+  // calibré est une vraie charge et doit rester dans sa fente. Une version
+  // antérieure de ce test liait l'affichage à l'état du profil et écartait ces
+  // 75 lb — c'est ce que cette assertion empêche de revenir.
+  sandbox.coachProfileNeedsCalibration = () => true;
+  assert(isMessage('75 lb') === false,
+    'Profil non calibré : l’estimation de niveau reste affichée comme une charge, pas comme un message.');
 
   const source = read('scripts/session/view.js');
   assert(/coachLoadIsMessage\(e\.load\)/.test(source),

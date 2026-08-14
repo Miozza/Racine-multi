@@ -54,10 +54,44 @@ function coachClampScaleRatio(ratio, label, sourceKey){
   return clamped;
 }
 
+// Repère de niveau pour un profil SANS ratios de test.
+// Avant : un tel profil était bloqué — aucune charge, une phrase à la place.
+// Or le matériel existe déjà : l'onboarding applique `fallbackRatio` (0.45
+// débutant / 0.75 intermédiaire / 1.00 avancé) à CHAQUE mouvement non testé.
+// Un profil sans ratios n'est donc pas un profil sans information : son niveau
+// déclaré est une estimation grossière mais bornée, très supérieure au repli
+// historique « ratio 1 » — qui donnait la charge de l'athlète de référence à un
+// débutant. C'est ce ratio 1 qui était dangereux, pas l'absence de calibration.
+//
+// La table des niveaux a UN SEUL propriétaire : `CoachOnboarding`
+// (scripts/profiles/onboarding.js). Le moteur la LIT, il ne la recopie pas —
+// deux copies des mêmes seuils dériveraient en silence. Si le module n'est pas
+// là (contexte partiel), on retourne 0 et l'appelant garde le blocage : jamais
+// de nombre inventé ici.
+function coachUncalibratedLevelRatio(){
+  var mod = (typeof window !== 'undefined' && window.CoachOnboarding) ? window.CoachOnboarding : null;
+  var table = mod && mod.EXPERIENCE_LEVELS;
+  if(!table) return 0;
+  var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
+  var registered = (typeof CoachProfiles !== 'undefined' && CoachProfiles && typeof CoachProfiles.getActive === 'function')
+    ? CoachProfiles.getActive()
+    : null;
+  var lvl = (profile && profile.experienceLevel) || (registered && registered.experienceLevel) || 'intermediaire';
+  var entry = table[lvl] || table.intermediaire;
+  var ratio = entry && Number(entry.fallbackRatio);
+  return (ratio > 0) ? ratio : 0;
+}
+
 function coachUserLoadRatio(label){
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
   var ratios = profile && profile.scaleRatios;
-  if(!ratios) return 1;
+  // Pas de ratios de test : on descend au repère de niveau plutôt que de
+  // laisser passer la charge de l'athlète de référence telle quelle. Le clamp
+  // de bande s'applique comme partout ailleurs.
+  if(!ratios){
+    var lvlRatio = (typeof coachUncalibratedLevelRatio === 'function') ? coachUncalibratedLevelRatio() : 0;
+    return (lvlRatio > 0) ? coachClampScaleRatio(lvlRatio, label, 'niveau') : 1;
+  }
 
   // 1. Correspondance directe avec l'un des 12 mouvements de référence
   //    (mêmes clés que defaultProfile / PR_FIELD_MAP, définis dans app.js).

@@ -1,3 +1,16 @@
+## V4.5.48 — Un profil non calibré reçoit une charge, plus un refus
+
+- **Le blocage disparaît.** Un profil sans ratios de test recevait une phrase à la place de chaque charge. Il reçoit maintenant une **estimation d'après son niveau déclaré**.
+- **Le matériel existait déjà.** `CoachOnboarding.EXPERIENCE_LEVELS.fallbackRatio` vaut **0,45 / 0,75 / 1,00** (débutant / intermédiaire / avancé), et l'onboarding s'en sert déjà pour chaque mouvement non testé. Le moteur refusait simplement de s'en servir quand `scaleRatios` était absent. Rien n'est inventé, rien n'est persisté : le ratio se calcule à la volée.
+- **C'est le repli, pas l'absence de calibration, qui était dangereux.** L'ancien `coachUserLoadRatio()` retournait **1** sans ratios — soit la charge de l'athlète de référence servie telle quelle à un débutant. C'est ça que le blocage protégeait. Le repère de niveau le remplace : sur un Back Squat de programme à 165 lb, un débutant reçoit **75 lb**, pas 165.
+- **Le clamp de bande [0,25 – 1,60] couvre aussi ce chemin.** Vérifié avec un seuil aberrant injecté (ratio 4,0) : **265 lb au lieu de 660** — le scénario du Deadlift à 600 lb ne peut pas repasser par là.
+- **Une estimation ne se présente jamais comme une mesure.** La décision sort en `severity: watch` et sa raison, lue par le bouton `(!)`, dit « Estimation d'après le niveau déclaré : profil non calibré. » Le profil **reste compté comme non calibré** : l'app peut toujours inviter à calibrer, et l'historique reprend la main dès la première série loggée.
+- **Le blocage subsiste pour le seul cas sans repère** : aucune table de niveaux disponible. Le moteur n'invente jamais un ratio.
+- **Un profil sans niveau déclaré est traité comme intermédiaire** (0,75), comme le fait déjà `ratiosFromValues()`. **Un profil calibré n'est pas touché** : ses ratios de test priment, vérifié.
+- **Correction du critère d'affichage de la V4.5.47.** Il demandait `coachProfileNeedsCalibration()` — juste tant qu'un profil non calibré ne recevait qu'une phrase, faux depuis qu'il reçoit 75 lb : il écartait cette vraie charge de sa fente. Seule la **longueur** décide désormais (> 40 caractères), ce qui a toujours été la vraie différence entre une charge et un message.
+- **Ce que ça change dans le garde-fou** : `dev/client_charge_safety_checks.js` affirmait « un profil client non calibré est **bloqué** ». Il affirme maintenant qu'il reçoit une charge **bornée par son niveau**, ordonnée entre les trois niveaux, jamais celle de l'athlète de référence — et que le blocage reste quand aucun repère n'existe. La table des niveaux garde **un seul propriétaire** : le moteur la lit, il ne recopie pas ses seuils.
+- **Portée** : `scripts/charge/scaling.js`, `scripts/charge/suggestion.js`, `scripts/app_helpers.js`, `index.html`. Garde-fou étendu : `dev/client_charge_safety_checks.js`, 10 mutations testées, 10 attrapées. Vérifié dans le navigateur aux trois niveaux : 70 / 115 / 150 lb.
+
 ## V4.5.47 — Un profil non calibré ne recouvre plus la carte de séance
 
 - **Le moteur peut renvoyer une phrase à la place d'une charge.** Un profil non calibré reçoit « Profil non calibré : complète la calibration avant d'utiliser les charges suggérées. » — 88 caractères — **pour chaque mouvement**.

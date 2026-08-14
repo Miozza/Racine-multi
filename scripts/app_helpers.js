@@ -39,16 +39,17 @@ function cleanLine(s){return String(s||"").replace(/\s+/g," ").trim();}
 // masquer les champs de saisie.
 // AFFICHAGE SEULEMENT : le texte du moteur est conservé mot pour mot, il change
 // juste de fente. Aucune décision de charge n'est touchée.
+// Le critère est la LONGUEUR, pas l'état du profil. Une version antérieure
+// demandait `coachProfileNeedsCalibration()` : c'était juste tant qu'un profil
+// non calibré ne recevait qu'une phrase. Depuis qu'il reçoit une estimation de
+// niveau (« 75 lb »), ce critère écartait une vraie charge de sa fente. Ce qui
+// distingue les deux cas n'a jamais été le profil : c'est qu'une charge est
+// courte et qu'un message est une phrase.
+// La plus longue charge réelle du catalogue fait 33 caractères
+// (« 185 → 205 → 215 → 225 si autorisé ») ; le seuil est posé au-dessus.
 function coachLoadIsMessage(load){
   var s = String(load == null ? "" : load).trim();
   if(!s) return false;
-  // Cause connue, demandée au moteur lui-même plutôt que devinée sur le texte :
-  // tant que le profil n'est pas calibré, rien ne s'affiche comme une charge de
-  // référence, même court.
-  if(typeof coachProfileNeedsCalibration === "function" && coachProfileNeedsCalibration()) return true;
-  // Filet pour tout futur message : la plus longue charge réelle du catalogue
-  // fait 33 caractères (« 185 → 205 → 215 → 225 si autorisé »), le seuil est
-  // posé au-dessus. Une charge ne devient jamais une phrase.
   return s.length > 40;
 }
 

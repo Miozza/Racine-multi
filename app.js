@@ -1,5 +1,5 @@
-// Racine V4.5.47 — un profil non calibré ne recouvre plus la carte de séance
-var APP_VERSION = "V4.5.47";
+// Racine V4.5.48 — un profil non calibré reçoit une charge estimée sur son niveau
+var APP_VERSION = "V4.5.48";
 
 // Architecture stable
 // programs/*.js = plan prévu
