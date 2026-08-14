@@ -1048,6 +1048,16 @@
       "consumes": []
     },
     {
+      "path": "dev/sound_checks.js",
+      "size": 11628,
+      "lines": 214,
+      "role": "Garde-fous du son des chronos : déblocage audio muet (bug « pas de bip au premier chargement »), palette de trois voix avec un défaut grave, transposition qui garde les mélodies, plancher de fréquence audible sur haut-parleur de téléphone, passe-bas réellement câblé, et vérification qu'aucun des cinq signaux n'a disparu.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/strict_muscle_up_checks.js",
       "size": 4168,
       "lines": 82,
