@@ -279,9 +279,19 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
 function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   var moveContext=(context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
   var label=moveContext&&moveContext.label?moveContext.label:canonicalMovementLabel(nameOrKey);
-  if(typeof coachProfileNeedsCalibration==='function'&&coachProfileNeedsCalibration()){
-    var calibrationMessage='Profil non calibré : complète la calibration avant d’utiliser les charges suggérées.';
-    return {early:true,decision:{label:label,loadNum:null,loadText:calibrationMessage,blocked:true,severity:'watch',reason:'Profil client sans calibration.'}};
+  // Profil sans calibration : on ne bloque plus si son NIVEAU permet une
+  // estimation bornée (cf. coachUncalibratedLevelRatio dans scaling.js). La
+  // suggestion suit alors le chemin normal — mise à l'échelle, plancher
+  // historique, prudence RPE, arrondi équipement — et ressort marquée
+  // « surveillance » : c'est une estimation, pas une capacité mesurée.
+  // Le blocage reste pour le seul cas où aucun repère n'existe.
+  var uncalibrated=(typeof coachProfileNeedsCalibration==='function')&&coachProfileNeedsCalibration();
+  if(uncalibrated){
+    var levelRatio=(typeof coachUncalibratedLevelRatio==='function')?coachUncalibratedLevelRatio():0;
+    if(!(levelRatio>0)){
+      var calibrationMessage='Profil non calibré : complète la calibration avant d’utiliser les charges suggérées.';
+      return {early:true,decision:{label:label,loadNum:null,loadText:calibrationMessage,blocked:true,severity:'watch',reason:'Profil client sans calibration.'}};
+    }
   }
   var target=Number(targetReps)||8;
   var mv=athleteMovementRecord(label);
@@ -351,7 +361,11 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     // deload, cap contextuel). Remplace la detection par mots-cles sur
     // `reason` faite plus loin dans storeLoadDecisionHint : la source est ici
     // un fait connu, pas une supposition.
-    brainAdjusted:false
+    brainAdjusted:false,
+    // Profil sans calibration ayant reçu une estimation de niveau. La
+    // suggestion sort du moteur normalement, mais elle ne doit jamais se
+    // présenter comme une capacité mesurée : marquée en finalisation.
+    uncalibrated:uncalibrated
   }};
 }
 
@@ -605,6 +619,14 @@ function coachRuleContextLimitedRounding(ctx){
 }
 
 function coachFinalizeSuggestionDecision(ctx){
+  // Estimation de niveau : jamais présentée comme une capacité mesurée. La
+  // sévérité ne peut plus redescendre à « ok » tant que le profil n'est pas
+  // calibré, et la raison le dit — c'est ce que lit le bouton (!).
+  if(ctx.uncalibrated){
+    ctx.severity=(ctx.severity==="ok")?"watch":ctx.severity;
+    ctx.reason="Estimation d'après le niveau déclaré : profil non calibré. Calibre pour des charges à ta mesure.";
+    ctx.uncalibratedApplied=true;
+  }
   var text=coachFormatSuggestedLoad(ctx.label,ctx.rounded,ctx.originalText,'');
   if(ctx.severity==="warning"||ctx.severity==="critical")text += " ⚠";
   var decision={label:ctx.label,loadText:text,loadNum:ctx.rounded,severity:ctx.severity,reason:ctx.reason,last:ctx.last,cap:ctx.cap,historySignal:ctx.historySignal};

@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 187,
+    "ACTIF": 190,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -630,6 +630,16 @@
       "consumes": []
     },
     {
+      "path": "dev/extra_movements_checks.js",
+      "size": 10059,
+      "lines": 181,
+      "role": "Garde-fous des mouvements hors programme : clé de résultat = nom exact du catalogue, contexte neutre (aucun kind ni titre de bloc), marqueur isExtra, anti-collision par libellé moteur, purge ciblée du cache au retrait. Exécute le vrai module dans un bac à sable.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/fixtures/charge_suggestion_golden_master.json",
       "size": 22315,
       "lines": 937,
@@ -701,6 +711,26 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "dev/migration_checks.js",
+      "size": 12819,
+      "lines": 247,
+      "role": "Garde-fous de la migration one-shot vers le profil multi : exécute le vrai migrate_bertin.js par-dessus le vrai CoachProfiles dans un faux localStorage. Prouve qu'aucune séance n'est perdue, qu'un profil existant n'est jamais écrasé, que la migration est idempotente et que l'ordre des clés legacy va du plus récent au plus ancien.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "dev/mini_timer_checks.js",
+      "size": 18689,
+      "lines": 350,
+      "role": "Garde-fous du mini-chrono de la barre du haut : détection d'un EMOM programmé hors bloc WOD (le nombre du « EMOM n », jamais le créneau du bloc), refus des séries « AMRAP propre », cycle de minute et paliers d'alerte, priorité de l'EMOM sur le minuteur de repos, et coût nul en hauteur pour les cartes d'exercice.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -1082,6 +1112,16 @@
       "consumes": [
         "dev/architecture.json"
       ]
+    },
+    {
+      "path": "dev/voice_note_checks.js",
+      "size": 11817,
+      "lines": 223,
+      "role": "Garde-fous des notes de séance : portée programme+semaine+jour (le bug déjà corrigé une fois), concaténation par « · » en une seule chaîne, retrait qui écrit une chaîne vide, abandon qui ne touche que les notes et jamais poids/reps/RPE, bornes de taille. Exécute le vrai module.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
     },
     {
       "path": "dev/wod_moves_checks.js",
@@ -3184,8 +3224,8 @@
     },
     {
       "path": "scripts/session/extra_movements.js",
-      "size": 16926,
-      "lines": 387,
+      "size": 17484,
+      "lines": 398,
       "role": "Mouvements faits hors programme sur l'écran Résultats : liste éphémère, catalogue fermé, sélecteur plein écran, construction des items de séance.",
       "category": "ACTIF",
       "exposes": [
@@ -3254,6 +3294,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 368
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/mini_timer.js",
+      "size": 17325,
+      "lines": 453,
+      "role": "Mini-chrono de la séance guidée : EMOM programmé hors bloc WOD et minuteur de repos. Occupe la boîte de l'heure (.guided-live-clock) au lieu d'un espace dans la carte, donc ne retire aucune hauteur aux charges, reps, RPE et recommandations. Affiche la minute courante et les secondes restantes dans la minute ; l'alerte se lit sur la bordure de la carte.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachMiniTimer"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 370
         }
       ],
       "consumes": []

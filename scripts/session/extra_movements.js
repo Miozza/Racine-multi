@@ -202,6 +202,19 @@
     return found;
   }
 
+  // Pendant manquant de remove()/clear() : la décision d'ajouter vivait dans le
+  // gestionnaire du sélecteur, donc inatteignable sans DOM — et le module
+  // n'était vérifiable par rien. Rend false si le nom est vide ou déjà choisi.
+  // L'anti-collision avec la séance du jour reste à l'appelant : lui seul sait
+  // quels mouvements sont au programme (voir buildItems()).
+  api.add = function(name){
+    var label = String(name == null ? "" : name).trim();
+    if(!label) return false;
+    if(chosen.some(function(n){ return norm(n) === norm(label); })) return false;
+    chosen.push(label);
+    return true;
+  };
+
   api.remove = function(name){
     var wanted = norm(name);
     chosen = chosen.filter(function(n){ return norm(n) !== wanted; });
@@ -363,8 +376,7 @@
       var names = Object.keys(picked).map(function(k){ return picked[k]; });
       names.forEach(function(label){
         if(occupiedBy(occupied, label)) return;
-        if(chosen.some(function(n){ return norm(n) === norm(label); })) return;
-        chosen.push(label);
+        if(!api.add(label)) return;
         occupied = occupiedIndex(occupiedNames(sessionItems).concat(chosen));
         if(renderCard) renderCard(buildItem(label));
       });

@@ -31,6 +31,28 @@ function parseRestToSeconds(s){
 }
 function cleanLine(s){return String(s||"").replace(/\s+/g," ").trim();}
 
+// Le moteur de charges peut renvoyer une PHRASE à la place d'une charge : un
+// profil non calibré reçoit « Profil non calibré : complète la calibration… »
+// pour chaque mouvement. Les vues la posaient dans la fente de la charge —
+// dimensionnée pour « 185 lb », 41 px en séance et 31 px sur WOD+ — où elle
+// s'enroulait sur huit lignes et recouvrait le reste de la carte, jusqu'à
+// masquer les champs de saisie.
+// AFFICHAGE SEULEMENT : le texte du moteur est conservé mot pour mot, il change
+// juste de fente. Aucune décision de charge n'est touchée.
+// Le critère est la LONGUEUR, pas l'état du profil. Une version antérieure
+// demandait `coachProfileNeedsCalibration()` : c'était juste tant qu'un profil
+// non calibré ne recevait qu'une phrase. Depuis qu'il reçoit une estimation de
+// niveau (« 75 lb »), ce critère écartait une vraie charge de sa fente. Ce qui
+// distingue les deux cas n'a jamais été le profil : c'est qu'une charge est
+// courte et qu'un message est une phrase.
+// La plus longue charge réelle du catalogue fait 33 caractères
+// (« 185 → 205 → 215 → 225 si autorisé ») ; le seuil est posé au-dessus.
+function coachLoadIsMessage(load){
+  var s = String(load == null ? "" : load).trim();
+  if(!s) return false;
+  return s.length > 40;
+}
+
 // Affichage seulement : nettoie les suffixes internes/contextuels sans modifier les programmes sources.
 function displayMovementName(name){
   var raw=String(name||'').trim();

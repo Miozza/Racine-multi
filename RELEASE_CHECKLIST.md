@@ -9,6 +9,9 @@ Avant d'importer dans DEV ou de publier une version de test :
 
 ```bash
 node dev/multi_profile_checks.js
+node dev/migration_checks.js
+node dev/extra_movements_checks.js
+node dev/voice_note_checks.js
 node dev/ai_import_fallback_smoke.js
 node dev/ai_cycle_movement_bridge_smoke.js
 node dev/ai_advice_clear_smoke.js
@@ -42,6 +45,7 @@ node dev/profile_backup_ui_checks.js
 node dev/history_progress_checks.js
 node dev/history_edit_checks.js
 node dev/amrap_rounds_checks.js
+node dev/mini_timer_checks.js
 node dev/wod_moves_checks.js
 node dev/cycle_finish_checks.js
 node dev/gear_permissions_checks.js

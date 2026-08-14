@@ -235,6 +235,7 @@ function buildGuidedSessionBlocks(){
       blockIndex:bi,
       exercises:[],
       timer:null,
+      miniTimer:null,
       moves:null,
       loadHints:""
     };
@@ -282,6 +283,14 @@ function buildGuidedSessionBlocks(){
       // V51.16: pas de pastilles de charge sous le timer en mode séance.
       // Elles prennent l’espace du timer et du bas cliquable; la charge reste dans le texte/programme ailleurs.
       obj.loadHints = "";
+    } else if(window.CoachMiniTimer){
+      // Un EMOM peut être programmé ailleurs qu'en bloc WOD (ex. « A. Power
+      // Clean vitesse », kind:"main", « EMOM 8 : 2 Power Clean » dans le format
+      // de l'exercice). Il n'avait alors AUCUN chrono. La durée vient du texte
+      // « EMOM n », jamais de b.time — qui est le créneau du bloc (12 min pour
+      // un EMOM de 8). Le mini-chrono s'affiche dans la barre du haut, à la
+      // place de l'heure : zéro pixel pris aux charges/reps/RPE.
+      obj.miniTimer = CoachMiniTimer.detect(b);
     }
 
     blocks.push(obj);
@@ -328,6 +337,9 @@ function closeGuidedSession(){
   }catch(e){ /* jamais bloquant */ }
   // Abandon de séance : les rounds tapés partent avec elle, comme les notes.
   try{ if(window.CoachAmrapRounds) CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
+  // Le mini-chrono meurt avec la séance : sinon son intervalle continuerait de
+  // tourner hors écran et la barre du haut resterait figée sur un compteur.
+  try{ if(window.CoachMiniTimer) CoachMiniTimer.disarm(); }catch(e){ /* jamais bloquant */ }
   if(typeof setGuidedTimerRoundKey==="function") setGuidedTimerRoundKey(null);
   var el=$("guidedSession");
   if(el){ el.classList.add("hidden"); el.innerHTML=""; }
@@ -456,9 +468,18 @@ function renderGuidedExerciseList(exercises){
             "<div class='guided-ex-grid'>";
     if(e.format)html+="<div><span>Format</span><strong>"+escHtml(e.format)+"</strong></div>";
     if(e.load){
-      html+="<div class='guided-load-info-line'><span>Poids</span><strong class='accent guided-load-value'>"+escHtml(e.load)+loadInfoButtonHtml(e,e.load)+"</strong></div>";
+      html+= coachLoadIsMessage(e.load)
+        ? "<div class='guided-load-message'><span>Poids</span><em>"+escHtml(e.load)+"</em></div>"
+        : "<div class='guided-load-info-line'><span>Poids</span><strong class='accent guided-load-value'>"+escHtml(e.load)+loadInfoButtonHtml(e,e.load)+"</strong></div>";
     }
-    if(e.rest&&e.rest!=="—")html+="<div class='guided-rest-info'><span>Repos</span><strong>"+escHtml(e.rest)+"</strong></div>";
+    // La ligne « Repos » lance le minuteur dans la barre du haut quand la
+    // consigne est chiffrée (« 1:00 »). Une consigne non chiffrée (« le reste
+    // de la minute ») reste un simple texte : rien à décompter.
+    if(e.rest&&e.rest!=="—"){
+      html+= restSec>0
+        ? "<div class='guided-rest-info is-tappable' data-mini-rest='"+restSec+"' role='button' tabindex='0' aria-label='Démarrer le minuteur de repos'><span>Repos</span><strong>"+escHtml(e.rest)+"</strong></div>"
+        : "<div class='guided-rest-info'><span>Repos</span><strong>"+escHtml(e.rest)+"</strong></div>";
+    }
     html+="</div>";
     html+=renderGuidedResultPanel(e);
     if(e.note)html+="<div class='guided-note compact'>"+escHtml(e.note)+"</div>";
@@ -636,6 +657,29 @@ function renderGuidedSession(){
   // (ou tomber sur un WOD qui n'est pas un AMRAP) coupe le lien.
   if(typeof setGuidedTimerRoundKey==="function"){
     setGuidedTimerRoundKey(st.kind==="wod" ? amrapKey : null);
+  }
+
+  // Mini-chrono de la barre du haut. Sur un bloc WOD il ne s'arme jamais : le
+  // chrono géant est déjà là et l'heure reste l'heure. Ré-armer le même bloc
+  // ne redémarre rien — revenir sur un EMOM en cours le retrouve où il en est.
+  if(window.CoachMiniTimer){
+    if(st.miniTimer) CoachMiniTimer.armEmom(st.miniTimer, String(state.day)+"|"+String(state.week)+"|"+i);
+    else CoachMiniTimer.leaveBlock();
+    CoachMiniTimer.bind();
+    if(CoachMiniTimer.ownsClockSlot()) CoachMiniTimer.paint();
+    Array.prototype.forEach.call(el.querySelectorAll("[data-mini-rest]"),function(row){
+      function go(ev){
+        if(ev&&ev.preventDefault)ev.preventDefault();
+        // Refusé pendant un EMOM : c'est lui qui donne le tempo, deux comptes
+        // à rebours au même endroit se contrediraient.
+        if(!CoachMiniTimer.startRest(Number(row.getAttribute("data-mini-rest"))||0, "rest")) return;
+        row.classList.add("is-running");
+      }
+      row.addEventListener("click", go);
+      row.addEventListener("keydown", function(ev){
+        if(ev&&(ev.key==="Enter"||ev.key===" ")) go(ev);
+      });
+    });
   }
 
   if(st.kind==="wod" && cfg){

@@ -81,7 +81,11 @@ function wodPlusExerciseHtml(e, block, isPrimary){
   html+='<div class="wodplus-ex '+(isPrimary?'primary':'')+'">';
   html+='<div class="wodplus-ex-name"><span>'+e.name+'</span>'+tutorialButtonHtml(e.name)+'</div>';
   html+='<div class="wodplus-line"><span>Format</span><strong>'+e.format+'</strong></div>';
-  if(isPrimary){
+  // Une phrase du moteur (profil non calibré) ne passe pas dans la fente de la
+  // charge, réglée à 31 px pour « 185 lb » : elle se lit en texte courant.
+  if(typeof coachLoadIsMessage==='function' && coachLoadIsMessage(shown)){
+    html+='<div class="wodplus-note load-message"><span>Charge suggérée</span>'+shown+'</div>';
+  }else if(isPrimary){
     html+='<div class="wodplus-loadbox"><span>Charge suggérée</span><strong>'+shown+'</strong>'+loadInfoButtonHtml(e,shown)+'</div>';
   }else{
     html+='<div class="wodplus-line"><span>Charge suggérée</span><strong>'+shown+loadInfoButtonHtml(e,shown)+'</strong></div>';

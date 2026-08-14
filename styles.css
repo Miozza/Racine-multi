@@ -7466,3 +7466,118 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   font-size:15px !important;
   padding:4px 10px !important;
 }
+
+
+/* ── Mini-chrono de la barre du haut ────────────────────────────────────────
+   EMOM programmé hors bloc WOD + minuteur de repos. Il occupe la boîte de
+   l'heure (.guided-live-clock) telle quelle : mêmes deux fentes .glc-hm /
+   .glc-sec, même taille de police, même géométrie. Aucune hauteur n'est prise
+   aux cartes d'exercice, donc rien ne rétrécit sur les charges, les reps, le
+   RPE ni les recommandations de poids.
+   L'alerte réelle n'est pas dans ce coin : c'est la bordure de la carte
+   (.guided-card.emom-*), qu'on perçoit sans lever les yeux. */
+.guided-live-clock.is-mini{
+  pointer-events:auto;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.guided-live-clock.is-mini .glc-hm{
+  /* Le petit mot est en Inter : même distinction de police que les rounds
+     AMRAP — on ne doit pas confondre l'étiquette et le nombre. */
+  font-family:var(--font-main) !important;
+  font-size:clamp(15px, 3.6vw, 20px) !important;
+  font-weight:800 !important;
+  letter-spacing:.04em !important;
+  color:var(--text2) !important;
+}
+.guided-live-clock.is-mini .glc-sec{
+  font-variant-numeric:tabular-nums;
+}
+.guided-live-clock.is-mini[data-mini-tone="idle"] .glc-sec,
+.guided-live-clock.is-mini[data-mini-tone="countdown"] .glc-sec{
+  color:var(--white) !important;
+  text-shadow:0 0 10px rgba(255,255,255,.35) !important;
+}
+.guided-live-clock.is-mini[data-mini-tone="urgent"]{
+  border-color:rgba(255,65,100,.85) !important;
+  background:rgba(255,65,100,.12) !important;
+}
+.guided-live-clock.is-mini[data-mini-tone="urgent"] .glc-sec{
+  color:#ff4164 !important;
+  text-shadow:0 0 14px rgba(255,65,100,.75) !important;
+}
+.guided-live-clock.is-mini[data-mini-tone="done"] .glc-sec{
+  color:#00ffb0 !important;
+  text-shadow:0 0 14px rgba(0,255,176,.7) !important;
+}
+
+/* Bordure de carte = l'alerte de minute. Mêmes paliers et mêmes couleurs que
+   le chrono WOD (guidedEmomMinuteState) : c'est le même geste appris. */
+.guided-card.emom-blue{
+  border-color:rgba(120,220,255,.85) !important;
+  box-shadow:0 0 0 1px rgba(120,220,255,.30), 0 0 26px rgba(120,220,255,.22) !important;
+}
+.guided-card.emom-yellow{
+  border-color:rgba(255,216,74,.90) !important;
+  box-shadow:0 0 0 1px rgba(255,216,74,.32), 0 0 30px rgba(255,216,74,.26) !important;
+}
+.guided-card.emom-red{
+  border-color:rgba(255,65,100,.95) !important;
+  box-shadow:0 0 0 2px rgba(255,65,100,.34), 0 0 36px rgba(255,65,100,.34) !important;
+}
+.guided-card.emom-go{
+  border-color:rgba(0,255,170,.98) !important;
+  box-shadow:0 0 0 2px rgba(0,255,170,.30), 0 0 44px rgba(0,255,170,.45) !important;
+  animation:emomFlashGo .18s alternate 4;
+}
+
+/* La ligne « Repos » chiffrée lance le minuteur. Consigne non chiffrée
+   (« le reste de la minute ») : rien à décompter, rien à toucher. */
+.guided-rest-info.is-tappable{
+  cursor:pointer;
+  border-radius:8px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.guided-rest-info.is-tappable strong{
+  color:var(--cyan) !important;
+  text-decoration:underline;
+  text-decoration-style:dotted;
+  text-underline-offset:3px;
+}
+.guided-rest-info.is-tappable.is-running strong{
+  color:#00ffb0 !important;
+  text-decoration:none;
+}
+
+
+/* Charge remplacée par un message (profil non calibré). La fente « Poids » est
+   dimensionnée pour « 185 lb » à 41 px : une phrase y déborde sur toute la
+   carte et masque les champs de saisie. Elle se lit ici comme ce qu'elle est —
+   un avertissement en texte courant, à taille de lecture. */
+.guided-ex-grid .guided-load-message{
+  display:block;
+  align-self:start;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid rgba(255,216,74,.35);
+  background:rgba(255,216,74,.08);
+}
+.guided-ex-grid .guided-load-message span{
+  display:block;
+  margin-bottom:2px;
+}
+.guided-ex-grid .guided-load-message em{
+  display:block;
+  font-family:var(--font-main);
+  font-style:normal;
+  font-size:clamp(13px, 3.4vw, 16px) !important;
+  font-weight:600;
+  line-height:1.3;
+  color:#ffd84a;
+  overflow-wrap:anywhere;
+}
+
+/* WOD+ : même règle, même cause. La boîte de charge est réglée à 31 px. */
+.wodplus-note.load-message{ color:#ffd84a; font-weight:600; }
