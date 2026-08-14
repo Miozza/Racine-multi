@@ -142,6 +142,40 @@ Ces règles sont obligatoires à partir de V51.24.
 - Le retour d'un tap reste discret : vibration courte, aucun son, aucune
   modale. Le WOD est en cours, l'athlète n'a rien à confirmer.
 
+### Mini-chrono EMOM hors WOD et minuteur de repos
+
+Un EMOM peut être programmé dans un bloc `main` / `secondary` / `conditioning`
+(ex. « A. Power Clean vitesse », format `EMOM 8 : 2 Power Clean`). Il lui faut un
+chrono, mais **pas au prix de la hauteur des cartes d'exercice**.
+
+- **RÈGLE VERROUILLÉE — coût zéro pixel.** Le mini-chrono écrit dans la boîte de
+  l'heure (`#guidedLiveClock`, fentes `.glc-hm` / `.glc-sec`) et **n'insère
+  aucun nœud dans le flux de la carte**. `.guided-ex-list` partage sa hauteur
+  entre ses cartes (`grid-template-rows: repeat(N, minmax(0,1fr))`) : tout
+  élément ajouté en flux se retire directement des charges, reps, RPE et
+  recommandations de poids. Vérification : à bloc égal, la hauteur d'une carte
+  d'exercice doit être identique avec et sans mini-chrono.
+- **Ce qui s'affiche est la minute, pas le temps total.** `.glc-hm` porte
+  `3/8` (minute courante sur total), `.glc-sec` les **secondes restantes dans la
+  minute**. Les deux fentes restent courtes — étiquette ≤ 6 caractères, nombre
+  ≤ 5 — sinon la barre du haut déborde.
+- **Deux polices, deux natures.** L'étiquette passe en `--font-main` (Inter), le
+  nombre reste en `--font-hud` (Orbitron) : même distinction que les rounds
+  AMRAP, on ne doit pas confondre une étiquette et une valeur de chrono.
+- **L'alerte se lit sur la carte, pas sur les chiffres.** La bordure de
+  `.guided-card` se peint aux mêmes paliers que le chrono WOD (bleu 30 s,
+  jaune 10 s, rouge 3 s, flash GO). Sans ce couplage, un compteur dans un coin
+  de la barre du haut serait illisible en action — c'est la condition qui rend
+  ce placement acceptable.
+- **Un bloc `kind:"wod"` n'arme jamais le mini-chrono** : le chrono géant est
+  déjà là et l'heure reste l'heure.
+- **La durée vient du « EMOM n »**, lu dans le `format` d'un exercice ou le
+  `text` du bloc, **jamais de `block.time`** (créneau du bloc : 12 min pour un
+  EMOM de 8). Le mot AMRAP seul ne déclenche rien : `3×AMRAP propre` et
+  `AMRAP @ 205 lb` sont des séries menées à l'échec.
+- **Priorité.** Pendant un EMOM en cours, la ligne « Repos » ne prend pas la
+  barre : deux comptes à rebours au même endroit se contrediraient.
+
 ### Accessibilité vue séance
 
 - Les boutons `Précédent` et `Bloc suivant` doivent toujours rester accessibles en portrait iPhone.

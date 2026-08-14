@@ -1,5 +1,5 @@
-// Racine V4.5.45 — le chrono ne grossit plus au premier round
-var APP_VERSION = "V4.5.45";
+// Racine V4.5.46 — mini-chrono EMOM et minuteur de repos dans la barre du haut
+var APP_VERSION = "V4.5.46";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -621,6 +621,12 @@ function ensureGlobalClock(){
 function updateGlobalClock(){
   var el=ensureGlobalClock();
   if(!el) return;
+  // Le mini-chrono (EMOM hors WOD, minuteur de repos) prend la place de
+  // l'heure : il peint la même boîte à son propre tic. Deux intervalles d'une
+  // seconde écriraient sinon dans le même élément à contretemps.
+  try{
+    if(window.CoachMiniTimer && CoachMiniTimer.ownsClockSlot()){ CoachMiniTimer.paint(); return; }
+  }catch(e){ /* jamais bloquant : l'heure passe avant tout */ }
   var n=new Date();
   var hh=String(n.getHours()).padStart(2,'0');
   var mm=String(n.getMinutes()).padStart(2,'0');

@@ -724,6 +724,16 @@
       "consumes": []
     },
     {
+      "path": "dev/mini_timer_checks.js",
+      "size": 18689,
+      "lines": 350,
+      "role": "Garde-fous du mini-chrono de la barre du haut : détection d'un EMOM programmé hors bloc WOD (le nombre du « EMOM n », jamais le créneau du bloc), refus des séries « AMRAP propre », cycle de minute et paliers d'alerte, priorité de l'EMOM sur le minuteur de repos, et coût nul en hauteur pour les cartes d'exercice.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/movement_swaps_checks.js",
       "size": 6456,
       "lines": 115,
@@ -3284,6 +3294,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 368
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/mini_timer.js",
+      "size": 17325,
+      "lines": 453,
+      "role": "Mini-chrono de la séance guidée : EMOM programmé hors bloc WOD et minuteur de repos. Occupe la boîte de l'heure (.guided-live-clock) au lieu d'un espace dans la carte, donc ne retire aucune hauteur aux charges, reps, RPE et recommandations. Affiche la minute courante et les secondes restantes dans la minute ; l'alerte se lit sur la bordure de la carte.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachMiniTimer"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 370
         }
       ],
       "consumes": []
