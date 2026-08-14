@@ -1,3 +1,15 @@
+## V4.5.49 — Mini-chrono plein format, alerte plus franche, bips audibles
+
+- **Le compteur de minutes passe à la taille du chrono.** `1/12` et les secondes sont désormais à la **même dimension** ; c'est la **couleur** qui les sépare — blanc pour « où j'en suis », cyan pour « combien il reste ». Les deux en Orbitron : ce sont deux valeurs numériques, pas une étiquette et une valeur.
+- **La police n'est plus figée, elle est mesurée.** Elle se calcule sur la largeur réelle de la bande, rembourrage réduit au minimum, boîte étirée sur **100 % de la largeur disponible**. Sur iPhone 390 px : **30-38 px → 46 px**. La mise en page ne bouge pas — la carte fait toujours 721 px, la carte d'exercice 622 px, avec et sans chrono.
+- **La taille reste stable pendant tout le bloc.** Elle se mesure sur un **gabarit** — le plus large affichage que ce bloc peut produire (`12/12` + `1:00`) — jamais sur le texte du moment. Sans ça, les chiffres changeraient de taille à chaque seconde. C'est la même règle verrouillée que le chrono WOD, écrite pour la même raison.
+- **L'alerte de carte devient franche, et monte avec l'urgence.** L'anneau passe de **3 px** (bleu, 30 s) à **4 px** (jaune, 10 s) à **6 px** (rouge, 3 s), avec un fond teinté et une lueur qui double à chaque palier. Les **3 dernières secondes pulsent** en plus.
+- **Les chiffres virent AVEC la carte.** Le compteur restait cyan pendant que la carte passait au rouge : deux signaux contradictoires pour un seul évènement, et c'est le petit — celui qu'on regarde en dernier — qui mentait. Il suit maintenant le même état, palier par palier.
+- **Aucune dimension ne bouge.** L'anneau est posé en `box-shadow`, jamais en `border-width`, et la pulsation ne touche que la lueur : rien ne remue pendant qu'on saisit un poids. `prefers-reduced-motion` coupe l'animation.
+- **Les bips étaient inaudibles pour deux raisons, corrigées toutes les deux.** Onde **sinus** — aucune harmonique, donc rien qui perce le bruit d'un gym à travers un haut-parleur de téléphone : elle passe en **carrée**. Et surtout l'**enveloppe** : le gain partait du maximum et retombait immédiatement, si bien qu'un bip déclaré à 0,18 s n'était réellement audible que ~30 ms. Il tient maintenant son palier sur **65 %** de sa durée, avec une attaque de 8 ms pour éviter le clic. Gain global ×2,4, et un **limiteur** en sortie pour que deux bips superposés (départ, fin, minute EMOM) n'écrêtent pas.
+- Tous les bips de l'app en profitent, y compris ceux du chrono WOD. Le bouton 🔇 coupe toujours tout sans créer un seul nœud audio.
+- **Portée** : `scripts/session/mini_timer.js`, `styles.css`, `app.js`, `index.html`, `docs/UI_CONSTRAINTS.md`. Garde-fou étendu : `dev/mini_timer_checks.js` — le coût zéro pixel est désormais vérifié **en exécution** (DOM espion) au lieu d'une interdiction textuelle de `createElement`, et la stabilité de la taille est épinglée. 6 mutations testées, 6 attrapées.
+
 ## V4.5.48 — Un profil non calibré reçoit une charge, plus un refus
 
 - **Le blocage disparaît.** Un profil sans ratios de test recevait une phrase à la place de chaque charge. Il reçoit maintenant une **estimation d'après son niveau déclaré**.

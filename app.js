@@ -1,5 +1,5 @@
-// Racine V4.5.48 — un profil non calibré reçoit une charge estimée sur son niveau
-var APP_VERSION = "V4.5.48";
+// Racine V4.5.49 — mini-chrono plein format, alerte plus franche, bips audibles
+var APP_VERSION = "V4.5.49";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -489,15 +489,52 @@ function getAudioCtx(){
 // Résume le contexte après interaction utilisateur (requis iOS)
 function resumeAudio(){var ctx=getAudioCtx();if(ctx&&ctx.state==="suspended")ctx.resume();}
 
+// Sortie commune des bips : un limiteur, créé une seule fois par contexte.
+// Sans lui, monter le gain écrête salement dès que deux bips se superposent
+// (bipStart, bipEnd et bipEmom en jouent deux à 180-250 ms d'intervalle).
+var coachAudioMaster=null;
+function getAudioMaster(){
+  var ctx=getAudioCtx(); if(!ctx) return null;
+  if(coachAudioMaster && coachAudioMaster.context===ctx) return coachAudioMaster;
+  try{
+    var comp=ctx.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-10,ctx.currentTime);
+    comp.knee.setValueAtTime(6,ctx.currentTime);
+    comp.ratio.setValueAtTime(12,ctx.currentTime);
+    comp.attack.setValueAtTime(0.002,ctx.currentTime);
+    comp.release.setValueAtTime(0.15,ctx.currentTime);
+    comp.connect(ctx.destination);
+    coachAudioMaster=comp;
+    return comp;
+  }catch(e){ return null; }
+}
+
+// Gain appliqué par-dessus le volume demandé par chaque bip. Les valeurs des
+// appelants (0.5 à 0.7) gardent donc leurs proportions entre elles.
+var COACH_BEEP_GAIN=2.4;
+
+// Deux raisons pour lesquelles les bips s'entendaient mal dans un gym :
+//   1. Onde SINUS — aucune harmonique, donc rien qui perce le bruit ambiant à
+//      travers un haut-parleur de téléphone. Une onde carrée porte la même
+//      énergie crête bien plus loin. C'est le gain le plus important.
+//   2. Enveloppe — le gain partait du maximum et retombait IMMÉDIATEMENT en
+//      exponentielle : un bip déclaré à 0.18 s n'était réellement audible que
+//      ~30 ms. Il tient maintenant son palier sur 65 % de sa durée avant de
+//      s'éteindre, avec une attaque de 8 ms pour éviter le clic.
 function playBeep(freq,dur,vol,type){
   var ctx=getAudioCtx();if(!ctx)return;
   try{
+    var out=getAudioMaster()||ctx.destination;
+    var t=ctx.currentTime;
+    var peak=Math.max(0.001,Math.min(1,(vol||0.4)*COACH_BEEP_GAIN));
     var osc=ctx.createOscillator(),gain=ctx.createGain();
-    osc.connect(gain);gain.connect(ctx.destination);
-    osc.type=type||"sine";osc.frequency.setValueAtTime(freq,ctx.currentTime);
-    gain.gain.setValueAtTime(vol||0.4,ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
-    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+dur);
+    osc.connect(gain);gain.connect(out);
+    osc.type=type||"square";osc.frequency.setValueAtTime(freq,t);
+    gain.gain.setValueAtTime(0.0001,t);
+    gain.gain.exponentialRampToValueAtTime(peak,t+0.008);
+    gain.gain.setValueAtTime(peak,t+dur*0.65);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    osc.start(t);osc.stop(t+dur+0.02);
   }catch(e){}
 }
 

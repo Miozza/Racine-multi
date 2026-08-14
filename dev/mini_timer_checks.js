@@ -240,6 +240,20 @@ scenario('ce qui s\'écrit dans la boîte de l\'heure', () => {
   f = M.faceText();
   assert(f.hm === '1/8', 'en marche : minute courante sur total');
   assert(f.sec === '38', 'secondes restantes DANS la minute — la seule chose qu\'on lit en action');
+  assert(f.tone === 'run', 'hors alerte, le compteur garde son ton normal');
+});
+scenario('les chiffres virent avec la carte', () => {
+  const { M } = boot();
+  M.armEmom(M.detect({kind:'main', text:'EMOM 8'}), 'k');
+  M.start(); run(M, 10);
+  // Le ton du compteur et la classe de la carte doivent désigner le MÊME état à
+  // chaque instant : deux couleurs différentes pour un seul évènement, c'est le
+  // petit signal qu'on regarde en dernier qui ment.
+  [[30, 'emom-blue'], [20, 'emom-yellow'], [7, 'emom-red'], [3, 'emom-go']].forEach(([pas, attendu]) => {
+    run(M, pas);
+    assert(M.faceText().tone === attendu && M.minuteState().cls === attendu,
+      'à ' + attendu + ' : le compteur et la carte disent la même chose');
+  });
 });
 scenario('les deux fentes restent courtes', () => {
   const { M } = boot();
@@ -321,12 +335,82 @@ scenario('contrôles', () => {
 });
 
 // ── 7. Coût zéro pixel et absence de stockage ──────────────────────────────
+// Contrôle EXÉCUTÉ, pas une lecture du source : on fait peindre le module dans
+// un DOM espion et on regarde ce qu'il a réellement touché. Une interdiction
+// textuelle de `createElement` serait fausse — le gabarit de mesure de police
+// est un nœud, mais hors flux, donc sans coût.
 scenario('le mini-chrono ne prend aucune hauteur aux cartes', () => {
+  const ajoutes = [];
+  const carte = {
+    ecrit: [],
+    className: 'guided-card kind-main',
+    classList: {_s:new Set(), add(c){this._s.add(c);}, remove(){ for(const c of arguments) this._s.delete(c); },
+                contains(c){ return this._s.has(c); }},
+    setAttribute(n){ carte.ecrit.push('attr:' + n); },
+    removeAttribute(){},
+    set innerHTML(v){ carte.ecrit.push('innerHTML'); },
+    appendChild(){ carte.ecrit.push('appendChild'); }
+  };
+  // La largeur mesurée dépend du texte : sans ça, tous les gabarits feraient la
+  // même largeur et la stabilité de la taille ne serait pas testable. L'échelle
+  // est choisie pour que toutes les tailles calculées tombent ENTRE les bornes
+  // MINI_MIN_PX/MINI_MAX_PX : un écrêtage aux bornes masquerait la variation.
+  const taillesPosees = [];
+  function faireElement(){
+    const n = {style:{setProperty(prop, val){ if(prop === 'font-size') taillesPosees.push(val); }},
+            classList:{add(){},remove(){},contains(){return false;}},
+            setAttribute(){}, removeAttribute(){}, getAttribute(){ return null; }, innerHTML:'',
+            textContent:'', addEventListener(){}, parentNode:null};
+    n.getBoundingClientRect = function(){
+      return {width: n.textContent ? n.textContent.length * 100 : 340, height:52};
+    };
+    return n;
+  }
+  const horloge = faireElement();
+  horloge.parentNode = {getBoundingClientRect(){ return {width:340, height:52}; }};
+
+  const sandbox = {
+    console:{log(){},warn(){},error(){}},
+    setInterval:()=>1, clearInterval:()=>{}, setTimeout:()=>1, clearTimeout:()=>{},
+    vibrate(){}, resumeAudio(){}, guidedSoundMuted:()=>true,
+    getComputedStyle:()=>({fontFamily:'Orbitron', fontWeight:'950', letterSpacing:'0em',
+                           paddingLeft:'10px', paddingRight:'10px', gap:'10px', columnGap:'10px'}),
+    document:{
+      getElementById(id){ return id === 'guidedLiveClock' ? horloge : (id === 'guidedSession' ? {querySelector:()=>carte} : null); },
+      createElement(){ const n = faireElement(); return n; },
+      body:{ appendChild(n){ ajoutes.push(n); n.parentNode = {getBoundingClientRect(){ return {width:340,height:52}; }}; } }
+    }
+  };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(read('scripts/session/mini_timer.js'), sandbox);
+  const M = sandbox.CoachMiniTimer;
+
+  M.armEmom(M.detect({kind:'main', text:'EMOM 12'}), 'k');
+  M.start();
+  for(let i = 0; i < 200; i++) M.tick();   // rebours, plusieurs minutes, alertes
+
+  assert(carte.ecrit.filter(x => x === 'innerHTML' || x === 'appendChild').length === 0,
+    'la carte ne reçoit AUCUN contenu : sa hauteur, donc celle des charges/reps/RPE, ne peut pas bouger');
+  assert(carte.ecrit.some(x => x === 'attr:data-emom-warning'),
+    'la carte ne reçoit que son alerte de couleur — un attribut, pas un élément');
+  assert(ajoutes.length <= 1,
+    'un seul nœud créé en tout : le gabarit qui sert à mesurer la police');
+
+  // RÈGLE VERROUILLÉE, la même que le chrono WOD : la taille se calcule sur un
+  // GABARIT — le plus large affichage que ce bloc peut produire — jamais sur le
+  // texte du moment. Sinon les chiffres changeraient de taille à chaque
+  // seconde (« 1/9 3 » puis « 1/9 12 »), illisible en action.
+  const distinctes = [...new Set(taillesPosees)];
+  assert(taillesPosees.length > 100, 'la taille est bien repeinte à chaque seconde (' + taillesPosees.length + ' passes)');
+  assert(distinctes.length === 1,
+    'une seule taille sur tout le bloc : ' + distinctes.join(', ') + ' — elle ne saute pas d\'une seconde à l\'autre');
+
   const src = read('scripts/session/mini_timer.js');
   assert(/getElementById\(['"]guidedLiveClock['"]\)/.test(src),
     'il écrit dans la boîte de l\'heure — c\'est ce qui rend le coût nul');
-  assert(!/createElement|insertBefore|appendChild/.test(src),
-    'il n\'insère AUCUN nœud dans le flux : les charges, reps, RPE et recommandations gardent leur hauteur');
+  assert(/position\s*=\s*'fixed'/.test(src) && /left\s*=\s*'-9999px'/.test(src),
+    'le gabarit de mesure est hors flux et hors écran : il ne coûte aucune hauteur');
 
   const view = read('scripts/session/view.js');
   assert(!/html\s*\+=[^\n]*(miniTimer|CoachMiniTimer)/.test(view),

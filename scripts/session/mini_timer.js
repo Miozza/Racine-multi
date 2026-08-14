@@ -319,11 +319,15 @@
     if(!st.running) return {hm:'PAUSE', sec: mmss(cycleRemaining()).replace(/^0:/, ''), tone:'idle'};
 
     // En marche : minute courante / total, et secondes restantes DANS la minute.
+    // Le ton suit l'alerte de la carte — les chiffres virent avec elle. Sans ça
+    // le compteur restait cyan pendant que la carte passait au rouge : deux
+    // signaux contradictoires pour un seul évènement.
     var left = cycleRemaining();
+    var alert = minuteState();
     return {
       hm: String(cycleIndex()) + '/' + String(cycleTotal()),
       sec: left >= 60 ? mmss(left) : String(left),
-      tone: 'run'
+      tone: alert ? alert.cls : 'run'
     };
   }
 
@@ -370,6 +374,83 @@
     card.setAttribute('data-emom-warning', state.label);
   }
 
+  // ── Taille de police : mesurée sur la largeur réelle de la bande ──────────
+  // Même règle que le chrono WOD (docs/UI_CONSTRAINTS.md) : on mesure un
+  // GABARIT — le plus large affichage qui peut réellement apparaître pendant ce
+  // bloc — et non le texte du moment. Sinon les chiffres changeraient de taille
+  // à chaque seconde (« 1/9 3 » puis « 1/9 12 »), ce qui est illisible en
+  // action. Le gabarit reste constant tant que le bloc ne change pas.
+  var MINI_MIN_PX = 26;
+  var MINI_MAX_PX = 76;
+  var fitMeasureEl = null;
+  function measureEl(){
+    if(fitMeasureEl && fitMeasureEl.parentNode) return fitMeasureEl;
+    fitMeasureEl = document.createElement('span');
+    fitMeasureEl.setAttribute('aria-hidden','true');
+    fitMeasureEl.style.position = 'fixed';
+    fitMeasureEl.style.left = '-9999px';
+    fitMeasureEl.style.top = '-9999px';
+    fitMeasureEl.style.visibility = 'hidden';
+    fitMeasureEl.style.whiteSpace = 'pre';
+    fitMeasureEl.style.pointerEvents = 'none';
+    document.body.appendChild(fitMeasureEl);
+    return fitMeasureEl;
+  }
+
+  // Toutes les faces que ce bloc peut afficher, du départ à la fin.
+  function fitSamples(){
+    var out = ['DÉPART' + '00', 'PAUSE' + '0:00', 'FINI' + '00'];
+    if(st.mode === MODE_REST){
+      out.push('REPOS' + mmss(st.duration));
+    } else {
+      var total = cycleTotal() || 1;
+      var interval = st.intervalSec || 60;
+      out.push('EMOM' + String(Math.round(st.duration / 60)));
+      // Le plus large : le numéro de minute le plus long des deux côtés du
+      // « / », et le compteur de secondes à son maximum.
+      out.push(String(total) + '/' + String(total) + (interval >= 60 ? mmss(interval) : String(interval)));
+    }
+    return out;
+  }
+
+  function fitFace(el){
+    if(!el || !el.getBoundingClientRect) return;
+    var host = el.parentNode;
+    var avail = host && host.getBoundingClientRect ? host.getBoundingClientRect().width : 0;
+    if(!(avail > 0)) return;
+
+    var cs = null;
+    try{ cs = window.getComputedStyle(el); }catch(e){}
+    // Largeur utilisable = la bande moins le rembourrage et l'écart des deux
+    // fentes. Le rembourrage est volontairement mince : c'est la place rendue
+    // aux chiffres.
+    var padH = cs ? (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) : 0;
+    var gap = cs ? (parseFloat(cs.columnGap || cs.gap) || 0) : 0;
+    var usable = avail - padH - gap - 2;
+    if(!(usable > 0)) return;
+
+    var m = measureEl();
+    var probe = 100;
+    m.style.fontFamily = cs ? cs.fontFamily : 'Orbitron, monospace';
+    m.style.fontWeight = cs ? cs.fontWeight : '950';
+    m.style.letterSpacing = cs ? cs.letterSpacing : 'normal';
+    m.style.fontVariantNumeric = 'tabular-nums';
+    m.style.fontSize = probe + 'px';
+
+    var widest = 0, samples = fitSamples(), i, w;
+    for(i = 0; i < samples.length; i++){
+      m.textContent = samples[i];
+      w = m.getBoundingClientRect().width;
+      if(w > widest) widest = w;
+    }
+    if(!(widest > 0)) return;
+
+    var size = Math.floor(probe * (usable / widest));
+    if(size > MINI_MAX_PX) size = MINI_MAX_PX;
+    if(size < MINI_MIN_PX) size = MINI_MIN_PX;
+    el.style.setProperty('font-size', size + 'px', 'important');
+  }
+
   function paint(){
     var el = clockEl();
     var face = faceText();
@@ -381,6 +462,7 @@
     el.setAttribute('aria-label', st.mode === MODE_REST ? 'Minuteur de repos' : 'Chrono EMOM');
     el.innerHTML = '<span class="glc-hm">' + esc(face.hm) + '</span>'
                  + '<span class="glc-sec">' + esc(face.sec) + '</span>';
+    fitFace(el);
     paintCard(minuteState());
   }
 

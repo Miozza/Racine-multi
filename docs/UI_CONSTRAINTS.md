@@ -159,14 +159,33 @@ chrono, mais **pas au prix de la hauteur des cartes d'exercice**.
   `3/8` (minute courante sur total), `.glc-sec` les **secondes restantes dans la
   minute**. Les deux fentes restent courtes — étiquette ≤ 6 caractères, nombre
   ≤ 5 — sinon la barre du haut déborde.
-- **Deux polices, deux natures.** L'étiquette passe en `--font-main` (Inter), le
-  nombre reste en `--font-hud` (Orbitron) : même distinction que les rounds
-  AMRAP, on ne doit pas confondre une étiquette et une valeur de chrono.
+- **RÈGLE VERROUILLÉE — la taille se mesure sur un GABARIT.** La police est
+  calculée sur la largeur réelle de la bande (`fitFace`), à partir du plus large
+  affichage que ce bloc peut produire (`fitSamples`) — **jamais** le texte du
+  moment. Sinon les chiffres changeraient de taille à chaque seconde
+  (« 1/12 3 » puis « 1/12 12 »), illisible en action. Même règle que le chrono
+  WOD, pour la même raison. Vérification : sur un EMOM entier, une seule valeur
+  de `font-size` doit être posée.
+- **Une seule taille, deux couleurs.** Le compteur de minutes et les secondes
+  sont à la **même dimension** ; c'est la couleur qui les sépare — blanc pour
+  « où j'en suis », cyan pour « combien il reste ». Les deux sont en
+  `--font-hud` : ce sont deux valeurs numériques, pas une étiquette et une
+  valeur.
+- **Le rembourrage est de la place rendue aux chiffres.** La boîte occupe 100 %
+  de la bande (`flex:1`, `justify-content:space-between`) et son rembourrage
+  reste mince. À 390 px de large, la police atteint ~46 px.
 - **L'alerte se lit sur la carte, pas sur les chiffres.** La bordure de
   `.guided-card` se peint aux mêmes paliers que le chrono WOD (bleu 30 s,
   jaune 10 s, rouge 3 s, flash GO). Sans ce couplage, un compteur dans un coin
   de la barre du haut serait illisible en action — c'est la condition qui rend
   ce placement acceptable.
+- **L'intensité monte avec l'urgence, et les chiffres virent AVEC la carte.**
+  L'anneau passe de 3 px (bleu) à 4 px (jaune) à 6 px pulsés (rouge) ; le ton du
+  compteur suit le même état. Deux couleurs différentes pour un seul évènement,
+  c'est le petit signal — celui qu'on regarde en dernier — qui ment.
+- **L'anneau est posé en `box-shadow`, jamais en `border-width`**, et la
+  pulsation ne touche que la lueur : aucune dimension ne bouge pendant qu'on
+  saisit un poids.
 - **Un bloc `kind:"wod"` n'arme jamais le mini-chrono** : le chrono géant est
   déjà là et l'heure reste l'heure.
 - **La durée vient du « EMOM n »**, lu dans le `format` d'un exercice ou le
