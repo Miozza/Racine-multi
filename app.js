@@ -1,5 +1,5 @@
-// Racine V4.5.54 — quatre gongs pour les chronos
-var APP_VERSION = "V4.5.54";
+// Racine V4.5.55 — une seule cloche, sélecteur de son retiré
+var APP_VERSION = "V4.5.55";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -559,120 +559,16 @@ var COACH_BEEP_PEAK_MAX=3.0;
 // percussif, c'est son attaque : on cale donc chaque voix juste sous
 // l'écrêtage (crête ~0,85-0,95) et on laisse chaque timbre garder son allure.
 
-// Bruit décroissant, pour les timbres percussifs. Généré à la volée : aucun
-// fichier, rien à charger, rien qui puisse manquer hors ligne.
-function coachNoiseBuffer(ctx, seconds){
-  var n=Math.max(1,Math.floor(ctx.sampleRate*seconds)), i;
-  var buf=ctx.createBuffer(1,n,ctx.sampleRate);
-  var d=buf.getChannelData(0);
-  for(i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
-  return buf;
-}
-function coachOsc(ctx,out,type,freq,t,peak,attack,ring){
-  var o=ctx.createOscillator(), g=ctx.createGain();
-  o.type=type; o.frequency.setValueAtTime(freq,t);
-  g.gain.setValueAtTime(0.0001,t);
-  g.gain.exponentialRampToValueAtTime(Math.max(0.0002,peak),t+attack);
-  g.gain.exponentialRampToValueAtTime(0.0008,t+ring);
-  o.connect(g); g.connect(out);
-  o.start(t); o.stop(t+ring+0.02);
-  return o;
-}
-
-// Bois — maillet de marimba. Partiels réels d'une lame (1, 4, 9.2), attaque
-// nette, extinction rapide. Chaud, grave, jamais criard.
-function coachVoiceBois(ctx,out,f,dur,peak,t){
-  var ring=Math.min(0.9,Math.max(0.3,dur*1.5));
-  coachOsc(ctx,out,'sine',f,      t,peak,      0.004,ring);
-  coachOsc(ctx,out,'sine',f*4.0,  t,peak*0.20, 0.003,ring*0.45);
-  coachOsc(ctx,out,'sine',f*9.2,  t,peak*0.05, 0.002,ring*0.25);
-}
-// ── Cloches ─────────────────────────────────────────────────────────────────
-// Une cloche n'est pas un son harmonique : ses partiels ne sont pas des
-// multiples entiers de la fondamentale, et c'est précisément ce qui la fait
-// sonner « cloche ». Les rapports ci-dessous sont ceux d'instruments réels, pas
-// des valeurs choisies à l'oreille.
+// ── La cloche ───────────────────────────────────────────────────────────────
+// Une seule synthèse, choisie à l'écoute parmi onze essayées (bols tibétains,
+// cloches de temple, gongs, marimba, onde carrée — voir le CHANGELOG V4.5.51 à
+// V4.5.54). Le sélecteur qui servait à les comparer a été retiré avec elles :
+// une préférence arrêtée n'a plus besoin d'être un réglage.
 //
-// Trois ingrédients font la cloche de temple plutôt que le bip métallique :
-//   - une ATTAQUE DOUCE : on frappe avec un maillet garni, pas avec un marteau ;
-//   - une LONGUE résonance, où les partiels aigus s'éteignent bien avant la
-//     fondamentale — c'est ce qui adoucit le son en le laissant filer ;
-//   - un BATTEMENT : deux modes très légèrement désaccordés produisent une
-//     ondulation lente du volume. C'est la signature du bol chantant, et ce qui
-//     manquait le plus à la version FM.
-function coachBellPartials(ctx,out,f,peak,t,ring,partials,attack){
-  partials.forEach(function(p){
-    var ratio=p[0], niveau=p[1], duree=ring*(p[2]||1), desaccord=p[3]||0;
-    var o=ctx.createOscillator(), g=ctx.createGain();
-    o.type='sine';
-    o.frequency.setValueAtTime(f*ratio*(1+desaccord),t);
-    g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(Math.max(0.0002,peak*niveau),t+attack);
-    g.gain.exponentialRampToValueAtTime(0.0006,t+duree);
-    o.connect(g); g.connect(out);
-    o.start(t); o.stop(t+duree+0.03);
-  });
-}
-function coachBellRing(dur,facteur,plancher,plafond){
-  return Math.min(plafond,Math.max(plancher,dur*facteur));
-}
-
-// Bol — bol chantant tibétain. Partiels 1 / 2.7 / 5.4, et surtout un second
-// mode fondamental désaccordé de 0.4 % : les deux battent ensemble à ~2 Hz et
-// donnent l'ondulation lente qu'on entend dans un bol qu'on laisse vivre.
-// Attaque de 60 ms : un maillet garni, pas un choc.
-function coachVoiceBol(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,7,1.2,3.2);
-  coachBellPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 1.00, 1.00, 0     ],
-    [1.00, 0.75, 0.95, 0.004 ],   // le jumeau désaccordé : c'est lui, le battement
-    [2.70, 0.30, 0.55, 0     ],
-    [5.40, 0.09, 0.30, 0     ]
-  ],0.060);
-}
-// Temple — cloche de temple japonaise (bonshō). Un son de bourdon tenu très
-// longtemps, surmonté d'un coup deux fois plus haut qui domine à l'impact puis
-// s'efface. Le plus grave et le plus long de la palette.
-function coachVoiceTemple(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,9,1.6,4.0);
-  coachBellPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 0.70, 1.00, 0     ],   // bourdon
-    [1.00, 0.45, 0.90, 0.005 ],   // battement lent : le bourdon respire
-    [2.00, 1.00, 0.45, 0     ],   // le coup
-    [2.98, 0.35, 0.28, 0     ],
-    [4.05, 0.15, 0.18, 0     ]
-  ],0.035);
-}
-// Tingsha — les deux petites cymbales tibétaines. Presque une seule note, mais
-// jamais tout à fait : le désaccord d'un demi-pour-cent fait un battement rapide
-// et une résonance qui n'en finit plus. Pur — aucun harmonique dur.
-// Les vraies tingsha sonnent aigu ; on garde ici le registre bas de la palette
-// plutôt que de doubler la fréquence en interne, sinon une voix échapperait au
-// réglage de hauteur commun et le « plus grave » demandé ne vaudrait plus pour
-// elle. C'est le battement, pas la hauteur, qui fait le caractère.
-function coachVoiceTingsha(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,10,1.8,4.2);
-  coachBellPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 1.00, 1.00, 0      ],
-    [1.00, 0.90, 0.98, 0.0055 ],
-    [2.76, 0.16, 0.35, 0      ]
-  ],0.012);
-}
-// Rin — bol de méditation japonais, plus petit et plus brillant que le tibétain.
-// Résonance moyenne, partiels plus hauts audibles plus longtemps.
-function coachVoiceRin(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,6,1.0,2.6);
-  coachBellPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 1.00, 1.00, 0     ],
-    [1.00, 0.55, 0.92, 0.0025],
-    [2.75, 0.45, 0.65, 0     ],
-    [5.40, 0.20, 0.40, 0     ],
-    [8.90, 0.07, 0.22, 0     ]
-  ],0.025);
-}
-// Cloche — la version modulation de fréquence, à rapport INHARMONIQUE (1:1.41),
-// dont l'indice retombe pendant la tenue. Franchement métallique et synthétique :
-// gardée pour comparaison avec les cloches acoustiques ci-dessus.
+// Modulation de fréquence à rapport INHARMONIQUE (1:1,41) : c'est ce rapport
+// non entier qui fait entendre du métal plutôt qu'une note. L'indice de
+// modulation retombe pendant la tenue — le son est brillant à l'attaque puis
+// s'adoucit en s'éteignant, exactement comme une cloche frappée.
 function coachVoiceCloche(ctx,out,f,dur,peak,t){
   var ring=Math.min(1.6,Math.max(0.5,dur*2.4));
   var car=ctx.createOscillator(), g=ctx.createGain();
@@ -688,206 +584,28 @@ function coachVoiceCloche(ctx,out,f,dur,peak,t){
   car.connect(g); g.connect(out);
   car.start(t); mod.start(t); car.stop(t+ring+0.02); mod.stop(t+ring+0.02);
 }
-// ── Gongs ───────────────────────────────────────────────────────────────────
-// Un gong n'est pas une grosse cloche. Trois choses l'en séparent, et la
-// troisième est celle qu'on entend en premier :
-//   1. un spectre DENSE et inharmonique — huit à dix modes aux rapports
-//      irréguliers, là où une cloche en a trois ou quatre ;
-//   2. une frappe de MAILLET : un bruit court et sourd au moment de l'impact,
-//      avant que les modes ne s'installent ;
-//   3. le GONFLEMENT. Dans un disque de bronze mince, la frappe met en
-//      mouvement les modes graves, qui transfèrent ensuite leur énergie aux
-//      modes aigus : le son ENFLE pendant quelques centaines de millisecondes
-//      avant de retomber. C'est ce déferlement montant qu'on reconnaît, et
-//      aucune cloche ne le fait — ses partiels aigus sont au maximum dès
-//      l'attaque et ne font que décroître.
-function coachGongPartials(ctx,out,f,peak,t,ring,partials,attack){
-  partials.forEach(function(p){
-    var ratio=p[0], niveau=p[1], duree=ring*(p[2]||1), desaccord=p[3]||0, gonflement=p[4]||0;
-    var o=ctx.createOscillator(), g=ctx.createGain();
-    o.type='sine';
-    o.frequency.setValueAtTime(f*ratio*(1+desaccord),t);
-    var cible=Math.max(0.0002,peak*niveau);
-    g.gain.setValueAtTime(0.0001,t);
-    if(gonflement>0){
-      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,cible*0.08),t+attack);
-      g.gain.exponentialRampToValueAtTime(cible,t+attack+gonflement);
-    } else {
-      g.gain.exponentialRampToValueAtTime(cible,t+attack);
-    }
-    g.gain.exponentialRampToValueAtTime(0.0006,t+duree);
-    o.connect(g); g.connect(out);
-    o.start(t); o.stop(t+duree+0.03);
-  });
-}
-// Le coup de maillet : bruit sourd et bref, passé au grave. Sans lui, les modes
-// apparaissent de nulle part et on entend un synthé, pas un objet frappé.
-function coachGongFrappe(ctx,out,f,peak,t,duree){
-  var src=ctx.createBufferSource(); src.buffer=coachNoiseBuffer(ctx,duree);
-  var lp=ctx.createBiquadFilter(); lp.type='lowpass';
-  lp.frequency.setValueAtTime(Math.min(1400,f*3.5),t); lp.Q.setValueAtTime(0.6,t);
-  var g=ctx.createGain();
-  g.gain.setValueAtTime(peak*0.55,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+duree);
-  src.connect(lp); lp.connect(g); g.connect(out); src.start(t);
-}
 
-// Gong — le gong chinois à bosse (chau). Hauteur nette, gonflement franc,
-// longue traîne. Le gong « de référence ».
-function coachVoiceGong(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,8,1.4,4.0);
-  coachGongFrappe(ctx,out,f,peak,t,0.05);
-  coachGongPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 1.00, 1.00, 0     , 0    ],
-    [1.00, 0.60, 0.95, 0.004 , 0    ],
-    [2.32, 0.50, 0.62, 0     , 0.22 ],
-    [3.45, 0.38, 0.50, 0.003 , 0.32 ],
-    [4.90, 0.26, 0.40, 0     , 0.42 ],
-    [6.70, 0.16, 0.30, 0.002 , 0.50 ],
-    [8.40, 0.10, 0.24, 0     , 0.56 ]
-  ],0.018);
-}
-// Tam-tam — le grand disque plat, sans hauteur définie. Spectre le plus dense
-// de la palette et gonflement le plus long : ça déferle plus que ça ne sonne.
-function coachVoiceTamtam(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,11,1.8,5.0);
-  coachGongFrappe(ctx,out,f,peak,t,0.07);
-  coachGongPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 0.80, 1.00, 0     , 0    ],
-    [1.41, 0.70, 0.92, 0.005 , 0.10 ],
-    [2.11, 0.60, 0.78, 0     , 0.30 ],
-    [2.93, 0.52, 0.66, 0.004 , 0.42 ],
-    [3.77, 0.45, 0.55, 0     , 0.52 ],
-    [5.13, 0.34, 0.44, 0.003 , 0.60 ],
-    [6.62, 0.26, 0.35, 0     , 0.68 ],
-    [8.31, 0.18, 0.28, 0.002 , 0.74 ],
-    [10.70,0.12, 0.22, 0     , 0.80 ]
-  ],0.022);
-}
-// Dora — le gong japonais qu'on entend au début d'un combat. Plus court et plus
-// décidé que le tam-tam : le gonflement arrive vite, la traîne est nette.
-function coachVoiceDora(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,7,1.2,3.0);
-  coachGongFrappe(ctx,out,f,peak,t,0.04);
-  coachGongPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 1.00, 1.00, 0     , 0    ],
-    [1.00, 0.55, 0.90, 0.0035, 0    ],
-    [2.05, 0.62, 0.58, 0     , 0.12 ],
-    [3.12, 0.44, 0.44, 0.003 , 0.18 ],
-    [4.28, 0.28, 0.34, 0     , 0.24 ],
-    [5.95, 0.16, 0.26, 0     , 0.30 ]
-  ],0.014);
-}
-// Massue — le plus gros et le plus lent. Fondamentale au plancher, gonflement
-// étiré sur près d'une seconde, traîne de cinq secondes. Le coup qui ouvre.
-function coachVoiceMassue(ctx,out,f,dur,peak,t){
-  var ring=coachBellRing(dur,13,2.2,5.5);
-  coachGongFrappe(ctx,out,f,peak,t,0.10);
-  coachGongPartials(ctx,out,f,peak,t,ring,[
-    [1.00, 1.00, 1.00, 0     , 0    ],
-    [1.00, 0.70, 0.96, 0.0028, 0    ],
-    [1.87, 0.55, 0.80, 0     , 0.35 ],
-    [2.74, 0.44, 0.66, 0.0035, 0.50 ],
-    [3.91, 0.34, 0.52, 0     , 0.65 ],
-    [5.42, 0.22, 0.40, 0.0025, 0.80 ],
-    [7.30, 0.13, 0.30, 0     , 0.92 ]
-  ],0.026);
-}
-
-// Bloc — bruit filtré très court plus un corps qui donne la hauteur. Percussif :
-// il perce le bruit ambiant par son ATTAQUE, pas par des harmoniques aigus.
-function coachVoiceBloc(ctx,out,f,dur,peak,t){
-  var len=Math.min(0.2,Math.max(0.07,dur*0.55));
-  var src=ctx.createBufferSource(); src.buffer=coachNoiseBuffer(ctx,len);
-  var bp=ctx.createBiquadFilter(); bp.type='bandpass';
-  bp.frequency.setValueAtTime(Math.min(4200,f*3.2),t); bp.Q.setValueAtTime(6,t);
-  var g=ctx.createGain();
-  g.gain.setValueAtTime(peak*1.0,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+len);
-  src.connect(bp); bp.connect(g); g.connect(out); src.start(t);
-  coachOsc(ctx,out,'triangle',f,t,peak*0.55,0.002,len*1.3);
-}
-// Duo — deux triangles à la quinte, attaque douce, tenue courte. Le plus
-// discret : une notification, pas une alarme.
-function coachVoiceDuo(ctx,out,f,dur,peak,t){
-  var ring=Math.min(0.8,Math.max(0.25,dur*1.2));
-  coachOsc(ctx,out,'triangle',f,     t,peak*0.85,0.020,ring);
-  coachOsc(ctx,out,'triangle',f*1.5, t,peak*0.40,0.024,ring*0.8);
-}
-// Carré — l'onde franche, avec un passe-bas qui coupe les harmoniques criards
-// mais garde la puissance. La voix qui porte le plus loin.
-function coachVoiceCarre(ctx,out,f,dur,peak,t){
-  var o=ctx.createOscillator(), g=ctx.createGain(), lp=ctx.createBiquadFilter();
-  lp.type='lowpass';
-  lp.frequency.setValueAtTime(Math.max(900,Math.min(4000,f*2.4)),t);
-  lp.Q.setValueAtTime(0.7,t);
-  o.type='square'; o.frequency.setValueAtTime(f,t);
-  g.gain.setValueAtTime(0.0001,t);
-  g.gain.exponentialRampToValueAtTime(peak,t+0.008);
-  g.gain.setValueAtTime(peak,t+dur*0.65);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-  o.connect(g); g.connect(lp); lp.connect(out);
-  o.start(t); o.stop(t+dur+0.02);
-}
-
-var COACH_BEEP_VOICES={
-  bol:     {label:"Bol",     hint:"Bol chantant tibétain", pitch:0.40, gain:1.60, render:coachVoiceBol},
-  temple:  {label:"Temple",  hint:"Cloche de temple",      pitch:0.42, gain:1.42, render:coachVoiceTemple},
-  rin:     {label:"Rin",     hint:"Bol de méditation",     pitch:0.46, gain:1.35, render:coachVoiceRin},
-  tingsha: {label:"Tingsha", hint:"Cymbales, très long",   pitch:0.48, gain:1.40, render:coachVoiceTingsha},
-  cloche:  {label:"Cloche",  hint:"Métallique, synthé",    pitch:0.55, gain:1.25, render:coachVoiceCloche},
-  gong:    {label:"Gong",    hint:"Gong chinois, ample",   pitch:0.42, gain:1.50, render:coachVoiceGong},
-  dora:    {label:"Dora",    hint:"Début de combat",       pitch:0.45, gain:1.55, render:coachVoiceDora},
-  tamtam:  {label:"Tam-tam", hint:"Déferlante, sans note", pitch:0.40, gain:1.28, render:coachVoiceTamtam},
-  massue:  {label:"Massue",  hint:"Énorme et lent",        pitch:0.38, gain:1.45, render:coachVoiceMassue},
-  bois:    {label:"Bois",    hint:"Marimba, chaud",        pitch:0.50, gain:1.95, render:coachVoiceBois},
-  carre:   {label:"Carré",   hint:"Franc, porte loin",     pitch:0.58, gain:0.95, render:coachVoiceCarre}
-};
-var COACH_BEEP_VOICE_DEFAULT="bol";
-function coachBeepVoiceId(){
-  try{
-    var v=(typeof state==="object"&&state)?state.guidedSoundVoice:null;
-    if(v&&COACH_BEEP_VOICES[v]) return v;
-  }catch(e){}
-  return COACH_BEEP_VOICE_DEFAULT;
-}
-function coachBeepVoice(){ return COACH_BEEP_VOICES[coachBeepVoiceId()]||COACH_BEEP_VOICES[COACH_BEEP_VOICE_DEFAULT]; }
-function setCoachBeepVoice(id){
-  if(!COACH_BEEP_VOICES[id]) return false;
-  if(typeof state!=="object"||!state) return false;
-  state.guidedSoundVoice=id;
-  if(typeof save==="function") save();
-  return true;
-}
+// Registre et niveau de cette cloche. Le registre est bas : les bips d'origine
+// étaient jugés trop aigus, et un haut-parleur de téléphone ne restitue de
+// toute façon presque rien sous le plancher.
+var COACH_BEEP_PITCH=0.55;
+var COACH_BEEP_GAIN=1.25;
 
 // Un évènement sonore. Les appelants gardent leur langage — note, durée,
 // volume relatif — et la voix décide du timbre.
 function playBeep(freq,dur,vol,type){
   var ctx=getAudioCtx();if(!ctx)return;
   try{
-    var voice=coachBeepVoice();
     var out=getAudioMaster()||ctx.destination;
     var t=ctx.currentTime;
-    var f=Math.max(COACH_BEEP_FLOOR_HZ,(Number(freq)||440)*voice.pitch);
+    var f=Math.max(COACH_BEEP_FLOOR_HZ,(Number(freq)||440)*COACH_BEEP_PITCH);
     // Plafond au-dessus de 1 : c'est le rôle du limiteur en sortie d'écrêter
     // proprement. Brider ici, c'était empêcher les timbres courts (Bloc, Duo)
     // d'atteindre le niveau des timbres tenus — les voix n'étaient plus
     // comparables entre elles.
-    var peak=Math.max(0.001,Math.min(COACH_BEEP_PEAK_MAX,(vol||0.4)*voice.gain*COACH_BEEP_MASTER));
-    var render=(typeof voice.render==="function")?voice.render:coachVoiceCarre;
-    render(ctx,out,f,Math.max(0.06,Number(dur)||0.2),peak,t);
+    var peak=Math.max(0.001,Math.min(COACH_BEEP_PEAK_MAX,(vol||0.4)*COACH_BEEP_GAIN*COACH_BEEP_MASTER));
+    coachVoiceCloche(ctx,out,f,Math.max(0.06,Number(dur)||0.2),peak,t);
   }catch(e){}
-}
-
-// Choisir, c'est entendre : le tap sélectionne la voix ET la joue tout de
-// suite. Deux signaux, ceux qu'on entend le plus — le départ (qui monte) et le
-// changement de minute. `resumeAudio()` est appelé DANS le geste utilisateur,
-// donc l'écoute fonctionne dès le premier tap, même au tout premier chargement.
-function playBeepVoicePreview(id){
-  if(id) setCoachBeepVoice(id);
-  resumeAudio();
-  bipStart();
-  setTimeout(function(){ bipEmom(); },800);
 }
 
 // Bip court aigu (countdown 3-2-1)

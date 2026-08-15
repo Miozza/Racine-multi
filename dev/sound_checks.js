@@ -18,17 +18,22 @@
 
   Contrat protégé :
     1. Le déblocage muet existe et ne joue QU'UNE FOIS par contexte.
-    2. Trois voix, un défaut, et le défaut est la plus grave : le réglage par
-       défaut doit être le plus discret, pas le plus agressif.
-    3. Les voix sont ordonnées et transposent TOUT du même facteur : les
-       mélodies gardent leurs intervalles, seul le registre change.
-    4. Plancher de fréquence : un haut-parleur de téléphone ne restitue presque
-       rien sous ~260 Hz. Transposer sous ce plancher rendrait un bip inaudible
-       au lieu de discret.
-    5. Aucun bip ne contourne le mode muet, et le mode muet ne crée AUCUN nœud
+    2. Une seule synthèse — une cloche en modulation de fréquence à rapport
+       INHARMONIQUE. Le rapport non entier est ce qui fait entendre du métal
+       plutôt qu'une note ; un rapport entier donnerait un orgue.
+    3. Registre bas et plancher de fréquence : un haut-parleur de téléphone ne
+       restitue presque rien sous ~240 Hz, et les bips d'origine étaient jugés
+       trop aigus.
+    4. La cloche est au maximum dès l'attaque et ne fait que décroître. Un mode
+       qui gonflerait serait un gong — ce n'est pas le son retenu.
+    5. La mélodie appartient aux SIGNAUX, pas au son : le départ monte, la fin
+       descend, et on les distingue les yeux fermés.
+    6. Aucun bip ne contourne le mode muet, et le mode muet ne crée AUCUN nœud
        audio (pas un volume à zéro).
-    6. Les cinq signaux restent appelés par les chronos : rebours, départ,
+    7. Les cinq signaux restent appelés par les chronos : rebours, départ,
        minute EMOM, fin, fin de repos. Aucun ne doit disparaître en silence.
+    8. Le sélecteur de voix est parti en entier : ni palette, ni bouton
+       d'écoute, ni réglage stocké qui prétendrait choisir quelque chose.
 
   Usage : node dev/sound_checks.js
 */
@@ -54,12 +59,12 @@ function bootAudio(){
   if(debut < 0 || fin < 0 || fin <= debut) throw new Error('domaine audio introuvable dans app.js');
 
   const journal = {oscillators:[], unlocks:0, sources:0, filtres:[], chaine:[], enveloppes:[], compresseurs:0};
-  function param(){ return {setValueAtTime(v){ this.value = v; }, value:0}; }
+  function param(nom){ return {__kind:nom||null, setValueAtTime(v){ this.value = v; }, value:0}; }
   const ctx = {
     state:'running', currentTime:0,
     resume(){ ctx.state = 'running'; },
     createOscillator(){
-      const o = {type:'sine', frequency:param(), connect(){}, start(){ journal.oscillators.push({f:o.frequency.value, type:o.type}); }, stop(){}};
+      const o = {type:'sine', frequency:param('frequence'), connect(){}, start(){ journal.oscillators.push({f:o.frequency.value, type:o.type}); }, stop(){}};
       return o;
     },
     // On enregistre vers QUOI chaque nœud se branche : créer un filtre puis
@@ -123,212 +128,95 @@ scenario('déblocage audio', () => {
   assert(journal.oscillators.length === 0, 'le déblocage ne produit AUCUN son');
 });
 
-// ── 2. Les voix ────────────────────────────────────────────────────────────
-scenario('palette de voix', () => {
+// ── 2. La cloche ───────────────────────────────────────────────────────────
+// Une seule synthèse, arrêtée après en avoir comparé onze à l'écoute. Ce qui
+// doit rester vrai n'est plus « la palette est cohérente » mais « cette cloche
+// est bien celle qu'on a choisie » — sinon un réglage dérive en silence et
+// personne ne s'en aperçoit avant la prochaine séance.
+scenario('registre et niveau de la cloche', () => {
   const {S} = bootAudio();
-  const V = S.COACH_BEEP_VOICES;
-  const ids = Object.keys(V);
-  assert(ids.length >= 4, 'plusieurs voix proposées (' + ids.join(', ') + ')');
-  ids.forEach(id => {
-    assert(V[id].label && V[id].hint, 'la voix « ' + id + ' » se présente avec un nom et une intention');
-    assert(V[id].pitch > 0 && V[id].gain > 0 && typeof V[id].render === 'function',
-      'la voix « ' + id + ' » a son registre, son niveau ET sa propre synthèse');
-  });
-
-  // Le point de tout l'exercice : ce sont des FAMILLES DE SONS, pas la même
-  // onde transposée. Deux voix qui partagent leur synthèse seraient le même
-  // bip plus ou moins grave — exactement ce qu'on cherchait à quitter.
-  const rendus = new Set(ids.map(id => V[id].render));
-  assert(rendus.size === ids.length,
-    'chaque voix a une synthèse DIFFÉRENTE (' + rendus.size + ' sur ' + ids.length + ') : pas une transposition de la même onde');
-
-  const defaut = S.COACH_BEEP_VOICE_DEFAULT;
-  assert(V[defaut], 'la voix par défaut existe (' + defaut + ')');
-  // L'intention : ne pas imposer le réglage le plus agressif à quelqu'un qui
-  // n'a rien demandé. « La plus grave de toutes » était un proxy commode tant
-  // que la palette montait ; depuis que des gongs descendent volontairement plus
-  // bas que la voix par défaut, le proxy casserait pour une bonne raison. Ce qui
-  // compte reste vrai : le défaut est dans la moitié BASSE du registre.
-  const pitches = ids.map(id => V[id].pitch).sort((a, b) => a - b);
-  const median = pitches[Math.floor(pitches.length / 2)];
-  assert(V[defaut].pitch <= median,
-    'LE DÉFAUT RESTE DANS LE REGISTRE BAS (×' + V[defaut].pitch + ' ≤ médiane ×' + median + ') : on n\'impose pas le réglage le plus agressif à quelqu\'un qui n\'a rien demandé');
-  assert(Math.max.apply(null, pitches) <= 0.7,
-    'toutes les voix restent dans un registre bas (max ×' + Math.max.apply(null, pitches) + ') : c\'était la demande');
-
-  // Les gains sont calibrés sur la CRÊTE, pas sur l'énergie : viser une énergie
-  // égale est inatteignable — un maillet qui s'éteint en 0,3 s ne peut pas
-  // porter autant qu'une onde tenue, et pousser le gain ne fait que saturer le
-  // limiteur. Ce garde-fou empêche seulement qu'une voix parte à des valeurs
-  // absurdes en croyant gagner du volume (mesuré : ×30 sur Bloc pour 0 dB).
-  assert(ids.every(id => V[id].gain > 0 && V[id].gain <= 4),
-    'aucun gain de voix ne part dans des valeurs qui ne feraient que saturer le limiteur');
-
-  // Le plancher lui-même est une valeur physique, pas un réglage libre : un
-  // haut-parleur de téléphone ne restitue presque rien sous ~200 Hz. L'abaisser
-  // rendrait les bips graves inaudibles sans qu'aucun autre contrôle ne bronche.
+  assert(typeof S.coachVoiceCloche === 'function', 'la synthèse de la cloche existe');
+  assert(S.COACH_BEEP_PITCH > 0 && S.COACH_BEEP_PITCH <= 0.7,
+    'elle sonne dans le registre BAS (×' + S.COACH_BEEP_PITCH + ') : les bips d\'origine étaient jugés trop aigus');
+  assert(S.COACH_BEEP_GAIN > 0 && S.COACH_BEEP_GAIN <= 4,
+    'son gain reste dans des valeurs qui ne font pas que saturer le limiteur (×' + S.COACH_BEEP_GAIN + ')');
   assert(S.COACH_BEEP_FLOOR_HZ >= 200 && S.COACH_BEEP_FLOOR_HZ <= 400,
     'le plancher reste dans ce qu\'un haut-parleur de téléphone sait produire (' + S.COACH_BEEP_FLOOR_HZ + ' Hz)');
 });
-// Deux fonctions distinctes peuvent produire le même son. Ce qui prouve que ce
-// sont vraiment des familles différentes, c'est leur EMPREINTE : les rapports de
-// fréquence entre les partiels qu'elles empilent. Deux voix qui partagent la
-// même empreinte seraient le même instrument sous deux noms.
-scenario('les voix sonnent réellement différemment', () => {
+scenario('c\'est bien une cloche', () => {
   const {S, journal} = bootAudio();
-  const V = S.COACH_BEEP_VOICES, ids = Object.keys(V);
-  const empreintes = {};
-  ids.forEach(id => {
-    S.state.guidedSoundVoice = id;
-    journal.oscillators.length = 0;
-    S.bipStart();
-    const notes = journal.oscillators.map(o => o.f).sort((a, b) => a - b);
-    const base = notes[0] || 1;
-    // Rapports arrondis : deux voix ne doivent pas differer que d'un poil de
-    // desaccord, mais par leur structure de partiels.
-    empreintes[id] = notes.map(f => Math.round((f / base) * 20) / 20).join('/');
-  });
-  const uniques = new Set(Object.keys(empreintes).map(id => empreintes[id]));
-  assert(uniques.size === ids.length,
-    'les ' + ids.length + ' voix ont ' + uniques.size + ' empreintes de partiels distinctes : ce sont de vraies familles de sons');
-  ids.forEach(id => {
-    assert(empreintes[id].length > 0, '« ' + V[id].label + ' » : ' + empreintes[id]);
-  });
+  journal.oscillators.length = 0;
+  S.bipCountdown();                    // un seul évènement : 880 Hz au programme
+  const f = journal.oscillators.map(o => o.f).sort((a, b) => a - b);
+  assert(f.length === 2, 'deux oscillateurs : une porteuse et son modulateur (' + f.length + ')');
+
+  // LE point : un rapport NON ENTIER. C'est lui qui fait entendre du métal
+  // plutôt qu'une note — avec un rapport entier on obtiendrait un orgue.
+  const rapport = f[1] / f[0];
+  assert(Math.abs(rapport - 1.41) < 0.02,
+    'rapport inharmonique de ' + rapport.toFixed(2) + ' : c\'est ce qui sonne métallique, pas une note');
+  assert(Math.abs(rapport - Math.round(rapport)) > 0.15,
+    'et il reste franchement NON entier — un rapport entier donnerait un son d\'orgue, pas de cloche');
+
+  // Le modulateur doit être BRANCHÉ sur la fréquence de la porteuse. Créé mais
+  // non câblé, il tourne dans le vide : il ne reste qu'un sinus, et la cloche
+  // devient un bip. Deux oscillateurs ne prouvent rien, le câblage si.
+  assert(journal.chaine.indexOf('frequence') >= 0,
+    'le modulateur est branché sur la FRÉQUENCE de la porteuse — c\'est ça, la modulation de fréquence');
+
+  const attendu = Math.max(S.COACH_BEEP_FLOOR_HZ, 880 * S.COACH_BEEP_PITCH);
+  assert(Math.abs(f[0] - attendu) < 0.01,
+    'la porteuse est bien transposée : 880 Hz → ' + Math.round(f[0]) + ' Hz');
+
+  // Le plancher ne se voit que sur les notes GRAVES : à 880 Hz transposé il ne
+  // mord pas. La fin de séance descend à 330 Hz, soit 181 Hz une fois
+  // transposée — sous ce que restitue un haut-parleur de téléphone.
+  journal.oscillators.length = 0;
+  S.bipCountdown(); S.bipStart(); S.bipEmom(); S.bipEnd(); S.bipRestDone();
+  const grave = Math.min.apply(null, journal.oscillators.map(o => o.f));
+  assert(grave >= S.COACH_BEEP_FLOOR_HZ - 0.01,
+    'aucune note ne descend sous le plancher, y compris la plus grave des cinq signaux (' + Math.round(grave) + ' Hz)');
+  assert(330 * S.COACH_BEEP_PITCH < S.COACH_BEEP_FLOOR_HZ,
+    'et le cas est réel : la note de fin tomberait à ' + Math.round(330 * S.COACH_BEEP_PITCH) + ' Hz sans le plancher');
 });
-// Ce qui fait un bol chantant plutôt qu'un bip métallique, c'est le BATTEMENT :
-// deux modes très légèrement désaccordés dont les phases se croisent et font
-// onduler lentement le volume. Sans lui, il reste une cloche de synthé.
-scenario('le battement des cloches', () => {
+scenario('l\'attaque brille puis s\'éteint', () => {
   const {S, journal} = bootAudio();
-  const V = S.COACH_BEEP_VOICES;
-  function battementHz(id){
-    S.state.guidedSoundVoice = id;
-    journal.oscillators.length = 0;
-    S.bipCountdown();                       // un seul évènement : ses partiels
-    const f = journal.oscillators.map(o => o.f).sort((a, b) => a - b);
-    for(let i = 1; i < f.length; i++){
-      const ecart = f[i] - f[i-1];
-      if(ecart > 0.05 && ecart / f[i-1] < 0.01) return Math.round(ecart * 100) / 100;
+  journal.enveloppes.length = 0;
+  S.bipEmom();
+  // Une cloche est au maximum dès l'attaque et ne fait que décroître. Un mode
+  // qui monterait DEUX fois de suite serait un gonflement de gong — ce n'est
+  // pas ce son-là qu'on a retenu.
+  const gonflants = journal.enveloppes.filter(env => {
+    let montees = 0;
+    for(let i = 1; i < env.length; i++){
+      if(env[i] > env[i-1] * 1.05) montees++;
+      else break;
     }
-    return 0;
-  }
-  const defaut = S.COACH_BEEP_VOICE_DEFAULT;
-  const hz = battementHz(defaut);
-  assert(hz > 0.2 && hz < 8,
-    'la voix par défaut (« ' + V[defaut].label + ' ») ondule : deux modes battent à ' + hz + ' Hz — c\'est ça qui fait le bol chantant');
-
-  const ondulantes = Object.keys(V).filter(id => battementHz(id) > 0.2);
-  assert(ondulantes.length >= 3,
-    ondulantes.length + ' voix ont ce battement (' + ondulantes.map(id => V[id].label).join(', ') + ')');
-  assert(Object.keys(V).some(id => battementHz(id) === 0),
-    'et toutes ne l\'ont pas : le choix reste un vrai choix, pas sept variantes du même effet');
+    return montees >= 2;
+  }).length;
+  assert(gonflants === 0,
+    'aucun mode ne gonfle après la frappe : c\'est une cloche, pas un gong');
+  assert(journal.enveloppes.length > 0, 'l\'enveloppe est bien pilotée');
 });
-// Le GONFLEMENT : ce qui sépare un gong d'une cloche. Dans un disque de bronze
-// mince, la frappe met en mouvement les modes graves, qui transfèrent ensuite
-// leur énergie aux modes aigus — le son enfle pendant quelques centaines de
-// millisecondes avant de retomber. Une cloche ne fait jamais ça : ses partiels
-// sont au maximum dès l'attaque. Ça se lit dans l'ENVELOPPE, pas dans le spectre.
-scenario('les gongs gonflent, les cloches non', () => {
-  const {S, journal} = bootAudio();
-  const V = S.COACH_BEEP_VOICES, ids = Object.keys(V);
-  function mesure(id){
-    S.state.guidedSoundVoice = id;
-    journal.enveloppes.length = 0; journal.sources = 0;
-    S.bipCountdown();
-    // Une enveloppe qui monte DEUX fois de suite avant de retomber est un mode
-    // qui gonfle ; une qui ne monte qu'une fois est une attaque simple.
-    const gonflants = journal.enveloppes.filter(env => {
-      let montees = 0;
-      for(let i = 1; i < env.length; i++){
-        if(env[i] > env[i-1] * 1.05) montees++;
-        else break;
-      }
-      return montees >= 2;
-    }).length;
-    return {gonflants: gonflants, frappe: journal.sources};
-  }
-  const m = {};
-  ids.forEach(id => { m[id] = mesure(id); });
-
-  // Les familles se DÉDUISENT de ce que les voix font, elles ne sont pas
-  // listées à la main : retirer un gong de la palette se voit ici.
-  const gongs = ids.filter(id => m[id].gonflants >= 2);
-  const sansGonflement = ids.filter(id => m[id].gonflants === 0);
-  assert(gongs.length >= 4,
-    gongs.length + ' voix déferlent : ' + gongs.map(id => V[id].label + ' (' + m[id].gonflants + ' modes)').join(', '));
-  assert(sansGonflement.length >= 5,
-    sansGonflement.length + ' voix ne gonflent pas : ' + sansGonflement.map(id => V[id].label).join(', ') +
-    ' — une cloche est au maximum dès l\'attaque, et c\'est ce qui la distingue');
-
-  // Le coup de maillet : sans lui, les modes apparaissent de nulle part et on
-  // entend un synthé, pas un objet frappé.
-  gongs.forEach(id => {
-    assert(m[id].frappe >= 1,
-      '« ' + V[id].label + ' » commence par une frappe de maillet, pas par des modes surgis du silence');
-  });
-  ['bol', 'temple', 'rin', 'tingsha', 'cloche'].filter(id => V[id]).forEach(id => {
-    assert(m[id].gonflants === 0,
-      '« ' + V[id].label + ' » reste une cloche : aucun mode ne gonfle après la frappe');
-  });
-});
-scenario('chaque voix sonne, et reste dans les clous', () => {
-  const {S, journal} = bootAudio();
-  const V = S.COACH_BEEP_VOICES, plancher = S.COACH_BEEP_FLOOR_HZ;
-  Object.keys(V).forEach(id => {
-    S.state.guidedSoundVoice = id;
-    journal.oscillators.length = 0; journal.sources = 0; journal.chaine.length = 0;
-    S.bipCountdown(); S.bipStart(); S.bipEmom(); S.bipEnd(); S.bipRestDone();
-    const sonne = journal.oscillators.length + journal.sources;
-    assert(sonne >= 5, 'la voix « ' + V[id].label + ' » produit bien du son (' + sonne + ' sources)');
-    assert(journal.oscillators.every(o => o.f >= plancher - 0.01),
-      'la voix « ' + V[id].label + ' » ne descend jamais sous ' + plancher + ' Hz : plus bas, un haut-parleur de téléphone ne restitue rien');
-  });
-});
-scenario('la transposition garde les mélodies', () => {
-  const {S, journal} = bootAudio();
-  function fondamentales(voix){
-    S.state.guidedSoundVoice = voix;
-    journal.oscillators.length = 0;
-    S.bipStart(); S.bipEnd();
-    // Un timbre peut empiler des partiels : seule la note la plus grave de
-    // chaque évènement est la fondamentale.
-    return journal.oscillators.map(o => o.f).filter((f, i, a) => a.indexOf(f) === i).sort((a, b) => a - b);
-  }
-  const V = S.COACH_BEEP_VOICES, ids = Object.keys(V);
-  ids.forEach(id => {
-    const n = fondamentales(id);
-    assert(n.length > 0, 'la voix « ' + V[id].label + ' » joue des notes');
-    assert(n[0] >= S.COACH_BEEP_FLOOR_HZ - 0.01, 'sa note la plus grave respecte le plancher (' + Math.round(n[0]) + ' Hz)');
-
-    // Le registre est RÉELLEMENT appliqué : la note la plus grave du rebours
-    // (880 Hz au programme) doit valoir 880 × pitch, plancher compris.
-    S.state.guidedSoundVoice = id;
-    journal.oscillators.length = 0;
-    S.bipCountdown();
-    const f0 = Math.min.apply(null, journal.oscillators.map(o => o.f));
-    const attendu = Math.max(S.COACH_BEEP_FLOOR_HZ, 880 * V[id].pitch);
-    assert(Math.abs(f0 - attendu) < 0.01,
-      '« ' + V[id].label + ' » transpose bien : 880 Hz → ' + Math.round(f0) + ' Hz');
-  });
-  // La montée du départ et la descente de la fin appartiennent aux APPELANTS :
-  // changer de voix ne doit pas changer le sens d'un signal.
+scenario('la mélodie appartient aux signaux, pas au son', () => {
   const src = read('app.js');
   assert(/function bipStart\(\)\{playBeep\(660[\s\S]{0,80}playBeep\(880/.test(src),
-    'le départ monte (660 → 880) et c\'est l\'appelant qui le décide, pas la voix');
+    'le départ monte (660 → 880)');
   assert(/function bipEnd\(\)\{playBeep\(440[\s\S]{0,80}playBeep\(330/.test(src),
-    'la fin descend (440 → 330), quelle que soit la voix choisie');
+    'la fin descend (440 → 330) : deux signaux qu\'on distingue les yeux fermés');
 });
-scenario('choisir une voix', () => {
-  const {S} = bootAudio();
-  assert(S.coachBeepVoiceId() === S.COACH_BEEP_VOICE_DEFAULT, 'sans choix enregistré, c\'est le défaut qui sert');
-  const autre = Object.keys(S.COACH_BEEP_VOICES).filter(id => id !== S.COACH_BEEP_VOICE_DEFAULT)[0];
-  assert(S.setCoachBeepVoice(autre) === true && S.state.guidedSoundVoice === autre, 'un choix est retenu dans l\'état du profil');
-  assert(S.coachBeepVoiceId() === autre, 'et il est relu');
-  assert(S.setCoachBeepVoice('nawak') === false && S.state.guidedSoundVoice === autre,
-    'une voix inconnue est refusée sans écraser le choix en place');
-  S.state.guidedSoundVoice = 'inexistante';
-  assert(S.coachBeepVoiceId() === S.COACH_BEEP_VOICE_DEFAULT,
-    'un état corrompu retombe sur le défaut au lieu de casser le son');
+scenario('le sélecteur de voix est bien parti', () => {
+  // Onze voix ont été comparées puis une seule retenue. Ce qui reste ne doit
+  // pas être un demi-sélecteur : ni palette, ni bouton d'écoute, ni réglage
+  // stocké qui prétendrait choisir quelque chose.
+  const src = read('app.js'), ui = read('scripts/profiles/ui.js'), css = read('styles.css');
+  assert(!/COACH_BEEP_VOICES/.test(src), 'aucune palette résiduelle dans le moteur');
+  assert(!/playBeepVoicePreview|setCoachBeepVoice|coachBeepVoiceId/.test(src),
+    'aucune fonction de choix laissée derrière');
+  assert(!/data-voice|racine-voice/.test(ui), 'Réglages ne propose plus de voix');
+  assert(!/racine-voice/.test(css), 'et son style est parti avec');
+  assert((src.match(/function coachVoice[A-Za-z]+\(/g) || []).length === 1,
+    'une seule synthèse subsiste dans le code');
 });
 
 // ── 3. Le muet, et les signaux qui doivent rester branchés ─────────────────
@@ -350,19 +238,6 @@ scenario('muet et branchements', () => {
     assert(appels >= 3, 'le signal de ' + quoi + ' est défini ET utilisé (' + appels + ' occurrences)');
   });
 
-  const ui = read('scripts/profiles/ui.js');
-  // Viser le BOUTON, pas la sous-chaîne : « racine-voice-row » contient
-  // « racine-voice » et faisait passer l'assertion même sans bouton.
-  assert(/<button type="button" class="racine-voice/.test(ui),
-    'Réglages rend bien un BOUTON par voix');
-  assert(/data-voice="'\+esc\(id\)/.test(ui),
-    'et chaque bouton porte l\'identifiant de sa voix');
-  assert(/COACH_BEEP_VOICES/.test(ui),
-    'la liste vient de la palette du moteur : ajouter une voix l\'ajoute à l\'écran, sans retoucher Réglages');
-  assert(/querySelectorAll\("\[data-voice\]"\)|closest\("\[data-voice\]"\)/.test(ui),
-    'et le panneau écoute ces boutons');
-  assert(/playBeepVoicePreview/.test(ui),
-    'le tap JOUE la voix : « doux » ou « clair » ne veut rien dire sans l\'entendre');
 });
 
 console.log(failures ? '\nÉCHEC : ' + failures + ' contrôle(s)' : '\nTous les contrôles passent.');

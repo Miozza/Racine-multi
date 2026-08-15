@@ -1,3 +1,12 @@
+## V4.5.55 — Une seule cloche, sélecteur de son retiré
+
+- **Onze voix essayées, une retenue.** La palette avait un but — comparer à l'écoute — et ce but est atteint. Bols tibétains, cloches de temple, gongs, marimba, onde carrée : tout est supprimé. Reste la **Cloche**, modulation de fréquence à rapport inharmonique 1:1,41.
+- **Le sélecteur part avec elles**, en entier : la table des voix, les fonctions de choix et d'écoute, les boutons de Réglages, leur style. Une préférence arrêtée n'a plus besoin d'être un réglage — et un demi-sélecteur qui ne choisit plus rien serait pire que pas de sélecteur du tout.
+- **Le son ne change pas d'un iota** : registre ×0,55, gain ×1,25, plancher 240 Hz. Ce sont exactement les valeurs sous lesquelles la Cloche a été choisie.
+- **Ce que le garde-fou protège maintenant** n'est plus la cohérence d'une palette mais l'identité de ce son précis : le rapport **non entier** (un rapport entier donnerait un orgue, pas une cloche), le fait que le modulateur soit **branché sur la fréquence** de la porteuse (créé mais non câblé, il ne resterait qu'un sinus), et qu'aucun mode ne **gonfle** après l'attaque (ce serait un gong).
+- **Deux trous comblés au passage.** Le plancher de fréquence n'était éprouvé que sur une note qui ne l'atteint pas ; il l'est désormais sur la plus grave des cinq signaux — la fin de séance tomberait à **181 Hz** sans lui, sous ce qu'un haut-parleur de téléphone restitue. Et le câblage du modulateur n'était pas vérifié du tout.
+- **Portée** : `app.js`, `scripts/profiles/ui.js`, `styles.css`, `index.html`. Garde-fou réécrit : `dev/sound_checks.js`. 18 mutations testées, 18 attrapées.
+
 ## V4.5.54 — Quatre gongs pour les chronos
 
 - **Un gong n'est pas une grosse cloche**, et ce qui les sépare se construit, ça ne s'imite pas :
