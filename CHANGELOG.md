@@ -1,3 +1,18 @@
+## V4.5.54 — Quatre gongs pour les chronos
+
+- **Un gong n'est pas une grosse cloche**, et ce qui les sépare se construit, ça ne s'imite pas :
+  - un spectre **dense et inharmonique** — sept à dix modes aux rapports irréguliers, là où une cloche en a trois ou quatre ;
+  - une **frappe de maillet** : un bruit court et sourd au moment de l'impact. Sans lui, les modes surgissent du silence et on entend un synthé, pas un objet frappé ;
+  - le **gonflement**. Dans un disque de bronze mince, la frappe met en mouvement les modes graves, qui transfèrent ensuite leur énergie aux modes aigus : le son **enfle** pendant quelques centaines de millisecondes avant de retomber. C'est ce déferlement montant qu'on reconnaît — aucune cloche ne le fait, ses partiels sont au maximum dès l'attaque.
+- **Quatre gongs**, mesurés sur l'instant où l'énergie aiguë culmine :
+  - **Dora** — le gong japonais du début de combat. Gonflement rapide (**0,20 s**), traîne nette, 1,4 s.
+  - **Gong** — le gong chinois à bosse. Hauteur nette, gonflement franc (**0,45 s**), 1,9 s de traîne.
+  - **Tam-tam** — le grand disque plat, sans hauteur définie. Spectre le plus dense (9 modes), gonflement **0,70 s**, 2,7 s.
+  - **Massue** — le plus gros et le plus lent. Fondamentale au plancher (251 Hz), gonflement **0,70 s**, **3,2 s** de traîne.
+- **Onze voix au choix** désormais : 4 gongs, 4 cloches acoustiques, la Cloche FM, Bois et Carré. Aucune ne sature — crêtes mesurées 0,73 à 0,97.
+- **Une règle de garde-fou reformulée, pas contournée.** « Le défaut est la voix la plus grave » était un proxy commode tant que la palette montait ; depuis que les gongs descendent volontairement plus bas que la voix par défaut, il casserait pour une bonne raison. Ce qui compte reste vérifié : le défaut est dans la **moitié basse** du registre.
+- **Portée** : `app.js`, `index.html`. Garde-fou étendu : `dev/sound_checks.js` lit désormais les **enveloppes de gain**, pas seulement les fréquences — c'est là, et nulle part ailleurs, que se voit la différence entre un gong et une cloche. Les familles se **déduisent** de ce que les voix font au lieu d'être listées à la main, donc retirer un gong de la palette se voit. 24 mutations testées, 23 attrapées, 1 prouvée inerte (une cloche ne peut pas gonfler par accident : il faut lui donner des valeurs de gonflement explicites, et là c'est attrapé).
+
 ## V4.5.53 — Quatre cloches de temple pour les chronos
 
 - **Quatre cloches acoustiques s'ajoutent à la palette**, construites sur les rapports de partiels d'instruments réels — pas sur des valeurs choisies à l'oreille :
