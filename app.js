@@ -1,5 +1,5 @@
-// Racine V4.5.52 — cinq familles de sons au choix pour les chronos
-var APP_VERSION = "V4.5.52";
+// Racine V4.5.53 — quatre cloches de temple pour les chronos
+var APP_VERSION = "V4.5.53";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -587,8 +587,92 @@ function coachVoiceBois(ctx,out,f,dur,peak,t){
   coachOsc(ctx,out,'sine',f*4.0,  t,peak*0.20, 0.003,ring*0.45);
   coachOsc(ctx,out,'sine',f*9.2,  t,peak*0.05, 0.002,ring*0.25);
 }
-// Cloche — modulation de fréquence à rapport INHARMONIQUE (1:1.41), l'indice
-// retombe pendant la tenue. C'est ce qui fait le scintillement métallique.
+// ── Cloches ─────────────────────────────────────────────────────────────────
+// Une cloche n'est pas un son harmonique : ses partiels ne sont pas des
+// multiples entiers de la fondamentale, et c'est précisément ce qui la fait
+// sonner « cloche ». Les rapports ci-dessous sont ceux d'instruments réels, pas
+// des valeurs choisies à l'oreille.
+//
+// Trois ingrédients font la cloche de temple plutôt que le bip métallique :
+//   - une ATTAQUE DOUCE : on frappe avec un maillet garni, pas avec un marteau ;
+//   - une LONGUE résonance, où les partiels aigus s'éteignent bien avant la
+//     fondamentale — c'est ce qui adoucit le son en le laissant filer ;
+//   - un BATTEMENT : deux modes très légèrement désaccordés produisent une
+//     ondulation lente du volume. C'est la signature du bol chantant, et ce qui
+//     manquait le plus à la version FM.
+function coachBellPartials(ctx,out,f,peak,t,ring,partials,attack){
+  partials.forEach(function(p){
+    var ratio=p[0], niveau=p[1], duree=ring*(p[2]||1), desaccord=p[3]||0;
+    var o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(f*ratio*(1+desaccord),t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002,peak*niveau),t+attack);
+    g.gain.exponentialRampToValueAtTime(0.0006,t+duree);
+    o.connect(g); g.connect(out);
+    o.start(t); o.stop(t+duree+0.03);
+  });
+}
+function coachBellRing(dur,facteur,plancher,plafond){
+  return Math.min(plafond,Math.max(plancher,dur*facteur));
+}
+
+// Bol — bol chantant tibétain. Partiels 1 / 2.7 / 5.4, et surtout un second
+// mode fondamental désaccordé de 0.4 % : les deux battent ensemble à ~2 Hz et
+// donnent l'ondulation lente qu'on entend dans un bol qu'on laisse vivre.
+// Attaque de 60 ms : un maillet garni, pas un choc.
+function coachVoiceBol(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,7,1.2,3.2);
+  coachBellPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 1.00, 1.00, 0     ],
+    [1.00, 0.75, 0.95, 0.004 ],   // le jumeau désaccordé : c'est lui, le battement
+    [2.70, 0.30, 0.55, 0     ],
+    [5.40, 0.09, 0.30, 0     ]
+  ],0.060);
+}
+// Temple — cloche de temple japonaise (bonshō). Un son de bourdon tenu très
+// longtemps, surmonté d'un coup deux fois plus haut qui domine à l'impact puis
+// s'efface. Le plus grave et le plus long de la palette.
+function coachVoiceTemple(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,9,1.6,4.0);
+  coachBellPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 0.70, 1.00, 0     ],   // bourdon
+    [1.00, 0.45, 0.90, 0.005 ],   // battement lent : le bourdon respire
+    [2.00, 1.00, 0.45, 0     ],   // le coup
+    [2.98, 0.35, 0.28, 0     ],
+    [4.05, 0.15, 0.18, 0     ]
+  ],0.035);
+}
+// Tingsha — les deux petites cymbales tibétaines. Presque une seule note, mais
+// jamais tout à fait : le désaccord d'un demi-pour-cent fait un battement rapide
+// et une résonance qui n'en finit plus. Pur — aucun harmonique dur.
+// Les vraies tingsha sonnent aigu ; on garde ici le registre bas de la palette
+// plutôt que de doubler la fréquence en interne, sinon une voix échapperait au
+// réglage de hauteur commun et le « plus grave » demandé ne vaudrait plus pour
+// elle. C'est le battement, pas la hauteur, qui fait le caractère.
+function coachVoiceTingsha(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,10,1.8,4.2);
+  coachBellPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 1.00, 1.00, 0      ],
+    [1.00, 0.90, 0.98, 0.0055 ],
+    [2.76, 0.16, 0.35, 0      ]
+  ],0.012);
+}
+// Rin — bol de méditation japonais, plus petit et plus brillant que le tibétain.
+// Résonance moyenne, partiels plus hauts audibles plus longtemps.
+function coachVoiceRin(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,6,1.0,2.6);
+  coachBellPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 1.00, 1.00, 0     ],
+    [1.00, 0.55, 0.92, 0.0025],
+    [2.75, 0.45, 0.65, 0     ],
+    [5.40, 0.20, 0.40, 0     ],
+    [8.90, 0.07, 0.22, 0     ]
+  ],0.025);
+}
+// Cloche — la version modulation de fréquence, à rapport INHARMONIQUE (1:1.41),
+// dont l'indice retombe pendant la tenue. Franchement métallique et synthétique :
+// gardée pour comparaison avec les cloches acoustiques ci-dessus.
 function coachVoiceCloche(ctx,out,f,dur,peak,t){
   var ring=Math.min(1.6,Math.max(0.5,dur*2.4));
   var car=ctx.createOscillator(), g=ctx.createGain();
@@ -641,13 +725,15 @@ function coachVoiceCarre(ctx,out,f,dur,peak,t){
 }
 
 var COACH_BEEP_VOICES={
-  bois:   {label:"Bois",   hint:"Marimba, chaud",      pitch:0.50, gain:1.95, render:coachVoiceBois},
-  duo:    {label:"Duo",    hint:"Doux, discret",       pitch:0.52, gain:1.8, render:coachVoiceDuo},
-  cloche: {label:"Cloche", hint:"Métallique, ample",   pitch:0.55, gain:1.25, render:coachVoiceCloche},
-  carre:  {label:"Carré",  hint:"Franc, porte loin",   pitch:0.58, gain:0.95, render:coachVoiceCarre},
-  bloc:   {label:"Bloc",   hint:"Sec et percussif",    pitch:0.62, gain:2.35, render:coachVoiceBloc}
+  bol:     {label:"Bol",     hint:"Bol chantant tibétain", pitch:0.40, gain:1.60, render:coachVoiceBol},
+  temple:  {label:"Temple",  hint:"Cloche de temple",      pitch:0.42, gain:1.55, render:coachVoiceTemple},
+  rin:     {label:"Rin",     hint:"Bol de méditation",     pitch:0.46, gain:1.35, render:coachVoiceRin},
+  tingsha: {label:"Tingsha", hint:"Cymbales, très long",   pitch:0.48, gain:1.40, render:coachVoiceTingsha},
+  cloche:  {label:"Cloche",  hint:"Métallique, synthé",    pitch:0.55, gain:1.25, render:coachVoiceCloche},
+  bois:    {label:"Bois",    hint:"Marimba, chaud",        pitch:0.50, gain:1.95, render:coachVoiceBois},
+  carre:   {label:"Carré",   hint:"Franc, porte loin",     pitch:0.58, gain:0.95, render:coachVoiceCarre}
 };
-var COACH_BEEP_VOICE_DEFAULT="bois";
+var COACH_BEEP_VOICE_DEFAULT="bol";
 function coachBeepVoiceId(){
   try{
     var v=(typeof state==="object"&&state)?state.guidedSoundVoice:null;

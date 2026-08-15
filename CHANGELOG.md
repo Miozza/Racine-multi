@@ -1,3 +1,17 @@
+## V4.5.53 — Quatre cloches de temple pour les chronos
+
+- **Quatre cloches acoustiques s'ajoutent à la palette**, construites sur les rapports de partiels d'instruments réels — pas sur des valeurs choisies à l'oreille :
+  - **Bol** *(nouveau défaut)* — bol chantant tibétain : partiels 1 / 2,7 / 5,4, attaque de 60 ms (un maillet garni, pas un choc), résonance **1,2 s**.
+  - **Temple** — cloche japonaise *bonshō* : un bourdon tenu, surmonté d'un coup deux fois plus haut qui domine à l'impact puis s'efface. La plus grave et la plus longue — **2,1 s** de queue.
+  - **Rin** — bol de méditation japonais, plus petit et plus brillant : partiels 1 / 2,75 / 5,4 / 8,9.
+  - **Tingsha** — les deux petites cymbales tibétaines : presque une seule note, jamais tout à fait. **2,45 s** de résonance.
+- **Le battement, c'est ce qui manquait.** Une cloche de temple n'est pas un bip métallique : deux modes très légèrement désaccordés (0,25 à 0,55 %) font onduler lentement le volume. Mesuré : **1,4 Hz** pour Bol, **12 ondulations** sur une frappe de Tingsha. La version FM précédente n'en avait aucune — d'où son côté synthétique.
+- **Trois ingrédients font le temple plutôt que le bip** : attaque douce, longue résonance où les partiels aigus s'éteignent bien avant la fondamentale, et ce battement.
+- **Registre encore abaissé** : le défaut passe de ×0,50 à **×0,40**, soit 264 Hz pour un signal écrit à 660. Toutes les cloches sonnent entre 264 et 317 Hz.
+- **Tingsha garde le registre commun** au lieu de doubler sa fréquence en interne, comme le feraient de vraies tingsha : sinon une voix échapperait au réglage de hauteur et le « plus grave » demandé ne vaudrait plus pour elle. C'est le battement, pas la hauteur, qui fait son caractère.
+- **Sept voix au total** — les quatre cloches, plus Cloche (la version FM, gardée pour comparaison), Bois et Carré. Aucune ne sature : crêtes mesurées **0,77 à 0,96**.
+- **Portée** : `app.js`, `index.html`. Garde-fou étendu : `dev/sound_checks.js` vérifie que les sept voix ont des **empreintes de partiels distinctes** — deux fonctions différentes peuvent produire le même son, seule l'empreinte le prouve — et que le **battement** de la voix par défaut existe réellement, tout en s'assurant que toutes ne l'ont pas : le choix doit rester un vrai choix. 20 mutations testées, 20 attrapées.
+
 ## V4.5.52 — Cinq familles de sons au choix pour les chronos
 
 - **Ce n'étaient pas trois sons, c'étaient trois hauteurs du même son.** La V4.5.51 transposait une seule onde carrée : forcément monotone. Chaque voix a maintenant sa **propre synthèse**.
