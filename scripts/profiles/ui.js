@@ -701,18 +701,6 @@
         '<input id="settingsAggSlider" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
         '<span class="racine-agg-label" id="settingsAggLabel">'+aggressivenessLabel(agg)+'</span>'+
       '</div>'+
-      // Le son des chronos se choisit en l'ÉCOUTANT : un tap sélectionne la
-      // voix et la joue. Décrire « doux » ou « clair » avec des mots ne dit
-      // rien — il faut l'entendre, et de préférence avant d'être en plein WOD.
-      '<label>Son des chronos</label>'+
-      '<div class="racine-voice-row" id="settingsVoiceRow">'+
-        Object.keys(window.COACH_BEEP_VOICES||{}).map(function(id){
-          var v = window.COACH_BEEP_VOICES[id];
-          var on = (typeof coachBeepVoiceId==="function") && coachBeepVoiceId()===id;
-          return '<button type="button" class="racine-voice'+(on?' is-on':'')+'" data-voice="'+esc(id)+'">'+
-                 '<strong>'+esc(v.label)+'</strong><small>'+esc(v.hint)+'</small></button>';
-        }).join('')+
-      '</div>'+
       '<div class="btn-row">'+
         '<button id="recalibrateBtn" class="btn-ghost">Recalibrer mes poids</button>'+
         '<button id="switchProfileBtn" class="btn-ghost">Changer de profil'+(others.length?(' ('+others.length+')'):'')+'</button>'+
@@ -763,20 +751,6 @@
         if(id) CoachProfiles.update(id, {trainingGoal:v});
         var s=document.getElementById("profileSettingsStatus");
         if(s){s.textContent="✅ Objectif mis à jour.";s.className="status-msg ok";}
-      };
-    }
-    var voiceRow = document.getElementById("settingsVoiceRow");
-    if(voiceRow){
-      voiceRow.onclick = function(ev){
-        var btn = ev.target && ev.target.closest ? ev.target.closest("[data-voice]") : null;
-        if(!btn) return;
-        var id = btn.getAttribute("data-voice");
-        if(typeof playBeepVoicePreview === "function") playBeepVoicePreview(id);
-        Array.prototype.forEach.call(voiceRow.querySelectorAll("[data-voice]"), function(b){
-          b.classList.toggle("is-on", b === btn);
-        });
-        var s2 = document.getElementById("profileSettingsStatus");
-        if(s2){ s2.textContent = "🔊 Son « "+btn.textContent.replace(/\s+/g," ").trim().split(" ")[0]+" » choisi."; s2.className = "status-msg ok"; }
       };
     }
     var recal = document.getElementById("recalibrateBtn");
