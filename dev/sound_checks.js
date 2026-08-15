@@ -157,6 +157,59 @@ scenario('palette de voix', () => {
   assert(S.COACH_BEEP_FLOOR_HZ >= 200 && S.COACH_BEEP_FLOOR_HZ <= 400,
     'le plancher reste dans ce qu\'un haut-parleur de téléphone sait produire (' + S.COACH_BEEP_FLOOR_HZ + ' Hz)');
 });
+// Deux fonctions distinctes peuvent produire le même son. Ce qui prouve que ce
+// sont vraiment des familles différentes, c'est leur EMPREINTE : les rapports de
+// fréquence entre les partiels qu'elles empilent. Deux voix qui partagent la
+// même empreinte seraient le même instrument sous deux noms.
+scenario('les voix sonnent réellement différemment', () => {
+  const {S, journal} = bootAudio();
+  const V = S.COACH_BEEP_VOICES, ids = Object.keys(V);
+  const empreintes = {};
+  ids.forEach(id => {
+    S.state.guidedSoundVoice = id;
+    journal.oscillators.length = 0;
+    S.bipStart();
+    const notes = journal.oscillators.map(o => o.f).sort((a, b) => a - b);
+    const base = notes[0] || 1;
+    // Rapports arrondis : deux voix ne doivent pas differer que d'un poil de
+    // desaccord, mais par leur structure de partiels.
+    empreintes[id] = notes.map(f => Math.round((f / base) * 20) / 20).join('/');
+  });
+  const uniques = new Set(Object.keys(empreintes).map(id => empreintes[id]));
+  assert(uniques.size === ids.length,
+    'les ' + ids.length + ' voix ont ' + uniques.size + ' empreintes de partiels distinctes : ce sont de vraies familles de sons');
+  ids.forEach(id => {
+    assert(empreintes[id].length > 0, '« ' + V[id].label + ' » : ' + empreintes[id]);
+  });
+});
+// Ce qui fait un bol chantant plutôt qu'un bip métallique, c'est le BATTEMENT :
+// deux modes très légèrement désaccordés dont les phases se croisent et font
+// onduler lentement le volume. Sans lui, il reste une cloche de synthé.
+scenario('le battement des cloches', () => {
+  const {S, journal} = bootAudio();
+  const V = S.COACH_BEEP_VOICES;
+  function battementHz(id){
+    S.state.guidedSoundVoice = id;
+    journal.oscillators.length = 0;
+    S.bipCountdown();                       // un seul évènement : ses partiels
+    const f = journal.oscillators.map(o => o.f).sort((a, b) => a - b);
+    for(let i = 1; i < f.length; i++){
+      const ecart = f[i] - f[i-1];
+      if(ecart > 0.05 && ecart / f[i-1] < 0.01) return Math.round(ecart * 100) / 100;
+    }
+    return 0;
+  }
+  const defaut = S.COACH_BEEP_VOICE_DEFAULT;
+  const hz = battementHz(defaut);
+  assert(hz > 0.2 && hz < 8,
+    'la voix par défaut (« ' + V[defaut].label + ' ») ondule : deux modes battent à ' + hz + ' Hz — c\'est ça qui fait le bol chantant');
+
+  const ondulantes = Object.keys(V).filter(id => battementHz(id) > 0.2);
+  assert(ondulantes.length >= 3,
+    ondulantes.length + ' voix ont ce battement (' + ondulantes.map(id => V[id].label).join(', ') + ')');
+  assert(Object.keys(V).some(id => battementHz(id) === 0),
+    'et toutes ne l\'ont pas : le choix reste un vrai choix, pas sept variantes du même effet');
+});
 scenario('chaque voix sonne, et reste dans les clous', () => {
   const {S, journal} = bootAudio();
   const V = S.COACH_BEEP_VOICES, plancher = S.COACH_BEEP_FLOOR_HZ;
