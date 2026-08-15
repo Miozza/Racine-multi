@@ -7669,7 +7669,8 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
    « doux » ou « clair » ne veut rien dire tant qu'on ne l'a pas écouté. */
 .racine-voice-row{
   display:grid;
-  grid-template-columns:repeat(3, minmax(0,1fr));
+  /* Autant de voix qu'il en faut : la grille se remplit toute seule. */
+  grid-template-columns:repeat(auto-fit, minmax(104px, 1fr));
   gap:8px;
   margin-bottom:12px;
 }

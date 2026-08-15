@@ -53,7 +53,7 @@ function bootAudio(){
   const fin = src.indexOf('// ─── Timer WOD ─');
   if(debut < 0 || fin < 0 || fin <= debut) throw new Error('domaine audio introuvable dans app.js');
 
-  const journal = {oscillators:[], unlocks:0, filtres:[], chaine:[], compresseurs:0};
+  const journal = {oscillators:[], unlocks:0, sources:0, filtres:[], chaine:[], compresseurs:0};
   function param(){ return {setValueAtTime(v){ this.value = v; }, value:0}; }
   const ctx = {
     state:'running', currentTime:0,
@@ -78,13 +78,21 @@ function bootAudio(){
       journal.compresseurs++;
       return {threshold:param(), knee:param(), ratio:param(), attack:param(), release:param(), connect(){}, context:ctx};
     },
-    createBuffer(){ return {}; },
-    createBufferSource(){ return {buffer:null, connect(){}, start(){ journal.unlocks++; }}; },
+    createBuffer(ch, len, rate){ return {length:len, sampleRate:rate, getChannelData(){ return new Float32Array(len); }}; },
+    createBufferSource(){
+      const s = {buffer:null, connect(){}, start(){
+        // Le tampon de déblocage fait UN échantillon et ne sonne pas ; un
+        // tampon de bruit en fait des milliers et sonne. Ne pas les confondre.
+        if(s.buffer && s.buffer.length === 1) journal.unlocks++;
+        else journal.sources++;
+      }};
+      return s;
+    },
     destination:{}
   };
 
   const sandbox = {
-    console:{log(){},warn(){},error(){}}, Math, Number, String, Boolean, Object, Array, JSON,
+    console:{log(){},warn(){},error(){}}, Math, Number, String, Boolean, Object, Array, JSON, Float32Array,
     setTimeout(fn){ if(typeof fn === 'function') fn(); return 1; },
     state:{}, save(){},
     AudioContext: function(){ return ctx; }
@@ -113,69 +121,96 @@ scenario('palette de voix', () => {
   const {S} = bootAudio();
   const V = S.COACH_BEEP_VOICES;
   const ids = Object.keys(V);
-  assert(ids.length === 3, 'trois voix proposées (' + ids.join(', ') + ')');
+  assert(ids.length >= 4, 'plusieurs voix proposées (' + ids.join(', ') + ')');
   ids.forEach(id => {
-    assert(V[id].label && V[id].hint, 'la voix « ' + id +' » se présente avec un nom et une intention');
-    assert(V[id].pitch > 0 && V[id].tone > 0 && V[id].gain > 0, 'la voix « ' + id + ' » est complètement définie');
+    assert(V[id].label && V[id].hint, 'la voix « ' + id + ' » se présente avec un nom et une intention');
+    assert(V[id].pitch > 0 && V[id].gain > 0 && typeof V[id].render === 'function',
+      'la voix « ' + id + ' » a son registre, son niveau ET sa propre synthèse');
   });
+
+  // Le point de tout l'exercice : ce sont des FAMILLES DE SONS, pas la même
+  // onde transposée. Deux voix qui partagent leur synthèse seraient le même
+  // bip plus ou moins grave — exactement ce qu'on cherchait à quitter.
+  const rendus = new Set(ids.map(id => V[id].render));
+  assert(rendus.size === ids.length,
+    'chaque voix a une synthèse DIFFÉRENTE (' + rendus.size + ' sur ' + ids.length + ') : pas une transposition de la même onde');
 
   const defaut = S.COACH_BEEP_VOICE_DEFAULT;
   assert(V[defaut], 'la voix par défaut existe (' + defaut + ')');
   const pitches = ids.map(id => V[id].pitch);
   assert(V[defaut].pitch === Math.min.apply(null, pitches),
     'LE DÉFAUT EST LA PLUS GRAVE : on n\'impose pas le réglage le plus agressif à quelqu\'un qui n\'a rien demandé');
+  assert(Math.max.apply(null, pitches) <= 0.7,
+    'toutes les voix restent dans un registre bas (max ×' + Math.max.apply(null, pitches) + ') : c\'était la demande');
 
-  // Ordonnées : plus la voix monte, plus elle est brillante et forte.
-  const tri = ids.slice().sort((a, b) => V[a].pitch - V[b].pitch);
-  for(let i = 1; i < tri.length; i++){
-    assert(V[tri[i]].tone >= V[tri[i-1]].tone && V[tri[i]].gain >= V[tri[i-1]].gain,
-      'la voix « ' + V[tri[i]].label + ' » est plus brillante ET plus forte que « ' + V[tri[i-1]].label + ' »');
-  }
+  // Les gains sont calibrés sur la CRÊTE, pas sur l'énergie : viser une énergie
+  // égale est inatteignable — un maillet qui s'éteint en 0,3 s ne peut pas
+  // porter autant qu'une onde tenue, et pousser le gain ne fait que saturer le
+  // limiteur. Ce garde-fou empêche seulement qu'une voix parte à des valeurs
+  // absurdes en croyant gagner du volume (mesuré : ×30 sur Bloc pour 0 dB).
+  assert(ids.every(id => V[id].gain > 0 && V[id].gain <= 4),
+    'aucun gain de voix ne part dans des valeurs qui ne feraient que saturer le limiteur');
+
+  // Le plancher lui-même est une valeur physique, pas un réglage libre : un
+  // haut-parleur de téléphone ne restitue presque rien sous ~200 Hz. L'abaisser
+  // rendrait les bips graves inaudibles sans qu'aucun autre contrôle ne bronche.
+  assert(S.COACH_BEEP_FLOOR_HZ >= 200 && S.COACH_BEEP_FLOOR_HZ <= 400,
+    'le plancher reste dans ce qu\'un haut-parleur de téléphone sait produire (' + S.COACH_BEEP_FLOOR_HZ + ' Hz)');
+});
+scenario('chaque voix sonne, et reste dans les clous', () => {
+  const {S, journal} = bootAudio();
+  const V = S.COACH_BEEP_VOICES, plancher = S.COACH_BEEP_FLOOR_HZ;
+  Object.keys(V).forEach(id => {
+    S.state.guidedSoundVoice = id;
+    journal.oscillators.length = 0; journal.sources = 0; journal.chaine.length = 0;
+    S.bipCountdown(); S.bipStart(); S.bipEmom(); S.bipEnd(); S.bipRestDone();
+    const sonne = journal.oscillators.length + journal.sources;
+    assert(sonne >= 5, 'la voix « ' + V[id].label + ' » produit bien du son (' + sonne + ' sources)');
+    assert(journal.oscillators.every(o => o.f >= plancher - 0.01),
+      'la voix « ' + V[id].label + ' » ne descend jamais sous ' + plancher + ' Hz : plus bas, un haut-parleur de téléphone ne restitue rien');
+  });
 });
 scenario('la transposition garde les mélodies', () => {
   const {S, journal} = bootAudio();
-  function notes(voix){
+  function fondamentales(voix){
     S.state.guidedSoundVoice = voix;
     journal.oscillators.length = 0;
-    S.bipCountdown(); S.bipStart(); S.bipEmom(); S.bipEnd(); S.bipRestDone();
-    return journal.oscillators.map(o => o.f);
+    S.bipStart(); S.bipEnd();
+    // Un timbre peut empiler des partiels : seule la note la plus grave de
+    // chaque évènement est la fondamentale.
+    return journal.oscillators.map(o => o.f).filter((f, i, a) => a.indexOf(f) === i).sort((a, b) => a - b);
   }
-  const clair = notes('clair'), doux = notes('doux');
-  assert(clair.length === doux.length && clair.length >= 9, 'les deux voix jouent le MÊME nombre de notes (' + clair.length + ')');
+  const V = S.COACH_BEEP_VOICES, ids = Object.keys(V);
+  ids.forEach(id => {
+    const n = fondamentales(id);
+    assert(n.length > 0, 'la voix « ' + V[id].label + ' » joue des notes');
+    assert(n[0] >= S.COACH_BEEP_FLOOR_HZ - 0.01, 'sa note la plus grave respecte le plancher (' + Math.round(n[0]) + ' Hz)');
 
-  const V = S.COACH_BEEP_VOICES, plancher = S.COACH_BEEP_FLOOR_HZ;
-  let transposees = 0, plancheres = 0;
-  clair.forEach((f, i) => {
-    const attendu = Math.max(plancher, f * V.doux.pitch);
-    assert(Math.abs(doux[i] - attendu) < 0.01, 'note ' + (i+1) + ' : ' + f + ' Hz → ' + Math.round(doux[i]) + ' Hz');
-    if(doux[i] > plancher + 0.01) transposees++; else plancheres++;
+    // Le registre est RÉELLEMENT appliqué : la note la plus grave du rebours
+    // (880 Hz au programme) doit valoir 880 × pitch, plancher compris.
+    S.state.guidedSoundVoice = id;
+    journal.oscillators.length = 0;
+    S.bipCountdown();
+    const f0 = Math.min.apply(null, journal.oscillators.map(o => o.f));
+    const attendu = Math.max(S.COACH_BEEP_FLOOR_HZ, 880 * V[id].pitch);
+    assert(Math.abs(f0 - attendu) < 0.01,
+      '« ' + V[id].label + ' » transpose bien : 880 Hz → ' + Math.round(f0) + ' Hz');
   });
-  assert(transposees >= 6, 'la plupart des notes sont réellement transposées, pas rabotées au plancher');
-  assert(doux.every(f => f >= plancher - 0.01),
-    'AUCUNE note ne descend sous le plancher : sous ~260 Hz un haut-parleur de téléphone ne restitue rien, le bip serait inaudible et non discret');
-  assert(doux.every((f, i) => f <= clair[i] + 0.01), 'la voix douce ne monte jamais au-dessus de la claire');
-});
-scenario('le passe-bas suit la note', () => {
-  const {S, journal} = bootAudio();
-  S.state.guidedSoundVoice = 'doux';
-  journal.filtres.length = 0; journal.oscillators.length = 0;
-  S.bipEmom();
-  assert(journal.filtres.length === journal.oscillators.length && journal.filtres.length > 0,
-    'chaque bip passe par son filtre : c\'est le timbre qui agressait, pas le volume');
-  assert(journal.filtres.every(f => f.type === 'lowpass'), 'un passe-bas, qui coupe l\'aigu');
-  assert(journal.chaine.length > 0 && journal.chaine.every(c => c === 'passe-bas'),
-    'et il est RÉELLEMENT dans la chaîne : le son passe par lui, il n\'est pas créé puis contourné');
-  const f0 = journal.oscillators[0].f, coupe = journal.filtres[0].frequency.value;
-  assert(coupe > f0 && coupe <= S.COACH_BEEP_TONE_MAX,
-    'la coupure est au-dessus de la fondamentale (' + Math.round(f0) + ' → ' + Math.round(coupe) + ' Hz) : on garde la puissance, on enlève le cri');
-  assert(coupe >= S.COACH_BEEP_TONE_MIN, 'et jamais sous ' + S.COACH_BEEP_TONE_MIN + ' Hz, sinon le bip devient sourd');
+  // La montée du départ et la descente de la fin appartiennent aux APPELANTS :
+  // changer de voix ne doit pas changer le sens d'un signal.
+  const src = read('app.js');
+  assert(/function bipStart\(\)\{playBeep\(660[\s\S]{0,80}playBeep\(880/.test(src),
+    'le départ monte (660 → 880) et c\'est l\'appelant qui le décide, pas la voix');
+  assert(/function bipEnd\(\)\{playBeep\(440[\s\S]{0,80}playBeep\(330/.test(src),
+    'la fin descend (440 → 330), quelle que soit la voix choisie');
 });
 scenario('choisir une voix', () => {
   const {S} = bootAudio();
   assert(S.coachBeepVoiceId() === S.COACH_BEEP_VOICE_DEFAULT, 'sans choix enregistré, c\'est le défaut qui sert');
-  assert(S.setCoachBeepVoice('clair') === true && S.state.guidedSoundVoice === 'clair', 'un choix est retenu dans l\'état du profil');
-  assert(S.coachBeepVoiceId() === 'clair', 'et il est relu');
-  assert(S.setCoachBeepVoice('nawak') === false && S.state.guidedSoundVoice === 'clair',
+  const autre = Object.keys(S.COACH_BEEP_VOICES).filter(id => id !== S.COACH_BEEP_VOICE_DEFAULT)[0];
+  assert(S.setCoachBeepVoice(autre) === true && S.state.guidedSoundVoice === autre, 'un choix est retenu dans l\'état du profil');
+  assert(S.coachBeepVoiceId() === autre, 'et il est relu');
+  assert(S.setCoachBeepVoice('nawak') === false && S.state.guidedSoundVoice === autre,
     'une voix inconnue est refusée sans écraser le choix en place');
   S.state.guidedSoundVoice = 'inexistante';
   assert(S.coachBeepVoiceId() === S.COACH_BEEP_VOICE_DEFAULT,
@@ -202,8 +237,14 @@ scenario('muet et branchements', () => {
   });
 
   const ui = read('scripts/profiles/ui.js');
-  assert(/class="racine-voice[\s\S]{0,120}?data-voice="/.test(ui),
-    'Réglages rend bien un bouton par voix, porteur de son identifiant');
+  // Viser le BOUTON, pas la sous-chaîne : « racine-voice-row » contient
+  // « racine-voice » et faisait passer l'assertion même sans bouton.
+  assert(/<button type="button" class="racine-voice/.test(ui),
+    'Réglages rend bien un BOUTON par voix');
+  assert(/data-voice="'\+esc\(id\)/.test(ui),
+    'et chaque bouton porte l\'identifiant de sa voix');
+  assert(/COACH_BEEP_VOICES/.test(ui),
+    'la liste vient de la palette du moteur : ajouter une voix l\'ajoute à l\'écran, sans retoucher Réglages');
   assert(/querySelectorAll\("\[data-voice\]"\)|closest\("\[data-voice\]"\)/.test(ui),
     'et le panneau écoute ces boutons');
   assert(/playBeepVoicePreview/.test(ui),

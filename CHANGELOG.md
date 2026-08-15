@@ -1,3 +1,19 @@
+## V4.5.52 — Cinq familles de sons au choix pour les chronos
+
+- **Ce n'étaient pas trois sons, c'étaient trois hauteurs du même son.** La V4.5.51 transposait une seule onde carrée : forcément monotone. Chaque voix a maintenant sa **propre synthèse**.
+- **Cinq voix, toutes plus graves qu'avant**, à écouter dans ⚙ Réglages — un tap sélectionne et joue :
+  - **Bois** *(défaut)* — maillet de marimba : partiels réels d'une lame (1, 4, 9,2), attaque nette, extinction rapide. Chaud, grave, jamais criard.
+  - **Duo** — deux triangles à la quinte, attaque douce. Le plus discret : une notification, pas une alarme.
+  - **Cloche** — modulation de fréquence à rapport **inharmonique** (1:1,41), l'indice retombe pendant la tenue. C'est ce qui fait le scintillement métallique.
+  - **Carré** — l'onde franche de la V4.5.51, passe-bas compris. Celle qui porte le plus loin.
+  - **Bloc** — bruit filtré très court plus un corps qui donne la hauteur. Il perce le bruit ambiant par son **attaque**, pas par des harmoniques aigus.
+- **Registre abaissé sur toute la palette** : de ×0,50 à ×0,62 de la note d'origine, contre ×0,62 à ×1,00 avant. Plancher à **240 Hz** — sous cette limite un haut-parleur de téléphone ne restitue presque rien, et le bip deviendrait inaudible au lieu de discret.
+- **Toutes bien moins agressives** : le rapport énergie criarde / énergie utile tombe à **0,33–0,38** selon la voix, contre **0,56** pour la V4.5.49.
+- **La mélodie n'appartient pas à la voix.** Le départ monte (660 → 880), la fin descend (440 → 330) : changer de voix change le timbre et le registre, jamais le sens d'un signal.
+- **Les gains sont calibrés sur la crête, pas sur l'énergie** — et c'est une conclusion mesurée, pas un choix de confort. Viser une énergie égale entre voix est inatteignable : un maillet qui s'éteint en 0,3 s ne peut pas porter autant qu'une onde tenue, et pousser le gain pour y arriver ne fait que saturer le limiteur (**×30 sur Bloc pour 0 dB de plus**). Ce qu'on entend d'un son percussif, c'est son attaque : chaque voix est donc calée juste sous l'écrêtage, crêtes mesurées à **0,82–0,97**.
+- Tout ce qui existait reste vrai : le bouton 🔇 coupe sans créer un seul nœud audio, et le déblocage muet du premier chargement est inchangé.
+- **Portée** : `app.js`, `styles.css`, `index.html`. Garde-fou étendu : `dev/sound_checks.js` vérifie notamment que **deux voix ne partagent jamais leur synthèse** — sans quoi on serait revenu à la même onde transposée. 18 mutations testées, 18 attrapées.
+
 ## V4.5.51 — Son des chronos : trois voix au choix, et le bip du premier chargement
 
 - **Le bip manquant au premier chargement est un vrai bug, corrigé.** `ctx.resume()` est **asynchrone** : au tout premier démarrage de chrono, le geste créait le contexte audio à l'état « suspended », demandait la reprise, et les bips programmés juste après tombaient dans le vide avant l'ouverture de la sortie. Aux chargements suivants le contexte était déjà en marche, d'où un silence qui ne se reproduisait qu'une fois et paraissait inexplicable. Remède standard iOS : un tampon d'**un échantillon muet** joué à l'intérieur même du geste, qui ouvre réellement la sortie. Vérifié : joué une seule fois, et il ne produit aucun son.

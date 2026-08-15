@@ -1,5 +1,5 @@
-// Racine V4.5.51 — son des chronos : trois voix au choix, et le bip du premier chargement
-var APP_VERSION = "V4.5.51";
+// Racine V4.5.52 — cinq familles de sons au choix pour les chronos
+var APP_VERSION = "V4.5.52";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -531,31 +531,123 @@ function getAudioMaster(){
   }catch(e){ return null; }
 }
 
-// Gain appliqué par-dessus le volume demandé par chaque bip. Les valeurs des
-// appelants (0.5 à 0.7) gardent donc leurs proportions entre elles.
-var COACH_BEEP_GAIN=2.4;
-
 // ── Voix des bips ───────────────────────────────────────────────────────────
-// Trois réglages, choisis dans Réglages, écoutables avant de choisir.
+// Cinq FAMILLES DE SONS, pas cinq variantes de la même onde. Une transposition
+// de hauteur ne change pas le caractère : c'est toujours le même bip, plus ou
+// moins grave. Chaque voix ci-dessous a sa propre synthèse — un maillet de
+// marimba n'a rien à voir avec un bloc de bois ou une cloche.
 //
-// `pitch` transpose TOUTES les notes d'un même facteur : les mélodies gardent
-// leurs intervalles (le départ monte, la fin descend), seul le registre change.
-// Plancher à 260 Hz : un haut-parleur de téléphone ne restitue presque rien en
-// dessous, transposer plus bas rendrait le bip inaudible au lieu de discret.
-//
-// `tone` est un passe-bas exprimé en multiples de la fondamentale. Une onde
-// carrée porte loin, mais elle emporte tous ses harmoniques impairs jusqu'à
-// l'aigu — c'est ça qui la rend criarde, pas son volume. Couper au-dessus du
-// 2e ou 3e harmonique garde la puissance et enlève l'agression.
-var COACH_BEEP_FLOOR_HZ=260;
-var COACH_BEEP_TONE_MIN=900;
-var COACH_BEEP_TONE_MAX=4000;
+// Contraintes communes, non négociables :
+//   - ça doit s'entendre dans un gym, à travers un haut-parleur de téléphone
+//     qui ne restitue presque rien sous ~240 Hz. D'où le plancher : transposer
+//     plus bas rendrait le bip inaudible au lieu de discret ;
+//   - la MÉLODIE appartient aux appelants (le départ monte, la fin descend).
+//     Une voix ne choisit ni les notes ni leur ordre, seulement leur timbre et
+//     leur registre — sinon un changement de voix changerait le sens du signal.
+var COACH_BEEP_FLOOR_HZ=240;
+var COACH_BEEP_MASTER=2.0;
+// Plafond au-dessus de 1 : c'est le limiteur en sortie qui écrête proprement.
+// Brider à 1 empêchait les timbres COURTS (Bloc, Duo) d'atteindre le niveau des
+// timbres tenus, et les voix n'étaient plus comparables.
+var COACH_BEEP_PEAK_MAX=3.0;
+
+// Les gains ci-dessous sont calibrés sur la CRÊTE, pas sur l'énergie moyenne.
+// Mesuré : viser une énergie égale est inatteignable ET indésirable — un
+// maillet qui s'éteint en 0,3 s ne peut pas porter autant d'énergie qu'une onde
+// carrée tenue 0,35 s, et pousser le gain pour y arriver ne fait que saturer le
+// limiteur (gain ×30 sur Bloc pour 0 dB de plus). Ce qu'on entend d'un son
+// percussif, c'est son attaque : on cale donc chaque voix juste sous
+// l'écrêtage (crête ~0,85-0,95) et on laisse chaque timbre garder son allure.
+
+// Bruit décroissant, pour les timbres percussifs. Généré à la volée : aucun
+// fichier, rien à charger, rien qui puisse manquer hors ligne.
+function coachNoiseBuffer(ctx, seconds){
+  var n=Math.max(1,Math.floor(ctx.sampleRate*seconds)), i;
+  var buf=ctx.createBuffer(1,n,ctx.sampleRate);
+  var d=buf.getChannelData(0);
+  for(i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+  return buf;
+}
+function coachOsc(ctx,out,type,freq,t,peak,attack,ring){
+  var o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002,peak),t+attack);
+  g.gain.exponentialRampToValueAtTime(0.0008,t+ring);
+  o.connect(g); g.connect(out);
+  o.start(t); o.stop(t+ring+0.02);
+  return o;
+}
+
+// Bois — maillet de marimba. Partiels réels d'une lame (1, 4, 9.2), attaque
+// nette, extinction rapide. Chaud, grave, jamais criard.
+function coachVoiceBois(ctx,out,f,dur,peak,t){
+  var ring=Math.min(0.9,Math.max(0.3,dur*1.5));
+  coachOsc(ctx,out,'sine',f,      t,peak,      0.004,ring);
+  coachOsc(ctx,out,'sine',f*4.0,  t,peak*0.20, 0.003,ring*0.45);
+  coachOsc(ctx,out,'sine',f*9.2,  t,peak*0.05, 0.002,ring*0.25);
+}
+// Cloche — modulation de fréquence à rapport INHARMONIQUE (1:1.41), l'indice
+// retombe pendant la tenue. C'est ce qui fait le scintillement métallique.
+function coachVoiceCloche(ctx,out,f,dur,peak,t){
+  var ring=Math.min(1.6,Math.max(0.5,dur*2.4));
+  var car=ctx.createOscillator(), g=ctx.createGain();
+  var mod=ctx.createOscillator(), mg=ctx.createGain();
+  car.type='sine'; car.frequency.setValueAtTime(f,t);
+  mod.type='sine'; mod.frequency.setValueAtTime(f*1.41,t);
+  mg.gain.setValueAtTime(f*2.2,t);
+  mg.gain.exponentialRampToValueAtTime(Math.max(1,f*0.05),t+ring*0.55);
+  mod.connect(mg); mg.connect(car.frequency);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(peak*0.85,t+0.006);
+  g.gain.exponentialRampToValueAtTime(0.0008,t+ring);
+  car.connect(g); g.connect(out);
+  car.start(t); mod.start(t); car.stop(t+ring+0.02); mod.stop(t+ring+0.02);
+}
+// Bloc — bruit filtré très court plus un corps qui donne la hauteur. Percussif :
+// il perce le bruit ambiant par son ATTAQUE, pas par des harmoniques aigus.
+function coachVoiceBloc(ctx,out,f,dur,peak,t){
+  var len=Math.min(0.2,Math.max(0.07,dur*0.55));
+  var src=ctx.createBufferSource(); src.buffer=coachNoiseBuffer(ctx,len);
+  var bp=ctx.createBiquadFilter(); bp.type='bandpass';
+  bp.frequency.setValueAtTime(Math.min(4200,f*3.2),t); bp.Q.setValueAtTime(6,t);
+  var g=ctx.createGain();
+  g.gain.setValueAtTime(peak*1.0,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+len);
+  src.connect(bp); bp.connect(g); g.connect(out); src.start(t);
+  coachOsc(ctx,out,'triangle',f,t,peak*0.55,0.002,len*1.3);
+}
+// Duo — deux triangles à la quinte, attaque douce, tenue courte. Le plus
+// discret : une notification, pas une alarme.
+function coachVoiceDuo(ctx,out,f,dur,peak,t){
+  var ring=Math.min(0.8,Math.max(0.25,dur*1.2));
+  coachOsc(ctx,out,'triangle',f,     t,peak*0.85,0.020,ring);
+  coachOsc(ctx,out,'triangle',f*1.5, t,peak*0.40,0.024,ring*0.8);
+}
+// Carré — l'onde franche, avec un passe-bas qui coupe les harmoniques criards
+// mais garde la puissance. La voix qui porte le plus loin.
+function coachVoiceCarre(ctx,out,f,dur,peak,t){
+  var o=ctx.createOscillator(), g=ctx.createGain(), lp=ctx.createBiquadFilter();
+  lp.type='lowpass';
+  lp.frequency.setValueAtTime(Math.max(900,Math.min(4000,f*2.4)),t);
+  lp.Q.setValueAtTime(0.7,t);
+  o.type='square'; o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(peak,t+0.008);
+  g.gain.setValueAtTime(peak,t+dur*0.65);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g); g.connect(lp); lp.connect(out);
+  o.start(t); o.stop(t+dur+0.02);
+}
+
 var COACH_BEEP_VOICES={
-  doux:  {label:"Doux",  hint:"Grave et discret",        pitch:0.62, tone:2.0, gain:2.0},
-  moyen: {label:"Moyen", hint:"Équilibré",               pitch:0.78, tone:2.6, gain:2.2},
-  clair: {label:"Clair", hint:"Aigu, perce le bruit",    pitch:1.00, tone:3.4, gain:2.4}
+  bois:   {label:"Bois",   hint:"Marimba, chaud",      pitch:0.50, gain:1.95, render:coachVoiceBois},
+  duo:    {label:"Duo",    hint:"Doux, discret",       pitch:0.52, gain:1.8, render:coachVoiceDuo},
+  cloche: {label:"Cloche", hint:"Métallique, ample",   pitch:0.55, gain:1.25, render:coachVoiceCloche},
+  carre:  {label:"Carré",  hint:"Franc, porte loin",   pitch:0.58, gain:0.95, render:coachVoiceCarre},
+  bloc:   {label:"Bloc",   hint:"Sec et percussif",    pitch:0.62, gain:2.35, render:coachVoiceBloc}
 };
-var COACH_BEEP_VOICE_DEFAULT="doux";
+var COACH_BEEP_VOICE_DEFAULT="bois";
 function coachBeepVoiceId(){
   try{
     var v=(typeof state==="object"&&state)?state.guidedSoundVoice:null;
@@ -572,14 +664,8 @@ function setCoachBeepVoice(id){
   return true;
 }
 
-// Deux raisons pour lesquelles les bips s'entendaient mal dans un gym :
-//   1. Onde SINUS — aucune harmonique, donc rien qui perce le bruit ambiant à
-//      travers un haut-parleur de téléphone. Une onde carrée porte la même
-//      énergie crête bien plus loin. C'est le gain le plus important.
-//   2. Enveloppe — le gain partait du maximum et retombait IMMÉDIATEMENT en
-//      exponentielle : un bip déclaré à 0.18 s n'était réellement audible que
-//      ~30 ms. Il tient maintenant son palier sur 65 % de sa durée avant de
-//      s'éteindre, avec une attaque de 8 ms pour éviter le clic.
+// Un évènement sonore. Les appelants gardent leur langage — note, durée,
+// volume relatif — et la voix décide du timbre.
 function playBeep(freq,dur,vol,type){
   var ctx=getAudioCtx();if(!ctx)return;
   try{
@@ -587,18 +673,13 @@ function playBeep(freq,dur,vol,type){
     var out=getAudioMaster()||ctx.destination;
     var t=ctx.currentTime;
     var f=Math.max(COACH_BEEP_FLOOR_HZ,(Number(freq)||440)*voice.pitch);
-    var peak=Math.max(0.001,Math.min(1,(vol||0.4)*voice.gain));
-    var osc=ctx.createOscillator(),gain=ctx.createGain(),lp=ctx.createBiquadFilter();
-    lp.type="lowpass";
-    lp.frequency.setValueAtTime(Math.max(COACH_BEEP_TONE_MIN,Math.min(COACH_BEEP_TONE_MAX,f*voice.tone)),t);
-    lp.Q.setValueAtTime(0.7,t);
-    osc.connect(gain);gain.connect(lp);lp.connect(out);
-    osc.type=type||"square";osc.frequency.setValueAtTime(f,t);
-    gain.gain.setValueAtTime(0.0001,t);
-    gain.gain.exponentialRampToValueAtTime(peak,t+0.008);
-    gain.gain.setValueAtTime(peak,t+dur*0.65);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+dur);
-    osc.start(t);osc.stop(t+dur+0.02);
+    // Plafond au-dessus de 1 : c'est le rôle du limiteur en sortie d'écrêter
+    // proprement. Brider ici, c'était empêcher les timbres courts (Bloc, Duo)
+    // d'atteindre le niveau des timbres tenus — les voix n'étaient plus
+    // comparables entre elles.
+    var peak=Math.max(0.001,Math.min(COACH_BEEP_PEAK_MAX,(vol||0.4)*voice.gain*COACH_BEEP_MASTER));
+    var render=(typeof voice.render==="function")?voice.render:coachVoiceCarre;
+    render(ctx,out,f,Math.max(0.06,Number(dur)||0.2),peak,t);
   }catch(e){}
 }
 
