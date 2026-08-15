@@ -1,5 +1,5 @@
-// Racine V4.5.53 — quatre cloches de temple pour les chronos
-var APP_VERSION = "V4.5.53";
+// Racine V4.5.54 — quatre gongs pour les chronos
+var APP_VERSION = "V4.5.54";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -688,6 +688,112 @@ function coachVoiceCloche(ctx,out,f,dur,peak,t){
   car.connect(g); g.connect(out);
   car.start(t); mod.start(t); car.stop(t+ring+0.02); mod.stop(t+ring+0.02);
 }
+// ── Gongs ───────────────────────────────────────────────────────────────────
+// Un gong n'est pas une grosse cloche. Trois choses l'en séparent, et la
+// troisième est celle qu'on entend en premier :
+//   1. un spectre DENSE et inharmonique — huit à dix modes aux rapports
+//      irréguliers, là où une cloche en a trois ou quatre ;
+//   2. une frappe de MAILLET : un bruit court et sourd au moment de l'impact,
+//      avant que les modes ne s'installent ;
+//   3. le GONFLEMENT. Dans un disque de bronze mince, la frappe met en
+//      mouvement les modes graves, qui transfèrent ensuite leur énergie aux
+//      modes aigus : le son ENFLE pendant quelques centaines de millisecondes
+//      avant de retomber. C'est ce déferlement montant qu'on reconnaît, et
+//      aucune cloche ne le fait — ses partiels aigus sont au maximum dès
+//      l'attaque et ne font que décroître.
+function coachGongPartials(ctx,out,f,peak,t,ring,partials,attack){
+  partials.forEach(function(p){
+    var ratio=p[0], niveau=p[1], duree=ring*(p[2]||1), desaccord=p[3]||0, gonflement=p[4]||0;
+    var o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(f*ratio*(1+desaccord),t);
+    var cible=Math.max(0.0002,peak*niveau);
+    g.gain.setValueAtTime(0.0001,t);
+    if(gonflement>0){
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,cible*0.08),t+attack);
+      g.gain.exponentialRampToValueAtTime(cible,t+attack+gonflement);
+    } else {
+      g.gain.exponentialRampToValueAtTime(cible,t+attack);
+    }
+    g.gain.exponentialRampToValueAtTime(0.0006,t+duree);
+    o.connect(g); g.connect(out);
+    o.start(t); o.stop(t+duree+0.03);
+  });
+}
+// Le coup de maillet : bruit sourd et bref, passé au grave. Sans lui, les modes
+// apparaissent de nulle part et on entend un synthé, pas un objet frappé.
+function coachGongFrappe(ctx,out,f,peak,t,duree){
+  var src=ctx.createBufferSource(); src.buffer=coachNoiseBuffer(ctx,duree);
+  var lp=ctx.createBiquadFilter(); lp.type='lowpass';
+  lp.frequency.setValueAtTime(Math.min(1400,f*3.5),t); lp.Q.setValueAtTime(0.6,t);
+  var g=ctx.createGain();
+  g.gain.setValueAtTime(peak*0.55,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+duree);
+  src.connect(lp); lp.connect(g); g.connect(out); src.start(t);
+}
+
+// Gong — le gong chinois à bosse (chau). Hauteur nette, gonflement franc,
+// longue traîne. Le gong « de référence ».
+function coachVoiceGong(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,8,1.4,4.0);
+  coachGongFrappe(ctx,out,f,peak,t,0.05);
+  coachGongPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 1.00, 1.00, 0     , 0    ],
+    [1.00, 0.60, 0.95, 0.004 , 0    ],
+    [2.32, 0.50, 0.62, 0     , 0.22 ],
+    [3.45, 0.38, 0.50, 0.003 , 0.32 ],
+    [4.90, 0.26, 0.40, 0     , 0.42 ],
+    [6.70, 0.16, 0.30, 0.002 , 0.50 ],
+    [8.40, 0.10, 0.24, 0     , 0.56 ]
+  ],0.018);
+}
+// Tam-tam — le grand disque plat, sans hauteur définie. Spectre le plus dense
+// de la palette et gonflement le plus long : ça déferle plus que ça ne sonne.
+function coachVoiceTamtam(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,11,1.8,5.0);
+  coachGongFrappe(ctx,out,f,peak,t,0.07);
+  coachGongPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 0.80, 1.00, 0     , 0    ],
+    [1.41, 0.70, 0.92, 0.005 , 0.10 ],
+    [2.11, 0.60, 0.78, 0     , 0.30 ],
+    [2.93, 0.52, 0.66, 0.004 , 0.42 ],
+    [3.77, 0.45, 0.55, 0     , 0.52 ],
+    [5.13, 0.34, 0.44, 0.003 , 0.60 ],
+    [6.62, 0.26, 0.35, 0     , 0.68 ],
+    [8.31, 0.18, 0.28, 0.002 , 0.74 ],
+    [10.70,0.12, 0.22, 0     , 0.80 ]
+  ],0.022);
+}
+// Dora — le gong japonais qu'on entend au début d'un combat. Plus court et plus
+// décidé que le tam-tam : le gonflement arrive vite, la traîne est nette.
+function coachVoiceDora(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,7,1.2,3.0);
+  coachGongFrappe(ctx,out,f,peak,t,0.04);
+  coachGongPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 1.00, 1.00, 0     , 0    ],
+    [1.00, 0.55, 0.90, 0.0035, 0    ],
+    [2.05, 0.62, 0.58, 0     , 0.12 ],
+    [3.12, 0.44, 0.44, 0.003 , 0.18 ],
+    [4.28, 0.28, 0.34, 0     , 0.24 ],
+    [5.95, 0.16, 0.26, 0     , 0.30 ]
+  ],0.014);
+}
+// Massue — le plus gros et le plus lent. Fondamentale au plancher, gonflement
+// étiré sur près d'une seconde, traîne de cinq secondes. Le coup qui ouvre.
+function coachVoiceMassue(ctx,out,f,dur,peak,t){
+  var ring=coachBellRing(dur,13,2.2,5.5);
+  coachGongFrappe(ctx,out,f,peak,t,0.10);
+  coachGongPartials(ctx,out,f,peak,t,ring,[
+    [1.00, 1.00, 1.00, 0     , 0    ],
+    [1.00, 0.70, 0.96, 0.0028, 0    ],
+    [1.87, 0.55, 0.80, 0     , 0.35 ],
+    [2.74, 0.44, 0.66, 0.0035, 0.50 ],
+    [3.91, 0.34, 0.52, 0     , 0.65 ],
+    [5.42, 0.22, 0.40, 0.0025, 0.80 ],
+    [7.30, 0.13, 0.30, 0     , 0.92 ]
+  ],0.026);
+}
+
 // Bloc — bruit filtré très court plus un corps qui donne la hauteur. Percussif :
 // il perce le bruit ambiant par son ATTAQUE, pas par des harmoniques aigus.
 function coachVoiceBloc(ctx,out,f,dur,peak,t){
@@ -726,10 +832,14 @@ function coachVoiceCarre(ctx,out,f,dur,peak,t){
 
 var COACH_BEEP_VOICES={
   bol:     {label:"Bol",     hint:"Bol chantant tibétain", pitch:0.40, gain:1.60, render:coachVoiceBol},
-  temple:  {label:"Temple",  hint:"Cloche de temple",      pitch:0.42, gain:1.55, render:coachVoiceTemple},
+  temple:  {label:"Temple",  hint:"Cloche de temple",      pitch:0.42, gain:1.42, render:coachVoiceTemple},
   rin:     {label:"Rin",     hint:"Bol de méditation",     pitch:0.46, gain:1.35, render:coachVoiceRin},
   tingsha: {label:"Tingsha", hint:"Cymbales, très long",   pitch:0.48, gain:1.40, render:coachVoiceTingsha},
   cloche:  {label:"Cloche",  hint:"Métallique, synthé",    pitch:0.55, gain:1.25, render:coachVoiceCloche},
+  gong:    {label:"Gong",    hint:"Gong chinois, ample",   pitch:0.42, gain:1.50, render:coachVoiceGong},
+  dora:    {label:"Dora",    hint:"Début de combat",       pitch:0.45, gain:1.55, render:coachVoiceDora},
+  tamtam:  {label:"Tam-tam", hint:"Déferlante, sans note", pitch:0.40, gain:1.28, render:coachVoiceTamtam},
+  massue:  {label:"Massue",  hint:"Énorme et lent",        pitch:0.38, gain:1.45, render:coachVoiceMassue},
   bois:    {label:"Bois",    hint:"Marimba, chaud",        pitch:0.50, gain:1.95, render:coachVoiceBois},
   carre:   {label:"Carré",   hint:"Franc, porte loin",     pitch:0.58, gain:0.95, render:coachVoiceCarre}
 };

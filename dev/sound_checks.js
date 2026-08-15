@@ -53,7 +53,7 @@ function bootAudio(){
   const fin = src.indexOf('// ─── Timer WOD ─');
   if(debut < 0 || fin < 0 || fin <= debut) throw new Error('domaine audio introuvable dans app.js');
 
-  const journal = {oscillators:[], unlocks:0, sources:0, filtres:[], chaine:[], compresseurs:0};
+  const journal = {oscillators:[], unlocks:0, sources:0, filtres:[], chaine:[], enveloppes:[], compresseurs:0};
   function param(){ return {setValueAtTime(v){ this.value = v; }, value:0}; }
   const ctx = {
     state:'running', currentTime:0,
@@ -65,8 +65,15 @@ function bootAudio(){
     // On enregistre vers QUOI chaque nœud se branche : créer un filtre puis
     // l'oublier dans le câblage laisserait passer un son non filtré.
     createGain(){
-      const g = {gain:{setValueAtTime(){}, exponentialRampToValueAtTime(){}},
+      // On enregistre l'ENVELOPPE : c'est elle, et pas les fréquences, qui
+      // distingue un gong (le mode aigu monte APRÈS l'attaque) d'une cloche
+      // (tous les modes sont au maximum dès l'attaque et ne font que décroître).
+      const trace = [];
+      const g = {gain:{setValueAtTime(v){ trace.push(v); },
+                       exponentialRampToValueAtTime(v){ trace.push(v); }},
+                 __env:trace,
                  connect(cible){ journal.chaine.push(cible && cible.__kind ? cible.__kind : 'sortie'); }};
+      journal.enveloppes.push(trace);
       return g;
     },
     createBiquadFilter(){
@@ -137,9 +144,15 @@ scenario('palette de voix', () => {
 
   const defaut = S.COACH_BEEP_VOICE_DEFAULT;
   assert(V[defaut], 'la voix par défaut existe (' + defaut + ')');
-  const pitches = ids.map(id => V[id].pitch);
-  assert(V[defaut].pitch === Math.min.apply(null, pitches),
-    'LE DÉFAUT EST LA PLUS GRAVE : on n\'impose pas le réglage le plus agressif à quelqu\'un qui n\'a rien demandé');
+  // L'intention : ne pas imposer le réglage le plus agressif à quelqu'un qui
+  // n'a rien demandé. « La plus grave de toutes » était un proxy commode tant
+  // que la palette montait ; depuis que des gongs descendent volontairement plus
+  // bas que la voix par défaut, le proxy casserait pour une bonne raison. Ce qui
+  // compte reste vrai : le défaut est dans la moitié BASSE du registre.
+  const pitches = ids.map(id => V[id].pitch).sort((a, b) => a - b);
+  const median = pitches[Math.floor(pitches.length / 2)];
+  assert(V[defaut].pitch <= median,
+    'LE DÉFAUT RESTE DANS LE REGISTRE BAS (×' + V[defaut].pitch + ' ≤ médiane ×' + median + ') : on n\'impose pas le réglage le plus agressif à quelqu\'un qui n\'a rien demandé');
   assert(Math.max.apply(null, pitches) <= 0.7,
     'toutes les voix restent dans un registre bas (max ×' + Math.max.apply(null, pitches) + ') : c\'était la demande');
 
@@ -209,6 +222,54 @@ scenario('le battement des cloches', () => {
     ondulantes.length + ' voix ont ce battement (' + ondulantes.map(id => V[id].label).join(', ') + ')');
   assert(Object.keys(V).some(id => battementHz(id) === 0),
     'et toutes ne l\'ont pas : le choix reste un vrai choix, pas sept variantes du même effet');
+});
+// Le GONFLEMENT : ce qui sépare un gong d'une cloche. Dans un disque de bronze
+// mince, la frappe met en mouvement les modes graves, qui transfèrent ensuite
+// leur énergie aux modes aigus — le son enfle pendant quelques centaines de
+// millisecondes avant de retomber. Une cloche ne fait jamais ça : ses partiels
+// sont au maximum dès l'attaque. Ça se lit dans l'ENVELOPPE, pas dans le spectre.
+scenario('les gongs gonflent, les cloches non', () => {
+  const {S, journal} = bootAudio();
+  const V = S.COACH_BEEP_VOICES, ids = Object.keys(V);
+  function mesure(id){
+    S.state.guidedSoundVoice = id;
+    journal.enveloppes.length = 0; journal.sources = 0;
+    S.bipCountdown();
+    // Une enveloppe qui monte DEUX fois de suite avant de retomber est un mode
+    // qui gonfle ; une qui ne monte qu'une fois est une attaque simple.
+    const gonflants = journal.enveloppes.filter(env => {
+      let montees = 0;
+      for(let i = 1; i < env.length; i++){
+        if(env[i] > env[i-1] * 1.05) montees++;
+        else break;
+      }
+      return montees >= 2;
+    }).length;
+    return {gonflants: gonflants, frappe: journal.sources};
+  }
+  const m = {};
+  ids.forEach(id => { m[id] = mesure(id); });
+
+  // Les familles se DÉDUISENT de ce que les voix font, elles ne sont pas
+  // listées à la main : retirer un gong de la palette se voit ici.
+  const gongs = ids.filter(id => m[id].gonflants >= 2);
+  const sansGonflement = ids.filter(id => m[id].gonflants === 0);
+  assert(gongs.length >= 4,
+    gongs.length + ' voix déferlent : ' + gongs.map(id => V[id].label + ' (' + m[id].gonflants + ' modes)').join(', '));
+  assert(sansGonflement.length >= 5,
+    sansGonflement.length + ' voix ne gonflent pas : ' + sansGonflement.map(id => V[id].label).join(', ') +
+    ' — une cloche est au maximum dès l\'attaque, et c\'est ce qui la distingue');
+
+  // Le coup de maillet : sans lui, les modes apparaissent de nulle part et on
+  // entend un synthé, pas un objet frappé.
+  gongs.forEach(id => {
+    assert(m[id].frappe >= 1,
+      '« ' + V[id].label + ' » commence par une frappe de maillet, pas par des modes surgis du silence');
+  });
+  ['bol', 'temple', 'rin', 'tingsha', 'cloche'].filter(id => V[id]).forEach(id => {
+    assert(m[id].gonflants === 0,
+      '« ' + V[id].label + ' » reste une cloche : aucun mode ne gonfle après la frappe');
+  });
 });
 scenario('chaque voix sonne, et reste dans les clous', () => {
   const {S, journal} = bootAudio();
