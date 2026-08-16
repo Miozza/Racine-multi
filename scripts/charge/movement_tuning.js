@@ -120,6 +120,36 @@
         repsOvershoot: { minExtra: 2, shift: 1 }
       }
     },
+    // coachAggressivenessFactor() / coachObservedAggressiveness() — scaling.js
+    // La vitesse de progression etait DECLAREE par l'athlete (curseur libre
+    // 0,4-1,8) alors que Brain la MESURE deja, mouvement par mouvement :
+    // `ambition` monte quand les predictions se revelent trop prudentes,
+    // descend quand elles se revelent trop ambitieuses. Deux notions de la
+    // meme chose, qui ne se parlaient pas.
+    //
+    // Desormais : le moteur mesure, le profil incline. Le curseur ne choisit
+    // plus la vitesse, il choisit un BIAIS sur la vitesse observee.
+    progressionSpeed: {
+      // Trois positions declarables. Un profil existant porte un nombre libre
+      // dans [0,4 ; 1,8] : il est ramene A LA LECTURE a la position la plus
+      // proche — aucune reecriture du stockage, donc aucune migration.
+      bias: {
+        prudent:   0.75,
+        normal:    1.00,
+        ambitieux: 1.20
+      },
+      defaultBias: 'normal',
+      // Traduction de l'ambition mesuree par Brain en facteur de saut.
+      // center    : valeur neutre d'`ambition` (cf. brain_memory.js)
+      // span      : demi-amplitude d'`ambition` autour du centre
+      // amplitude : ecart de facteur atteint aux bornes de `span`
+      // minObservations : nombre de predictions testees avant de faire
+      //   pleinement confiance a la mesure. En dessous, le facteur est tire
+      //   vers 1 au prorata — on ne deduit pas une vitesse de deux seances.
+      observed: { center: 0.60, span: 0.35, amplitude: 0.30, minObservations: 6 },
+      // Bornes finales, inchangees depuis l'origine.
+      clamp: { min: 0.4, max: 1.8 }
+    },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },
     // updateAthleteStateFromResults() — suggestion.js

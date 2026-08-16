@@ -194,6 +194,37 @@ Le barreau RPE 8 vaut zéro cran : par défaut, un **maintien annoncé** — pas
 zone morte silencieuse d'avant, où 7,5 progressait, 8,5 freinait et 8 ne faisait
 rien sans jamais le dire. Une tendance qui s'allège peut le promouvoir à un cran.
 
+#### Vitesse de progression — mesurée, pas déclarée (depuis V4.5.58)
+
+La vitesse de progression **ne se déclare plus**. Elle se mesure, parce que le
+moteur l'observe déjà : Brain tient une `ambition` par mouvement et intention,
+qui monte quand ses prédictions se révèlent trop prudentes et descend quand elles
+se révèlent trop ambitieuses. Un curseur libre qui ignorait cette mesure était un
+second avis sur la même question.
+
+```txt
+facteur de saut = vitesse MESURÉE  ×  biais DÉCLARÉ
+```
+
+- **Mesurée** — `coachObservedAggressiveness(label)` agrège l'`ambition` de toutes
+  les intentions du mouvement, pondérée par le nombre de prédictions testées. En
+  dessous de `minObservations`, le facteur est tiré vers 1 au prorata : **on ne
+  déduit pas une vitesse de deux séances**, et sans aucune observation il vaut
+  exactement 1 — jamais de vitesse inventée.
+- **Déclaré** — trois positions seulement : `prudent` · `normal` · `ambitieux`.
+  Le choix n'est plus « à quelle vitesse je progresse » mais « penche plutôt d'un
+  côté ou de l'autre de ce que tu observes ».
+
+Deux invariants :
+
+- Un profil antérieur porte un nombre libre dans [0,4 ; 1,8]. Il est ramené **à la
+  lecture** à la position la plus proche. Le stockage n'est jamais réécrit, donc
+  **aucune migration** n'est requise et un export ancien reste importable.
+- Les bornes finales [0,4 ; 1,8] s'appliquent au **produit**, inchangées.
+
+Tout réglage de cette traduction vit dans `progressionSpeed`
+(`scripts/charge/movement_tuning.js`), jamais en dur dans une fonction.
+
 ## Garde-fous obligatoires
 
 Avant une release qui touche aux charges, exécuter :

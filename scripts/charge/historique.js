@@ -260,7 +260,7 @@ function coachMaxJumpForExercise(label,lastLoad){
   if(base===null){
     base=isIsolationMovement(label)?(coachLoadStepForExercise(label,lastLoad||'')||5):T.default;
   }
-  var factor=(typeof coachAggressivenessFactor==='function')?coachAggressivenessFactor():1;
+  var factor=(typeof coachAggressivenessFactor==='function')?coachAggressivenessFactor(label):1;
   if(factor===1)return base;
   var step=coachLoadStepForExercise(label,lastLoad||'')||5;
   var scaled=Math.round((base*factor)/step)*step;

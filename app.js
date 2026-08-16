@@ -1,5 +1,5 @@
-// Racine V4.5.57 — le RPE lit la tendance, plus seulement la derniere seance
-var APP_VERSION = "V4.5.57";
+// Racine V4.5.58 — la vitesse de progression est mesuree, plus declaree
+var APP_VERSION = "V4.5.58";
 
 // Architecture stable
 // programs/*.js = plan prévu

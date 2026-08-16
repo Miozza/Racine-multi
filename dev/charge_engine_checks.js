@@ -376,12 +376,68 @@ try {
   const scaledSquat = ctx.coachApplyUserLoadScale('Back Squat', 100);
   assert(scaledSquat < 100 && scaledSquat > 0, 'Back Squat scale a la baisse avec un ratio de 0.8.');
 
-  // 13d. Agressivite de progression : bornee entre 0.4 et 1.8.
-  ctx.state.profile = { aggressiveness: 5 };
-  assert(ctx.coachAggressivenessFactor() === 1.8, 'L agressivite de progression est plafonnee a 1.8.');
-  ctx.state.profile = { aggressiveness: 0.01 };
-  assert(ctx.coachAggressivenessFactor() === 0.4, 'L agressivite de progression est plancher a 0.4.');
-  ctx.state.profile = null;
+  // 13d. Vitesse de progression (V4.5.58) : MESUREE par le moteur, inclinee
+  // par le profil. Le curseur libre 0,4-1,8 est remplace par trois positions ;
+  // une valeur heritee hors de ces positions est ramenee A LA LECTURE, sans
+  // reecriture du stockage (donc sans migration).
+  {
+    const BIAS = ctx.COACH_MOVEMENT_TUNING.progressionSpeed.bias;
+    const MEM = ctx.CoachBrainMemory;
+
+    // Valeurs heritees : rapprochees de la position la plus proche.
+    ctx.state.profile = { aggressiveness: 5 };
+    assert(ctx.coachProgressionBias() === BIAS.ambitieux, 'Valeur heritee 5 ramenee a la position ambitieuse.');
+    ctx.state.profile = { aggressiveness: 0.01 };
+    assert(ctx.coachProgressionBias() === BIAS.prudent, 'Valeur heritee 0.01 ramenee a la position prudente.');
+    ctx.state.profile = { aggressiveness: 0.95 };
+    assert(ctx.coachProgressionBias() === BIAS.normal, 'Valeur heritee 0.95 ramenee a la position normale.');
+
+    // Sans mesure, le declare est tout ce qui existe.
+    MEM.clear();
+    ctx.state.profile = { aggressiveness: BIAS.normal };
+    assert(ctx.coachObservedAggressiveness('Back Squat') === 1, 'Aucune observation : aucune vitesse inventee, facteur neutre.');
+    assert(ctx.coachAggressivenessFactor('Back Squat') === BIAS.normal, 'Sans mesure, le facteur vaut le biais declare.');
+
+    // Avec de la mesure, c est elle qui pilote.
+    function seedAmbition(ambition, tested){
+      MEM.clear();
+      const mem = MEM.read();
+      mem.profiles[ctx.coachNormalizeMoveText('Back Squat') + '::strength'] =
+        { label:'Back Squat', intent:'strength', ambition:ambition, testedPredictions:tested };
+      MEM.write(mem);
+    }
+    seedAmbition(0.95, 12);
+    const mesureHaute = ctx.coachAggressivenessFactor('Back Squat');
+    seedAmbition(0.25, 12);
+    const mesureBasse = ctx.coachAggressivenessFactor('Back Squat');
+    assert(mesureHaute > 1 && mesureBasse < 1 && mesureHaute > mesureBasse,
+      'La mesure pilote : ambition haute accelere, ambition basse ralentit (' + mesureBasse.toFixed(2) + ' < 1 < ' + mesureHaute.toFixed(2) + ').');
+
+    // Deux seances ne definissent pas une vitesse : la mesure est ponderee.
+    seedAmbition(0.95, 1);
+    const peuDeVolume = ctx.coachAggressivenessFactor('Back Squat');
+    seedAmbition(0.95, 12);
+    assert(peuDeVolume < ctx.coachAggressivenessFactor('Back Squat'),
+      'Volume faible : la mesure est tiree vers le neutre plutot qu affirmee.');
+
+    // Le biais incline la mesure, il ne la remplace pas.
+    seedAmbition(0.95, 12);
+    ctx.state.profile = { aggressiveness: BIAS.prudent };
+    const prudentMesure = ctx.coachAggressivenessFactor('Back Squat');
+    ctx.state.profile = { aggressiveness: BIAS.ambitieux };
+    assert(prudentMesure < ctx.coachAggressivenessFactor('Back Squat'),
+      'A mesure egale, la position prudente reste sous la position ambitieuse.');
+
+    // Les bornes finales tiennent toujours.
+    seedAmbition(0.95, 999);
+    ctx.state.profile = { aggressiveness: BIAS.ambitieux };
+    const f = ctx.coachAggressivenessFactor('Back Squat');
+    assert(f >= 0.4 && f <= 1.8, 'Le facteur final reste borne entre 0.4 et 1.8 (' + f.toFixed(2) + ').');
+
+    MEM.clear();
+    ctx.state.profile = null;
+    assert(ctx.coachAggressivenessFactor('Back Squat') === 1, 'Sans profil ni mesure, la vitesse reste neutre.');
+  }
 
 
 

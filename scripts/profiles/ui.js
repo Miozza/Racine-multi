@@ -400,11 +400,38 @@
   }
 
   // ── Écran : mouvements calculés (estimation dérivée, ajustable) ─────────
+  // Les trois positions declarables. Autorite : COACH_MOVEMENT_TUNING
+  // .progressionSpeed.bias — ne pas dupliquer les valeurs ici.
+  function progressionBiasLevels(){
+    var T = (window.COACH_MOVEMENT_TUNING||{}).progressionSpeed;
+    return (T && T.bias) || {prudent:0.75, normal:1.00, ambitieux:1.20};
+  }
+  var BIAS_LABELS = {
+    prudent:   {title:"Prudent",   hint:"Des sauts plus petits que ce que ton historique autoriserait."},
+    normal:    {title:"Normal",    hint:"Le moteur suit ce qu'il mesure sur ton historique."},
+    ambitieux: {title:"Ambitieux", hint:"Des sauts un peu plus francs quand tes séances sont faciles."}
+  };
+  // Position la plus proche de la valeur stockee : un profil anterieur porte
+  // un nombre libre, on le rapproche sans reecrire son stockage.
+  function progressionBiasKey(v){
+    var levels = progressionBiasLevels(), n = Number(v);
+    if(!n || isNaN(n)) return "normal";
+    var best = "normal", gap = Infinity;
+    Object.keys(levels).forEach(function(k){
+      var d = Math.abs(Number(levels[k]) - n);
+      if(d < gap){ gap = d; best = k; }
+    });
+    return best;
+  }
   function aggressivenessLabel(v){
-    if(v < 0.8) return "Conservateur";
-    if(v < 1.1) return "Modéré";
-    if(v < 1.35) return "Agressif";
-    return "Très agressif";
+    return (BIAS_LABELS[progressionBiasKey(v)]||BIAS_LABELS.normal).title;
+  }
+  function progressionBiasOptionsHtml(v){
+    var levels = progressionBiasLevels(), current = progressionBiasKey(v);
+    return ["prudent","normal","ambitieux"].filter(function(k){ return levels[k]!==undefined; })
+      .map(function(k){
+        return '<option value="'+levels[k]+'"'+(k===current?' selected':'')+'>'+esc(BIAS_LABELS[k].title)+'</option>';
+      }).join("");
   }
 
   // Saut de charge type (lb) pour un mouvement principal à la barre, pour le
@@ -434,7 +461,7 @@
     return candidates.map(function(c){
       var start = c.start!==undefined ? c.start : vals[c.key];
       var weeks = projectWeeks(start, jump, 3);
-      return esc(c.label)+" : "+start+" lb → "+weeks.join(" → ")+" lb sur 3 semaines de séances faciles (RPE ≤ 7)";
+      return esc(c.label)+" : "+start+" lb → "+weeks.join(" → ")+" lb sur 3 semaines de séances faciles (RPE ≤ 7). Point de départ seulement — le moteur ajustera cette vitesse d'après tes résultats réels.";
     }).join("<br>");
   }
 
@@ -521,18 +548,16 @@
         '<div class="racine-gate-eyebrow">Dernière étape</div>'+
         stepDots(WIZARD_STEPS.length, wizStepIndex())+
         '<div class="racine-gate-title">Vitesse de progression</div>'+
-        '<div class="racine-gate-sub">Ce réglage contrôle la taille des sauts de charge proposés quand tes séances sont faciles. Les freins de sécurité (RPE élevé, échecs) restent actifs peu importe ce réglage.</div>'+
+        '<div class="racine-gate-sub">Le moteur mesure lui-même ta vitesse de progression au fil de tes séances : il retient si ses propositions se sont révélées trop prudentes ou trop ambitieuses, et corrige. Ce réglage ne fixe pas la vitesse, il l\'incline — et les freins de sécurité (RPE élevé, échecs) restent actifs quoi qu\'il arrive.</div>'+
         '<label>Programme de départ</label>'+
         '<select id="rrProgram" class="select-field">'+programChoiceOptionsHtml((typeof defaultProgramId==="function"?defaultProgramId():null))+'</select>'+
         '<p class="field-hint">C\'est le programme que tu commenceras aujourd\'hui. Tu pourras en changer à tout moment dans Réglages.</p>'+
         '<label style="margin-top:16px">Pourquoi t\'entraînes-tu ?</label>'+
         '<select id="rrTrainingGoal" class="select-field">'+trainingGoalOptionsHtml(null)+'</select>'+
         '<p class="field-hint">Ton objectif guide les programmes proposés en fin de cycle. Modifiable à tout moment dans Réglages.</p>'+
-        '<label style="margin-top:16px">Agressivité de la progression</label>'+
-        '<div class="racine-agg-row">'+
-          '<input id="rrAgg" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
-          '<span class="racine-agg-label" id="rrAggLabel">'+aggressivenessLabel(agg)+'</span>'+
-        '</div>'+
+        '<label style="margin-top:16px">Vitesse de progression</label>'+
+        '<select id="rrAgg" class="select-field">'+progressionBiasOptionsHtml(agg)+'</select>'+
+        '<p class="field-hint" id="rrAggLabel">'+esc((BIAS_LABELS[progressionBiasKey(agg)]||BIAS_LABELS.normal).hint)+'</p>'+
         '<p class="field-hint" id="rrAggExample">'+aggressivenessExampleHtml(agg)+'</p>'+
         '<label style="margin-top:16px">As-tu un objectif de compétition à long terme à suivre ?</label>'+
         '<div class="racine-toggle-row">'+
@@ -549,9 +574,9 @@
       '</div>'
     );
     var aggInput = card.querySelector("#rrAgg");
-    aggInput.oninput = function(){
+    aggInput.onchange = function(){
       var v = Number(aggInput.value);
-      card.querySelector("#rrAggLabel").textContent = aggressivenessLabel(v);
+      card.querySelector("#rrAggLabel").textContent = (BIAS_LABELS[progressionBiasKey(v)]||BIAS_LABELS.normal).hint;
       card.querySelector("#rrAggExample").innerHTML = aggressivenessExampleHtml(v);
     };
     var compDateWrap = card.querySelector("#rrCompDateWrap");
@@ -696,11 +721,9 @@
       '<p><strong>'+esc(active?active.name:"—")+'</strong>'+(lvl?(' · '+esc(lvl)):'')+(active&&active.bodyweightLb?(' · '+esc(active.bodyweightLb)+' lb'):'')+'</p>'+
       '<label>Pourquoi t\'entraînes-tu ?</label>'+
       '<select id="settingsTrainingGoal" class="select-field">'+trainingGoalOptionsHtml((typeof state==="object"&&state.profile&&state.profile.trainingGoal)||(active&&active.trainingGoal)||null)+'</select>'+
-      '<label>Agressivité de la progression</label>'+
-      '<div class="racine-agg-row">'+
-        '<input id="settingsAggSlider" type="range" min="0.5" max="1.5" step="0.05" value="'+agg+'"/>'+
-        '<span class="racine-agg-label" id="settingsAggLabel">'+aggressivenessLabel(agg)+'</span>'+
-      '</div>'+
+      '<label>Vitesse de progression</label>'+
+      '<select id="settingsAggSlider" class="select-field">'+progressionBiasOptionsHtml(agg)+'</select>'+
+      '<p class="field-hint" id="settingsAggLabel">'+esc((BIAS_LABELS[progressionBiasKey(agg)]||BIAS_LABELS.normal).hint)+'</p>'+
       '<div class="btn-row">'+
         '<button id="recalibrateBtn" class="btn-ghost">Recalibrer mes poids</button>'+
         '<button id="switchProfileBtn" class="btn-ghost">Changer de profil'+(others.length?(' ('+others.length+')'):'')+'</button>'+
@@ -726,18 +749,17 @@
   api.bindSettingsPanel = function(){
     var slider = document.getElementById("settingsAggSlider");
     if(slider){
-      slider.oninput = function(){
-        document.getElementById("settingsAggLabel").textContent = aggressivenessLabel(Number(slider.value));
-      };
       slider.onchange = function(){
         var v = Number(slider.value)||1;
+        var hint = document.getElementById("settingsAggLabel");
+        if(hint) hint.textContent = (BIAS_LABELS[progressionBiasKey(v)]||BIAS_LABELS.normal).hint;
         if(typeof state!=="object"||!state.profile) return;
         state.profile.aggressiveness = v;
         if(typeof save==="function") save();
         var id = window.CoachProfiles && CoachProfiles.getActiveId();
         if(id) CoachProfiles.update(id, {aggressiveness:v});
         var s=document.getElementById("profileSettingsStatus");
-        if(s){s.textContent="✅ Agressivité mise à jour.";s.className="status-msg ok";}
+        if(s){s.textContent="✅ Vitesse de progression mise à jour.";s.className="status-msg ok";}
       };
     }
     var goalSel = document.getElementById("settingsTrainingGoal");
