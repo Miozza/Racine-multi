@@ -167,6 +167,33 @@ Trois règles encadrent cette table et ne se négocient pas :
 Tout ajustement de cette réponse se fait **dans la table**, jamais par un `if` sur
 le RPE dans une fonction de décision.
 
+#### Réactivité — la tendance, pas seulement la dernière valeur (depuis V4.5.57)
+
+Un barreau seul ne lit **qu'un chiffre** : le RPE de la dernière séance. Deux
+athlètes à RPE 7 n'ont pourtant pas le même élan si l'un descend de 8 à 7 pendant
+que l'autre monte de 6 à 7. Et sur une barre, la sortie est quantifiée à 5 lb :
+ajouter des barreaux ne crée aucune finesse supplémentaire — seule la **direction**
+en crée.
+
+Les modificateurs de `rpeProgression.modifiers` décalent le barreau d'un cran :
+
+| Signal | Lu sur | Effet |
+|---|---|---|
+| Même charge de moins en moins coûteuse (RPE −0,5 sur 3 séances) | historique récent | +1 cran |
+| Même charge de plus en plus coûteuse (RPE +0,5 sur 3 séances) | historique récent | −1 cran |
+| Reps dépassées d'au moins 2 | dernière série | +1 cran |
+
+Trois limites tiennent ce mécanisme :
+
+- Un modificateur ne touche **jamais** au saut maximal prudent. Il rend le moteur
+  plus prompt à utiliser la marge existante, il ne l'élargit pas.
+- Les freins ≥ 8,5 et ≥ 9 sont **hors de portée** des modificateurs.
+- En dessous de 3 séances comparables, **aucune tendance n'est affirmée**.
+
+Le barreau RPE 8 vaut zéro cran : par défaut, un **maintien annoncé** — pas la
+zone morte silencieuse d'avant, où 7,5 progressait, 8,5 freinait et 8 ne faisait
+rien sans jamais le dire. Une tendance qui s'allège peut le promouvoir à un cran.
+
 ## Garde-fous obligatoires
 
 Avant une release qui touche aux charges, exécuter :

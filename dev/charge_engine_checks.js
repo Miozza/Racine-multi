@@ -615,6 +615,66 @@ try {
     resetState();
   }
 
+  // ─── Reactivite : la tendance, pas seulement le dernier RPE (V4.5.57) ─────
+  // Un barreau seul ne lit qu'une valeur. Trois athletes a RPE 7 final n'ont
+  // pas le meme elan selon d'ou ils viennent — le moteur doit les separer.
+  {
+    const mainCtx = { label:'Back Squat', intents:[], kind:'main' };
+    function seedTrend(label, rows, reps){
+      resetState();
+      const range = ctx.repRange(reps);
+      const last = rows[rows.length - 1];
+      ctx.state.athleteState.movements[label] = {
+        ranges: { [range]: { currentLoad:last.load, actualLoad:last.load, currentReps:last.reps, actualReps:last.reps, rpe:last.rpe, confidence:0.9, status:'upgrade_ready' } },
+        history: rows.map((r, i) => ({ date:'2026-0' + (i+5) + '-01', load:r.load, reps:r.reps, rpe:r.rpe, range:range, status:'upgrade_ready', context:mainCtx }))
+      };
+    }
+    const row = (load, reps, rpe) => ({ load:load, reps:reps, rpe:rpe });
+    function decide(prog, reps){
+      return ctx.guardedSuggestedLoadDecision('Back Squat', prog, reps, { kind:'main', blockTitle:'Force principale' });
+    }
+
+    seedTrend('Back Squat', [row(225,5,8), row(225,5,7.5), row(225,5,7)], 5);
+    const versLeFacile = decide('225 lb', 5).loadNum;
+    seedTrend('Back Squat', [row(225,5,7), row(225,5,7), row(225,5,7)], 5);
+    const plat = decide('225 lb', 5).loadNum;
+    seedTrend('Back Squat', [row(225,5,6), row(225,5,6.5), row(225,5,7)], 5);
+    const versLeDur = decide('225 lb', 5).loadNum;
+    assert(versLeFacile > plat && plat > versLeDur,
+      'Tendance RPE : a RPE 7 final identique, le moteur separe les trois trajectoires (' + versLeFacile + ' > ' + plat + ' > ' + versLeDur + ').');
+    assert(versLeDur === 225, 'Tendance qui durcit : maintien a la derniere charge, pas de hausse.');
+
+    // RPE 8 n'est plus une zone morte silencieuse : maintien annonce par
+    // defaut, promu a un cran si le meme poids devient moins couteux.
+    seedTrend('Back Squat', [row(225,5,8), row(225,5,8), row(225,5,8)], 5);
+    const huitStable = decide('225 lb', 5);
+    assert(huitStable.loadNum === 225 && /Maintien/.test(huitStable.reason),
+      'RPE 8 stable : maintien explicite, la zone morte est nommee.');
+    seedTrend('Back Squat', [row(225,5,9), row(225,5,8.5), row(225,5,8)], 5);
+    assert(decide('225 lb', 5).loadNum > 225, 'RPE 8 en nette baisse : le moteur repart d un cran.');
+
+    // Reps depassees : signal deja enregistre, desormais lu.
+    seedTrend('Back Squat', [row(225,8,7), row(225,8,7), row(225,8,7)], 5);
+    const overshoot = decide('225 lb', 5).loadNum;
+    seedTrend('Back Squat', [row(225,5,7), row(225,5,7), row(225,5,7)], 5);
+    assert(overshoot > decide('225 lb', 5).loadNum,
+      'Reps depassees : 8 reps pour 5 demandees pese plus lourd que 5 reps au meme RPE.');
+
+    // La reactivite n'elargit JAMAIS le saut maximal prudent.
+    seedTrend('Back Squat', [row(225,8,7.5), row(225,8,7), row(225,8,6.5)], 5);
+    const cumul = decide('225 lb', 5).loadNum;
+    const plafond = 225 + ctx.coachMaxJumpForExercise('Back Squat', 225) * 1.25;
+    assert(cumul <= plafond,
+      'Reactivite cumulee : la hausse reste sous le saut maximal du barreau RPE (' + cumul + ' <= ' + plafond + ').');
+
+    // Les freins hauts restent hors de portee des modificateurs.
+    seedTrend('Back Squat', [row(225,5,9.5), row(225,5,9), row(225,5,8.5)], 5);
+    assert(decide('245 lb', 5).loadNum <= 225, 'Frein 8.5 : aucune tendance ne le contourne.');
+    seedTrend('Back Squat', [row(225,5,9.5), row(225,5,9.5), row(225,5,9)], 5);
+    assert(decide('245 lb', 5).loadNum <= 225, 'Verrou RPE >= 9 : aucune tendance ne le contourne.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

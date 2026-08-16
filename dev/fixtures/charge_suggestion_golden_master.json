@@ -52,7 +52,7 @@
     "loadText": "200 lb",
     "loadNum": 200,
     "severity": "watch",
-    "reason": "Progression prete : dernier 185 lb x 8 @RPE 6. Hausse de 3 crans vers 200 lb (echelon RPE).",
+    "reason": "Progression prete : dernier 185 lb x 8 @RPE 6. Hausse de 3 crans vers 200 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,
@@ -186,7 +186,7 @@
     "loadText": "140 lb",
     "loadNum": 140,
     "severity": "watch",
-    "reason": "Progression prete : dernier 135 lb x 8 @RPE 7. Hausse de 1 cran vers 140 lb (echelon RPE).",
+    "reason": "Progression prete : dernier 135 lb x 8 @RPE 7. Hausse de 1 cran vers 140 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,
@@ -238,7 +238,7 @@
     "loadText": "230 lb",
     "loadNum": 230,
     "severity": "watch",
-    "reason": "Progression prete : dernier 225 lb x 8 @RPE 7. Hausse de 1 cran vers 230 lb (echelon RPE).",
+    "reason": "Progression prete : dernier 225 lb x 8 @RPE 7. Hausse de 1 cran vers 230 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,
@@ -290,7 +290,7 @@
     "loadText": "22.5 lb / main",
     "loadNum": 22.5,
     "severity": "watch",
-    "reason": "Progression prete : dernier 20 lb x 12 @RPE 6. Hausse de 2 crans vers 22.5 lb (echelon RPE).",
+    "reason": "Progression prete : dernier 20 lb x 12 @RPE 6. Hausse de 2 crans vers 22.5 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 12,
@@ -770,7 +770,7 @@
     "loadText": "185 lb",
     "loadNum": 185,
     "severity": "watch",
-    "reason": "Progression prete : dernier 180 lb x 8 @RPE 7.5. Hausse de 1 cran vers 185 lb (echelon RPE).",
+    "reason": "Progression prete : dernier 180 lb x 8 @RPE 7.5. Hausse de 1 cran vers 185 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,

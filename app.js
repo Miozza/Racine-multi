@@ -1,5 +1,5 @@
-// Racine V4.5.56 — echelon RPE gradue + convergence des regles de relance
-var APP_VERSION = "V4.5.56";
+// Racine V4.5.57 — le RPE lit la tendance, plus seulement la derniere seance
+var APP_VERSION = "V4.5.57";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -2682,9 +2682,9 @@
             "rpe": 8.7,
             "e1rm": 163.33333333333334,
             "suggestedLoad": 140,
-            "suggestionReason": "140 lb",
+            "suggestionReason": "140 lb ⚠",
             "deloadWeek": false,
-            "severity": "ok",
+            "severity": "warning",
             "confidence": 0.6666666666666666,
             "failed": false
           },
@@ -2911,7 +2911,7 @@
               "reps": 5,
               "rpe": 8.7,
               "deloadWeek": false,
-              "reason": "140 lb"
+              "reason": "140 lb ⚠"
             },
             {
               "week": 6,
@@ -3710,7 +3710,7 @@
             "rpe": 7.8,
             "e1rm": 8,
             "suggestedLoad": 0,
-            "suggestionReason": "5 lb",
+            "suggestionReason": "10 lb",
             "deloadWeek": false,
             "severity": "ok",
             "confidence": 0.95,
@@ -4020,7 +4020,7 @@
               "reps": 8,
               "rpe": 7.8,
               "deloadWeek": false,
-              "reason": "5 lb"
+              "reason": "10 lb"
             }
           ]
         },

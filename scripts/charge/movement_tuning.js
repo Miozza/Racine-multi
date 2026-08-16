@@ -66,7 +66,13 @@
           {maxRpe:6,   steps:3, jumpFactor:1.5},
           {maxRpe:6.5, steps:2, jumpFactor:1.25},
           {maxRpe:7,   steps:1, jumpFactor:1},
-          {maxRpe:7.5, steps:1, jumpFactor:1}
+          {maxRpe:7.5, steps:1, jumpFactor:1},
+          // RPE 8 etait une zone morte : 7,5 progressait, 8,5 freinait, et 8
+          // ne faisait rien du tout sans jamais le dire. Barreau a zero cran :
+          // meme resultat qu'avant par defaut, mais la tendance peut
+          // desormais le promouvoir a un cran quand le meme poids devient
+          // regulierement moins cher.
+          {maxRpe:8,   steps:0, jumpFactor:1}
         ]
       },
       // Isolation : le cran d'equipement est deja petit et le geste est plus
@@ -74,16 +80,45 @@
       isolation: {
         ladder: [
           {maxRpe:6,   steps:2, jumpFactor:1},
-          {maxRpe:7.5, steps:1, jumpFactor:1}
+          {maxRpe:7.5, steps:1, jumpFactor:1},
+          {maxRpe:8,   steps:0, jumpFactor:1}
         ]
       },
       overrides: [
         // Hip thrust : saut de base deja large (30 lb), inutile de l'elargir.
         {pattern:/hip thrust/, ladder:[
           {maxRpe:6.5, steps:2, jumpFactor:1},
-          {maxRpe:7.5, steps:1, jumpFactor:1}
+          {maxRpe:7.5, steps:1, jumpFactor:1},
+          {maxRpe:8,   steps:0, jumpFactor:1}
         ]}
-      ]
+      ],
+      // ─── Reactivite (V4.5.57) ───────────────────────────────────────────
+      // Un barreau seul ne lit qu'UNE valeur : le RPE de la derniere seance.
+      // Deux athletes a RPE 7 n'ont pourtant pas le meme elan si l'un descend
+      // de 8 a 7 pendant que l'autre monte de 6 a 7. Les modificateurs
+      // ci-dessous decalent le barreau d'un cran selon ce que raconte
+      // l'historique recent — la finesse que l'athlete saisit (7,5 · 7,8 ·
+      // 8,5) sert enfin a quelque chose.
+      //
+      // Limite volontaire : un modificateur ne touche JAMAIS au saut maximal
+      // prudent (jumpFactor reste celui du barreau RPE). Il peut rendre le
+      // moteur plus prompt a utiliser la marge existante, jamais l'elargir.
+      modifiers: {
+        // Tendance du RPE a charge egale. Si le meme poids coute de moins en
+        // moins cher, l'athlete progresse plus vite que le moteur : on avance
+        // d'un barreau. S'il coute de plus en plus cher, on recule — avant
+        // d'arriver au frein 8,5, pas apres.
+        trend: {
+          window: 3,        // seances comparables regardees
+          minRows: 3,       // en dessous, aucune tendance n'est affirmee
+          delta: 0.5,       // ecart de RPE minimal pour parler de tendance
+          shiftEasier: 1,
+          shiftHarder: -1
+        },
+        // Reps depassees sur la derniere serie : 10 reps la ou 8 etaient
+        // demandees, au meme RPE, est un signal fort et deja enregistre.
+        repsOvershoot: { minExtra: 2, shift: 1 }
+      }
     },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },

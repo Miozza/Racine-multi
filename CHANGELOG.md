@@ -1,3 +1,13 @@
+## V4.5.57 — Le RPE lit la tendance, plus seulement la dernière séance
+
+- **Le problème n'était pas le nombre de paliers.** Le moteur ne lisait qu'**un seul chiffre** — le RPE de la dernière séance — et sur une barre le rack quantifie la sortie à 5 lb. Ajouter des barreaux ne pouvait rien donner de plus : la finesse saisie (7,5 · 7,8 · 8,5) était jetée. En pratique le RPE se réduisait à trois états : facile, ok, trop dur.
+- **La réactivité vient de la direction.** `coachBuildMovementHistorySignal` gardait déjà les 4 dernières séances avec leurs RPE, mais `direction` ne suivait que la charge — jamais le RPE. Le moteur lit maintenant cette tendance : à charge égale, un RPE qui **descend** de 0,5 sur trois séances avance d'un cran, un RPE qui **monte** recule d'un cran. Des reps dépassées d'au moins 2 avancent d'un cran.
+- **Ce que ça change, concrètement.** À RPE 7 final identique : trajectoire 8 → 7,5 → 7 propose **235 lb**, trajectoire plate **230 lb**, trajectoire 6 → 6,5 → 7 **maintient à 225 lb**. Trois réponses là où il n'y en avait qu'une.
+- **Le RPE 8 n'est plus une zone morte.** 7,5 progressait, 8,5 freinait, et 8 ne faisait rien sans jamais le dire. C'est désormais un barreau à zéro cran qui **annonce le maintien** — et qu'une tendance qui s'allège promeut à un cran.
+- **Trois limites tiennent le mécanisme** : un modificateur ne touche jamais au saut maximal prudent (il rend le moteur plus prompt à utiliser la marge, il ne l'élargit pas) ; les freins ≥ 8,5 et ≥ 9 sont hors de leur portée ; en dessous de 3 séances comparables, aucune tendance n'est affirmée.
+- **Un bug attrapé au passage** : l'accesseur de barreau faisait `Number(steps) || 1`, ce qui transformait silencieusement un barreau de maintien (0 cran) en une hausse d'un cran. Le RPE 8 progressait donc au lieu de maintenir.
+- **Portée** : `scripts/charge/movement_tuning.js`, `scripts/charge/suggestion.js`. Garde-fous étendus : `dev/charge_engine_checks.js` (séparation des trois trajectoires, zone morte nommée, reps dépassées, non-contournement du saut maximal et des freins hauts). Golden master : **zéro valeur changée** sur 20 scénarios, seuls 5 textes d'explication évoluent.
+
 ## V4.5.56 — Le RPE reprend du pouvoir sur la charge
 
 - **Un seul palier, c'était presque aucune information.** Le moteur ne connaissait qu'une porte : `lastRpe <= 7` → un cran d'équipement. RPE 5, 6 et 7 donnaient rigoureusement la même suggestion, et RPE 7,5 n'en donnait aucune. Une séance vécue très facile et une séance vécue juste correcte sortaient le même poids.
