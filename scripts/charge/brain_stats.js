@@ -263,7 +263,11 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   // signal le plus direct dont dispose le moteur, celui de l'effort ressenti.
   var kept=coachBrainDampedRise(label,lastLoad,proposed);
   var floor=Number(earnedFloor)||0;
-  if(floor>kept&&floor<=proposed)kept=floor;
+  // L'evidence RPE couvre deja toute la hausse proposee : le portail n'a rien
+  // a retenir. Sans cette sortie, une hausse entierement meritee etait quand
+  // meme amortie des que le plancher depassait la proposition.
+  if(floor>=proposed)return decision;
+  if(floor>kept)kept=floor;
   if(kept>=proposed)return decision;
   var loadText=String(kept)+' lb ⚠';
   var reason='Brain V2 — '+extra+' Intention '+stats.intent+', sensibilite '+stats.sensitivity+'. Option ambitieuse : '+old+' lb.';

@@ -1,3 +1,11 @@
+## V4.5.60 — La charge méritée devient un plancher
+
+- **Une règle qui ne se déclenchait qu'à moitié.** `coachRuleLastSetGuards` ne relevait la suggestion que si elle tombait **sous** la dernière charge faite (`suggested <= lastLoad`). Conséquence : un programme demandant 230 lb quand le RPE de l'athlète en avait mérité 240 ne déclenchait aucune règle — et le portail Brain, ne voyant qu'une hausse non justifiée de 225 à 230, la ramenait à 225. Une charge de programme **plus lourde** sortait donc une suggestion **plus légère**.
+- **La valeur méritée est maintenant un plancher**, pas un rattrapage : la règle agit dès que la suggestion est sous elle, quelle que soit la charge du programme. C'est la sémantique correcte de « l'athlète a mérité cette charge ».
+- **Le portail se retire quand l'évidence couvre la hausse.** Si le plancher mérité atteint ou dépasse la proposition, le portail de confiance n'a plus rien à retenir : il rend la décision intacte au lieu de l'amortir.
+- **Vérification** : **0 inversion sur 288 000 évaluations** du banc d'essai — 8 mouvements × 5 contextes × 3 trajectoires × RPE 6→9 × 4 cibles de reps × 5 valeurs d'historique × 3 biais. Avant cette série de correctifs : 864. La classe de défaut est éliminée, pas seulement le cas signalé.
+- **Portée** : `scripts/charge/suggestion.js`, `scripts/charge/brain_stats.js`. Golden master inchangé sur les 20 scénarios. Dix profils simulés : progressions 21, figées 3. Checklist de livraison complète au vert.
+
 ## V4.5.59 — La sauvegarde emporte Brain, le portail amortit au lieu de geler
 
 - **L'export ne sauvegardait pas Brain.** La mémoire d'apprentissage vit dans sa propre clé (`racineState::<id>::brain-memory-v1`) et `exportProfileBlob()` n'en lisait que deux. Aller-retour vérifié appareil A → export → appareil B : historique retrouvé, charges retrouvées, **mémoire Brain perdue** — ambition mesurée, précision, journal, et la courbe d'erreur du § 8 reconstituée à `[]`. Sans copie serveur, la perte était définitive. L'export porte maintenant `stateExtras`, balayé par préfixe pour emporter aussi les versions futures de cette clé, et réécrit à l'import sous l'identifiant du nouveau profil. **Aucune migration** : le champ est optionnel dans les deux sens, un export récent reste importable par une version ancienne qui l'ignore.
