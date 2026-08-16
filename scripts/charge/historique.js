@@ -261,10 +261,31 @@ function coachMaxJumpForExercise(label,lastLoad){
     base=isIsolationMovement(label)?(coachLoadStepForExercise(label,lastLoad||'')||5):T.default;
   }
   var factor=(typeof coachAggressivenessFactor==='function')?coachAggressivenessFactor(label):1;
-  if(factor===1)return base;
   var step=coachLoadStepForExercise(label,lastLoad||'')||5;
-  var scaled=Math.round((base*factor)/step)*step;
-  return Math.max(step, scaled);
+  var jump=base;
+  if(factor!==1){
+    var scaled=Math.round((base*factor)/step)*step;
+    jump=Math.max(step, scaled);
+  }
+  // Borne relative : voir COACH_MOVEMENT_TUNING.maxJumpBase.relativeCeiling.
+  // Jamais sous un cran d'equipement — un plafond plus petit que le plus
+  // petit pas disponible fige le mouvement au lieu de le proteger.
+  var ceiling=Number(T.relativeCeiling);
+  var ref=Number(lastLoad)||0;
+  if(ceiling>0&&ref>0){
+    // Plancher = le VRAI ecart jusqu'au cran suivant du rack, pas le pas
+    // nominal. A 2,5 lb l'haltere suivant est a 5 (ecart 2,5) alors que le pas
+    // nominal vaut 2 : un plafond de 2 aurait interdit le seul mouvement
+    // possible et fige la charge — exactement le defaut qu'on corrige.
+    var realStep=step;
+    if(typeof nextLoadForExercise==='function'){
+      var nx=nextLoadForExercise(label,ref,1,lastLoad||'');
+      if(nx>ref)realStep=nx-ref;
+    }
+    var relative=Math.max(realStep, ref*ceiling);
+    jump=Math.min(jump, relative);
+  }
+  return jump;
 }
 
 function coachIsFridayContext(){return !!(state&&String(state.day||'').toLowerCase()==='vendredi');}

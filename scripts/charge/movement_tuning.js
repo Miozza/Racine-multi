@@ -44,7 +44,16 @@
       default: 10,
       overrides: [
         {pattern:/hip thrust/, base:30}
-      ]
+      ],
+      // Un plafond purement ABSOLU n'a pas de sens aux deux extremites de
+      // l'echelle. A 225 lb, +10 lb est prudent ; a 2,5 lb, le meme +10 lb
+      // autorise un bond de 400 % — cas reel releve par dev/simulate_multi_users
+      // sur un Incline DB Press parti de 2,5 lb. Le saut est donc aussi borne
+      // en RELATIF, sans jamais tomber sous un cran d'equipement (ce qui
+      // figerait le mouvement, l'erreur symetrique).
+      // Le plafond relatif ne mord que sur les charges legeres : au-dessus de
+      // ~65 lb, c'est le plafond absolu qui gouverne, comme avant.
+      relativeCeiling: 0.15
     },
     // coachRpeProgressionRung() — suggestion.js
     // Reponse graduee au RPE de la derniere serie reussie.
@@ -149,6 +158,34 @@
       observed: { center: 0.60, span: 0.35, amplitude: 0.30, minObservations: 6 },
       // Bornes finales, inchangees depuis l'origine.
       clamp: { min: 0.4, max: 1.8 }
+    },
+    // coachFormatSuggestedLoad() — suggestion.js
+    // Famille « db » ⇒ charge par main, sauf ces mouvements-là : un seul
+    // implement tenu à deux mains. Sans cette liste, un Goblet Squat suggéré
+    // à 10 lb s'afficherait « 10 lb / main », soit le double du poids voulu.
+    singleImplementPatterns: [
+      /goblet/, /db pullover/, /dumbbell pullover/, /db swing/
+    ],
+    // coachBrainApplyStatsGate() — brain_stats.js
+    // Le portail de confiance ANNULAIT la hausse : il ramenait la suggestion a
+    // la derniere charge faite, quel que soit l'ecart. Consequence mesuree sur
+    // les dix profils simules : les athletes legers ne progressaient jamais.
+    // Leur confiance plafonne sous le seuil (61 % contre 65 % requis) parce
+    // qu'elle grandit avec le nombre de seances — et une charge gelee ne
+    // produit pas les observations qui la feraient monter. Le garde-fou se
+    // refermait sur lui-meme.
+    //
+    // Il AMORTIT desormais au lieu de geler : une hausse non confirmee est
+    // reduite, pas annulee, et jamais en dessous d'un cran d'equipement quand
+    // le moteur en proposait un. Les freins RPE (>= 8,5 et >= 9) sont en
+    // amont et ne sont pas concernes : le portail ne voit que des hausses.
+    brainGate: {
+      confidenceFloor: 0.65,
+      // Part de la hausse proposee qui survit au portail. 0 = ancien
+      // comportement (gel complet), 1 = portail sans effet.
+      damping: 0.35,
+      // Le plancher d'une hausse meritee n'est PAS defini ici : il vient de
+      // coachRpeEarnedLoad(), qui relit l'echelon RPE reel de l'athlete.
     },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },

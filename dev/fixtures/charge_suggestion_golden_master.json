@@ -97,6 +97,61 @@
       "direction": "flat",
       "status": "ready",
       "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
+    },
+    "brainStats": {
+      "label": "Back Squat",
+      "intent": "hypertrophy",
+      "sensitivity": "high",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 7,
+          "load": 185
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 8,
+          "rpe": 6,
+          "load": 185
+        }
+      ],
+      "historyCount": 2,
+      "confidence": 50,
+      "confidenceRaw": 0.5000000000000001,
+      "ambition": 52,
+      "ambitionRaw": 0.52,
+      "prediction": {
+        "tested": 0,
+        "accuracy": 0.6,
+        "under": 0,
+        "over": 0,
+        "humanOverrideDown": 0,
+        "humanOverrideUp": 0
+      },
+      "progression": {
+        "avgStep": 0,
+        "totalDelta": 0,
+        "trend": "flat"
+      },
+      "rpeReliability": {
+        "score": 0.65,
+        "label": "personalized",
+        "reason": "Profil RPE en apprentissage : RPE 8 est traité prudemment, RPE 9+ comme signal fort."
+      },
+      "requiredConfirmations": 3,
+      "validations": 2,
+      "lastRpe": 6,
+      "lastRpeSignal": {
+        "level": "low",
+        "weight": 1,
+        "label": "signal fiable bas"
+      },
+      "comfort": "high",
+      "lastReps": 8,
+      "status": "uncertain",
+      "proposedLoad": 200,
+      "lastLoad": 185
     }
   },
   "blocked_high_rpe": {
@@ -231,6 +286,61 @@
       "direction": "flat",
       "status": "ready",
       "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
+    },
+    "brainStats": {
+      "label": "Barbell Row",
+      "intent": "hypertrophy",
+      "sensitivity": "medium",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 7,
+          "load": 135
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 8,
+          "rpe": 7,
+          "load": 135
+        }
+      ],
+      "historyCount": 2,
+      "confidence": 57,
+      "confidenceRaw": 0.5700000000000001,
+      "ambition": 60,
+      "ambitionRaw": 0.6,
+      "prediction": {
+        "tested": 0,
+        "accuracy": 0.6,
+        "under": 0,
+        "over": 0,
+        "humanOverrideDown": 0,
+        "humanOverrideUp": 0
+      },
+      "progression": {
+        "avgStep": 0,
+        "totalDelta": 0,
+        "trend": "flat"
+      },
+      "rpeReliability": {
+        "score": 0.65,
+        "label": "personalized",
+        "reason": "Profil RPE en apprentissage : RPE 8 est traité prudemment, RPE 9+ comme signal fort."
+      },
+      "requiredConfirmations": 1,
+      "validations": 2,
+      "lastRpe": 7,
+      "lastRpeSignal": {
+        "level": "low",
+        "weight": 1,
+        "label": "signal fiable bas"
+      },
+      "comfort": "high",
+      "lastReps": 8,
+      "status": "uncertain",
+      "proposedLoad": 140,
+      "lastLoad": 135
     }
   },
   "lift_from_history_generic_gap20": {
@@ -283,6 +393,61 @@
       "direction": "flat",
       "status": "ready",
       "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
+    },
+    "brainStats": {
+      "label": "Deadlift",
+      "intent": "hypertrophy",
+      "sensitivity": "high",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 7,
+          "load": 225
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 8,
+          "rpe": 7,
+          "load": 225
+        }
+      ],
+      "historyCount": 2,
+      "confidence": 50,
+      "confidenceRaw": 0.5000000000000001,
+      "ambition": 52,
+      "ambitionRaw": 0.52,
+      "prediction": {
+        "tested": 0,
+        "accuracy": 0.6,
+        "under": 0,
+        "over": 0,
+        "humanOverrideDown": 0,
+        "humanOverrideUp": 0
+      },
+      "progression": {
+        "avgStep": 0,
+        "totalDelta": 0,
+        "trend": "flat"
+      },
+      "rpeReliability": {
+        "score": 0.65,
+        "label": "personalized",
+        "reason": "Profil RPE en apprentissage : RPE 8 est traité prudemment, RPE 9+ comme signal fort."
+      },
+      "requiredConfirmations": 3,
+      "validations": 2,
+      "lastRpe": 7,
+      "lastRpeSignal": {
+        "level": "low",
+        "weight": 1,
+        "label": "signal fiable bas"
+      },
+      "comfort": "high",
+      "lastReps": 8,
+      "status": "uncertain",
+      "proposedLoad": 230,
+      "lastLoad": 225
     }
   },
   "isolation_small_step": {
@@ -335,6 +500,61 @@
       "direction": "flat",
       "status": "ready",
       "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
+    },
+    "brainStats": {
+      "label": "Lateral Raise DB",
+      "intent": "hypertrophy",
+      "sensitivity": "low",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 12,
+          "rpe": 6,
+          "load": 20
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 12,
+          "rpe": 6,
+          "load": 20
+        }
+      ],
+      "historyCount": 2,
+      "confidence": 62,
+      "confidenceRaw": 0.6200000000000001,
+      "ambition": 60,
+      "ambitionRaw": 0.6,
+      "prediction": {
+        "tested": 0,
+        "accuracy": 0.6,
+        "under": 0,
+        "over": 0,
+        "humanOverrideDown": 0,
+        "humanOverrideUp": 0
+      },
+      "progression": {
+        "avgStep": 0,
+        "totalDelta": 0,
+        "trend": "flat"
+      },
+      "rpeReliability": {
+        "score": 0.65,
+        "label": "personalized",
+        "reason": "Profil RPE en apprentissage : RPE 8 est traité prudemment, RPE 9+ comme signal fort."
+      },
+      "requiredConfirmations": 1,
+      "validations": 2,
+      "lastRpe": 6,
+      "lastRpeSignal": {
+        "level": "low",
+        "weight": 1,
+        "label": "signal fiable bas"
+      },
+      "comfort": "high",
+      "lastReps": 12,
+      "status": "uncertain",
+      "proposedLoad": 22.5,
+      "lastLoad": 20
     }
   },
   "technical_no_progression": {
@@ -432,8 +652,8 @@
   },
   "history_signal_stalled": {
     "label": "Bench Press",
-    "loadText": "135 lb",
-    "loadNum": 135,
+    "loadText": "140 lb",
+    "loadNum": 140,
     "severity": "watch",
     "reason": "Brain V2 — Confiance de prediction faible (54%). Intention hypertrophy, sensibilite high. Option ambitieuse : 145 lb.",
     "last": {
@@ -815,6 +1035,61 @@
       "direction": "up",
       "status": "ready",
       "reason": "Historique controle : plusieurs references atteintes a RPE acceptable."
+    },
+    "brainStats": {
+      "label": "Back Squat",
+      "intent": "hypertrophy",
+      "sensitivity": "high",
+      "rows": [
+        {
+          "date": "2026-01-01",
+          "reps": 8,
+          "rpe": 7,
+          "load": 165
+        },
+        {
+          "date": "2026-01-02",
+          "reps": 8,
+          "rpe": 7.5,
+          "load": 180
+        }
+      ],
+      "historyCount": 2,
+      "confidence": 50,
+      "confidenceRaw": 0.5000000000000001,
+      "ambition": 52,
+      "ambitionRaw": 0.52,
+      "prediction": {
+        "tested": 0,
+        "accuracy": 0.6,
+        "under": 0,
+        "over": 0,
+        "humanOverrideDown": 0,
+        "humanOverrideUp": 0
+      },
+      "progression": {
+        "avgStep": 15,
+        "totalDelta": 15,
+        "trend": "up"
+      },
+      "rpeReliability": {
+        "score": 0.65,
+        "label": "personalized",
+        "reason": "Profil RPE en apprentissage : RPE 8 est traité prudemment, RPE 9+ comme signal fort."
+      },
+      "requiredConfirmations": 3,
+      "validations": 1,
+      "lastRpe": 7.5,
+      "lastRpeSignal": {
+        "level": "medium",
+        "weight": 0.7,
+        "label": "signal moyen"
+      },
+      "comfort": "good",
+      "lastReps": 8,
+      "status": "uncertain",
+      "proposedLoad": 185,
+      "lastLoad": 180
     }
   },
   "recent_hard_brake_unresolved": {

@@ -225,6 +225,44 @@ Deux invariants :
 Tout réglage de cette traduction vit dans `progressionSpeed`
 (`scripts/charge/movement_tuning.js`), jamais en dur dans une fonction.
 
+#### Le portail Brain amortit, il ne gèle pas (depuis V4.5.59)
+
+Le portail de confiance (`coachBrainApplyStatsGate`) retient une hausse que Brain
+ne sait pas encore justifier. Deux règles l'encadrent :
+
+- **Il amortit, il n'annule pas.** Un gel complet enferme les charges légères :
+  la confiance grandit avec les observations, et une charge gelée n'en produit
+  aucune. Le garde-fou se refermait sur lui-même — mesuré sur les dix profils
+  simulés, 10 courbes sur 51 restaient figées, toutes chez les trois athlètes
+  les plus légers.
+- **Il ne descend jamais sous ce que le RPE a mérité.** `coachRpeEarnedLoad()`
+  définit ce plancher une seule fois : dernière charge + échelon RPE, corrigé
+  par la réactivité, borné par le saut maximal. La règle qui propose et le
+  portail qui arbitre lisent la même définition. Sans ce plancher, la confiance
+  statistique effacerait le signal le plus direct dont dispose le moteur.
+
+Le portail s'applique aux décisions `ok` **et** `watch`. Il est exclu sur
+`warning` et `critical` : un frein dur a déjà réduit la charge.
+
+Un plancher mérité n'existe pas après un échec (0 rep sorti) ni sur un mouvement
+en `recalibrating` / `watch` / `failed` : la liste est celle du plancher de
+validation.
+
+#### Le saut maximal est borné deux fois (depuis V4.5.59)
+
+Un plafond purement absolu se trompe aux deux extrémités :
+
+```txt
++10 lb à 225 lb  →  prudent
++10 lb à 2,5 lb  →  +400 %
+```
+
+Le saut est donc borné en absolu (`maxJumpBase`) **et** en relatif
+(`relativeCeiling`, 15 %), avec un plancher égal à l'écart **réel** jusqu'au cran
+suivant du rack — jamais au pas nominal. Un plafond plus petit que le plus petit
+mouvement possible fige le mouvement au lieu de le protéger ; c'est l'erreur
+symétrique et elle est tout aussi grave.
+
 ## Garde-fous obligatoires
 
 Avant une release qui touche aux charges, exécuter :
