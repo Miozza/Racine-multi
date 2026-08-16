@@ -620,7 +620,13 @@ function coachRuleLastSetGuards(ctx){
       next=back;
     }
     if(steps>0&&next&&next>ctx.lastLoad&&next<=maxAllowed){
-      if(ctx.suggested<=ctx.lastLoad){
+      // Condition elargie : la charge meritee est un PLANCHER, pas seulement
+      // un rattrapage quand le programme demande moins que la derniere seance.
+      // Avant, la regle n'agissait que si `suggested <= lastLoad` : un
+      // programme demandant 230 quand l'athlete avait merite 240 ne declenchait
+      // rien, et le portail Brain redescendait ensuite a 225 — une charge de
+      // programme plus lourde sortait une suggestion plus legere.
+      if(ctx.suggested<next){
         ctx.suggested=next;ctx.mode="up";ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
         ctx.reason="Progression prete : dernier "+ctx.lastLoad+" lb x "+(lastReps||ctx.target)+" @RPE "+ctx.lastRpe+". Hausse de "+steps+" cran"+(steps>1?"s":"")+" vers "+next+" lb"
           +(react.notes.length?" — "+react.notes.join(", "):"")+".";

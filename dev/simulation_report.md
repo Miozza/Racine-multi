@@ -136,7 +136,7 @@ heuristique de test.
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
 | Power Clean | 50×5 | 50×4 | 7.4 | stable (-2.9%) |
-| Front Squat | 70×6 | 70×7 | 7.7 | stable (2.8%) |
+| Front Squat | 70×6 | 75×7 | 7.8 | progression propre (10.1%) |
 | Push Press | 55×6 | 65×6 | 7.7 | progression propre (18.2%) |
 | Deadlift | 145×6 | 150×6 | 8.5 | stable (3.4%) |
 | Pull-Up | 7 reps | 7 reps | 8.6 | stable (0%) |

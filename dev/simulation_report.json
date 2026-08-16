@@ -3191,21 +3191,21 @@
           "last": {
             "date": "2026-08-01",
             "movement": "Front Squat",
-            "load": 70,
+            "load": 75,
             "reps": 7,
-            "rpe": 7.8,
-            "e1rm": 86.33333333333334,
-            "suggestedLoad": 70,
-            "suggestionReason": "70 lb",
+            "rpe": 7.9,
+            "e1rm": 92.5,
+            "suggestedLoad": 75,
+            "suggestionReason": "75 lb",
             "deloadWeek": false,
             "severity": "ok",
             "confidence": 0.6666666666666666,
             "failed": false
           },
-          "avgRpe": 7.733333333333333,
+          "avgRpe": 7.766666666666667,
           "trend": {
-            "status": "stable",
-            "delta": 2.7777777777777892
+            "status": "progression propre",
+            "delta": 10.119047619047619
           }
         },
         {
@@ -3420,21 +3420,21 @@
             },
             {
               "week": 5,
-              "suggested": 70,
-              "load": 70,
+              "suggested": 75,
+              "load": 75,
               "reps": 7,
-              "rpe": 7.8,
+              "rpe": 7.9,
               "deloadWeek": false,
-              "reason": "70 lb"
+              "reason": "75 lb"
             },
             {
               "week": 6,
-              "suggested": 55,
-              "load": 55,
+              "suggested": 60,
+              "load": 60,
               "reps": 6,
-              "rpe": 7.6,
+              "rpe": 7.7,
               "deloadWeek": true,
-              "reason": "55 lb"
+              "reason": "60 lb"
             }
           ]
         },

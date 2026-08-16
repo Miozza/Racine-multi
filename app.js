@@ -1,5 +1,5 @@
-// Racine V4.5.59 — la sauvegarde emporte Brain, le portail amortit au lieu de geler
-var APP_VERSION = "V4.5.59";
+// Racine V4.5.60 — la charge meritee est un plancher, plus un rattrapage
+var APP_VERSION = "V4.5.60";
 
 // Architecture stable
 // programs/*.js = plan prévu
