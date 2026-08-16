@@ -46,6 +46,45 @@
         {pattern:/hip thrust/, base:30}
       ]
     },
+    // coachRpeProgressionRung() — suggestion.js
+    // Reponse graduee au RPE de la derniere serie reussie.
+    // Avant V4.5.56 le moteur n'avait qu'un seul palier (RPE <= 7 => un cran) :
+    // RPE 5, 6 et 7 donnaient exactement la meme suggestion, et RPE 7.5 n'en
+    // donnait aucune. Le RPE portait donc presque aucune information.
+    // L'echelle est lue de haut en bas : la premiere ligne dont maxRpe est >=
+    // au RPE reel gagne. Au-dela de la derniere ligne, aucune hausse
+    // automatique — les freins RPE >= 8.5 et >= 9 restent inchanges et ont
+    // toujours le dernier mot (contrat de progression).
+    //   steps      = nombre de crans d'equipement proposes
+    //   jumpFactor = multiplicateur du saut maximal prudent (maxJumpBase)
+    // jumpFactor > 1 n'est PAS un contournement du garde-fou : le saut reste
+    // borne, il devient seulement fonction de l'effort reellement ressenti,
+    // ce que le contrat demande ("progression limitee par le RPE reel").
+    rpeProgression: {
+      default: {
+        ladder: [
+          {maxRpe:6,   steps:3, jumpFactor:1.5},
+          {maxRpe:6.5, steps:2, jumpFactor:1.25},
+          {maxRpe:7,   steps:1, jumpFactor:1},
+          {maxRpe:7.5, steps:1, jumpFactor:1}
+        ]
+      },
+      // Isolation : le cran d'equipement est deja petit et le geste est plus
+      // sensible a la fatigue. Progression plus fine, jamais de saut elargi.
+      isolation: {
+        ladder: [
+          {maxRpe:6,   steps:2, jumpFactor:1},
+          {maxRpe:7.5, steps:1, jumpFactor:1}
+        ]
+      },
+      overrides: [
+        // Hip thrust : saut de base deja large (30 lb), inutile de l'elargir.
+        {pattern:/hip thrust/, ladder:[
+          {maxRpe:6.5, steps:2, jumpFactor:1},
+          {maxRpe:7.5, steps:1, jumpFactor:1}
+        ]}
+      ]
+    },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },
     // updateAthleteStateFromResults() — suggestion.js

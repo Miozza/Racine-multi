@@ -558,6 +558,63 @@ try {
     MEM.clear();
   }
 
+  // ─── Echelon RPE (V4.5.56) ────────────────────────────────────────────────
+  // Avant : un seul palier (RPE <= 7 => un cran). RPE 5, 6 et 7 donnaient la
+  // meme suggestion et RPE 7.5 n'en donnait aucune — le RPE ne portait presque
+  // aucune information. Table : COACH_MOVEMENT_TUNING.rpeProgression.
+  {
+    const mainCtx = { label:'Back Squat', intents:[], kind:'main' };
+    function seedRpe(label, load, rpe, reps){
+      resetState();
+      const range = ctx.repRange(reps);
+      const rows = [
+        { date:'2026-01-01', load:load, reps:reps, rpe:rpe, range:range, status:'upgrade_ready', context:mainCtx },
+        { date:'2026-01-02', load:load, reps:reps, rpe:rpe, range:range, status:'upgrade_ready', context:mainCtx }
+      ];
+      ctx.state.athleteState.movements[label] = {
+        ranges: { [range]: { currentLoad:load, actualLoad:load, currentReps:reps, actualReps:reps, rpe:rpe, confidence:0.9, status:'upgrade_ready' } },
+        history: rows
+      };
+    }
+    function suggest(label, prog, reps){
+      return ctx.guardedSuggestedLoadDecision(label, prog, reps, { kind:'main', blockTitle:'Force principale' });
+    }
+
+    seedRpe('Back Squat', 185, 6, 8);
+    const easy = suggest('Back Squat', '185 lb', 8).loadNum;
+    seedRpe('Back Squat', 185, 7, 8);
+    const normal = suggest('Back Squat', '185 lb', 8).loadNum;
+    seedRpe('Back Squat', 185, 7.5, 8);
+    const limite = suggest('Back Squat', '185 lb', 8).loadNum;
+    assert(easy > normal, 'Echelon RPE : une seance a RPE 6 propose plus lourd qu a RPE 7 (' + easy + ' > ' + normal + ').');
+    assert(normal > 185, 'Echelon RPE : RPE 7 propose toujours une hausse d un cran.');
+    assert(limite > 185 && limite <= normal, 'Echelon RPE : RPE 7.5 progresse encore, sans depasser RPE 7.');
+
+    // Les freins hauts ne bougent pas : contrat de progression inchange.
+    seedRpe('Back Squat', 185, 8.5, 8);
+    assert(suggest('Back Squat', '195 lb', 8).loadNum <= 185, 'Frein RPE 8.5 : aucune hausse (inchange).');
+    seedRpe('Back Squat', 185, 9, 8);
+    assert(suggest('Back Squat', '195 lb', 8).loadNum <= 185, 'Verrou RPE >= 9 : aucune hausse automatique (inchange).');
+
+    // Isolation : progression plus fine, jamais de saut elargi.
+    seedRpe('Lateral Raise DB', 20, 6, 12);
+    const iso = suggest('Lateral Raise DB', '20 lb', 12).loadNum;
+    assert(iso > 20 && iso <= 25, 'Isolation : RPE 6 progresse d un cran fin, sans saut elargi (' + iso + ' lb).');
+
+    // Convergence des deux regles de relance : franchir le seuil d ecart
+    // (liftFromHistoryThresholds.gap = 20) ne doit plus faire MONTER la
+    // suggestion quand la charge du programme BAISSE. C est le defaut corrige
+    // en V4.5.56 : coachRuleLiftFromControlledHistory ajoutait +10 la ou
+    // coachRuleReferenceReelleValidee repartait de la reference seche.
+    seedRpe('Deadlift', 225, 7, 8);
+    const sousSeuil = suggest('Deadlift', '205 lb', 8).loadNum;   // ecart 20 => regle de relance
+    seedRpe('Deadlift', 225, 7, 8);
+    const surSeuil  = suggest('Deadlift', '210 lb', 8).loadNum;   // ecart 15 => reference reelle
+    assert(sousSeuil <= surSeuil,
+      'Seuil de relance : une charge de programme plus BASSE ne sort pas une suggestion plus HAUTE (' + sousSeuil + ' <= ' + surSeuil + ').');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

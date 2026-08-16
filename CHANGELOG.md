@@ -1,3 +1,12 @@
+## V4.5.56 — Le RPE reprend du pouvoir sur la charge
+
+- **Un seul palier, c'était presque aucune information.** Le moteur ne connaissait qu'une porte : `lastRpe <= 7` → un cran d'équipement. RPE 5, 6 et 7 donnaient rigoureusement la même suggestion, et RPE 7,5 n'en donnait aucune. Une séance vécue très facile et une séance vécue juste correcte sortaient le même poids.
+- **Une échelle graduée la remplace**, déclarée dans `scripts/charge/movement_tuning.js` (`rpeProgression`) et nulle part ailleurs — la règle de tuning par mouvement s'applique : trois crans et saut prudent élargi ×1,5 sous RPE 6, deux crans ×1,25 à 6,5, un cran jusqu'à 7,5. Le RPE choisit l'ambition, le saut maximal garde le dernier mot.
+- **Les freins hauts ne bougent pas d'un cheveu** : RPE ≥ 8,5 maintient ou réduit, RPE ≥ 9 bloque toute hausse automatique. C'est le contrat de progression, il n'était pas en cause.
+- **Deux règles se disputaient la même situation.** `coachRuleLiftFromControlledHistory` se posait 10 lb au-dessus de la référence contrôlée, `coachRuleReferenceReelleValidee` se posait dessus. Elles ne se départageaient que par un seuil d'écart (`liftFromHistoryThresholds.gap` = 20 lb), donc franchir ce seuil **vers le bas** faisait **monter** la suggestion : Deadlift historique 225, programme 205 → 235 lb, mais programme 210 → 230 lb. Les deux chemins convergent désormais sur la référence, et la hausse est décidée une seule fois, par l'échelon RPE.
+- **Un mouvement d'isolation pouvait rester figé pour toujours.** Le saut prudent d'une isolation vaut un pas de charge (2 lb sur un Lateral Raise DB), mais l'haltère suivant du rack est à +2,5 lb : le plafond interdisait mathématiquement la seule progression disponible. Le plafond ne descend plus sous un cran d'équipement — une prudence qui interdit le plus petit pas possible n'est pas de la prudence.
+- **Portée** : `scripts/charge/movement_tuning.js`, `scripts/charge/suggestion.js`. Garde-fous étendus : `dev/charge_engine_checks.js` (échelon, freins inchangés, isolation débloquée, non-régression du seuil de relance). Golden master ré-enregistré : 5 scénarios sur 20 changent, tous voulus ; les 15 autres — verrous RPE ≥ 9, deload, technique, WOD — sont intacts.
+
 ## V4.5.55 — Une seule cloche, sélecteur de son retiré
 
 - **Onze voix essayées, une retenue.** La palette avait un but — comparer à l'écoute — et ce but est atteint. Bols tibétains, cloches de temple, gongs, marimba, onde carrée : tout est supprimé. Reste la **Cloche**, modulation de fréquence à rapport inharmonique 1:1,41.

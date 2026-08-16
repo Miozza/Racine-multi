@@ -138,6 +138,35 @@ contexte technique/WOD/récupération
 
 Le moteur ne doit pas chercher à battre un PR à chaque séance. Il doit construire une progression répétable.
 
+#### Échelon RPE (depuis V4.5.56)
+
+« Limitée par le RPE réel » veut dire **graduée**, pas binaire. Le moteur n'a plus
+un seul palier (`RPE <= 7` → un cran) : il lit une échelle déclarée dans
+`scripts/charge/movement_tuning.js` (`rpeProgression`), qui donne pour un RPE
+donné un **nombre de crans** d'équipement et un **multiplicateur du saut maximal**.
+
+| RPE de la dernière série réussie | Crans proposés | Saut maximal |
+|---|---|---|
+| ≤ 6 | 3 | ×1,5 |
+| 6,5 | 2 | ×1,25 |
+| 7 – 7,5 | 1 | ×1 |
+| 8 | aucune hausse automatique | — |
+| ≥ 8,5 | maintien ou réduction | — |
+| ≥ 9 | **hausse bloquée** | — |
+
+Trois règles encadrent cette table et ne se négocient pas :
+
+- Le RPE choisit **l'ambition** ; le saut maximal prudent garde le **dernier mot**.
+  Un multiplicateur n'est pas un contournement du garde-fou : le saut reste borné,
+  il devient seulement fonction de l'effort réellement ressenti.
+- Les freins hauts (≥ 8,5 et ≥ 9) sont **hors de portée** de l'échelle.
+- Un plafond prudent ne descend **jamais** sous un cran d'équipement. Un plafond
+  plus petit que le plus petit pas disponible fige le mouvement définitivement —
+  ce n'est pas de la prudence, c'est une impasse.
+
+Tout ajustement de cette réponse se fait **dans la table**, jamais par un `if` sur
+le RPE dans une fonction de décision.
+
 ## Garde-fous obligatoires
 
 Avant une release qui touche aux charges, exécuter :

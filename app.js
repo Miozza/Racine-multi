@@ -1,5 +1,5 @@
-// Racine V4.5.55 — une seule cloche, sélecteur de son retiré
-var APP_VERSION = "V4.5.55";
+// Racine V4.5.56 — echelon RPE gradue + convergence des regles de relance
+var APP_VERSION = "V4.5.56";
 
 // Architecture stable
 // programs/*.js = plan prévu
