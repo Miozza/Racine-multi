@@ -11,6 +11,12 @@ function coachMovementEquipmentFamily(nameOrKey){
   if(!n)return '';
   if(/cable|poulie|rope|face pull|pushdown|pulldown|pull down/.test(n))return 'cable';
   if(/machine/.test(n))return 'machine';
+  // Goblet et kettlebell AVANT la ligne barre : un goblet squat contient
+  // « squat » et tombait dans la famille barre, avec un pas de 5 lb au lieu
+  // de 2,5. A 5 lb de depart, la seule progression possible devenait +100 %,
+  // que le reste du moteur refusait ensuite — le mouvement etait fige.
+  if(/goblet/.test(n))return 'db';
+  if(/kettlebell|kb swing|kb /.test(n))return 'kb';
   if(/haltere|halteres|dumbbell|db|bulgarian|db rdl|db reverse lunge|farmer carry/.test(n))return 'db';
   if(/landmine/.test(n))return 'landmine';
   if(/ring row|pull up|pullup|poids du corps|bodyweight/.test(n))return 'bodyweight';

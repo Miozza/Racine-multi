@@ -181,7 +181,9 @@ function coachFormatSuggestedLoad(label,value,fallbackText,suffix){
   var text=displayLoadForEquipment(label,String(value)+' '+unit);
   if(unit==='lb'){
     var family=(typeof coachMovementEquipmentFamily==='function')?coachMovementEquipmentFamily(label):'';
-    var perHand=/\/\s*main/i.test(fallback)||family==='db';
+    var single=(typeof coachMatchesAnyTuningPattern==='function')
+      && coachMatchesAnyTuningPattern(coachNormalizeMoveText(label),(window.COACH_MOVEMENT_TUNING||{}).singleImplementPatterns);
+    var perHand=(/\/\s*main/i.test(fallback)||family==='db')&&!single;
     if(perHand&&!/\/\s*main/i.test(text))text+=' / main';
   }
   if(/⚠/.test(fallback)&&!/⚠/.test(text))text+=' ⚠';
@@ -544,6 +546,45 @@ function coachRuleHistorySignalAdjustment(ctx){
   }
 }
 
+// Charge que l'evidence RPE de l'athlete MERITE : dernier poids + echelon du
+// barreau, corrige par la reactivite, borne par le saut maximal prudent.
+// Retourne lastLoad quand rien n'est merite. Une seule definition, utilisee a
+// la fois par coachRuleLastSetGuards (qui la propose) et par le portail Brain
+// (qui ne doit jamais descendre en dessous).
+function coachRpeEarnedLoad(ctx){
+  if(!ctx||!ctx.lastHasValidLoad||!(ctx.lastLoad>0))return 0;
+  if(ctx.contextLimited||ctx.isDeload)return ctx.lastLoad;
+  var rung=coachRpeProgressionRung(ctx.label,ctx.lastRpe);
+  if(!rung)return ctx.lastLoad;
+  var lastReps=coachHistoryRepsNumber(ctx.last);
+  // Zero rep sorti n'est PAS « cible atteinte » : `!lastReps` est vrai pour 0
+  // comme pour une ligne sans reps, et laisserait un echec total meriter une
+  // hausse. On exige une serie reellement sortie.
+  if(!(lastReps>0))return ctx.lastLoad;
+  if(ctx.target&&lastReps<ctx.target)return ctx.lastLoad;
+  // Un mouvement en recalibrage ou sous surveillance n'a rien merite non plus :
+  // meme liste que le plancher de validation (coachRuleFloorValidation).
+  var badStatuses=['recalibrating','watch','failed','major_fail','context_logged'];
+  if(ctx.last.status&&badStatuses.indexOf(ctx.last.status)!==-1)return ctx.lastLoad;
+  if(ctx.cap&&ctx.cap.status&&badStatuses.indexOf(ctx.cap.status)!==-1)return ctx.lastLoad;
+  if(!ctx.hist||ctx.hist.length<2)return ctx.lastLoad;
+  if(isTechnicalMovementInContext(ctx.label,ctx.moveContext))return ctx.lastLoad;
+  var react=coachRpeReactivityShift(ctx.hist,ctx.lastLoad,lastReps,ctx.target);
+  var steps=Math.max(0,rung.steps+react.shift);
+  if(steps<=0)return ctx.lastLoad;
+  var baseMaxJump=coachMaxJumpForExercise(ctx.label,ctx.lastLoad);
+  var maxJump=Math.max(baseMaxJump,Math.round(baseMaxJump*rung.jumpFactor));
+  var oneStep=nextLoadForExercise(ctx.label,ctx.lastLoad,1,ctx.currentLoad);
+  var maxAllowed=Math.max(ctx.lastLoad+maxJump,(oneStep>ctx.lastLoad)?oneStep:0);
+  var next=coachNextLoadSteps(ctx.label,ctx.lastLoad,steps,ctx.currentLoad);
+  while(next>maxAllowed){
+    var back=nextLoadForExercise(ctx.label,next,-1,ctx.currentLoad);
+    if(!(back>ctx.lastLoad)||back>=next)break;
+    next=back;
+  }
+  return (next>ctx.lastLoad&&next<=maxAllowed)?next:ctx.lastLoad;
+}
+
 function coachRuleLastSetGuards(ctx){
   if(!ctx.last)return;
   // Le saut maximal prudent devient fonction du RPE reel : une seance vecue
@@ -746,8 +787,18 @@ function coachFinalizeSuggestionDecision(ctx){
   var text=coachFormatSuggestedLoad(ctx.label,ctx.rounded,ctx.originalText,'');
   if(ctx.severity==="warning"||ctx.severity==="critical")text += " ⚠";
   var decision={label:ctx.label,loadText:text,loadNum:ctx.rounded,severity:ctx.severity,reason:ctx.reason,last:ctx.last,cap:ctx.cap,historySignal:ctx.historySignal};
-  if(typeof coachBrainApplyStatsGate==='function' && ctx.lastHasValidLoad && ctx.rounded>ctx.lastLoad && ctx.severity==='ok' && !ctx.contextLimited && !ctx.isDeload){
-    decision=coachBrainApplyStatsGate(decision,ctx.label,ctx.hist,ctx.moveContext,ctx.target,ctx.lastLoad);
+  // Le portail Brain s'applique aussi quand une regle a pose un « watch ».
+  // Avant, la condition etait severity === 'ok' seule : toute regle levant une
+  // simple surveillance court-circuitait le portail, si bien qu'une charge de
+  // programme PLUS LOURDE pouvait sortir une suggestion PLUS LEGERE (programme
+  // 225 -> 230 donnait 230 puis 225). Le chemin le plus confiant recevait le
+  // traitement le plus prudent, l'inverse de l'intention.
+  // 'warning' et 'critical' restent exclus : un frein dur a deja reduit la
+  // charge, le portail n'a rien a y ajouter.
+  var gateOpen = (ctx.severity==='ok' || ctx.severity==='watch');
+  var earnedFloor = (typeof coachRpeEarnedLoad==='function') ? coachRpeEarnedLoad(ctx) : 0;
+  if(typeof coachBrainApplyStatsGate==='function' && ctx.lastHasValidLoad && ctx.rounded>ctx.lastLoad && gateOpen && !ctx.contextLimited && !ctx.isDeload){
+    decision=coachBrainApplyStatsGate(decision,ctx.label,ctx.hist,ctx.moveContext,ctx.target,ctx.lastLoad,earnedFloor);
     decision.loadText=coachFormatSuggestedLoad(ctx.label,decision.loadNum,ctx.originalText,'');
     if((decision.severity==='warning'||decision.severity==='critical')&&decision.loadText.indexOf('⚠')<0)decision.loadText+=' ⚠';
     ctx.brainAdjusted=true;
@@ -1199,7 +1250,10 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       // ces lignes pour le reste du moteur ; le gate doit voir le meme historique,
       // sinon un deload recent peut casser le compteur de validations et
       // redemander 2-3 confirmations sur une charge deja maitrisee.
-      safeDecision=coachBrainApplyStatsGate(safeDecision,label,hist,ctx,targetReps,lastLoad);
+      // Plancher : la decision du moteur profond, qui a deja applique tout
+      // l'echelon RPE. La couche V1.16 peut amortir son propre supplement
+      // d'ambition, pas defaire ce que l'evidence de l'athlete a etabli.
+      safeDecision=coachBrainApplyStatsGate(safeDecision,label,hist,ctx,targetReps,lastLoad,baseNum);
       newLoad=safeDecision.loadNum;
       reason=safeDecision.reason;
       repsSuggestion='';

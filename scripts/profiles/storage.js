@@ -301,7 +301,24 @@
     var state = null, charges = null;
     try{ state = JSON.parse(localStorage.getItem(keys.state) || "null"); }catch(e){}
     try{ charges = JSON.parse(localStorage.getItem(keys.charges) || "null"); }catch(e){}
-    return { schema:"racine-profile-export-v2", exportVersion: EXPORT_VERSION, exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges };
+    // Tout ce qui vit SOUS la clé d'état du profil (`racineState::<id>::…`).
+    // La mémoire Brain est là — confiance, précision, ambition, journal et la
+    // courbe d'erreur — et elle n'était dans aucun export : une restauration
+    // repartait de zéro sans le dire, alors que l'ambition mesurée pilote le
+    // saut maximal depuis V4.5.58 et que la courbe d'erreur est le critère de
+    // décision de Brain.js. On balaie par préfixe plutôt que de nommer la clé :
+    // le suffixe porte une version (`brain-memory-v1`) et une version future
+    // serait emportée sans que ce fichier ait à la connaître.
+    var extras = {};
+    try{
+      var prefix = keys.state + "::";
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if(!k || k.indexOf(prefix) !== 0) continue;
+        try{ extras[k.slice(prefix.length)] = JSON.parse(localStorage.getItem(k) || "null"); }catch(e){}
+      }
+    }catch(e){}
+    return { schema:"racine-profile-export-v2", exportVersion: EXPORT_VERSION, exportedAt:new Date().toISOString(), appVersion:(window.APP_VERSION||null), profile: profile, state: state, customCharges: charges, stateExtras: extras };
   };
 
   // Export multi-profils : un seul fichier JSON contenant tous les profils du
@@ -369,6 +386,20 @@
     var keys = api.storageKeysFor(incoming.id);
     try{ if(blob.state) localStorage.setItem(keys.state, JSON.stringify(blob.state)); }catch(e){}
     try{ if(blob.customCharges) localStorage.setItem(keys.charges, JSON.stringify(blob.customCharges)); }catch(e){}
+    // Réécrit les blocs annexes sous la clé du NOUVEAU profil (mémoire Brain).
+    // Absent des exports antérieurs : leur import reste inchangé, aucun champ
+    // n'est requis. Un export récent reste lisible par une version ancienne,
+    // qui ignore simplement ce bloc — la compatibilité tient dans les deux sens.
+    try{
+      var extras = blob.stateExtras;
+      if(extras && typeof extras === "object"){
+        Object.keys(extras).forEach(function(suffix){
+          var value = extras[suffix];
+          if(value === undefined || value === null) return;
+          try{ localStorage.setItem(keys.state + "::" + suffix, JSON.stringify(value)); }catch(e){}
+        });
+      }
+    }catch(e){}
     return incoming.id;
   };
 

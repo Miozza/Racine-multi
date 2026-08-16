@@ -221,7 +221,26 @@ function coachBrainBuildStats(label,history,context,targetReps,proposedLoad,last
   }catch(e){}
   return built;
 }
-function coachBrainApplyStatsGate(decision,label,history,context,targetReps,lastLoad){
+// Hausse amortie par le portail de confiance. Table : COACH_MOVEMENT_TUNING
+// .brainGate. Amortir plutot que geler : un gel complet enferme les charges
+// legeres, dont la confiance ne peut plus grandir faute d'observations.
+// Ne remonte jamais au-dessus de ce que le moteur proposait.
+function coachBrainDampedRise(label,lastLoad,proposed){
+  var G=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.brainGate)||{damping:0.35,keepOneStep:true};
+  var damping=Number(G.damping);
+  if(!(damping>0))return lastLoad;
+  var target=lastLoad+(proposed-lastLoad)*damping;
+  var kept=(typeof roundLoadForExercise==='function')
+    ? roundLoadForExercise(label,target,'down',String(lastLoad))
+    : Math.floor(target);
+  if(!(kept>0))kept=lastLoad;
+  // Volontairement PAS de cran minimal ici : accorder un cran quand le RPE
+  // n'en meritait aucun rouvrirait la hausse que le portail est cense retenir.
+  // Le plancher merite est fourni par l'appelant (coachRpeEarnedLoad).
+  return Math.min(kept<lastLoad?lastLoad:kept,proposed);
+}
+
+function coachBrainApplyStatsGate(decision,label,history,context,targetReps,lastLoad,earnedFloor){
   if(!decision||!(decision.loadNum>0)||!(lastLoad>0))return decision;
   var proposed=Number(decision.loadNum)||0;
   if(proposed<=lastLoad)return decision;
@@ -239,7 +258,13 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   }
   if(!shouldGate)return decision;
   var old=proposed;
-  var kept=lastLoad;
+  // Le portail amortit une hausse, il ne descend JAMAIS sous ce que l'evidence
+  // RPE de l'athlete a merite : sinon la confiance statistique effacerait le
+  // signal le plus direct dont dispose le moteur, celui de l'effort ressenti.
+  var kept=coachBrainDampedRise(label,lastLoad,proposed);
+  var floor=Number(earnedFloor)||0;
+  if(floor>kept&&floor<=proposed)kept=floor;
+  if(kept>=proposed)return decision;
   var loadText=String(kept)+' lb ⚠';
   var reason='Brain V2 — '+extra+' Intention '+stats.intent+', sensibilite '+stats.sensitivity+'. Option ambitieuse : '+old+' lb.';
   decision.loadNum=kept;

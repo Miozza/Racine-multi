@@ -76,3 +76,24 @@ retirée du code — aucun envoi réseau lors d'une sauvegarde de séance.
 ## Verdict
 
 L historique est un outil du moteur, mais le journal brut et l etat derive n ont pas le meme role. Le moteur lit une synthese derivee; l app conserve le journal brut pour audit, affichage et reconstruction.
+
+
+## Ce que l'export doit emporter (depuis V4.5.59)
+
+L'export JSON est le **seul** mécanisme de sauvegarde : aucune copie serveur,
+perte définitive. Il ne suffit donc pas qu'un export se relise lui-même — il doit
+emporter **tout ce qui vit sous la clé d'état du profil**.
+
+```txt
+racineState::<id>                     → bloc `state`
+racineCharges::<id>                   → bloc `customCharges`
+racineState::<id>::<suffixe>          → bloc `stateExtras` (mémoire Brain…)
+```
+
+`stateExtras` est balayé **par préfixe**, jamais par nom de clé : le suffixe
+porte une version (`brain-memory-v1`) et une version future doit être emportée
+sans que `storage.js` ait à la connaître.
+
+Contrôle à refaire à chaque ajout d'une clé de stockage : écrire sur un appareil,
+exporter, importer sur un stockage vierge, comparer. Un aller-retour qui perd une
+clé en silence est un défaut de sauvegarde, pas un détail de format.
