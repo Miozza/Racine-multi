@@ -49,10 +49,10 @@
   },
   "progression_ready_low_rpe": {
     "label": "Back Squat",
-    "loadText": "190 lb",
-    "loadNum": 190,
+    "loadText": "200 lb",
+    "loadNum": 200,
     "severity": "watch",
-    "reason": "Progression prete : dernier 185 lb x 8 @RPE 6. Petite hausse vers la prochaine charge disponible.",
+    "reason": "Progression prete : dernier 185 lb x 8 @RPE 6. Hausse de 3 crans vers 200 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,
@@ -183,10 +183,10 @@
   },
   "lift_from_history_barbell_row": {
     "label": "Barbell Row",
-    "loadText": "145 lb",
-    "loadNum": 145,
+    "loadText": "140 lb",
+    "loadNum": 140,
     "severity": "watch",
-    "reason": "Historique reel controle detecte : 135 lb x 8 @RPE 7. Le moteur evite de sous-suggerer sous une reference facile.",
+    "reason": "Progression prete : dernier 135 lb x 8 @RPE 7. Hausse de 1 cran vers 140 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,
@@ -235,10 +235,10 @@
   },
   "lift_from_history_generic_gap20": {
     "label": "Deadlift",
-    "loadText": "235 lb",
-    "loadNum": 235,
+    "loadText": "230 lb",
+    "loadNum": 230,
     "severity": "watch",
-    "reason": "Historique reel controle detecte : 225 lb x 8 @RPE 7. Le moteur evite de sous-suggerer sous une reference facile.",
+    "reason": "Progression prete : dernier 225 lb x 8 @RPE 7. Hausse de 1 cran vers 230 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,
@@ -287,10 +287,10 @@
   },
   "isolation_small_step": {
     "label": "Lateral Raise DB",
-    "loadText": "20 lb / main",
-    "loadNum": 20,
+    "loadText": "22.5 lb / main",
+    "loadNum": 22.5,
     "severity": "watch",
-    "reason": "Progression prete, mais aucune charge superieure disponible/configuree dans le saut prudent autorise.",
+    "reason": "Progression prete : dernier 20 lb x 12 @RPE 6. Hausse de 2 crans vers 22.5 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 12,
@@ -767,10 +767,10 @@
   },
   "reference_reelle_validee_small_gap": {
     "label": "Back Squat",
-    "loadText": "180 lb",
-    "loadNum": 180,
+    "loadText": "185 lb",
+    "loadNum": 185,
     "severity": "watch",
-    "reason": "Reference reelle plus haute validee : 180 lb x 8 @RPE 7.5. La prochaine suggestion repart de cette charge, pas de l'ancienne suggestion.",
+    "reason": "Progression prete : dernier 180 lb x 8 @RPE 7.5. Hausse de 1 cran vers 185 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 8,

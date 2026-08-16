@@ -60,6 +60,83 @@ function coachApplyDeloadCap(suggested,label,context,history,lastLoad,bestContro
   return {value:suggested,changed:false,reason:''};
 }
 
+// Echelon de progression correspondant au RPE reel de la derniere serie.
+// Retourne null au-dela du dernier barreau : pas de hausse automatique.
+// Table : COACH_MOVEMENT_TUNING.rpeProgression (movement_tuning.js).
+function coachRpeProgressionRung(label,rpe){
+  var r=Number(rpe)||0;
+  if(!(r>0))return null;
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.rpeProgression)||null;
+  if(!T)return (r<=7)?{steps:1,jumpFactor:1}:null;
+  var n=(typeof coachNormalizeMoveText==='function')?coachNormalizeMoveText(label):String(label||'');
+  var table=null;
+  var ov=T.overrides||[];
+  for(var i=0;i<ov.length;i++){ if(ov[i].pattern.test(n)){ table=ov[i]; break; } }
+  if(!table && T.isolation && typeof isIsolationMovement==='function' && isIsolationMovement(label)) table=T.isolation;
+  if(!table) table=T.default;
+  var ladder=(table&&table.ladder)||[];
+  for(var j=0;j<ladder.length;j++){
+    if(r<=Number(ladder[j].maxRpe)){
+      // steps peut valoir 0 (barreau de maintien) : ne pas passer par
+      // "|| 1", qui transformerait ce zero en une hausse d'un cran.
+      var st=Number(ladder[j].steps);
+      if(!isFinite(st)||st<0)st=1;
+      var jf=Number(ladder[j].jumpFactor);
+      if(!isFinite(jf)||jf<=0)jf=1;
+      return {steps:st,jumpFactor:jf};
+    }
+  }
+  return null;
+}
+
+// Decalage de reactivite : ce que raconte l'historique recent, en plus du
+// seul RPE de la derniere seance. Retourne un entier (-1, 0 ou +1 par
+// modificateur, cumules) applique au nombre de crans du barreau RPE.
+// Ne touche jamais au saut maximal prudent : voir COACH_MOVEMENT_TUNING.
+function coachRpeReactivityShift(hist,lastLoad,lastReps,target){
+  var M=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.rpeProgression&&window.COACH_MOVEMENT_TUNING.rpeProgression.modifiers)||null;
+  if(!M)return {shift:0,notes:[]};
+  var shift=0,notes=[];
+
+  // 1. Tendance du RPE a charge egale.
+  var T=M.trend;
+  if(T&&Array.isArray(hist)&&lastLoad>0){
+    var same=hist.filter(function(row){
+      return coachHistoryLoadNumber(row)===lastLoad && coachHistoryRpeNumber(row)>0;
+    }).slice(-(Number(T.window)||3));
+    if(same.length>=(Number(T.minRows)||3)){
+      var first=coachHistoryRpeNumber(same[0]);
+      var latest=coachHistoryRpeNumber(same[same.length-1]);
+      var d=Number(T.delta)||0.5;
+      if(latest<=first-d){ shift+=Number(T.shiftEasier)||0; notes.push("meme charge de moins en moins couteuse (RPE "+first+" -> "+latest+")"); }
+      else if(latest>=first+d){ shift+=Number(T.shiftHarder)||0; notes.push("meme charge de plus en plus couteuse (RPE "+first+" -> "+latest+")"); }
+    }
+  }
+
+  // 2. Reps depassees sur la derniere serie.
+  var R=M.repsOvershoot;
+  if(R&&target>0&&lastReps>0&&(lastReps-target)>=(Number(R.minExtra)||2)){
+    shift+=Number(R.shift)||0;
+    notes.push(lastReps+" reps pour "+target+" demandees");
+  }
+
+  return {shift:shift,notes:notes};
+}
+
+// Applique N crans d'equipement vers le haut a partir d'une charge.
+// nextLoadForExercise() ne connait qu'une direction : on itere, en s'arretant
+// des que le rack ne propose plus rien de superieur.
+function coachNextLoadSteps(label,from,steps,loadText){
+  var cur=Number(from)||0;
+  var n=Math.max(1,Number(steps)||1);
+  for(var i=0;i<n;i++){
+    var nx=nextLoadForExercise(label,cur,1,loadText);
+    if(!(nx>cur))break;
+    cur=nx;
+  }
+  return cur;
+}
+
 function coachLastSetIsSimilarOrHarder(target,lastReps){
   target=Number(target)||0;lastReps=Number(lastReps)||0;
   if(!target||!lastReps)return true;
@@ -423,7 +500,17 @@ function coachRuleLiftFromControlledHistory(ctx){
       && !isIsolationMovement(ctx.label)
       && !isTechnicalMovementInContext(ctx.label,ctx.moveContext);
     if(allowLiftFromHistory){
-      ctx.suggested=Math.min(ctx.bestControlled.load+coachMaxJumpForExercise(ctx.label,ctx.bestControlled.load), ctx.bestControlled.load+10);
+      // Se poser SUR la reference controlee, pas au-dessus. La hausse est
+      // ensuite decidee par l'echelon RPE dans coachRuleLastSetGuards, comme
+      // sur le chemin voisin coachRuleReferenceReelleValidee.
+      // Avant V4.5.56 cette regle ajoutait +10 lb ici alors que le chemin
+      // voisin repartait de la reference seche : les deux regles couvrent la
+      // meme situation et ne se departageaient que par le seuil d'ecart
+      // (liftFromHistoryThresholds.gap). Resultat, franchir ce seuil VERS LE
+      // BAS faisait MONTER la suggestion — une charge de programme plus lourde
+      // sortait une suggestion plus legere. Les deux chemins convergent
+      // desormais sur la meme valeur.
+      ctx.suggested=ctx.bestControlled.load;
       ctx.mode="nearest";
       ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
       ctx.reason="Historique reel controle detecte : "+ctx.bestControlled.load+" lb x "+ctx.bestControlled.reps+" @RPE "+ctx.bestControlled.rpe+". Le moteur evite de sous-suggerer sous une reference facile.";
@@ -459,7 +546,12 @@ function coachRuleHistorySignalAdjustment(ctx){
 
 function coachRuleLastSetGuards(ctx){
   if(!ctx.last)return;
-  var maxJump=coachMaxJumpForExercise(ctx.label,ctx.lastLoad);
+  // Le saut maximal prudent devient fonction du RPE reel : une seance vecue
+  // facile autorise un saut plus large, une seance limite garde le saut de
+  // base. Les freins RPE >= 8.5 / >= 9 plus bas ne sont pas concernes.
+  var rung=coachRpeProgressionRung(ctx.label,ctx.lastRpe);
+  var baseMaxJump=coachMaxJumpForExercise(ctx.label,ctx.lastLoad);
+  var maxJump=rung?Math.max(baseMaxJump,Math.round(baseMaxJump*rung.jumpFactor)):baseMaxJump;
   var lastReps=coachHistoryRepsNumber(ctx.last);
   var repsReached=!ctx.target || !lastReps || lastReps>=ctx.target;
   if(ctx.lastHasValidLoad&&ctx.lastRpe<=8&&ctx.suggested>ctx.lastLoad+maxJump){
@@ -467,15 +559,39 @@ function coachRuleLastSetGuards(ctx){
     ctx.reason="Progression limitee : derniere reference "+ctx.lastLoad+" lb @RPE "+ctx.lastRpe+". Saut maximal prudent +"+maxJump+" lb.";
     ctx.brainAdjusted=true;
   }
-  if(ctx.lastHasValidLoad&&ctx.lastRpe>0&&ctx.lastRpe<=7&&repsReached&&!ctx.contextLimited&&!isTechnicalMovementInContext(ctx.label,ctx.moveContext)&&!ctx.isDeload&&ctx.hist.length>=2){
-    var next=nextLoadForExercise(ctx.label,ctx.lastLoad,1,ctx.currentLoad);
-    var maxAllowed=ctx.lastLoad+maxJump;
-    if(next&&next>ctx.lastLoad&&next<=maxAllowed){
+  if(ctx.lastHasValidLoad&&ctx.lastRpe>0&&rung&&repsReached&&!ctx.contextLimited&&!isTechnicalMovementInContext(ctx.label,ctx.moveContext)&&!ctx.isDeload&&ctx.hist.length>=2){
+    // Un plafond prudent plus petit que le plus petit cran disponible sur le
+    // rack n'est pas de la prudence : il interdit la seule progression
+    // possible. Cas reel (anterieur a V4.5.56) : Lateral Raise DB a 20 lb,
+    // saut isolation 2 lb, haltere suivant 22,5 lb — le mouvement etait fige
+    // definitivement. Le plafond ne descend donc jamais sous un cran.
+    var oneStep=nextLoadForExercise(ctx.label,ctx.lastLoad,1,ctx.currentLoad);
+    var maxAllowed=Math.max(ctx.lastLoad+maxJump, (oneStep>ctx.lastLoad)?oneStep:0);
+    // Le barreau RPE donne l'ambition de base, la reactivite la corrige d'un
+    // cran selon la tendance recente, puis le saut maximal rabote. Ordre
+    // volontaire : le garde-fou passe toujours en dernier.
+    var react=coachRpeReactivityShift(ctx.hist,ctx.lastLoad,lastReps,ctx.target);
+    var steps=Math.max(0,rung.steps+react.shift);
+    var next=steps>0?coachNextLoadSteps(ctx.label,ctx.lastLoad,steps,ctx.currentLoad):ctx.lastLoad;
+    while(next>maxAllowed){
+      var back=nextLoadForExercise(ctx.label,next,-1,ctx.currentLoad);
+      if(!(back>ctx.lastLoad)||back>=next)break;
+      next=back;
+    }
+    if(steps>0&&next&&next>ctx.lastLoad&&next<=maxAllowed){
       if(ctx.suggested<=ctx.lastLoad){
         ctx.suggested=next;ctx.mode="up";ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
-        ctx.reason="Progression prete : dernier "+ctx.lastLoad+" lb x "+(lastReps||ctx.target)+" @RPE "+ctx.lastRpe+". Petite hausse vers la prochaine charge disponible.";
+        ctx.reason="Progression prete : dernier "+ctx.lastLoad+" lb x "+(lastReps||ctx.target)+" @RPE "+ctx.lastRpe+". Hausse de "+steps+" cran"+(steps>1?"s":"")+" vers "+next+" lb"
+          +(react.notes.length?" — "+react.notes.join(", "):"")+".";
         ctx.brainAdjusted=true;
       }
+    }else if(steps<=0&&ctx.suggested<=ctx.lastLoad){
+      // Barreau a zero cran (RPE 8, ou tendance qui durcit) : on maintient et
+      // on le DIT, au lieu de laisser une zone morte silencieuse.
+      ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+      ctx.reason="Maintien a "+ctx.lastLoad+" lb : RPE "+ctx.lastRpe+" sur la derniere serie"
+        +(react.notes.length?" — "+react.notes.join(", "):"")+". Confirme cette charge avant de monter.";
+      ctx.brainAdjusted=true;
     }else if(ctx.suggested<=ctx.lastLoad){
       ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
       ctx.reason="Progression prete, mais aucune charge superieure disponible/configuree dans le saut prudent autorise.";

@@ -13,7 +13,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     debutant: {
       label: "Débutant",
       hint: "Moins de 6 mois d'entraînement structuré en force.",
-      defaultAggressiveness: 0.7,
+      defaultAggressiveness: 0.75,
       fallbackRatio: 0.45
     },
     intermediaire: {
@@ -25,7 +25,7 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     avance: {
       label: "Avancé",
       hint: "Plus de 3 ans, technique solide sur les mouvements principaux.",
-      defaultAggressiveness: 1.25,
+      defaultAggressiveness: 1.20,
       fallbackRatio: 1.0
     }
   };

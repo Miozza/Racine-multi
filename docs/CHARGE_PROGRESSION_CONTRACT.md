@@ -138,6 +138,93 @@ contexte technique/WOD/récupération
 
 Le moteur ne doit pas chercher à battre un PR à chaque séance. Il doit construire une progression répétable.
 
+#### Échelon RPE (depuis V4.5.56)
+
+« Limitée par le RPE réel » veut dire **graduée**, pas binaire. Le moteur n'a plus
+un seul palier (`RPE <= 7` → un cran) : il lit une échelle déclarée dans
+`scripts/charge/movement_tuning.js` (`rpeProgression`), qui donne pour un RPE
+donné un **nombre de crans** d'équipement et un **multiplicateur du saut maximal**.
+
+| RPE de la dernière série réussie | Crans proposés | Saut maximal |
+|---|---|---|
+| ≤ 6 | 3 | ×1,5 |
+| 6,5 | 2 | ×1,25 |
+| 7 – 7,5 | 1 | ×1 |
+| 8 | aucune hausse automatique | — |
+| ≥ 8,5 | maintien ou réduction | — |
+| ≥ 9 | **hausse bloquée** | — |
+
+Trois règles encadrent cette table et ne se négocient pas :
+
+- Le RPE choisit **l'ambition** ; le saut maximal prudent garde le **dernier mot**.
+  Un multiplicateur n'est pas un contournement du garde-fou : le saut reste borné,
+  il devient seulement fonction de l'effort réellement ressenti.
+- Les freins hauts (≥ 8,5 et ≥ 9) sont **hors de portée** de l'échelle.
+- Un plafond prudent ne descend **jamais** sous un cran d'équipement. Un plafond
+  plus petit que le plus petit pas disponible fige le mouvement définitivement —
+  ce n'est pas de la prudence, c'est une impasse.
+
+Tout ajustement de cette réponse se fait **dans la table**, jamais par un `if` sur
+le RPE dans une fonction de décision.
+
+#### Réactivité — la tendance, pas seulement la dernière valeur (depuis V4.5.57)
+
+Un barreau seul ne lit **qu'un chiffre** : le RPE de la dernière séance. Deux
+athlètes à RPE 7 n'ont pourtant pas le même élan si l'un descend de 8 à 7 pendant
+que l'autre monte de 6 à 7. Et sur une barre, la sortie est quantifiée à 5 lb :
+ajouter des barreaux ne crée aucune finesse supplémentaire — seule la **direction**
+en crée.
+
+Les modificateurs de `rpeProgression.modifiers` décalent le barreau d'un cran :
+
+| Signal | Lu sur | Effet |
+|---|---|---|
+| Même charge de moins en moins coûteuse (RPE −0,5 sur 3 séances) | historique récent | +1 cran |
+| Même charge de plus en plus coûteuse (RPE +0,5 sur 3 séances) | historique récent | −1 cran |
+| Reps dépassées d'au moins 2 | dernière série | +1 cran |
+
+Trois limites tiennent ce mécanisme :
+
+- Un modificateur ne touche **jamais** au saut maximal prudent. Il rend le moteur
+  plus prompt à utiliser la marge existante, il ne l'élargit pas.
+- Les freins ≥ 8,5 et ≥ 9 sont **hors de portée** des modificateurs.
+- En dessous de 3 séances comparables, **aucune tendance n'est affirmée**.
+
+Le barreau RPE 8 vaut zéro cran : par défaut, un **maintien annoncé** — pas la
+zone morte silencieuse d'avant, où 7,5 progressait, 8,5 freinait et 8 ne faisait
+rien sans jamais le dire. Une tendance qui s'allège peut le promouvoir à un cran.
+
+#### Vitesse de progression — mesurée, pas déclarée (depuis V4.5.58)
+
+La vitesse de progression **ne se déclare plus**. Elle se mesure, parce que le
+moteur l'observe déjà : Brain tient une `ambition` par mouvement et intention,
+qui monte quand ses prédictions se révèlent trop prudentes et descend quand elles
+se révèlent trop ambitieuses. Un curseur libre qui ignorait cette mesure était un
+second avis sur la même question.
+
+```txt
+facteur de saut = vitesse MESURÉE  ×  biais DÉCLARÉ
+```
+
+- **Mesurée** — `coachObservedAggressiveness(label)` agrège l'`ambition` de toutes
+  les intentions du mouvement, pondérée par le nombre de prédictions testées. En
+  dessous de `minObservations`, le facteur est tiré vers 1 au prorata : **on ne
+  déduit pas une vitesse de deux séances**, et sans aucune observation il vaut
+  exactement 1 — jamais de vitesse inventée.
+- **Déclaré** — trois positions seulement : `prudent` · `normal` · `ambitieux`.
+  Le choix n'est plus « à quelle vitesse je progresse » mais « penche plutôt d'un
+  côté ou de l'autre de ce que tu observes ».
+
+Deux invariants :
+
+- Un profil antérieur porte un nombre libre dans [0,4 ; 1,8]. Il est ramené **à la
+  lecture** à la position la plus proche. Le stockage n'est jamais réécrit, donc
+  **aucune migration** n'est requise et un export ancien reste importable.
+- Les bornes finales [0,4 ; 1,8] s'appliquent au **produit**, inchangées.
+
+Tout réglage de cette traduction vit dans `progressionSpeed`
+(`scripts/charge/movement_tuning.js`), jamais en dur dans une fonction.
+
 ## Garde-fous obligatoires
 
 Avant une release qui touche aux charges, exécuter :

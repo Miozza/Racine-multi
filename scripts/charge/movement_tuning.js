@@ -46,6 +46,110 @@
         {pattern:/hip thrust/, base:30}
       ]
     },
+    // coachRpeProgressionRung() — suggestion.js
+    // Reponse graduee au RPE de la derniere serie reussie.
+    // Avant V4.5.56 le moteur n'avait qu'un seul palier (RPE <= 7 => un cran) :
+    // RPE 5, 6 et 7 donnaient exactement la meme suggestion, et RPE 7.5 n'en
+    // donnait aucune. Le RPE portait donc presque aucune information.
+    // L'echelle est lue de haut en bas : la premiere ligne dont maxRpe est >=
+    // au RPE reel gagne. Au-dela de la derniere ligne, aucune hausse
+    // automatique — les freins RPE >= 8.5 et >= 9 restent inchanges et ont
+    // toujours le dernier mot (contrat de progression).
+    //   steps      = nombre de crans d'equipement proposes
+    //   jumpFactor = multiplicateur du saut maximal prudent (maxJumpBase)
+    // jumpFactor > 1 n'est PAS un contournement du garde-fou : le saut reste
+    // borne, il devient seulement fonction de l'effort reellement ressenti,
+    // ce que le contrat demande ("progression limitee par le RPE reel").
+    rpeProgression: {
+      default: {
+        ladder: [
+          {maxRpe:6,   steps:3, jumpFactor:1.5},
+          {maxRpe:6.5, steps:2, jumpFactor:1.25},
+          {maxRpe:7,   steps:1, jumpFactor:1},
+          {maxRpe:7.5, steps:1, jumpFactor:1},
+          // RPE 8 etait une zone morte : 7,5 progressait, 8,5 freinait, et 8
+          // ne faisait rien du tout sans jamais le dire. Barreau a zero cran :
+          // meme resultat qu'avant par defaut, mais la tendance peut
+          // desormais le promouvoir a un cran quand le meme poids devient
+          // regulierement moins cher.
+          {maxRpe:8,   steps:0, jumpFactor:1}
+        ]
+      },
+      // Isolation : le cran d'equipement est deja petit et le geste est plus
+      // sensible a la fatigue. Progression plus fine, jamais de saut elargi.
+      isolation: {
+        ladder: [
+          {maxRpe:6,   steps:2, jumpFactor:1},
+          {maxRpe:7.5, steps:1, jumpFactor:1},
+          {maxRpe:8,   steps:0, jumpFactor:1}
+        ]
+      },
+      overrides: [
+        // Hip thrust : saut de base deja large (30 lb), inutile de l'elargir.
+        {pattern:/hip thrust/, ladder:[
+          {maxRpe:6.5, steps:2, jumpFactor:1},
+          {maxRpe:7.5, steps:1, jumpFactor:1},
+          {maxRpe:8,   steps:0, jumpFactor:1}
+        ]}
+      ],
+      // ─── Reactivite (V4.5.57) ───────────────────────────────────────────
+      // Un barreau seul ne lit qu'UNE valeur : le RPE de la derniere seance.
+      // Deux athletes a RPE 7 n'ont pourtant pas le meme elan si l'un descend
+      // de 8 a 7 pendant que l'autre monte de 6 a 7. Les modificateurs
+      // ci-dessous decalent le barreau d'un cran selon ce que raconte
+      // l'historique recent — la finesse que l'athlete saisit (7,5 · 7,8 ·
+      // 8,5) sert enfin a quelque chose.
+      //
+      // Limite volontaire : un modificateur ne touche JAMAIS au saut maximal
+      // prudent (jumpFactor reste celui du barreau RPE). Il peut rendre le
+      // moteur plus prompt a utiliser la marge existante, jamais l'elargir.
+      modifiers: {
+        // Tendance du RPE a charge egale. Si le meme poids coute de moins en
+        // moins cher, l'athlete progresse plus vite que le moteur : on avance
+        // d'un barreau. S'il coute de plus en plus cher, on recule — avant
+        // d'arriver au frein 8,5, pas apres.
+        trend: {
+          window: 3,        // seances comparables regardees
+          minRows: 3,       // en dessous, aucune tendance n'est affirmee
+          delta: 0.5,       // ecart de RPE minimal pour parler de tendance
+          shiftEasier: 1,
+          shiftHarder: -1
+        },
+        // Reps depassees sur la derniere serie : 10 reps la ou 8 etaient
+        // demandees, au meme RPE, est un signal fort et deja enregistre.
+        repsOvershoot: { minExtra: 2, shift: 1 }
+      }
+    },
+    // coachAggressivenessFactor() / coachObservedAggressiveness() — scaling.js
+    // La vitesse de progression etait DECLAREE par l'athlete (curseur libre
+    // 0,4-1,8) alors que Brain la MESURE deja, mouvement par mouvement :
+    // `ambition` monte quand les predictions se revelent trop prudentes,
+    // descend quand elles se revelent trop ambitieuses. Deux notions de la
+    // meme chose, qui ne se parlaient pas.
+    //
+    // Desormais : le moteur mesure, le profil incline. Le curseur ne choisit
+    // plus la vitesse, il choisit un BIAIS sur la vitesse observee.
+    progressionSpeed: {
+      // Trois positions declarables. Un profil existant porte un nombre libre
+      // dans [0,4 ; 1,8] : il est ramene A LA LECTURE a la position la plus
+      // proche — aucune reecriture du stockage, donc aucune migration.
+      bias: {
+        prudent:   0.75,
+        normal:    1.00,
+        ambitieux: 1.20
+      },
+      defaultBias: 'normal',
+      // Traduction de l'ambition mesuree par Brain en facteur de saut.
+      // center    : valeur neutre d'`ambition` (cf. brain_memory.js)
+      // span      : demi-amplitude d'`ambition` autour du centre
+      // amplitude : ecart de facteur atteint aux bornes de `span`
+      // minObservations : nombre de predictions testees avant de faire
+      //   pleinement confiance a la mesure. En dessous, le facteur est tire
+      //   vers 1 au prorata — on ne deduit pas une vitesse de deux seances.
+      observed: { center: 0.60, span: 0.35, amplitude: 0.30, minObservations: 6 },
+      // Bornes finales, inchangees depuis l'origine.
+      clamp: { min: 0.4, max: 1.8 }
+    },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },
     // updateAthleteStateFromResults() — suggestion.js

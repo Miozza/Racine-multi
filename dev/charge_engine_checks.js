@@ -376,12 +376,68 @@ try {
   const scaledSquat = ctx.coachApplyUserLoadScale('Back Squat', 100);
   assert(scaledSquat < 100 && scaledSquat > 0, 'Back Squat scale a la baisse avec un ratio de 0.8.');
 
-  // 13d. Agressivite de progression : bornee entre 0.4 et 1.8.
-  ctx.state.profile = { aggressiveness: 5 };
-  assert(ctx.coachAggressivenessFactor() === 1.8, 'L agressivite de progression est plafonnee a 1.8.');
-  ctx.state.profile = { aggressiveness: 0.01 };
-  assert(ctx.coachAggressivenessFactor() === 0.4, 'L agressivite de progression est plancher a 0.4.');
-  ctx.state.profile = null;
+  // 13d. Vitesse de progression (V4.5.58) : MESUREE par le moteur, inclinee
+  // par le profil. Le curseur libre 0,4-1,8 est remplace par trois positions ;
+  // une valeur heritee hors de ces positions est ramenee A LA LECTURE, sans
+  // reecriture du stockage (donc sans migration).
+  {
+    const BIAS = ctx.COACH_MOVEMENT_TUNING.progressionSpeed.bias;
+    const MEM = ctx.CoachBrainMemory;
+
+    // Valeurs heritees : rapprochees de la position la plus proche.
+    ctx.state.profile = { aggressiveness: 5 };
+    assert(ctx.coachProgressionBias() === BIAS.ambitieux, 'Valeur heritee 5 ramenee a la position ambitieuse.');
+    ctx.state.profile = { aggressiveness: 0.01 };
+    assert(ctx.coachProgressionBias() === BIAS.prudent, 'Valeur heritee 0.01 ramenee a la position prudente.');
+    ctx.state.profile = { aggressiveness: 0.95 };
+    assert(ctx.coachProgressionBias() === BIAS.normal, 'Valeur heritee 0.95 ramenee a la position normale.');
+
+    // Sans mesure, le declare est tout ce qui existe.
+    MEM.clear();
+    ctx.state.profile = { aggressiveness: BIAS.normal };
+    assert(ctx.coachObservedAggressiveness('Back Squat') === 1, 'Aucune observation : aucune vitesse inventee, facteur neutre.');
+    assert(ctx.coachAggressivenessFactor('Back Squat') === BIAS.normal, 'Sans mesure, le facteur vaut le biais declare.');
+
+    // Avec de la mesure, c est elle qui pilote.
+    function seedAmbition(ambition, tested){
+      MEM.clear();
+      const mem = MEM.read();
+      mem.profiles[ctx.coachNormalizeMoveText('Back Squat') + '::strength'] =
+        { label:'Back Squat', intent:'strength', ambition:ambition, testedPredictions:tested };
+      MEM.write(mem);
+    }
+    seedAmbition(0.95, 12);
+    const mesureHaute = ctx.coachAggressivenessFactor('Back Squat');
+    seedAmbition(0.25, 12);
+    const mesureBasse = ctx.coachAggressivenessFactor('Back Squat');
+    assert(mesureHaute > 1 && mesureBasse < 1 && mesureHaute > mesureBasse,
+      'La mesure pilote : ambition haute accelere, ambition basse ralentit (' + mesureBasse.toFixed(2) + ' < 1 < ' + mesureHaute.toFixed(2) + ').');
+
+    // Deux seances ne definissent pas une vitesse : la mesure est ponderee.
+    seedAmbition(0.95, 1);
+    const peuDeVolume = ctx.coachAggressivenessFactor('Back Squat');
+    seedAmbition(0.95, 12);
+    assert(peuDeVolume < ctx.coachAggressivenessFactor('Back Squat'),
+      'Volume faible : la mesure est tiree vers le neutre plutot qu affirmee.');
+
+    // Le biais incline la mesure, il ne la remplace pas.
+    seedAmbition(0.95, 12);
+    ctx.state.profile = { aggressiveness: BIAS.prudent };
+    const prudentMesure = ctx.coachAggressivenessFactor('Back Squat');
+    ctx.state.profile = { aggressiveness: BIAS.ambitieux };
+    assert(prudentMesure < ctx.coachAggressivenessFactor('Back Squat'),
+      'A mesure egale, la position prudente reste sous la position ambitieuse.');
+
+    // Les bornes finales tiennent toujours.
+    seedAmbition(0.95, 999);
+    ctx.state.profile = { aggressiveness: BIAS.ambitieux };
+    const f = ctx.coachAggressivenessFactor('Back Squat');
+    assert(f >= 0.4 && f <= 1.8, 'Le facteur final reste borne entre 0.4 et 1.8 (' + f.toFixed(2) + ').');
+
+    MEM.clear();
+    ctx.state.profile = null;
+    assert(ctx.coachAggressivenessFactor('Back Squat') === 1, 'Sans profil ni mesure, la vitesse reste neutre.');
+  }
 
 
 
@@ -556,6 +612,123 @@ try {
     assert(trend[0].precision === 0 && trend[1].precision === 100,
       'Chaque point mesure SON mois, sans dilution par les mois precedents.');
     MEM.clear();
+  }
+
+  // ─── Echelon RPE (V4.5.56) ────────────────────────────────────────────────
+  // Avant : un seul palier (RPE <= 7 => un cran). RPE 5, 6 et 7 donnaient la
+  // meme suggestion et RPE 7.5 n'en donnait aucune — le RPE ne portait presque
+  // aucune information. Table : COACH_MOVEMENT_TUNING.rpeProgression.
+  {
+    const mainCtx = { label:'Back Squat', intents:[], kind:'main' };
+    function seedRpe(label, load, rpe, reps){
+      resetState();
+      const range = ctx.repRange(reps);
+      const rows = [
+        { date:'2026-01-01', load:load, reps:reps, rpe:rpe, range:range, status:'upgrade_ready', context:mainCtx },
+        { date:'2026-01-02', load:load, reps:reps, rpe:rpe, range:range, status:'upgrade_ready', context:mainCtx }
+      ];
+      ctx.state.athleteState.movements[label] = {
+        ranges: { [range]: { currentLoad:load, actualLoad:load, currentReps:reps, actualReps:reps, rpe:rpe, confidence:0.9, status:'upgrade_ready' } },
+        history: rows
+      };
+    }
+    function suggest(label, prog, reps){
+      return ctx.guardedSuggestedLoadDecision(label, prog, reps, { kind:'main', blockTitle:'Force principale' });
+    }
+
+    seedRpe('Back Squat', 185, 6, 8);
+    const easy = suggest('Back Squat', '185 lb', 8).loadNum;
+    seedRpe('Back Squat', 185, 7, 8);
+    const normal = suggest('Back Squat', '185 lb', 8).loadNum;
+    seedRpe('Back Squat', 185, 7.5, 8);
+    const limite = suggest('Back Squat', '185 lb', 8).loadNum;
+    assert(easy > normal, 'Echelon RPE : une seance a RPE 6 propose plus lourd qu a RPE 7 (' + easy + ' > ' + normal + ').');
+    assert(normal > 185, 'Echelon RPE : RPE 7 propose toujours une hausse d un cran.');
+    assert(limite > 185 && limite <= normal, 'Echelon RPE : RPE 7.5 progresse encore, sans depasser RPE 7.');
+
+    // Les freins hauts ne bougent pas : contrat de progression inchange.
+    seedRpe('Back Squat', 185, 8.5, 8);
+    assert(suggest('Back Squat', '195 lb', 8).loadNum <= 185, 'Frein RPE 8.5 : aucune hausse (inchange).');
+    seedRpe('Back Squat', 185, 9, 8);
+    assert(suggest('Back Squat', '195 lb', 8).loadNum <= 185, 'Verrou RPE >= 9 : aucune hausse automatique (inchange).');
+
+    // Isolation : progression plus fine, jamais de saut elargi.
+    seedRpe('Lateral Raise DB', 20, 6, 12);
+    const iso = suggest('Lateral Raise DB', '20 lb', 12).loadNum;
+    assert(iso > 20 && iso <= 25, 'Isolation : RPE 6 progresse d un cran fin, sans saut elargi (' + iso + ' lb).');
+
+    // Convergence des deux regles de relance : franchir le seuil d ecart
+    // (liftFromHistoryThresholds.gap = 20) ne doit plus faire MONTER la
+    // suggestion quand la charge du programme BAISSE. C est le defaut corrige
+    // en V4.5.56 : coachRuleLiftFromControlledHistory ajoutait +10 la ou
+    // coachRuleReferenceReelleValidee repartait de la reference seche.
+    seedRpe('Deadlift', 225, 7, 8);
+    const sousSeuil = suggest('Deadlift', '205 lb', 8).loadNum;   // ecart 20 => regle de relance
+    seedRpe('Deadlift', 225, 7, 8);
+    const surSeuil  = suggest('Deadlift', '210 lb', 8).loadNum;   // ecart 15 => reference reelle
+    assert(sousSeuil <= surSeuil,
+      'Seuil de relance : une charge de programme plus BASSE ne sort pas une suggestion plus HAUTE (' + sousSeuil + ' <= ' + surSeuil + ').');
+    resetState();
+  }
+
+  // ─── Reactivite : la tendance, pas seulement le dernier RPE (V4.5.57) ─────
+  // Un barreau seul ne lit qu'une valeur. Trois athletes a RPE 7 final n'ont
+  // pas le meme elan selon d'ou ils viennent — le moteur doit les separer.
+  {
+    const mainCtx = { label:'Back Squat', intents:[], kind:'main' };
+    function seedTrend(label, rows, reps){
+      resetState();
+      const range = ctx.repRange(reps);
+      const last = rows[rows.length - 1];
+      ctx.state.athleteState.movements[label] = {
+        ranges: { [range]: { currentLoad:last.load, actualLoad:last.load, currentReps:last.reps, actualReps:last.reps, rpe:last.rpe, confidence:0.9, status:'upgrade_ready' } },
+        history: rows.map((r, i) => ({ date:'2026-0' + (i+5) + '-01', load:r.load, reps:r.reps, rpe:r.rpe, range:range, status:'upgrade_ready', context:mainCtx }))
+      };
+    }
+    const row = (load, reps, rpe) => ({ load:load, reps:reps, rpe:rpe });
+    function decide(prog, reps){
+      return ctx.guardedSuggestedLoadDecision('Back Squat', prog, reps, { kind:'main', blockTitle:'Force principale' });
+    }
+
+    seedTrend('Back Squat', [row(225,5,8), row(225,5,7.5), row(225,5,7)], 5);
+    const versLeFacile = decide('225 lb', 5).loadNum;
+    seedTrend('Back Squat', [row(225,5,7), row(225,5,7), row(225,5,7)], 5);
+    const plat = decide('225 lb', 5).loadNum;
+    seedTrend('Back Squat', [row(225,5,6), row(225,5,6.5), row(225,5,7)], 5);
+    const versLeDur = decide('225 lb', 5).loadNum;
+    assert(versLeFacile > plat && plat > versLeDur,
+      'Tendance RPE : a RPE 7 final identique, le moteur separe les trois trajectoires (' + versLeFacile + ' > ' + plat + ' > ' + versLeDur + ').');
+    assert(versLeDur === 225, 'Tendance qui durcit : maintien a la derniere charge, pas de hausse.');
+
+    // RPE 8 n'est plus une zone morte silencieuse : maintien annonce par
+    // defaut, promu a un cran si le meme poids devient moins couteux.
+    seedTrend('Back Squat', [row(225,5,8), row(225,5,8), row(225,5,8)], 5);
+    const huitStable = decide('225 lb', 5);
+    assert(huitStable.loadNum === 225 && /Maintien/.test(huitStable.reason),
+      'RPE 8 stable : maintien explicite, la zone morte est nommee.');
+    seedTrend('Back Squat', [row(225,5,9), row(225,5,8.5), row(225,5,8)], 5);
+    assert(decide('225 lb', 5).loadNum > 225, 'RPE 8 en nette baisse : le moteur repart d un cran.');
+
+    // Reps depassees : signal deja enregistre, desormais lu.
+    seedTrend('Back Squat', [row(225,8,7), row(225,8,7), row(225,8,7)], 5);
+    const overshoot = decide('225 lb', 5).loadNum;
+    seedTrend('Back Squat', [row(225,5,7), row(225,5,7), row(225,5,7)], 5);
+    assert(overshoot > decide('225 lb', 5).loadNum,
+      'Reps depassees : 8 reps pour 5 demandees pese plus lourd que 5 reps au meme RPE.');
+
+    // La reactivite n'elargit JAMAIS le saut maximal prudent.
+    seedTrend('Back Squat', [row(225,8,7.5), row(225,8,7), row(225,8,6.5)], 5);
+    const cumul = decide('225 lb', 5).loadNum;
+    const plafond = 225 + ctx.coachMaxJumpForExercise('Back Squat', 225) * 1.25;
+    assert(cumul <= plafond,
+      'Reactivite cumulee : la hausse reste sous le saut maximal du barreau RPE (' + cumul + ' <= ' + plafond + ').');
+
+    // Les freins hauts restent hors de portee des modificateurs.
+    seedTrend('Back Squat', [row(225,5,9.5), row(225,5,9), row(225,5,8.5)], 5);
+    assert(decide('245 lb', 5).loadNum <= 225, 'Frein 8.5 : aucune tendance ne le contourne.');
+    seedTrend('Back Squat', [row(225,5,9.5), row(225,5,9.5), row(225,5,9)], 5);
+    assert(decide('245 lb', 5).loadNum <= 225, 'Verrou RPE >= 9 : aucune tendance ne le contourne.');
+    resetState();
   }
 
 } catch (err) {

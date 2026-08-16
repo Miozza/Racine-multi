@@ -138,11 +138,80 @@ function coachApplyUserLoadScale(label, value){
 // Facteur d'agressivité de progression du profil actif (0.4–1.8, 1 = comportement
 // historique de l'app). N'affecte JAMAIS les freins de
 // sécurité RPE >= 9 : seulement la taille des sauts de charge proposés.
-function coachAggressivenessFactor(){
+// Table : COACH_MOVEMENT_TUNING.progressionSpeed.
+function coachProgressionSpeedTuning(){
+  return (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.progressionSpeed) || {
+    bias:{prudent:0.75, normal:1.00, ambitieux:1.20}, defaultBias:'normal',
+    observed:{center:0.60, span:0.35, amplitude:0.30, minObservations:6},
+    clamp:{min:0.4, max:1.8}
+  };
+}
+
+// Biais DECLARE par l'athlete, ramene a l'une des trois positions.
+// Un profil anterieur porte un nombre libre : on le rapproche, on ne le
+// reecrit pas — le stockage reste tel quel, donc aucune migration.
+function coachProgressionBias(){
+  var T = coachProgressionSpeedTuning();
+  var levels = T.bias || {};
+  var fallback = Number(levels[T.defaultBias || 'normal']) || 1;
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
-  var a = profile && Number(profile.aggressiveness);
-  if(!a || isNaN(a)) return 1;
-  return Math.max(0.4, Math.min(1.8, a));
+  var raw = profile && Number(profile.aggressiveness);
+  if(!raw || isNaN(raw)) return fallback;
+  var best = fallback, bestGap = Infinity;
+  Object.keys(levels).forEach(function(k){
+    var v = Number(levels[k]);
+    var gap = Math.abs(v - raw);
+    if(gap < bestGap){ bestGap = gap; best = v; }
+  });
+  return best;
+}
+
+// Vitesse de progression MESUREE sur l'historique, via l'ambition que Brain
+// tient deja par mouvement + intention. On agrege toutes les intentions du
+// mouvement : le saut maximal est une propriete du mouvement, pas d'un bloc.
+// Retourne 1 quand rien n'est mesurable — jamais de vitesse inventee.
+function coachObservedAggressiveness(label){
+  var T = coachProgressionSpeedTuning();
+  var O = T.observed || {};
+  try{
+    var mem = (window.CoachBrainMemory && typeof CoachBrainMemory.read === 'function') ? CoachBrainMemory.read() : null;
+    var profiles = mem && mem.profiles;
+    if(!profiles) return 1;
+    var prefix = ((typeof coachNormalizeMoveText === 'function') ? coachNormalizeMoveText(label) : String(label||'').toLowerCase()) + '::';
+    var sumAmbition = 0, tested = 0, n = 0;
+    Object.keys(profiles).forEach(function(k){
+      if(k.indexOf(prefix) !== 0) return;
+      var p = profiles[k];
+      if(!p) return;
+      var t = Number(p.testedPredictions) || 0;
+      if(!t) return;
+      sumAmbition += (Number(p.ambition) || O.center || 0.60) * t;
+      tested += t;
+      n++;
+    });
+    if(!n || !tested) return 1;
+    var ambition = sumAmbition / tested;
+    var center = Number(O.center) || 0.60;
+    var span = Number(O.span) || 0.35;
+    var amplitude = Number(O.amplitude) || 0.30;
+    var normalized = Math.max(-1, Math.min(1, (ambition - center) / span));
+    var factor = 1 + normalized * amplitude;
+    // Confiance proportionnelle au volume observe : deux seances ne
+    // definissent pas une vitesse de progression.
+    var minObs = Number(O.minObservations) || 6;
+    var weight = Math.max(0, Math.min(1, tested / minObs));
+    return 1 + (factor - 1) * weight;
+  }catch(e){ return 1; }
+}
+
+// Facteur final : ce que le moteur a MESURE, incline par ce que l'athlete a
+// DECLARE. Bornes inchangees.
+function coachAggressivenessFactor(label){
+  var T = coachProgressionSpeedTuning();
+  var C = T.clamp || {min:0.4, max:1.8};
+  var observed = (label !== undefined && label !== null) ? coachObservedAggressiveness(label) : 1;
+  var factor = observed * coachProgressionBias();
+  return Math.max(Number(C.min) || 0.4, Math.min(Number(C.max) || 1.8, factor));
 }
 
 
