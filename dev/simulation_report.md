@@ -33,7 +33,7 @@ heuristique de test.
 
 - Profil: `beginner_light`, niveau `debutant`, agressivité `0.65`
 - Programme: `client_beginner_foundation_2d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 75 lb · front squat 75 lb · strict press 45 lb · row 70 lb · hinge 125 lb
 
@@ -49,7 +49,7 @@ heuristique de test.
 
 - Profil: `recomp_intermittent`, niveau `debutant`, agressivité `0.75`
 - Programme: `client_recomposition_3d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 110 lb · front squat 100 lb · strict press 70 lb · row 90 lb · hinge 190 lb
 
@@ -65,7 +65,7 @@ heuristique de test.
 
 - Profil: `steph_glutes`, niveau `intermediaire`, agressivité `0.9`
 - Programme: `hypertrophie_fesse_stephanie`
-- Programmes visibles: 31, blocs S1: 8
+- Programmes visibles: 32, blocs S1: 8
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 100 lb · front squat 115 lb · strict press 60 lb · row 95 lb · hinge 230 lb
 
@@ -81,7 +81,7 @@ heuristique de test.
 
 - Profil: `strength_2d_busy`, niveau `intermediaire`, agressivité `0.95`
 - Programme: `client_strength_2d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 185 lb · front squat 165 lb · strict press 115 lb · row 155 lb · hinge 335 lb
 
@@ -97,7 +97,7 @@ heuristique de test.
 
 - Profil: `advanced_force`, niveau `avance`, agressivité `1.15`
 - Programme: `client_strength_4d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 280 lb · front squat 260 lb · strict press 175 lb · row 215 lb · hinge 460 lb
 
@@ -113,7 +113,7 @@ heuristique de test.
 
 - Profil: `rx_crossfit`, niveau `avance`, agressivité `1.05`
 - Programme: `client_rx_crossfit_5d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 245 lb · front squat 230 lb · strict press 150 lb · row 195 lb · hinge 420 lb
 
@@ -129,7 +129,7 @@ heuristique de test.
 
 - Profil: `metcon_prep`, niveau `intermediaire`, agressivité `0.9`
 - Programme: `client_metcon_prep_3d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 175 lb · front squat 165 lb · strict press 110 lb · row 140 lb · hinge 315 lb
 
@@ -145,7 +145,7 @@ heuristique de test.
 
 - Profil: `strict_mu_candidate`, niveau `avance`, agressivité `0.85`
 - Programme: `strict_muscle_up_10w`
-- Programmes visibles: 30, blocs S1: 5
+- Programmes visibles: 31, blocs S1: 5
 - Points Progression après dédup: 50
 - Charges de départ clés: bench 220 lb · front squat 190 lb · strict press 135 lb · row 185 lb · hinge 380 lb
 
@@ -161,7 +161,7 @@ heuristique de test.
 
 - Profil: `return_injury`, niveau `intermediaire`, agressivité `0.6`
 - Programme: `client_hybrid_performance_3d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 30
 - Charges de départ clés: bench 175 lb · front squat 150 lb · strict press 110 lb · row 140 lb · hinge 295 lb
 
@@ -177,7 +177,7 @@ heuristique de test.
 
 - Profil: `chaos_donnees`, niveau `intermediaire`, agressivité `1.25`
 - Programme: `client_hypertrophy_5d`
-- Programmes visibles: 30, blocs S1: 6
+- Programmes visibles: 31, blocs S1: 6
 - Points Progression après dédup: 36
 - Charges de départ clés: bench 45 lb · front squat 200 lb · strict press 115 lb · row 320 lb · hinge 335 lb
 

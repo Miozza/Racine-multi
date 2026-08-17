@@ -72,12 +72,28 @@ assert(typeof steph.getBlocks === 'function', 'hypertrophie_fesse_stephanie four
 assert(Array.isArray(steph.days) && steph.days.length >= 2, 'hypertrophie_fesse_stephanie déclare ses jours.');
 const stephEntry = index.find(x => x && x.id === 'hypertrophie_fesse_stephanie') || {};
 assert(stephEntry.visibility === 'private', 'hypertrophie_fesse_stephanie est privé par défaut.');
-const newlyPrivateIds = ['hypertrophy_base', 'force_performance', 'competition_peak'];
+// competition_peak est sorti de cette liste en V4.5.61 : voir plus bas, il
+// etait la seule suite declaree de client_rx_crossfit_5d et sa privaute
+// laissait ce parcours sans successeur visible.
+const newlyPrivateIds = ['hypertrophy_base', 'force_performance'];
 newlyPrivateIds.forEach(id => {
   const entry = index.find(p => p && p.id === id) || {};
   assert(entry.visibility === 'private', id + ' est privé.');
 });
-assert(index.filter(p => p && p.visibility === 'public').length === 30, 'Les 30 programmes publics restants demeurent accessibles à tous.');
+// V4.5.61 — competition_peak publie : c'etait la seule suite declaree de
+// client_rx_crossfit_5d, et elle etait privee. Un client terminait son cycle RX
+// 5 jours sans recevoir aucune proposition. Ce compteur n'est pas de la
+// friction : il force a decider explicitement qu'un programme devient public.
+assert(index.filter(p => p && p.visibility === 'public').length === 31, 'Les 31 programmes publics demeurent accessibles à tous.');
+// Un programme public ne doit jamais etre un cul-de-sac pour un athlete sans
+// permission : au moins une de ses suites declarees doit etre publique.
+index.filter(p => p && p.visibility === 'public' && (p.suggestedNext || []).length).forEach(p => {
+  const hasPublicNext = p.suggestedNext.some(nid => {
+    const t = index.find(x => x && x.id === nid);
+    return t && t.visibility === 'public';
+  });
+  assert(hasPublicNext, p.id + ' : au moins une suite publique (pas de cul-de-sac).');
+});
 assert(!appSource.includes('item.visibility || "public"'), 'Une visibilité absente ne doit jamais devenir publique.');
 for(let wk = 1; wk <= (Number(stephEntry.durationWeeks) || 4); wk++){
   steph.days.forEach(day => {
