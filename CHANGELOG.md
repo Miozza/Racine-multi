@@ -1,3 +1,11 @@
+## V4.5.61 — `competition_peak` publié, le parcours RX ne se termine plus dans le vide
+
+- **Un seul vrai cul-de-sac, pas trois.** Le catalogue signalait trois programmes publics pointant vers un programme privé. Vérification faite, deux d'entre eux (`client_haltero_crossfit_5d`, `client_rx_crossfit_4d`) proposent **aussi** une suite publique : le lien privé y est du bruit, pas un blocage. Le seul vrai cul-de-sac était `client_rx_crossfit_5d`, dont l'unique suite déclarée était `competition_peak`, privé — un client terminait son cycle RX 5 jours sans recevoir aucune proposition.
+- **`competition_peak` devient public.** Il portait déjà tout ce qu'un programme public exige (`objective`, `frequency`, `suggestedNext`) et il est la culmination naturelle du parcours RX. Le catalogue passe de 30 à 31 programmes publics, compteur mis à jour explicitement dans `dev/program_catalog_checks.js` — c'est le rôle de ce tripwire, et il a joué : un second garde-fou verrouillait aussi sa privauté et a dû être décidé, pas contourné.
+- **Le défaut ne peut plus revenir.** Un contrôle permanent est ajouté : tout programme public déclarant des suites doit en avoir **au moins une publique**. Un futur programme qui ne pointerait que vers du privé fera échouer la livraison au lieu de laisser un athlète sans successeur.
+- **Les deux liens non bloquants sont laissés en place** : ils redeviennent corrects d'eux-mêmes maintenant que leur cible est publique.
+- **Portée** : `programs/index.js`, `dev/program_catalog_checks.js`. Aucun fichier de programme touché, aucun changement de moteur. Checklist de livraison complète au vert.
+
 ## V4.5.60 — La charge méritée devient un plancher
 
 - **Une règle qui ne se déclenchait qu'à moitié.** `coachRuleLastSetGuards` ne relevait la suggestion que si elle tombait **sous** la dernière charge faite (`suggested <= lastLoad`). Conséquence : un programme demandant 230 lb quand le RPE de l'athlète en avait mérité 240 ne déclenchait aucune règle — et le portail Brain, ne voyant qu'une hausse non justifiée de 225 à 230, la ramenait à 225. Une charge de programme **plus lourde** sortait donc une suggestion **plus légère**.

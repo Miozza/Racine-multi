@@ -1,5 +1,5 @@
-// Racine V4.5.60 — la charge meritee est un plancher, plus un rattrapage
-var APP_VERSION = "V4.5.60";
+// Racine V4.5.61 — competition_peak publie : le parcours RX ne se termine plus dans le vide
+var APP_VERSION = "V4.5.61";
 
 // Architecture stable
 // programs/*.js = plan prévu
