@@ -1,5 +1,5 @@
-// Racine V4.5.61 — competition_peak publie : le parcours RX ne se termine plus dans le vide
-var APP_VERSION = "V4.5.61";
+// Racine V4.5.62 — le tap de round ne se perd plus, et les temps de round se relisent
+var APP_VERSION = "V4.5.62";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2065,12 +2065,19 @@ function renderHistory(){
     if(res){
       Object.keys(res).forEach(function(k){
         var r=res[k];
-        if(r.load||r.result||r.note||r.rpe){
+        if(r.load||r.result||r.note||r.rpe||r.roundSplits){
           var _mv=r.load
             ?escHtml(r.load+" lb"+(r.reps?" × "+r.reps:"")+(r.rpe?" RPE "+r.rpe:""))
             :escHtml(r.result||"");
           var _nt=r.note?'<span class="history-note">'+escHtml(r.note)+'</span>':"";
           rows+='<div class="history-row"><span class="mv">'+escHtml(k)+'</span><span class="val">'+_mv+_nt+'</span></div>';
+          // Temps de chaque round du WOD, tels que tapés sur le chrono. Ils
+          // vivent dans le journal depuis leur première séance, mais n'étaient
+          // relus nulle part : la note seule ne dit pas le rythme. Rendu par le
+          // domaine qui les possède (scripts/session/amrap_rounds.js).
+          if(r.roundSplits && window.CoachAmrapRounds && CoachAmrapRounds.historyHtml){
+            rows+=CoachAmrapRounds.historyHtml(r.roundSplits, r.lastRoundRemaining);
+          }
         }
       });
     }

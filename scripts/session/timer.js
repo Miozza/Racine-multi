@@ -532,20 +532,51 @@ function clearGuidedTimerRounds(){
   CoachAmrapRounds.reset(guidedTimerRoundKey);
   CoachAmrapRounds.refreshPanel(guidedTimerRoundKey);
 }
-function guidedTimerRoundTap(){
+
+// ── Accusé de réception du tap ──────────────────────────────────────────────
+// `navigator.vibrate` n'existe pas sur Safari iOS : sur iPhone, un tap de round
+// ne renvoyait donc RIEN — ni vibration, ni son (volontaire, le WOD est en
+// cours), et la banderole est au-dessus du chrono, hors du regard fixé sur les
+// chiffres. Un tap perdu passait inaperçu jusqu'à l'écran Résultats, où un
+// round valait deux tours. La carte du chrono confirme maintenant elle-même :
+// vert + numéro du round quand il est compté, rouge bref quand il est refusé.
+// Le refus n'est pas un détail à taire — c'est justement ce qu'il fallait voir.
+var guidedRoundFlashTimer = null;
+function guidedTimerRoundFlash(cls, label){
+  var box = document.querySelector(".guided-wod-timer");
+  if(!box) return;
+  if(guidedRoundFlashTimer){ clearTimeout(guidedRoundFlashTimer); guidedRoundFlashTimer = null; }
+  box.classList.remove("round-hit", "round-miss");
+  box.removeAttribute("data-round-hit");
+  // Relance l'animation même sur deux taps rapprochés (sinon le second round
+  // ne clignoterait pas et se lirait comme un tap perdu).
+  void box.offsetWidth;
+  if(label) box.setAttribute("data-round-hit", label);
+  box.classList.add(cls);
+  guidedRoundFlashTimer = setTimeout(function(){
+    box.classList.remove("round-hit", "round-miss");
+    box.removeAttribute("data-round-hit");
+    guidedRoundFlashTimer = null;
+  }, cls === "round-hit" ? 850 : 520);
+}
+
+// `atSeconds` : seconde du chrono au POSÉ du doigt. Le round appartient à
+// l'instant où l'athlète a touché, pas à celui où il a relevé le doigt.
+function guidedTimerRoundTap(atSeconds){
   if(!guidedTimerRoundKey || !window.CoachAmrapRounds) return null;
   // Pendant le décompte de départ, le WOD n'a pas commencé : aucun round.
   if(guidedTimer.countdownActive) return null;
-  var elapsed = guidedTimerElapsedSeconds();
+  var elapsed = (atSeconds === undefined || atSeconds === null)
+    ? guidedTimerElapsedSeconds()
+    : Math.max(0, Math.round(Number(atSeconds) || 0));
   // Chrono à zéro : rien à chronométrer. Un round de moins d'une seconde
   // n'existe pas, et l'accepter donnerait un split nul qui fausserait le
   // classement rapide/lent de tout le WOD.
-  if(!(elapsed > 0)) return null;
+  if(!(elapsed > 0)){ guidedTimerRoundFlash("round-miss", ""); return null; }
   var round = CoachAmrapRounds.tap(guidedTimerRoundKey, elapsed, guidedTimer.duration);
-  if(!round) return null;
-  // Retour discret : rien à l'écran ne bouge sauf le bandeau, aucun son —
-  // le WOD est en cours, l'athlète n'a pas à confirmer quoi que ce soit.
+  if(!round){ guidedTimerRoundFlash("round-miss", ""); return null; }
   vibrate([35]);
+  guidedTimerRoundFlash("round-hit", "R" + CoachAmrapRounds.count(guidedTimerRoundKey));
   CoachAmrapRounds.refreshPanel(guidedTimerRoundKey);
   return round;
 }
@@ -555,6 +586,78 @@ function guidedTimerRoundUndo(){
   if(removed) vibrate([18, 40, 18]);
   CoachAmrapRounds.refreshPanel(guidedTimerRoundKey);
   return removed;
+}
+
+// ── Le geste qui compte un round ────────────────────────────────────────────
+// Le round était compté sur un « click ». Un click iOS exige un appui ET un
+// relâchement quasi immobiles sur le même élément : en plein WOD le doigt
+// glisse, le navigateur annule, et le tap disparaît avant d'atteindre le code —
+// c'est le round qui vaut deux tours.
+//
+// Le geste est donc suivi à la main, et non délégué au navigateur :
+//   • la seconde du round est prise au POSÉ du doigt (l'instant que l'athlète
+//     a en tête quand il finit son tour), pas au relâchement ;
+//   • le round n'est validé qu'au relever, si le doigt n'a pas dérivé de plus
+//     de GUIDED_ROUND_TAP_SLOP. La carte du chrono vit dans `.guided-card`, qui
+//     défile : sans cette tolérance, tout début de scroll sur le chrono
+//     compterait un round fantôme — l'inverse exact du bug à corriger ;
+//   • un geste que le navigateur récupère (scroll, pinch) émet `pointercancel`
+//     et n'a plus rien à valider.
+// La tolérance est LARGE là où iOS est strict : c'est nous qui arbitrons, et un
+// doigt fatigué ne vise pas au pixel.
+var GUIDED_ROUND_TAP_SLOP = 14;
+function bindGuidedTimerRoundTap(box){
+  if(!box || !box.addEventListener) return;
+  var pending = null; // {x, y, at} — appui en cours, pas encore un round
+
+  function onDown(ev, x, y){
+    pending = null;
+    var t = ev && ev.target;
+    // Les boutons du chrono (▶ Ⅱ ↻, libellé, son) gardent leur rôle : sans
+    // cette exclusion, chacun ajouterait un round au passage.
+    if(t && t.closest && t.closest("button")) return;
+    pending = {x: x, y: y, at: guidedTimerElapsedSeconds()};
+  }
+  function onMove(x, y){
+    if(!pending) return;
+    if(Math.abs(x - pending.x) > GUIDED_ROUND_TAP_SLOP || Math.abs(y - pending.y) > GUIDED_ROUND_TAP_SLOP){
+      pending = null; // c'est un scroll, pas un round
+    }
+  }
+  function onUp(){
+    var p = pending;
+    pending = null;
+    if(!p) return;
+    if(typeof guidedTimerRoundTap === "function") guidedTimerRoundTap(p.at);
+  }
+  function cancel(){ pending = null; }
+
+  if(typeof window !== "undefined" && window.PointerEvent){
+    box.addEventListener("pointerdown", function(ev){ onDown(ev, ev.clientX, ev.clientY); });
+    box.addEventListener("pointermove", function(ev){ onMove(ev.clientX, ev.clientY); });
+    box.addEventListener("pointerup", onUp);
+    box.addEventListener("pointercancel", cancel);
+    return;
+  }
+  // Repli sans Pointer Events : même geste, en tactile, plus le click pour la
+  // souris (aucun touchstart n'y précède, donc aucun doublon possible).
+  var touched = false;
+  box.addEventListener("touchstart", function(ev){
+    touched = true;
+    var p = ev.touches && ev.touches[0];
+    onDown(ev, p ? p.clientX : 0, p ? p.clientY : 0);
+  }, {passive: true});
+  box.addEventListener("touchmove", function(ev){
+    var p = ev.touches && ev.touches[0];
+    if(p) onMove(p.clientX, p.clientY);
+  }, {passive: true});
+  box.addEventListener("touchend", onUp);
+  box.addEventListener("touchcancel", cancel);
+  box.addEventListener("click", function(ev){
+    if(touched) return;
+    onDown(ev, 0, 0);
+    onUp();
+  });
 }
 
 // ── Éditeur de timer — modale terrain ────────────────────────────────────────

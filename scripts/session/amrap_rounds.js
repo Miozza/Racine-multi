@@ -14,6 +14,11 @@
 // Le temps enregistré est celui que l'athlète voit à l'écran (secondes pleines
 // du chrono), jamais une horloge parallèle : un round noté « 1:12 » doit
 // correspondre au chrono au moment du tap, pause comprise.
+//
+// Un tap peut manquer (doigt qui glisse, coin de bouton) : le round vaut alors
+// deux tours. Le module sait le repérer et le partager en deux (split), et
+// garde le journal réellement tapé de côté pour pouvoir y revenir (restore).
+// Il ne corrige JAMAIS de lui-même — il signale, l'athlète tranche.
 (function(){
   // key -> {duration, rounds:[{at, split, remaining}]}
   var store = {};
@@ -46,9 +51,30 @@
   function entry(key, duration){
     key = clean(key);
     if(!key) return null;
-    if(!store[key]) store[key] = {duration: 0, rounds: []};
+    if(!store[key]) store[key] = {duration: 0, rounds: [], raw: null};
     if(duration !== undefined && Number(duration) > 0) store[key].duration = Math.round(Number(duration));
     return store[key];
+  }
+
+  // L'instant de chaque tap (`at`) est la seule donnée brute : `split` et
+  // `remaining` s'en déduisent. Toute correction manuelle réécrit donc la liste
+  // des `at`, jamais les splits — sinon deux vérités cohabiteraient.
+  function rebuild(e){
+    var prev = 0;
+    e.rounds.forEach(function(r){
+      r.split = r.at - prev;
+      r.remaining = Math.max(0, (Number(e.duration) || 0) - r.at);
+      prev = r.at;
+    });
+  }
+  function copyRounds(list){
+    return (list || []).map(function(r){ return {at: r.at, split: r.split, remaining: r.remaining}; });
+  }
+  // Le journal réellement tapé est mis de côté à la PREMIÈRE correction : c'est
+  // lui que « Rétablir » ramène. Sans ça, une division approximative effacerait
+  // définitivement ce que le chrono a vu.
+  function snapshot(e){
+    if(!e.raw) e.raw = copyRounds(e.rounds);
   }
 
   function resetAll(){ store = {}; }
@@ -70,18 +96,93 @@
       remaining: Math.max(0, (Number(e.duration) || 0) - at)
     };
     e.rounds.push(round);
+    // Le journal brut suit les taps qui arrivent après une correction, sinon
+    // « Rétablir » ramènerait un WOD tronqué.
+    if(e.raw){
+      var lastRaw = e.raw.length ? e.raw[e.raw.length - 1] : null;
+      e.raw.push({at: at, split: at - (lastRaw ? lastRaw.at : 0), remaining: round.remaining});
+    }
     return round;
   }
 
   function undo(key){
     var e = store[clean(key)];
     if(!e || !e.rounds.length) return null;
-    return e.rounds.pop();
+    var removed = e.rounds.pop();
+    if(e.raw && e.raw.length) e.raw.pop();
+    return removed;
+  }
+
+  // ── Corriger un tap manqué ─────────────────────────────────────────────────
+  // Un tap perdu donne un round qui vaut deux tours. L'instant du tap manquant
+  // n'existe nulle part : il ne peut pas être retrouvé, seulement supposé. Le
+  // partage égal est la seule hypothèse honnête — elle se trompe sur chacune
+  // des deux moitiés, mais beaucoup moins qu'un round compté double, qui fausse
+  // à la fois le compte de rounds et le classement rapide/lent de tout le WOD.
+  // La somme est conservée : les rounds suivants gardent exactement leur temps.
+  function split(key, index, parts){
+    var e = store[clean(key)];
+    if(!e) return null;
+    index = Number(index);
+    parts = Math.round(Number(parts) || 2);
+    if(parts < 2) parts = 2;
+    var r = e.rounds[index];
+    if(!r) return null;
+    var prev = index > 0 ? e.rounds[index - 1].at : 0;
+    var total = r.at - prev;
+    // Chaque part doit valoir au moins une seconde : un split nul est refusé au
+    // tap, il ne peut pas entrer par la correction.
+    if(total < parts) return null;
+    snapshot(e);
+    var pieces = [], i, at, floor;
+    for(i = 1; i < parts; i++){
+      at = prev + Math.round(total * i / parts);
+      floor = pieces.length ? pieces[pieces.length - 1].at : prev;
+      if(at <= floor) at = floor + 1;
+      pieces.push({at: at});
+    }
+    pieces.push({at: r.at});
+    e.rounds.splice.apply(e.rounds, [index, 1].concat(pieces));
+    rebuild(e);
+    return stats(key);
+  }
+
+  function restore(key){
+    var e = store[clean(key)];
+    if(!e || !e.raw) return null;
+    e.rounds = copyRounds(e.raw);
+    e.raw = null;
+    rebuild(e);
+    return stats(key);
+  }
+  function isEdited(key){
+    var e = store[clean(key)];
+    return !!(e && e.raw);
   }
 
   function count(key){
     var e = store[clean(key)];
     return e ? e.rounds.length : 0;
+  }
+
+  // Un tap manqué ne se devine pas, il se REPÈRE : le round vaut alors environ
+  // deux fois les autres. Rien n'est corrigé tout seul — le moteur montre où
+  // regarder, l'athlète tranche. Il faut au moins trois rounds : sur deux, un
+  // écart du simple au double est un rythme, pas un accident.
+  var SUSPECT_RATIO = 1.75;
+  function median(list){
+    var s = list.slice().sort(function(a, b){ return a - b; });
+    if(!s.length) return 0;
+    var m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+  function suspectIndexOf(rounds, slowest){
+    if(!rounds || rounds.length < 3 || slowest < 0) return -1;
+    var others = [], i;
+    for(i = 0; i < rounds.length; i++){ if(i !== slowest) others.push(rounds[i].split); }
+    var ref = median(others);
+    if(!(ref > 0)) return -1;
+    return rounds[slowest].split >= ref * SUSPECT_RATIO ? slowest : -1;
   }
 
   // Rapide / lent : sans deux rounds il n'y a pas de classement, donc pas de
@@ -95,13 +196,17 @@
       if(rounds[i].split > rounds[slowest].split) slowest = i;
     }
     var ranked = rounds.length >= 2 && rounds[fastest].split !== rounds[slowest].split;
+    var slowIdx = ranked ? slowest : -1;
     return {
       key: clean(key),
       duration: Number(e.duration) || 0,
       count: rounds.length,
       rounds: rounds.slice(),
       fastestIndex: ranked ? fastest : -1,
-      slowestIndex: ranked ? slowest : -1,
+      slowestIndex: slowIdx,
+      // Round qui ressemble à deux tours comptés pour un (tap manqué).
+      suspectIndex: suspectIndexOf(rounds, slowIdx),
+      edited: !!e.raw,
       // Temps encore au chrono après le dernier round complet : c'est le temps
       // dont l'athlète disposait pour les reps du round entamé.
       lastRemaining: rounds[rounds.length - 1].remaining
@@ -169,19 +274,31 @@
   }
 
   // ── Écran résultats ────────────────────────────────────────────────────────
+  // Seul endroit où le journal du chrono se corrige : en plein WOD l'athlète
+  // n'arbitre rien, il tape. Ici, à froid, il voit la liste complète et peut
+  // rendre au round manqué son tour perdu (÷2) ou revenir au brut.
   function resultsHtml(key){
     var st = stats(key);
     if(!st) return '';
     var h = "<div class='wod-rounds-log'>";
-    h += "<div class='wod-rounds-log-head'>Rounds chronométrés · <strong>" + st.count + "</strong></div>";
+    h += "<div class='wod-rounds-log-head'>Rounds chronométrés · <strong>" + st.count + "</strong>"
+       + (st.edited ? "<span class='wod-rounds-edited'>corrigé</span>" : "")
+       + "</div>";
     h += "<div class='wod-rounds-log-list'>";
     st.rounds.forEach(function(r, i){
       var cls = roundClass(st, i);
-      var tag = i === st.fastestIndex ? 'le plus rapide' : (i === st.slowestIndex ? 'le plus lent' : '');
-      h += "<div class='wod-round-line" + cls + "'>"
+      var suspect = i === st.suspectIndex;
+      var tag = suspect ? '≈ 2 rounds ? tap manqué'
+              : (i === st.fastestIndex ? 'le plus rapide' : (i === st.slowestIndex ? 'le plus lent' : ''));
+      h += "<div class='wod-round-line" + cls + (suspect ? ' suspect' : '') + "'>"
          + "<span class='wod-round-no'>R" + (i + 1) + "</span>"
          + "<span class='wod-round-split'>" + esc(clock(r.split)) + "</span>"
          + "<span class='wod-round-tag'>" + esc(tag) + "</span>"
+         + (r.split >= 2
+             ? "<button type='button' class='wod-round-split-btn" + (suspect ? ' suggest' : '') + "'"
+               + " data-round-split='" + i + "' data-round-parts='2'"
+               + " aria-label='Diviser le round " + (i + 1) + " en deux'>÷2</button>"
+             : "<span class='wod-round-split-btn empty' aria-hidden='true'></span>")
          + "</div>";
     });
     h += "</div>";
@@ -191,8 +308,34 @@
     } else {
       h += "<div class='wod-rounds-left'>Le round " + st.count + " est tombé sur la fin du chrono : aucun round entamé après.</div>";
     }
+    h += "<div class='wod-rounds-fix'>"
+       + "<span class='wod-rounds-fix-hint'>Un tap manqué ? <strong>÷2</strong> partage ce round en deux tours égaux — le total et les rounds suivants ne bougent pas.</span>"
+       + (st.edited ? "<button type='button' class='wod-rounds-restore' data-rounds-restore='1'>↺ Temps du chrono</button>" : "")
+       + "</div>";
     h += "</div>";
     return h;
+  }
+
+  // Le journal des rounds est monté vivant dans la carte WOD des résultats :
+  // chaque correction se repeint sur place et prévient l'appelant, qui remet à
+  // jour le compte sélectionné et les champs durables.
+  function mountResultsLog(key, host, onChange){
+    if(!host) return null;
+    function paint(){ host.innerHTML = resultsHtml(key); }
+    paint();
+    host.addEventListener('click', function(ev){
+      var t = ev && ev.target;
+      var btn = t && t.closest ? t.closest('[data-round-split],[data-rounds-restore]') : null;
+      if(!btn) return;
+      ev.preventDefault();
+      var st = btn.hasAttribute('data-rounds-restore')
+        ? restore(key)
+        : split(key, Number(btn.getAttribute('data-round-split')), Number(btn.getAttribute('data-round-parts')) || 2);
+      if(!st) return;
+      paint();
+      if(typeof onChange === 'function') onChange(st);
+    });
+    return host;
   }
 
   // Ce qui rejoint la ligne de résultat lisible (et donc l'historique) :
@@ -214,6 +357,46 @@
     return clock(st.lastRemaining);
   }
 
+  // ── Historique ─────────────────────────────────────────────────────────────
+  // Le journal enregistré ne garde que du TEXTE (`roundSplits`), pas d'objets :
+  // c'est ce qui rend l'export JSON relisible par une version antérieure. La
+  // vue historique le relit donc, sans jamais toucher au stockage, et le rend
+  // avec les mêmes couleurs que l'écran Résultats.
+  function parseClock(value){
+    var m = /^(\d+):([0-5]\d)$/.exec(clean(value).trim());
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  }
+  function parseSplitsText(text){
+    var out = [];
+    clean(text).split('/').forEach(function(part){
+      var sec = parseClock(part);
+      if(sec !== null && sec > 0) out.push(sec);
+    });
+    return out;
+  }
+  function historyHtml(splits, remaining){
+    var list = Array.isArray(splits) ? splits.slice() : parseSplitsText(splits);
+    if(!list.length) return '';
+    var fastest = 0, slowest = 0, i;
+    for(i = 1; i < list.length; i++){
+      if(list[i] < list[fastest]) fastest = i;
+      if(list[i] > list[slowest]) slowest = i;
+    }
+    var ranked = list.length >= 2 && list[fastest] !== list[slowest];
+    var cells = '';
+    for(i = 0; i < list.length; i++){
+      cells += "<span class='history-round" + (ranked && i === fastest ? ' fast' : '') + (ranked && i === slowest ? ' slow' : '') + "'>"
+             + "<em>" + (i + 1) + "</em>" + esc(clock(list[i]))
+             + "</span>";
+    }
+    var rest = clean(remaining).trim();
+    return "<div class='history-rounds'>"
+         + "<span class='history-rounds-head'>" + list.length + " round" + (list.length > 1 ? 's' : '') + " chronométrés</span>"
+         + "<span class='history-rounds-cells'>" + cells + "</span>"
+         + (rest ? "<span class='history-rounds-left'>puis " + esc(rest) + " restant</span>" : "")
+         + "</div>";
+  }
+
   window.CoachAmrapRounds = {
     keyFor: keyFor,
     isAmrapBlock: isAmrapBlock,
@@ -222,6 +405,9 @@
     reset: reset,
     tap: tap,
     undo: undo,
+    split: split,
+    restore: restore,
+    isEdited: isEdited,
     count: count,
     stats: stats,
     clock: clock,
@@ -229,8 +415,11 @@
     panelHtml: panelHtml,
     refreshPanel: refreshPanel,
     resultsHtml: resultsHtml,
+    mountResultsLog: mountResultsLog,
     resultSuffix: resultSuffix,
     splitsText: splitsText,
-    remainingText: remainingText
+    remainingText: remainingText,
+    parseSplitsText: parseSplitsText,
+    historyHtml: historyHtml
   };
 })();
