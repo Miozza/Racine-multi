@@ -2507,6 +2507,17 @@ label {
 .guided-wod-move.mv4 .guided-wod-reps { color: #c77dff; }
 .guided-wod-timer {
   position: relative; /* ancre le toggle 🔊/🔇 absolu, ne déplace rien */
+  /* Le chrono n'est PAS une surface de défilement. `.guided-card` défile, et
+     tant que le navigateur pouvait y démarrer un scroll, il fallait deviner en
+     JS si un doigt qui glisse était un tap de round ou un début de scroll —
+     donc annuler des taps légitimes. Ici le panoramique est retiré : tout
+     contact dans les limites du chrono est un round, sans arbitrage. Le scroll
+     de la carte reste entier partout ailleurs (mouvements, texte du WOD,
+     bandeau des rounds). Deux déclarations : `pinch-zoom` garde le zoom à deux
+     doigts, et les navigateurs qui ne connaissent pas cette valeur l'ignorent
+     et retombent sur `none`, qui interdit le panoramique tout autant. */
+  touch-action: none;
+  touch-action: pinch-zoom;
   background: radial-gradient(circle at top, rgba(30,144,255,.16), rgba(8,13,26,.96));
   border: 1px solid var(--blue);
   border-radius: 12px;

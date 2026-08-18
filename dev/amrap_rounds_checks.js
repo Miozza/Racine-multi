@@ -24,9 +24,12 @@
        s'il dépasse l'estimation du programme.
     7. Rien n'est persisté par le module : ce qui survit part par la ligne WOD
        de l'écran Résultats, en champs texte ordinaires.
-    8. Le tap se prend au POSÉ du doigt (un click iOS s'annule au moindre
-       glissement) et se VOIT : vibrate n'existe pas sur Safari iOS, donc un
-       tap compté et un tap perdu se ressemblaient exactement.
+    8. Dans les limites du chrono, TOUT contact compte un round : le tap part au
+       contact du doigt et rien ne l'annule au glissement. C'est le CSS qui
+       retire le panoramique au chrono, pas le JS qui devine — départager un tap
+       d'un scroll revenait à re-perdre des taps légitimes. Et le tap se VOIT :
+       vibrate n'existe pas sur Safari iOS, donc un tap compté et un tap perdu
+       se ressemblaient exactement.
     9. Un tap manqué se répare à froid, jamais tout seul : le round suspect est
        signalé, ÷2 le partage à parts égales en conservant la somme, et le
        journal réellement tapé reste récupérable.
@@ -190,17 +193,22 @@ assert(/if\(!\(elapsed > 0\)\)\{ guidedTimerRoundFlash/.test(timer),
 // Les deux moitiés du bug réel du 2026-08-17 : un tap perdu (click iOS annulé
 // par un doigt qui glisse) et rien à l'écran pour le dire, donc un round qui
 // vaut deux tours découvert seulement à l'écran Résultats.
-assert(/at: guidedTimerElapsedSeconds\(\)/.test(timer) && /guidedTimerRoundTap\(p\.at\)/.test(timer),
-  'timer.js : la seconde du round est celle du POSÉ du doigt, pas du relâchement');
-assert(/addEventListener\("pointerdown"/.test(timer) && /addEventListener\("pointerup", onUp\)/.test(timer),
-  'timer.js : le geste est suivi à la main, pas délégué à un click annulable par iOS');
-assert(/GUIDED_ROUND_TAP_SLOP = \d+/.test(timer) && /pending = null; \/\/ c'est un scroll, pas un round/.test(timer),
-  'timer.js : un scroll amorcé sur le chrono ne compte pas de round fantôme');
-assert(/addEventListener\("pointercancel", cancel\)/.test(timer) && /addEventListener\("touchcancel", cancel\)/.test(timer),
-  'timer.js : un geste récupéré par le navigateur (scroll, pinch) n\'a plus de round à valider');
+assert(/addEventListener\("pointerdown", onPress\)/.test(timer),
+  'timer.js : le round part au CONTACT du doigt, pas sur un click annulable par iOS');
+// Le chrono n'arbitre plus entre un tap et un scroll : le CSS lui retire le
+// panoramique, donc un doigt qui glisse dans ses limites est toujours un round.
+// Sans cette règle CSS, il faudrait réintroduire une annulation au glissement —
+// c'est-à-dire re-perdre des taps légitimes.
+assert(!/pointermove|pointercancel|touchmove|SLOP/.test(timer),
+  'timer.js : aucun tap n\'est annulé au glissement dans les limites du chrono');
 assert(/\.guided-card \{[\s\S]{0,160}overflow-y: auto/.test(css),
-  'styles.css : la carte de séance défile — c\'est ce qui rend la tolérance de glissement obligatoire');
-assert(/window\.PointerEvent/.test(timer) && /addEventListener\("touchstart"/.test(timer) && /if\(touched\) return;/.test(timer),
+  'styles.css : la carte de séance défile — c\'est ce que le chrono doit cesser de faire');
+const timerRule = css.match(/\.guided-wod-timer \{([\s\S]*?)\}/);
+assert(!!timerRule && /touch-action:\s*none/.test(timerRule[1]) && /touch-action:\s*pinch-zoom/.test(timerRule[1]),
+  'styles.css : le chrono n\'est pas une surface de défilement (repli `none` si `pinch-zoom` est inconnu)');
+assert(!!timerRule && timerRule[1].indexOf('touch-action: none') < timerRule[1].indexOf('touch-action: pinch-zoom'),
+  'styles.css : `none` est déclaré AVANT `pinch-zoom`, sinon le repli ne joue pas');
+assert(/window\.PointerEvent/.test(timer) && /addEventListener\("touchstart"/.test(timer) && /if\(!touched\) onPress\(ev\)/.test(timer),
   'timer.js : repli tactile+souris là où Pointer Events manque, sans double comptage');
 assert(/navigator\.vibrate/.test(read('scripts/app_helpers.js')) && /guidedTimerRoundFlash\("round-hit"/.test(timer) && /guidedTimerRoundFlash\("round-miss"/.test(timer),
   'timer.js : tap compté ET tap refusé ont chacun leur retour visuel (vibrate absent sur iOS)');
