@@ -1,5 +1,5 @@
-// Racine V4.5.64 — lisibilité de la séance : deux exercices, cible en toutes lettres, kicker WOD, note du WOD
-var APP_VERSION = "V4.5.64";
+// Racine V4.5.65 — une charge réduite volontairement n'est pas une baisse
+var APP_VERSION = "V4.5.65";
 
 // Architecture stable
 // programs/*.js = plan prévu

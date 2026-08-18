@@ -6268,6 +6268,12 @@ body.arnold-mode{
 .pcx-progress-svg circle{fill:var(--gold);stroke:#07111f;stroke-width:2}
 .pcx-progress-svg circle.last{fill:var(--green);stroke-width:3}
 .pcx-progress-svg circle.best{fill:var(--cyan);stroke-width:3}
+/* Point de contexte : séance volontairement allégée (reprise, deload,
+   technique). Il reste sur la courbe — la séance a bien eu lieu — mais il
+   est creux, pour qu'on ne le relise pas comme une chute de capacité. Il ne
+   pèse ni sur la tendance, ni sur le meilleur, ni sur le RPE moyen. */
+.pcx-progress-svg circle.context{fill:#07111f;stroke:var(--muted);stroke-width:2;stroke-dasharray:2.5 2}
+.pcx-progress-svg circle.context.last{fill:#07111f;stroke:var(--muted);stroke-width:2.5}
 .pcx-progress-svg text{fill:var(--text2);font-family:var(--font-hud);font-size:11px;letter-spacing:.04em}
 .pcx-progress-svg .pcx-progress-gridline text{text-anchor:end;fill:rgba(226,232,240,.78);font-size:10px}
 .pcx-progress-svg .pcx-progress-axis-title{fill:var(--white);font-size:11px;text-anchor:start}
