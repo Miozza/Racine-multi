@@ -147,6 +147,30 @@
     };
   }
 
+  // Temps de round enregistrés par le chrono. Ils étaient conservés dans le
+  // journal mais invisibles ici : une séance corrigée les gardait sans jamais
+  // les montrer. Ils s'affichent avec leurs couleurs, et restent corrigeables
+  // en texte — même format que le chrono (« 1:10 / 2:05 / 1:00 »), donc un tap
+  // manqué se rattrape aussi des semaines plus tard.
+  function roundsField(card, key, row){
+    if(!card) return;
+    var splits = txt(row.roundSplits);
+    if(!splits) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'results-step-control history-edit-rounds';
+    var preview = '';
+    try{
+      if(window.CoachAmrapRounds && CoachAmrapRounds.historyHtml){
+        preview = CoachAmrapRounds.historyHtml(splits, row.lastRoundRemaining);
+      }
+    }catch(e){ preview = ''; }
+    wrap.innerHTML =
+      '<span class="sf-label">TEMPS DES ROUNDS</span>' + preview +
+      '<input class="sf-input" data-key="' + esc(key) + '" data-field="roundSplits" type="text" inputmode="text" ' +
+        'placeholder="ex : 1:10 / 2:05 / 1:00" value="' + esc(splits) + '"/>';
+    card.appendChild(wrap);
+  }
+
   function textCard(key, row, container){
     var card = document.createElement('div');
     card.className = 'sf-card';
@@ -163,6 +187,7 @@
           'type="number" inputmode="decimal" min="1" max="10" step="0.5" value="' + esc(row.rpe || '') + '"/>' +
       '</div>';
     container.appendChild(card);
+    roundsField(card, key, row);
     noteField(card, key, row.note);
     return card;
   }

@@ -732,17 +732,14 @@ function renderGuidedSession(){
       resetGuidedTimerState(cfg);
       if(typeof clearGuidedTimerRounds==="function") clearGuidedTimerRounds();
     };
-    // Tap n'importe où sur la carte du chrono = +1 round. Les boutons gardent
-    // leur rôle : sans cette exclusion, ▶/Ⅱ/↻, le libellé et le toggle son
-    // ajouteraient un round au passage. L'affichage des chiffres est en
-    // pointer-events:none (UI_CONSTRAINTS), donc son tap arrive bien ici.
+    // Tap n'importe où sur la carte du chrono = +1 round. Le détail du geste
+    // (posé du doigt, exclusion des boutons, accusé de réception) appartient au
+    // domaine chrono : voir bindGuidedTimerRoundTap() dans session/timer.js.
+    // L'affichage des chiffres est en pointer-events:none (UI_CONSTRAINTS),
+    // donc son tap arrive bien sur la carte.
     var timerBox=el.querySelector(".guided-wod-timer");
-    if(timerBox && amrapKey){
-      timerBox.addEventListener("click", function(ev){
-        var t=ev&&ev.target;
-        if(t && t.closest && t.closest("button")) return;
-        if(typeof guidedTimerRoundTap==="function") guidedTimerRoundTap();
-      });
+    if(timerBox && amrapKey && typeof bindGuidedTimerRoundTap==="function"){
+      bindGuidedTimerRoundTap(timerBox);
     }
     var panel=amrapKey?$(CoachAmrapRounds.panelId):null;
     if(panel){

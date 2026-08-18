@@ -24,6 +24,14 @@
        s'il dépasse l'estimation du programme.
     7. Rien n'est persisté par le module : ce qui survit part par la ligne WOD
        de l'écran Résultats, en champs texte ordinaires.
+    8. Le tap se prend au POSÉ du doigt (un click iOS s'annule au moindre
+       glissement) et se VOIT : vibrate n'existe pas sur Safari iOS, donc un
+       tap compté et un tap perdu se ressemblaient exactement.
+    9. Un tap manqué se répare à froid, jamais tout seul : le round suspect est
+       signalé, ÷2 le partage à parts égales en conservant la somme, et le
+       journal réellement tapé reste récupérable.
+   10. Les temps de round se relisent dans l'Historique, à partir du TEXTE du
+       journal — donc aussi pour une séance exportée puis réimportée.
 
   Usage : node dev/amrap_rounds_checks.js
 */
@@ -169,12 +177,103 @@ const navRow = cssPx('.guided-session .guided-actions', 'min-height');
 assert(navBtn !== null && navRow !== null, 'styles.css : hauteurs de la rangée de navigation mesurables');
 assert(navBtn >= 40, 'styles.css : Précédent/Suivant restent tapables au pouce (≥ 40 px, vu ' + navBtn + ')');
 assert(navRow >= navBtn, 'styles.css : la rangée suit ses boutons (éléments de grille : sinon ils restent étirés)');
-assert(/t\.closest\("button"\)\) return;/.test(view),
-  'view.js : un tap sur un bouton du chrono ne compte pas de round');
+assert(/function bindGuidedTimerRoundTap/.test(timer) && /bindGuidedTimerRoundTap\(timerBox\)/.test(view),
+  'le geste de tap appartient au domaine chrono, la vue ne fait que le brancher');
+assert(/t\.closest\("button"\)\) return;/.test(timer),
+  'timer.js : un tap sur un bouton du chrono ne compte pas de round');
 assert(/guidedTimerRoundTap/.test(timer) && /countdownActive\) return null;/.test(timer),
   'timer.js : aucun round pendant le décompte de départ');
-assert(/if\(!\(elapsed > 0\)\) return null;/.test(timer),
+assert(/if\(!\(elapsed > 0\)\)\{ guidedTimerRoundFlash/.test(timer),
   'timer.js : aucun round tant que le chrono n\'a pas avancé');
+
+// ── 8. Le tap doit être PRIS, et se voir ───────────────────────────────────
+// Les deux moitiés du bug réel du 2026-08-17 : un tap perdu (click iOS annulé
+// par un doigt qui glisse) et rien à l'écran pour le dire, donc un round qui
+// vaut deux tours découvert seulement à l'écran Résultats.
+assert(/at: guidedTimerElapsedSeconds\(\)/.test(timer) && /guidedTimerRoundTap\(p\.at\)/.test(timer),
+  'timer.js : la seconde du round est celle du POSÉ du doigt, pas du relâchement');
+assert(/addEventListener\("pointerdown"/.test(timer) && /addEventListener\("pointerup", onUp\)/.test(timer),
+  'timer.js : le geste est suivi à la main, pas délégué à un click annulable par iOS');
+assert(/GUIDED_ROUND_TAP_SLOP = \d+/.test(timer) && /pending = null; \/\/ c'est un scroll, pas un round/.test(timer),
+  'timer.js : un scroll amorcé sur le chrono ne compte pas de round fantôme');
+assert(/addEventListener\("pointercancel", cancel\)/.test(timer) && /addEventListener\("touchcancel", cancel\)/.test(timer),
+  'timer.js : un geste récupéré par le navigateur (scroll, pinch) n\'a plus de round à valider');
+assert(/\.guided-card \{[\s\S]{0,160}overflow-y: auto/.test(css),
+  'styles.css : la carte de séance défile — c\'est ce qui rend la tolérance de glissement obligatoire');
+assert(/window\.PointerEvent/.test(timer) && /addEventListener\("touchstart"/.test(timer) && /if\(touched\) return;/.test(timer),
+  'timer.js : repli tactile+souris là où Pointer Events manque, sans double comptage');
+assert(/navigator\.vibrate/.test(read('scripts/app_helpers.js')) && /guidedTimerRoundFlash\("round-hit"/.test(timer) && /guidedTimerRoundFlash\("round-miss"/.test(timer),
+  'timer.js : tap compté ET tap refusé ont chacun leur retour visuel (vibrate absent sur iOS)');
+assert(/\.guided-wod-timer\.round-hit\{/.test(css) && /\.guided-wod-timer\.round-miss\{/.test(css),
+  'styles.css : la carte du chrono porte les deux états de tap');
+assert(/\.guided-wod-timer\.round-hit\{[\s\S]{0,200}!important/.test(css),
+  'styles.css : la confirmation de tap passe devant les alertes EMOM (déclarées plus haut)');
+assert(css.indexOf('.guided-wod-timer.round-hit{') > css.indexOf('.guided-wod-timer.emom-blue{'),
+  'styles.css : à !important égal, la confirmation de tap est déclarée après l\'alerte EMOM');
+
+// ── 9. Réparer un tap manqué : ÷2, sans rien inventer ──────────────────────
+R.resetAll();
+const K2 = R.keyFor('Chipper');
+R.tap(K2, 60, 600);    // R1 : 1:00
+R.tap(K2, 245, 600);   // R2 : 3:05 — deux tours comptés pour un
+R.tap(K2, 310, 600);   // R3 : 1:05
+let s2 = R.stats(K2);
+assert(s2.suspectIndex === 1, 'un round qui vaut ~2 fois les autres est signalé comme tap manqué');
+assert(R.stats(K2).edited === false, 'le journal brut n\'est pas « corrigé » tant qu\'on n\'y touche pas');
+
+s2 = R.split(K2, 1, 2);
+assert(s2.count === 4, '÷2 rend au round manqué son tour perdu');
+assert(s2.rounds.map(r => r.split).join(',') === '60,93,92,65',
+  '÷2 partage à parts égales et conserve la somme (les rounds suivants ne bougent pas)');
+assert(s2.rounds[3].at === 310 && s2.lastRemaining === 290,
+  '÷2 ne touche ni au dernier tap ni au temps restant du round entamé');
+assert(s2.edited === true && R.isEdited(K2), 'le journal se déclare corrigé');
+assert(R.splitsText(K2) === '1:00 / 1:33 / 1:32 / 1:05', 'le champ durable suit la correction');
+
+const back = R.restore(K2);
+assert(back.count === 3 && R.splitsText(K2) === '1:00 / 3:05 / 1:05',
+  '« Rétablir » ramène exactement ce que le chrono a vu');
+assert(R.isEdited(K2) === false, 'après rétablissement, le journal n\'est plus marqué corrigé');
+
+R.resetAll();
+const K3 = R.keyFor('Court');
+R.tap(K3, 1, 600);
+assert(R.split(K3, 0, 2) === null, 'un round d\'une seconde ne se divise pas (pas de split nul)');
+R.resetAll();
+const K4 = R.keyFor('Deux');
+R.tap(K4, 100, 600);
+R.tap(K4, 200, 600);
+assert(R.stats(K4).suspectIndex === -1,
+  'sur deux rounds seulement, un écart n\'est pas un tap manqué mais un rythme');
+
+assert(/data-round-split=/.test(mod) && /data-rounds-restore=/.test(mod),
+  'amrap_rounds.js : ÷2 et Rétablir sont dans l\'écran Résultats, pas en plein WOD');
+assert(/mountResultsLog/.test(mod) && /CoachAmrapRounds\.mountResultsLog\(it\.key/.test(results),
+  'results.js : le journal du chrono est monté vivant, corrections comprises');
+assert(/selectRoundChip\(st\.count\)/.test(results),
+  'results.js : corriger un tap manqué met à jour le compte de rounds enregistré');
+assert(/splitsInp\.value = CoachAmrapRounds\.splitsText\(it\.key\)/.test(results),
+  'results.js : les champs durables suivent la correction (sinon l\'écran ment au journal)');
+
+// ── 10. Les temps de round se relisent dans l'Historique ───────────────────
+// Ils étaient enregistrés depuis leur première séance et affichés nulle part.
+const app = read('app.js');
+const histEdit = read('scripts/session/history_edit.js');
+assert(R.historyHtml('1:10 / 2:05 / 1:00', '0:42').indexOf('1:10') > -1,
+  'historyHtml() relit les splits depuis le TEXTE du journal (pas d\'objet persisté)');
+assert(/history-round fast/.test(R.historyHtml('1:10 / 2:05 / 1:00', '')),
+  'historyHtml() garde les couleurs or/bronze de l\'écran Résultats');
+assert(R.historyHtml('', '') === '' && R.historyHtml('n\'importe quoi', '') === '',
+  'une entrée sans splits lisibles n\'affiche rien plutôt qu\'une ligne vide');
+assert(R.parseSplitsText('1:10 / 2:05').join(',') === '70,125', 'parseSplitsText() rend des secondes');
+assert(/r\.roundSplits && window\.CoachAmrapRounds/.test(app) && /CoachAmrapRounds\.historyHtml\(r\.roundSplits, r\.lastRoundRemaining\)/.test(app),
+  'app.js : l\'historique affiche les temps de round en plus de la note');
+assert(/r\.load\|\|r\.result\|\|r\.note\|\|r\.rpe\|\|r\.roundSplits/.test(app),
+  'app.js : une ligne qui n\'a QUE des splits reste affichée');
+assert(/data-field="roundSplits"/.test(histEdit),
+  'history_edit.js : les temps de round d\'une séance passée restent corrigeables');
+assert(/\.history-round\{/.test(css) && /\.history-round\.fast\{/.test(css) && /\.history-round\.slow\{/.test(css),
+  'styles.css : pastilles de round de l\'historique définies');
 assert(/clearGuidedTimerRounds\(\);/.test(timer),
   'timer.js : éditer le chrono remet les rounds à zéro (leur temps restant ne veut plus rien dire)');
 assert(/\.guided-amrap-panel\{/.test(css) && /\.guided-amrap-cell\.fast\{/.test(css) && /\.guided-amrap-cell\.slow\{/.test(css),
@@ -185,8 +284,8 @@ assert(/\.wod-round-line\.fast\{/.test(css) && /\.wod-round-line\.slow\{/.test(c
 // ── 6/7. Transfert vers l'écran Résultats ──────────────────────────────────
 assert(/CoachAmrapRounds\.stats\(item\.key\)/.test(results),
   'results.js : la ligne WOD lit les rounds tapés pendant la séance');
-assert(/Math\.max\(r2\.max\+2, amrapLog \? amrapLog\.count : 0\)/.test(results),
-  'results.js : un compte tapé au-delà de l\'estimation reste sélectionnable');
+assert(/Math\.max\(r2\.max\+2, amrapLog \? amrapLog\.count\+2 : 0\)/.test(results),
+  'results.js : un compte tapé au-delà de l\'estimation reste sélectionnable (avec la marge d\'une correction ÷2)');
 assert(/tappedRounds > 0[\s\S]{0,80}wodRounds\.def/.test(results),
   'results.js : le compte tapé est pré-sélectionné, l\'estimation ne sert que de repli');
 assert(/data-field="roundSplits"/.test(results) && /data-field="lastRoundRemaining"/.test(results),

@@ -226,7 +226,11 @@ function renderSessionEntry(){
         // La borne haute des pastilles est une estimation. Un compte réellement
         // tapé au chrono la dépasse parfois : il doit rester sélectionnable,
         // sinon le transfert automatique proposerait un round non cliquable.
-        var chipMax = Math.max(r2.max+2, amrapLog ? amrapLog.count : 0);
+        // Deux marges : l'estimation du programme, et le compte tapé — auquel
+        // on ajoute de la place, car corriger un tap manqué (÷2) fait monter le
+        // compte après le rendu. Des pastilles manquantes rendraient la
+        // correction invisible.
+        var chipMax = Math.max(r2.max+2, amrapLog ? amrapLog.count+2 : 0);
         wodInner += '<span class="sf-label">ROUNDS COMPLÉTÉS'+(amrapLog?' — repris du chrono':'')+'</span>';
         wodInner += '<div class="sf-chips" id="wod_rounds_'+item.key+'">';
         for(var ri=0; ri<=chipMax; ri++){
@@ -236,8 +240,10 @@ function renderSessionEntry(){
         wodInner += '</div>';
       }
 
+      // Journal du chrono : hôte vide ici, rempli et rendu interactif après
+      // l'insertion (le module possède son rendu ET ses corrections ÷2).
       if(amrapLog){
-        wodInner += CoachAmrapRounds.resultsHtml(item.key);
+        wodInner += '<div id="wod_rounds_log_'+item.key+'"></div>';
       }
 
       if(item.isAmrap && item.wodMoves && item.wodMoves.length){
@@ -266,9 +272,9 @@ function renderSessionEntry(){
         // la séance dans le journal (donc dans l'export JSON).
         wodInner += '<input class="sf-input" id="wod_rounds_value_'+item.key+'" data-key="'+item.key+'" data-field="rounds" type="hidden" value=""/>';
         if(amrapLog){
-          wodInner += '<input class="sf-input" data-key="'+item.key+'" data-field="roundSplits" type="hidden" value="'+escHtml(CoachAmrapRounds.splitsText(item.key))+'"/>';
+          wodInner += '<input class="sf-input" id="wod_splits_'+item.key+'" data-key="'+item.key+'" data-field="roundSplits" type="hidden" value="'+escHtml(CoachAmrapRounds.splitsText(item.key))+'"/>';
           var remTxt = CoachAmrapRounds.remainingText(item.key);
-          if(remTxt) wodInner += '<input class="sf-input" data-key="'+item.key+'" data-field="lastRoundRemaining" type="hidden" value="'+escHtml(remTxt)+'"/>';
+          if(remTxt) wodInner += '<input class="sf-input" id="wod_remaining_'+item.key+'" data-key="'+item.key+'" data-field="lastRoundRemaining" type="hidden" value="'+escHtml(remTxt)+'"/>';
         }
       } else if(item.isEmom){
         wodInner += '<input class="sf-input" id="wod_free_'+item.key+'" data-key="'+item.key+'" data-field="result" type="hidden" value="EMOM complété"/>';
@@ -294,7 +300,11 @@ function renderSessionEntry(){
         // Rounds tapés au chrono > estimation du programme : si l'athlète a
         // compté pendant le WOD, c'est son compte qui arrive pré-sélectionné.
         var tappedRounds = (it.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.count(it.key) : 0;
-        var amrapSuffix = (it.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.resultSuffix(it.key) : '';
+        // Recalculé à chaque aperçu : corriger un tap manqué peut changer le
+        // journal du chrono après le rendu de la carte.
+        function amrapSuffixNow(){
+          return (it.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.resultSuffix(it.key) : '';
+        }
         var selectedRounds = tappedRounds > 0
           ? tappedRounds
           : (it.isAmrap && it.wodRounds ? it.wodRounds.def : 0);
@@ -336,6 +346,7 @@ function renderSessionEntry(){
           // Le temps qu'il restait au dernier round entamé suit le résultat
           // jusque dans l'historique : c'est lui qui donne son sens aux reps
           // partielles ("6 burpees" ne dit rien sans "il restait 0:42").
+          var amrapSuffix = amrapSuffixNow();
           if(resultStr && amrapSuffix) resultStr += amrapSuffix;
           if(freeInp) freeInp.value = resultStr;
           var roundsInp = document.getElementById('wod_rounds_value_'+it.key);
@@ -358,16 +369,51 @@ function renderSessionEntry(){
         }
 
         var roundsEl = document.getElementById('wod_rounds_'+it.key);
+        function bindRoundChip(btn){
+          btn.addEventListener('click',function(){
+            selectRoundChip(Number(btn.getAttribute('data-round')));
+            updatePreview();
+          });
+        }
+        // Une correction du journal du chrono peut dépasser la dernière
+        // pastille rendue : on en fabrique alors autant qu'il en manque, plutôt
+        // que de laisser le compte corrigé insélectionnable.
+        function selectRoundChip(n){
+          selectedRounds = n;
+          if(!roundsEl) return;
+          var last = roundsEl.querySelector('[data-round]:last-child');
+          var max = last ? Number(last.getAttribute('data-round')) : -1;
+          for(var ri3 = max+1; ri3 <= n; ri3++){
+            var extra = document.createElement('button');
+            extra.type = 'button';
+            extra.className = 'sf-chip';
+            extra.setAttribute('data-round', ri3);
+            extra.textContent = ri3;
+            roundsEl.appendChild(extra);
+            bindRoundChip(extra);
+          }
+          roundsEl.querySelectorAll('[data-round]').forEach(function(b){
+            b.classList.toggle('active', Number(b.getAttribute('data-round')) === n);
+          });
+        }
         if(roundsEl){
           var defBtn = roundsEl.querySelector('[data-round="'+selectedRounds+'"]');
           if(defBtn) defBtn.classList.add('active');
-          roundsEl.querySelectorAll('[data-round]').forEach(function(btn){
-            btn.addEventListener('click',function(){
-              selectedRounds = Number(btn.getAttribute('data-round'));
-              roundsEl.querySelectorAll('[data-round]').forEach(function(b){b.classList.remove('active');});
-              btn.classList.add('active');
-              updatePreview();
-            });
+          roundsEl.querySelectorAll('[data-round]').forEach(bindRoundChip);
+        }
+
+        // Journal du chrono, corrigeable (÷2 sur un round qui vaut deux tours).
+        // Les champs durables et le compte sélectionné suivent la correction :
+        // sans ça, l'écran montrerait 5 rounds et enregistrerait les 4 d'avant.
+        var logHost = document.getElementById('wod_rounds_log_'+it.key);
+        if(logHost && window.CoachAmrapRounds && CoachAmrapRounds.mountResultsLog){
+          CoachAmrapRounds.mountResultsLog(it.key, logHost, function(st){
+            var splitsInp = document.getElementById('wod_splits_'+it.key);
+            if(splitsInp) splitsInp.value = CoachAmrapRounds.splitsText(it.key);
+            var remInp = document.getElementById('wod_remaining_'+it.key);
+            if(remInp) remInp.value = CoachAmrapRounds.remainingText(it.key);
+            selectRoundChip(st.count);
+            updatePreview();
           });
         }
 

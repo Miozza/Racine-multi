@@ -7312,8 +7312,8 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 }
 .wod-round-line{
   display:grid;
-  grid-template-columns:38px auto 1fr;
-  align-items:baseline;
+  grid-template-columns:38px auto 1fr auto;
+  align-items:center;
   gap:8px;
   padding:3px 6px;
   border-radius:7px;
@@ -7364,6 +7364,196 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   font-size:15px;
   color:var(--cyan);
 }
+
+/* ── Accusé de réception du tap de round ──────────────────────────────────
+   navigator.vibrate n'existe pas sur Safari iOS : sans retour visuel, un tap
+   compté et un tap perdu se ressemblaient exactement. La carte du chrono le
+   dit elle-même — vert + numéro du round quand il est pris, rouge bref quand
+   il est refusé. Déclaré APRÈS les alertes EMOM et en !important : sur un WOD
+   où les deux existent, la confirmation du tap prime pendant sa demi-seconde.
+   ═══════════════════════════════════════════ */
+.guided-wod-timer.round-hit{
+  border-color:var(--green) !important;
+  box-shadow:0 0 0 2px rgba(77,255,136,.20), 0 0 30px rgba(77,255,136,.34) !important;
+}
+.guided-wod-timer.round-miss{
+  border-color:var(--red) !important;
+  box-shadow:0 0 0 2px rgba(255,34,68,.18), 0 0 24px rgba(255,34,68,.26) !important;
+}
+.guided-wod-timer.round-hit::before{
+  content:attr(data-round-hit);
+  position:absolute;
+  top:8px;
+  right:10px;
+  z-index:2;
+  min-width:44px;
+  text-align:center;
+  padding:4px 8px;
+  border-radius:999px;
+  font-family:var(--font-hud);
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.05em;
+  color:var(--green);
+  background:rgba(0,0,0,.42);
+  border:1px solid currentColor;
+  animation:roundHitPop .85s ease-out forwards;
+}
+@keyframes roundHitPop{
+  0%{transform:scale(.7);opacity:0;}
+  18%{transform:scale(1.14);opacity:1;}
+  40%{transform:scale(1);opacity:1;}
+  100%{transform:scale(1);opacity:0;}
+}
+@media (prefers-reduced-motion: reduce){
+  .guided-wod-timer.round-hit::before{animation:none;opacity:1;}
+}
+
+/* ── Corriger un tap manqué (écran Résultats) ─────────────────────────────
+   Le round suspect est celui qui vaut ~2 tours : il est signalé, jamais
+   corrigé tout seul. ÷2 reste un bouton de pouce (44 px de haut). */
+.wod-round-line{ position:relative; }
+.wod-round-line.suspect{
+  background:rgba(255,107,53,.14);
+  box-shadow:inset 2px 0 0 var(--orange);
+}
+.wod-round-line.suspect .wod-round-split,
+.wod-round-line.suspect .wod-round-tag{ color:var(--orange); }
+.wod-round-split-btn{
+  min-width:46px;
+  min-height:34px;
+  padding:0 8px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:rgba(0,0,0,.30);
+  color:var(--muted);
+  font-family:var(--font-hud);
+  font-size:13px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+}
+.wod-round-split-btn:active{ background:var(--panel2); color:var(--text); }
+.wod-round-split-btn.suggest{
+  border-color:var(--orange);
+  color:var(--orange);
+  background:rgba(255,107,53,.14);
+}
+.wod-round-split-btn.empty{
+  background:none;
+  border-color:transparent;
+  pointer-events:none;
+}
+.wod-rounds-edited{
+  margin-left:8px;
+  padding:2px 7px;
+  border-radius:999px;
+  font-family:var(--font-main);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.06em;
+  color:var(--orange);
+  border:1px solid rgba(255,107,53,.55);
+  background:rgba(255,107,53,.12);
+}
+.wod-rounds-fix{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid var(--border2);
+}
+.wod-rounds-fix-hint{
+  flex:1;
+  min-width:150px;
+  font-family:var(--font-main);
+  font-size:11px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.wod-rounds-fix-hint strong{ font-family:var(--font-hud); color:var(--cyan); }
+.wod-rounds-restore{
+  flex:0 0 auto;
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:rgba(0,0,0,.30);
+  color:var(--muted);
+  font-family:var(--font-main);
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+.wod-rounds-restore:active{ background:var(--panel2); color:var(--text); }
+
+/* ── Temps de round dans l'Historique ─────────────────────────────────────
+   Les splits étaient enregistrés depuis leur première séance mais relus
+   nulle part : la note seule ne dit pas le rythme du WOD. Mêmes couleurs
+   qu'à la saisie — or pour le plus rapide, bronze pour le plus lent. */
+.history-rounds{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px;
+  margin:2px 0 6px;
+}
+.history-rounds-head{
+  flex:0 0 auto;
+  font-family:var(--font-main);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.history-rounds-cells{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+}
+.history-round{
+  display:inline-flex;
+  align-items:baseline;
+  gap:4px;
+  padding:2px 7px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:rgba(255,255,255,.03);
+  font-family:var(--font-hud);
+  font-size:13px;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+  color:var(--text2);
+}
+.history-round em{
+  font-family:var(--font-main);
+  font-size:9px;
+  font-weight:800;
+  font-style:normal;
+  color:var(--muted);
+}
+.history-round.fast{
+  border-color:rgba(242,193,78,.65);
+  background:rgba(242,193,78,.12);
+  color:var(--medal-gold);
+}
+.history-round.fast em{ color:rgba(242,193,78,.85); }
+.history-round.slow{
+  border-color:rgba(200,113,55,.65);
+  background:rgba(200,113,55,.14);
+  color:var(--medal-bronze);
+}
+.history-round.slow em{ color:rgba(200,113,55,.90); }
+.history-rounds-left{
+  flex:0 0 auto;
+  font-family:var(--font-main);
+  font-size:10px;
+  color:var(--muted);
+}
+.history-edit-rounds .history-rounds{ margin:4px 0 6px; }
 
 /* ═══════════════════════════════════════════
    Sortie « terminé » d'un cycle — onglet Cycle
