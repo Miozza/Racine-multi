@@ -1,5 +1,5 @@
-// Racine V4.5.62 — le tap de round ne se perd plus, et les temps de round se relisent
-var APP_VERSION = "V4.5.62";
+// Racine V4.5.63 — dans les limites du chrono, tout contact compte un round
+var APP_VERSION = "V4.5.63";
 
 // Architecture stable
 // programs/*.js = plan prévu
