@@ -233,6 +233,82 @@ assert(chargeRuntime.includes('coachAggressivenessFactor'), 'Le moteur doit gard
 assert(read('docs/DATA_FLOW_CONTRACT.md').includes('resultats = journal brut reconstructible'), 'DATA_FLOW_CONTRACT doit fixer resultats comme journal brut.');
 assert(read('docs/DATA_FLOW_CONTRACT.md').includes('athlete_state = etat derive pour le moteur'), 'DATA_FLOW_CONTRACT doit fixer athlete_state comme état dérivé.');
 
+// ── Lisibilité de la séance guidée ─────────────────────────────────────────
+// Quatre défauts signalés en usage réel (V4.5.64), tous des régressions de
+// lecture ou de saisie : ils ne cassent aucun test de moteur, seulement
+// l'entraînement. D'où des garde-fous ici.
+
+// 1. Une cible écrite en toutes lettres est une cible. « cumul 100 reps »
+//    retombait sur repsHint (10) : l'écran proposait 10 répétitions pour un
+//    objectif de 100, et l'athlète notait un dixième de son travail.
+const appSrc = read('app.js');
+const parseTargetRepsSrc = (appSrc.match(/function parseTargetReps[\s\S]*?\n}/) || [''])[0];
+assert(!!parseTargetRepsSrc, 'parseTargetReps doit rester lisible dans app.js.');
+if(parseTargetRepsSrc){
+  const parseTargetReps = new Function('return (' + parseTargetRepsSrc + ')')();
+  const target = (fmt) => { const r = parseTargetReps(fmt, 10); return r.min + '-' + r.max; };
+  assert(target('cumul 100 reps') === '100-100', 'Une cible « cumul 100 reps » doit valoir 100, pas le repli 10.');
+  assert(target('Validation : 1 rep propre') === '1-1', 'Le singulier « 1 rep » doit être lu comme une cible.');
+  // Le nombre doit TOUCHER le mot : sinon « 3 rounds for reps » vaudrait 3 reps.
+  assert(target('3 rounds for reps') === '10-10', '« 3 rounds for reps » ne déclare aucune cible de reps.');
+  assert(target('5 rounds for time') === '10-10', '« 5 rounds for time » ne déclare aucune cible de reps.');
+  // Les formes existantes ne bougent pas.
+  assert(target('4×15-20') === '15-20', 'Une plage garde la priorité sur tout le reste.');
+  assert(target('4×10/côté') === '10-10', 'Un format N×M reste lu par le « × ».');
+  assert(target('5-6 reps strict') === '5-6', 'Une plage suivie du mot reps reste une plage.');
+}
+
+// 2. Deux exercices ne se compressent pas comme quatre. Le palier de densité
+//    écrivait « 2, 3 ou 4 » dans le même sélecteur : un bloc de deux mouvements
+//    était compressé comme un bloc de quatre, et la carte finissait sur un vide.
+const cssSrc = read('styles.css');
+// On lit les DEUX paliers de base, pas leurs variantes d'écran court : la
+// recherche part du commentaire qui les introduit et prend la première
+// occurrence de chacun, dans l'ordre du fichier.
+const iTier = cssSrc.indexOf('Mode séance : DEUX exercices');
+const iTwo = cssSrc.indexOf('.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid span', iTier);
+const iThree = cssSrc.indexOf('.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-grid span', iTier);
+assert(iTier > -1, 'Le palier « deux exercices » doit rester identifiable dans styles.css.');
+assert(iTwo > -1 && iThree > -1, 'Les paliers 2 et 3+ des libellés d’exercice doivent exister.');
+assert(iTwo > -1 && iThree > -1 && iThree > iTwo,
+  'Le palier 3+ doit être déclaré APRÈS le palier 2 : à spécificité égale, c’est l’ordre qui tranche.');
+function labelPx(from){
+  const chunk = cssSrc.slice(from, from + 220);
+  const m = chunk.match(/font-size:\s*clamp\(\s*(\d+(?:\.\d+)?)px/);
+  return m ? Number(m[1]) : null;
+}
+const twoPx = labelPx(iTwo), threePx = labelPx(iThree);
+assert(twoPx !== null && threePx !== null, 'Les tailles de libellé des deux paliers doivent être mesurables.');
+assert(twoPx !== null && twoPx >= 13,
+  'Libellés Format/Poids/Repos lisibles sans lunettes à deux exercices (≥ 13 px, vu ' + twoPx + ').');
+assert(twoPx !== null && threePx !== null && twoPx > threePx,
+  'Deux exercices doivent lire plus grand que trois (' + twoPx + ' contre ' + threePx + ').');
+
+// 3. Le rouge du kicker WOD. La famille de couleur est conservée — rouge = bloc
+//    WOD, la barre de la carte l'utilise aussi — mais le TEXTE prend une teinte
+//    éclaircie : #ff2244 sur fond noir ne donnait que 5,1:1 et bavait.
+assert(/--red-hud:/.test(cssSrc), 'Une teinte de rouge lisible en texte doit rester déclarée.');
+assert(/\.guided-wod-kicker\s*\{[^}]*color:\s*var\(--red-hud\)/.test(cssSrc),
+  'Le kicker du bloc WOD doit utiliser la teinte texte, pas le rouge de signalétique.');
+assert(/\.guided-card\.kind-wod::before\s*\{[^}]*var\(--red\)/.test(cssSrc),
+  'La barre de la carte WOD garde --red : le code couleur des blocs ne change pas.');
+
+// 4. Le WOD a droit à sa note, et c'est LA MÊME que celle de l'écran Résultats.
+//    Deux champs distincts s'écraseraient : guidedResultCache est prioritaire
+//    dans collectSessionResults().
+const viewSrc = read('scripts/session/view.js');
+const resultsSrc = read('scripts/session/results.js');
+assert(/guidedNoteButtonHtml\(\{key:"wod_"\+st\.title/.test(viewSrc),
+  'La carte WOD doit porter un bouton Notes, sur la clé de sa ligne de résultat.');
+assert(/guided-wod-kicker-row/.test(viewSrc) && /\.guided-wod-kicker-row\s*\{/.test(cssSrc),
+  'Le bouton Notes du WOD tient sur la ligne du kicker : aucune rangée ajoutée sous le chrono.');
+assert(/id="wod_note_'\+item\.key\+'"/.test(resultsSrc),
+  'Le champ note du WOD doit être adressable pour être relié au cache.');
+assert(/setGuidedResult\(it\.key,'note',noteInp\.value\)/.test(resultsSrc),
+  'Le champ note de l’écran Résultats doit écrire dans le même cache que le bouton Notes du WOD.');
+assert(/value="'\+escHtml\(getGuidedResult\(item\.key,'note',''\)\)\+'"/.test(resultsSrc),
+  'Le champ note de l’écran Résultats doit être pré-rempli par la note écrite pendant le WOD.');
+
 if(errors.length){
   console.error('\nÉCHEC regression_checks.js');
   errors.forEach((e,i) => console.error((i+1) + '. ' + e));

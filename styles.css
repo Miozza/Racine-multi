@@ -49,6 +49,13 @@
   --medal-gold:   #f2c14e;
   --medal-bronze: #c87137;
   --red:       #ff2244;
+  /* Même rouge, éclairci pour le TEXTE. #ff2244 sur #080d1a ne donne que
+     5,1:1 de contraste, et un rouge saturé sur fond noir se lit mal de près
+     comme de loin : l'œil ne met pas le rouge au point dans le même plan que
+     le fond, les contours bavent. Cette teinte monte à 7,1:1 sans changer la
+     famille de couleur — le code couleur des blocs WOD reste le rouge, la
+     barre de la carte continue d'utiliser --red tel quel. */
+  --red-hud:   #ff6b7f;
   --orange:    #ff6b35;
   --text:      #f0f6ff;
   --text2:     #cfe1f7;
@@ -2456,10 +2463,27 @@ label {
   padding: 0 4px;
   margin-bottom: 6px;
 }
+/* Le bouton « Notes » du WOD se pose au bout de la ligne du kicker, jamais sur
+   sa propre rangée : la hauteur libre de la carte sert à étirer les chiffres du
+   chrono (docs/UI_CONSTRAINTS.md), et une rangée de plus les ferait rapetisser. */
+.guided-wod-kicker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.guided-wod-kicker-row .guided-wod-kicker {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.guided-wod-kicker-row .gvn-btn-mini { flex: 0 0 auto; }
 .guided-wod-kicker {
   font-family: var(--font-hud);
-  color: var(--red);
-  font-size: 14px;
+  color: var(--red-hud);
+  font-size: 15px;
   font-weight: 900;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -2761,7 +2785,7 @@ label {
   margin-bottom: 4px;
 }
 .guided-wod-kicker {
-  font-size: clamp(13px, 3.7vw, 18px);
+  font-size: clamp(15px, 4.2vw, 20px);
 }
 .guided-wod-title {
   font-size: clamp(25px, 7.2vw, 42px);
@@ -7866,3 +7890,134 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 .wodplus-note.load-message{ color:#ffd84a; font-weight:600; }
 
 
+
+/* ═══════════════════════════════════════════
+   Mode séance : DEUX exercices ≠ quatre exercices
+   Le palier de densité s'écrivait « 2, 3 ou 4 » dans le même sélecteur : un
+   bloc de deux mouvements était donc compressé exactement comme un bloc de
+   quatre, alors qu'il dispose du double de hauteur — et la carte se terminait
+   sur un grand vide. Ce sont les LIBELLÉS qui payaient le plus (Format, Poids,
+   Repos à 12 px au lieu de 15 ; REPS et RPE à 9 px), pas les valeurs : à bout
+   de bras et sans lunettes, on ne savait plus quel chiffre lisait quoi.
+   Ce palier rend aux deux-exercices les tailles du mouvement seul. Le palier
+   serré redevient ce qu'il aurait dû être : trois exercices ou plus, déclaré
+   juste après pour l'emporter à spécificité égale. La liste défile
+   (overflow-y:auto), donc un débordement ne coupe jamais rien.
+   ═══════════════════════════════════════════ */
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-card {
+  padding: 8px 7px !important;
+  gap: 6px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-title {
+  font-size: clamp(22px, 6.1vw, 34px) !important;
+  margin-bottom: 5px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid {
+  gap: 4px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid div {
+  padding-top: 4px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid span {
+  font-size: clamp(14px, 3.8vw, 19px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid strong {
+  font-size: clamp(25px, 7vw, 40px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid strong.accent {
+  font-size: clamp(27px, 7.6vw, 44px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-result-grid > div > span {
+  font-size: 12px !important;
+  letter-spacing: .06em !important;
+  margin-bottom: 3px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-load-input {
+  font-size: clamp(23px, 6.8vw, 37px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-adj,
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-load-input {
+  min-height: 40px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-adj {
+  font-size: 18px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-chip {
+  min-width: 30px !important;
+  min-height: 30px !important;
+  font-size: 14px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-rest.mini {
+  font-size: clamp(14px, 4vw, 19px) !important;
+}
+
+/* Trois exercices ou plus : la place n'y est plus, le palier serré reprend.
+   Spécificité identique au bloc ci-dessus (0,4,0) — c'est l'ordre qui tranche,
+   donc ce bloc doit rester APRÈS. */
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-card {
+  padding: 6px 6px !important;
+  gap: 5px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-title {
+  font-size: clamp(20px, 5.4vw, 31px) !important;
+  margin-bottom: 4px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-grid {
+  gap: 2px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-grid div {
+  padding-top: 2px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-grid span {
+  font-size: clamp(11px, 3vw, 15px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-grid strong {
+  font-size: clamp(23px, 6.4vw, 38px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-grid strong.accent {
+  font-size: clamp(25px, 7vw, 42px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-result-grid > div > span {
+  font-size: 9px !important;
+  letter-spacing: .05em !important;
+  margin-bottom: 2px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-load-input {
+  font-size: clamp(21px, 6.2vw, 34px) !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-adj,
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-load-input {
+  min-height: 36px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-adj {
+  font-size: 16px !important;
+}
+.guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-chip {
+  min-width: 26px !important;
+  min-height: 26px !important;
+  font-size: 12px !important;
+}
+
+/* Écran court : deux exercices restent plus grands que trois, mais pas au prix
+   d'un défilement permanent. */
+@media (max-height: 760px) {
+  .guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-title {
+    font-size: clamp(20px, 5.5vw, 30px) !important;
+  }
+  .guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-ex-grid span {
+    font-size: clamp(13px, 3.4vw, 17px) !important;
+  }
+  .guided-ex-list:has(.guided-ex-card:nth-child(2)) .guided-chip {
+    min-width: 28px !important;
+    min-height: 28px !important;
+    font-size: 13px !important;
+  }
+  .guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-ex-title {
+    font-size: clamp(18px, 4.9vw, 28px) !important;
+  }
+  .guided-ex-list:has(.guided-ex-card:nth-child(3)) .guided-chip {
+    min-width: 24px !important;
+    min-height: 24px !important;
+    font-size: 11px !important;
+  }
+}
