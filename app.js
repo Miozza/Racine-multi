@@ -1,5 +1,5 @@
-// Racine V4.5.65 — une charge réduite volontairement n'est pas une baisse
-var APP_VERSION = "V4.5.65";
+// Racine V4.5.66 — la courbe porte enfin les répétitions, et sait se lire en e1RM
+var APP_VERSION = "V4.5.66";
 
 // Architecture stable
 // programs/*.js = plan prévu

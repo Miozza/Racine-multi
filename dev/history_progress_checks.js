@@ -78,7 +78,7 @@ function extractFn(src, name){
 }
 const trendFns = ['pcProgIsContextRow','pcProgCapacityRows','pcProgFinalizeItem','pcProgCondenseRowsByDate',
                   'pcProgDateKey','pcProgRowScore','pcProgContextNote','pcProgInsight','pcProgPointClass',
-                  'pcProgSetText','pcProgFormatNumber'];
+                  'pcProgSetText','pcProgFormatNumber','pcProgMetricValue','pcProgE1rmIsStretched'];
 let trendCode = '';
 trendFns.forEach(function(n){
   const code = extractFn(pc, n);
@@ -86,6 +86,9 @@ trendFns.forEach(function(n){
   trendCode += code;
 });
 const box = { window:{}, console:{log:function(){},warn:function(){}}, pcProgressSelected:null };
+// pcProgFinalizeItem lit le mode de lecture (charge / e1RM) : on le pose comme
+// la vue le pose, sinon c'est le harnais qui casse, pas le code testé.
+trendCode = 'var pcProgressMetricMode="load";\n' + trendCode;
 // Le garde-fou n'invente pas sa propre définition : il rejoue la porte publique
 // du moteur, celle que la courbe utilise réellement.
 box.window.CoachCharge = { isContextualLoadRow: function(r){
@@ -160,6 +163,79 @@ assert(/delta < 0 && !contextual/.test(sum),
 // rester signalé. Les branches d'échec sont évaluées AVANT l'exception.
 assert(prog.indexOf('major_fail') < prog.indexOf('if(contextual){'),
   'un échec réel pendant une semaine allégée reste signalé (test d’échec avant l’exception)');
+
+// ── Une charge sans ses répétitions ne veut pas dire grand-chose ───────────
+// Signalé en usage réel : « un 1RM de 3 reps et de 8 reps ne sont pas
+// équivalents ». La courbe traçait la charge nue, donc 195×3, 195×5 et 195×8
+// formaient une ligne PLATE à 195 — trois performances très différentes
+// affichées identiques. Deux réponses, toutes deux vérifiées ici :
+//   · chaque point porte désormais ses répétitions ;
+//   · une lecture e1RM (Epley, la math de base du moteur) les combine.
+const metricFns = trendFns.concat(['pcProgMetricUnit','pcProgMetricName',
+                                   'pcProgPointLabelText','pcProgFormatMetric','pcProgE1rm']);
+let metricCode = 'var PC_E1RM_TRUST_REPS=12; var pcProgressMetricMode="load";\n';
+metricFns.forEach(function(n){ metricCode += extractFn(pc, n); });
+const mbox = { window:{ CoachCharge:{ isContextualLoadRow:function(){ return false; } } },
+               console:{log:function(){},warn:function(){}}, pcProgressSelected:null };
+vm.createContext(mbox);
+try{
+  vm.runInContext(metricCode, mbox);
+  const r = function(date, load, reps, rpe){
+    return {_key:date+'|'+load+'x'+reps,_order:0,date:date,sortDate:Date.parse(date),
+      load:load,reps:reps,rpe:rpe,e1rm:mbox.pcProgE1rm(load,reps),status:'',planned:null,context:null};
+  };
+  const sameLoad = [r('2026-06-03',195,3,8), r('2026-06-10',195,5,8), r('2026-06-17',195,8,8.5)];
+  const build = function(mode, rows){
+    vm.runInContext('pcProgressMetricMode="'+mode+'";', mbox);
+    return mbox.pcProgFinalizeItem({id:'back_squat',label:'Back Squat',priority:1,aliases:{},rows:rows.slice()});
+  };
+
+  const loadItem = build('load', sameLoad);
+  const labels = loadItem.rows.map(function(row){
+    return mbox.pcProgPointLabelText(loadItem, row, mbox.pcProgMetricValue(loadItem, row));
+  });
+  assert(labels.join(' ') === '195×3 195×5 195×8',
+    'mode Charge : chaque point porte ses répétitions (vu : ' + labels.join(' ') + ')');
+
+  const e1Item = build('e1rm', sameLoad);
+  const vals = e1Item.rows.map(function(row){ return mbox.pcProgMetricValue(e1Item, row); });
+  assert(e1Item.metric === 'e1rm' && mbox.pcProgMetricName(e1Item) === 'e1RM estimé',
+    'mode e1RM : la courbe change de métrique, pas seulement d’étiquette');
+  assert(vals[0] < vals[1] && vals[1] < vals[2],
+    'mode e1RM : à charge égale, plus de répétitions vaut plus (vu : ' + vals.join(' < ') + ')');
+  assert(e1Item.stats.trend === 'up',
+    'mode e1RM : une progression en répétitions à charge constante devient visible');
+  // Le verdict tenait déjà compte du e1RM (deltaE1rm >= 10 suffit à dire « up ») :
+  // c'est le TRACÉ qui ignorait les répétitions, pas la conclusion. Épinglé pour
+  // qu'on ne « corrige » pas un jour une règle qui n'a jamais été fautive.
+  assert(loadItem.stats.trend === 'up',
+    'mode Charge : le verdict tenait déjà compte des répétitions via le e1RM');
+  assert(Math.round(loadItem.stats.deltaMetric) === 0,
+    'mode Charge : la valeur TRACÉE, elle, ne bougeait pas — c’était toute l’incohérence');
+  assert(/195×8/.test(mbox.pcProgPointLabelText(e1Item, e1Item.rows[2], vals[2])),
+    'mode e1RM : la série réelle reste lisible sous la valeur estimée');
+
+  // Un mouvement au poids du corps garde sa métrique en répétitions : il n'a
+  // pas de charge à convertir.
+  vm.runInContext('pcProgressMetricMode="e1rm";', mbox);
+  const bw = mbox.pcProgFinalizeItem({id:'weighted_pull_up',label:'Pull-Up',priority:1,aliases:{},rows:[
+    {_key:'a',_order:0,date:'2026-06-03',sortDate:Date.parse('2026-06-03'),load:0,reps:6,rpe:8,e1rm:0,status:'',planned:null,context:null},
+    {_key:'b',_order:1,date:'2026-06-10',sortDate:Date.parse('2026-06-10'),load:0,reps:9,rpe:8,e1rm:0,status:'',planned:null,context:null}]});
+  assert(bw.metric === 'reps', 'mode e1RM : un mouvement au poids du corps reste lu en répétitions');
+
+  // Epley au-delà d'une douzaine de reps : extrapolation, pas mesure.
+  const stretched = build('e1rm', [r('2026-06-03',95,20,8), r('2026-06-10',135,5,8)]);
+  assert(mbox.pcProgE1rmIsStretched(stretched.rows[0]) && !mbox.pcProgE1rmIsStretched(stretched.rows[1]),
+    'e1RM : une série longue est reconnue comme extrapolée');
+  assert(/stretched/.test(mbox.pcProgPointClass(stretched, stretched.rows[0], 1, 0, stretched.stats.best)),
+    'e1RM : le point extrapolé est marqué, il ne se fait pas passer pour une mesure');
+}catch(e){
+  assert(false, 'progression : les deux lectures (charge / e1RM) doivent rester exécutables (' + e.message + ')');
+}
+assert(/data-pc-progress-metric/.test(pc) && /pcProgressMetricMode/.test(pc),
+  'la vue offre le choix de lecture, elle ne l’impose pas');
+assert(/\.pcx-progress-svg circle\.stretched\{/.test(read('styles.css')),
+  'styles.css : le point e1RM extrapolé a son marqueur visuel');
 
 process.on('exit', function(){
   if(failures){ console.error('\n❌ history_progress_checks : ' + failures + ' échec(s)'); process.exit(1); }
