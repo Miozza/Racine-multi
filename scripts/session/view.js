@@ -588,8 +588,20 @@ function renderGuidedSession(){
   html+="<div class='guided-tag'>"+escHtml(st.tag)+" · "+escHtml(st.time)+"</div>";
 
   if(st.kind==="wod"){
+    // Le WOD a droit à sa note comme n'importe quel mouvement : c'est même là
+    // qu'il y a le plus à dire (« rameur mort au round 3 », « scaling ring row »)
+    // et le seul bloc qui n'en avait pas. La clé est celle de la ligne WOD des
+    // résultats (`wod_<titre>`, cf. collectSessionExercises) : la note écrite
+    // pendant le WOD et celle de l'écran Résultats sont le MÊME champ, pas deux
+    // notes qui s'écrasent. Le bouton se pose au bout de la ligne du kicker :
+    // aucune rangée ajoutée, donc la taille des chiffres du chrono ne bouge pas.
+    var wodNoteBtn = (typeof guidedNoteButtonHtml==="function")
+      ? guidedNoteButtonHtml({key:"wod_"+st.title, title:st.title}) : "";
     html+="<div class='guided-wod-head'>"+
-          "<div class='guided-wod-kicker'>"+escHtml((cfg&&cfg.label)||"WOD")+"</div>"+
+          "<div class='guided-wod-kicker-row'>"+
+            "<div class='guided-wod-kicker'>"+escHtml((cfg&&cfg.label)||"WOD")+"</div>"+
+            wodNoteBtn+
+          "</div>"+
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
           "</div>";
     // Panneau des rounds AMRAP : au-dessus de la boîte du chrono, jamais

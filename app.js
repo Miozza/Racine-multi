@@ -1,5 +1,5 @@
-// Racine V4.5.63 — dans les limites du chrono, tout contact compte un round
-var APP_VERSION = "V4.5.63";
+// Racine V4.5.64 — lisibilité de la séance : deux exercices, cible en toutes lettres, kicker WOD, note du WOD
+var APP_VERSION = "V4.5.64";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -800,6 +800,13 @@ function parseTargetReps(format, repsHint){
   // Chercher un nombre simple après "x" ou "×"
   var singleMatch = String(format||"").match(/[x×]\s*(\d+)/i);
   if(singleMatch) return {min:Number(singleMatch[1]), max:Number(singleMatch[1])};
+  // Un compte écrit en toutes lettres, sans « × » : « cumul 100 reps »,
+  // « Validation : 1 rep propre ». Sans cette lecture, la cible retombait sur
+  // repsHint (10) et l'écran proposait 10 répétitions pour un objectif de 100 —
+  // l'athlète notait alors un dixième de son travail réel.
+  // Le nombre doit toucher le mot : « 3 rounds for reps » ne dit pas 3 reps.
+  var writtenMatch = String(format||"").match(/(\d+)\s*reps?\b/i);
+  if(writtenMatch) return {min:Number(writtenMatch[1]), max:Number(writtenMatch[1])};
   // Fallback sur repsHint
   var r = Number(repsHint)||8;
   return {min:r, max:r};

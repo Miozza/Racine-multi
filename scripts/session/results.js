@@ -218,7 +218,7 @@ function renderSessionEntry(){
           wodInner += '<option value="'+formatClock(sec)+'"'+(sec===expectedSec?' selected':'')+'>'+formatClock(sec)+'</option>';
         });
         wodInner += '</select>';
-        wodInner += '<input class="sf-input" data-key="'+item.key+'" data-field="note" type="text" inputmode="text" placeholder="si cap : reps complétées ou note"/>';
+        wodInner += '<input class="sf-input" id="wod_note_'+item.key+'" data-key="'+item.key+'" data-field="note" type="text" inputmode="text" placeholder="si cap : reps complétées ou note" value="'+escHtml(getGuidedResult(item.key,'note',''))+'"/>';
       }
 
       if(item.isAmrap && item.wodRounds.max > 1){
@@ -290,7 +290,7 @@ function renderSessionEntry(){
 
       if(!item.isForTime){
         wodInner += '<span class="sf-label">NOTE (optionnel)</span>';
-        wodInner += '<input class="sf-input" data-key="'+item.key+'" data-field="note" type="text" inputmode="text" placeholder="ex: burpees lents, bon rythme row"/>';
+        wodInner += '<input class="sf-input" id="wod_note_'+item.key+'" data-key="'+item.key+'" data-field="note" type="text" inputmode="text" placeholder="ex: burpees lents, bon rythme row" value="'+escHtml(getGuidedResult(item.key,'note',''))+'"/>';
       }
 
       wodInner += '<div class="wod-result-preview" id="wod_preview_'+item.key+'">Résultat prêt</div>';
@@ -441,6 +441,16 @@ function renderSessionEntry(){
               });
             });
           });
+        }
+
+        // Le bouton « Notes » de la carte WOD écrit dans guidedResultCache, qui
+        // est prioritaire à la collecte : sans cette liaison, une note tapée ici
+        // serait silencieusement écrasée par celle écrite pendant le WOD. Les
+        // deux surfaces sont le même champ, pas deux notes concurrentes.
+        var noteInp = document.getElementById('wod_note_'+it.key);
+        if(noteInp){
+          noteInp.addEventListener('input',function(){ setGuidedResult(it.key,'note',noteInp.value); });
+          noteInp.addEventListener('change',function(){ setGuidedResult(it.key,'note',noteInp.value); });
         }
 
         var timeSel = document.getElementById('wod_time_'+it.key);
