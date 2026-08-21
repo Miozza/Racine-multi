@@ -194,6 +194,84 @@ Le barreau RPE 8 vaut zéro cran : par défaut, un **maintien annoncé** — pas
 zone morte silencieuse d'avant, où 7,5 progressait, 8,5 freinait et 8 ne faisait
 rien sans jamais le dire. Une tendance qui s'allège peut le promouvoir à un cran.
 
+#### Les répétitions en plus sont une capacité, pas un bonus (depuis V4.5.65)
+
+Le moteur savait projeter Epley vers le **bas** : « dernier 135 × 2 pour 5 reps
+demandées » réduit la suggestion (`coachRuleLastSetGuards`, écart de reps). La
+projection vers le **haut** n'existait pas — un `135 × 5` sur une cible de 2 reps
+ne laissait aucune trace, alors que le même calcul dit ~148 lb sur 2 reps.
+
+Deux conséquences réparées ensemble :
+
+| Ce qui manquait | Où | Depuis V4.5.65 |
+|---|---|---|
+| Le crédit de reps était **forfaitaire** (+1 cran dès 2 reps de plus) | `rpeProgression.modifiers.repsOvershoot` | lit aussi le **ratio** reps/cible ; la lecture la plus sévère des deux gagne |
+| Aucune projection Epley vers le haut | `coachRuleRepSurplusLift()` | franchit une part de l'écart par séance, réglée par intention (`repsSurplus`) |
+| `easy_success` mémorisait `capacityLoad = load` | `updateAthleteStateFromResults()` | mémorise la capacité projetée à la cible, bornée au saut maximal |
+
+L'écart absolu seul ne dit rien : sur une cible de 8, +2 reps est un débordement
+mineur ; sur une cible de 2, +2 reps est un **doublement**. Le ratio porte cette
+information.
+
+La part franchie par séance dépend de l'intention, parce que le surplus ne dit
+pas la même chose partout — **force 50 %**, **hypertrophie 30 %** (le surplus
+vient souvent du volume, pas de la force), **vitesse 25 %**. Les règles ne
+s'appliquent jamais telles quelles :
+
+- Le saut maximal prudent garde le **dernier mot**, comme toujours.
+- Au-dessus de RPE 8 (7,5 en vitesse), le surplus ne vaut **rien**.
+- Les freins ≥ 8,5 et ≥ 9 sont **hors de portée**.
+- Un contexte technique / WOD / léger n'a **aucun** crédit de surplus.
+
+#### Un bloc vitesse suit un pourcentage, pas une charge absolue (depuis V4.5.65)
+
+Un bloc d'effort dynamique est prescrit en **% du 1RM**. Une charge absolue
+écrite dans un programme est un pourcentage de l'**athlète de référence** : elle
+dérive dès que l'athlète s'en écarte, et une charge gelée cesse de produire le
+stimulus prévu. Cas réel : « Squat vitesse ~60 % » de `phase2_fable5`, figé à
+~130-135 lb pour un Back Squat de ~275 lb — **47-49 %**.
+
+`speed` est une intention à part entière. Elle **s'ajoute** à `technique`, elle
+ne la remplace pas : un bloc vitesse reste un contexte à progression limitée et
+ne remplace jamais une capacité principale dans `athlete_state` (règle 1). Ce
+qu'elle change, c'est qu'une règle dédiée — `coachRuleSpeedStimulusBand()` — peut
+ramener la charge vers la cible déclarée.
+
+La détection est **volontairement étroite**, et c'est le contrat :
+
+```txt
+aucune tournure d'avertissement   (« stop si la vitesse meurt », « vitesse avant ego »)
++ un mot-clé d'explosivité        (vitesse · speed · explosif · effort dynamique)
++ une cible en % sous-maximale    (« ~60 % », « 60-65 % », 30 % ≤ p ≤ 80 %)
+= bloc vitesse
+```
+
+Sans les trois, rien ne change. Le mot « vitesse » sert partout dans le catalogue
+de simple consigne d'arrêt ; le lire comme une intention re-tariferait la moitié
+des programmes. Le pourcentage déclaré est aussi ce qui rend la recalibration
+possible : sans lui, il n'y a rien vers quoi converger.
+
+La dérive est gardée sur cinq points, et aucun ne se négocie :
+
+- **Ancre** = la capacité de force **réelle** du mouvement (`athlete_state` →
+  références de travail → tests de calibration), jamais l'e1RM du set de vitesse
+  lui-même — à RPE 7 sur un bloc vitesse, il sous-estime énormément.
+  **Sans ancre fiable, la règle ne fait rien** : un historique incomplet garde le
+  comportement d'avant.
+- **Preuve** : au moins une série loggée dans ce contexte. Une première séance ne
+  change jamais la charge du programme.
+- **Stimulus** : RPE ≤ 7,5 **et** reps sorties. Au-delà, la barre n'est plus
+  rapide — on plafonne à la charge portée et on le dit. C'est la limite entre
+  « charge trop facile pour produire le stimulus » et « monter jusqu'à ce que le
+  RPE devienne élevé ».
+- **Palier** : chaque séance reste sous le saut maximal prudent. Jamais un bond
+  sur une seule performance.
+- **Plafond** : au-dessus de la bande, la charge est ramenée dedans. Un bloc
+  vitesse ne devient jamais un bloc lourd.
+
+Tout le réglage vit dans `COACH_MOVEMENT_TUNING.speedStimulus`. Garde-fou :
+`dev/phase2_fable5_checks.js`.
+
 #### Vitesse de progression — mesurée, pas déclarée (depuis V4.5.58)
 
 La vitesse de progression **ne se déclare plus**. Elle se mesure, parce que le
@@ -271,6 +349,7 @@ Avant une release qui touche aux charges, exécuter :
 node dev/regression_checks.js
 node dev/charge_engine_checks.js
 node dev/progression_contract_checks.js
+node dev/phase2_fable5_checks.js
 ```
 
 Pour un ZIP update :

@@ -126,8 +126,120 @@
         },
         // Reps depassees sur la derniere serie : 10 reps la ou 8 etaient
         // demandees, au meme RPE, est un signal fort et deja enregistre.
-        repsOvershoot: { minExtra: 2, shift: 1 }
+        //
+        // V4.5.65 — le seuil etait ABSOLU (« au moins 2 reps de plus ») et le
+        // credit FORFAITAIRE (un cran). Sur une cible de 2 reps, 4 reps et
+        // 8 reps valaient donc exactement la meme chose, alors que le second
+        // dit quatre fois plus fort que la charge est sous-estimee. Le ratio
+        // reps/cible porte cette information, l'ecart absolu non : sur une
+        // cible de 8, +2 reps est un debordement mineur ; sur une cible de 2,
+        // +2 reps est un doublement. Les deux lectures sont conservees, et la
+        // plus severe des deux gagne (`minExtra` reste un plancher absolu).
+        repsOvershoot: {
+          minExtra: 2,
+          shift: 1,
+          // Lu de haut en bas : la premiere ligne dont minRatio est atteint
+          // gagne. Le saut maximal prudent rabote ensuite, comme toujours.
+          ladder: [
+            {minRatio: 2.00, shift: 2},
+            {minRatio: 1.50, shift: 2},
+            {minRatio: 1.25, shift: 1}
+          ]
+        }
       }
+    },
+    // coachRuleRepSurplusLift() — suggestion.js
+    // Le surplus de reps comme CAPACITE, pas seulement comme ambition.
+    //
+    // Le moteur savait deja projeter Epley vers le BAS : « dernier 135 x 2
+    // pour 5 reps demandees » declenchait une reduction. La projection vers
+    // le HAUT n'existait pas : « dernier 135 x 5 pour 2 reps demandees »
+    // n'ecrivait aucune capacite superieure a 135, alors que le meme calcul
+    // dit 148 lb. Cette asymetrie est la raison pour laquelle 135x2@7 et
+    // 135x5@7 se ressemblaient trop.
+    //
+    // La projection ne devient JAMAIS la suggestion telle quelle : on en
+    // franchit une part par seance (`converge`), et le saut maximal prudent
+    // garde le dernier mot. Une seule performance ne fait pas bondir la barre.
+    repsSurplus: {
+      // Part de l'ecart (charge faite -> capacite projetee) franchie par
+      // seance, par intention. Une intention absente de la table n'a pas de
+      // projection : la regle ne fait rien.
+      // force : la reserve revelee est directement exploitable.
+      // hypertrophie : le surplus vient souvent du volume, pas de la force.
+      // vitesse : le stimulus prime, la charge suit lentement (bande § speedStimulus).
+      byIntent: {
+        strength:    {converge: 0.50, maxRpe: 8},
+        hypertrophy: {converge: 0.30, maxRpe: 8},
+        speed:       {converge: 0.25, maxRpe: 7.5}
+      },
+      fallback: {converge: 0.40, maxRpe: 8},
+      // En dessous de ce ratio reps/cible, aucun surplus n'est affirme.
+      minRatio: 1.25,
+      // Statuts qui interdisent tout credit de surplus (meme liste que le
+      // plancher de validation).
+      blockingStatuses: ['recalibrating', 'watch', 'failed', 'major_fail']
+    },
+    // coachSpeedStimulusBand() / coachExtractMovementIntent() — mouvements.js + suggestion.js
+    //
+    // Un bloc VITESSE (effort dynamique) n'est pas un drill technique : c'est
+    // un stimulus defini par un POURCENTAGE du 1RM, pas par une charge
+    // absolue. Une charge absolue figee devient triviale des que l'athlete
+    // progresse — cas reel : « Squat vitesse ~60 % » de phase2_fable5, gele a
+    // ~130-135 lb pour un Back Squat de ~275 lb, soit 47-49 % au lieu de 60 %.
+    //
+    // Detection volontairement ETROITE. Le mot « vitesse » traverse tout le
+    // catalogue comme simple consigne d'arret (« Stop si la vitesse meurt »,
+    // « Vitesse avant ego ») : le lire comme une declaration d'intention
+    // changerait le comportement de la moitie des programmes. Un bloc n'est
+    // reconnu comme bloc vitesse que s'il declare AUSSI une cible en
+    // pourcentage — la seule information qui rend la recalibration possible,
+    // et qu'aucune consigne d'avertissement ne porte.
+    speedStimulus: {
+      keywordPatterns: [
+        /vitesse/, /speed/, /explosif/, /explosive/,
+        /effort dynamique/, /dynamic effort/, /balistique/
+      ],
+      // Testes en premier : ici le mot « vitesse » est un critere d'arret.
+      cuePatterns: [
+        /si la vitesse/, /vitesse (tombe|meurt|chute|ralentit|baisse)/,
+        /vitesse de barre comme juge/, /vitesse avant/, /noter charge vitesse/
+      ],
+      // Cible en % lue dans la charge ou la note, sur le texte BRUT (la
+      // normalisation de mouvement retire le signe %). Une seule valeur =>
+      // bande centree ; deux valeurs => bande telle quelle.
+      pctPattern: /(\d{2})\s*(?:[-–a\u00e0]\s*(\d{2}))?\s*%/,
+      // Au-dela, ce n'est plus de la vitesse : c'est du lourd. Un « AMRAP a
+      // ~85 % » ne doit jamais entrer ici.
+      maxDeclaredPct: 0.80,
+      minDeclaredPct: 0.30,
+      // Demi-largeur ajoutee autour d'un pourcentage unique (« ~60 % » =>
+      // 55-65 %).
+      singlePctSpread: 0.05,
+      // Part de l'ecart jusqu'a la bande franchie par seance. Le saut maximal
+      // prudent rabote ensuite : la derive est lente et repetee, jamais un bond.
+      converge: 0.50,
+      // Part du saut maximal utilisable selon ce que la derniere serie a
+      // montre. Cible juste atteinte = derive minimale ; reps depassees =
+      // marge complete. C'est ce qui separe 135x2@7 de 135x5@7 dans un bloc
+      // vitesse, ou la bande seule donnerait la meme reponse aux deux.
+      drift: {
+        base: 0.50,
+        surplus: [
+          {minRatio: 1.50, factor: 1.00},
+          {minRatio: 1.25, factor: 0.75}
+        ]
+      },
+      // Au-dessus de ce RPE la barre n'est plus rapide : le stimulus est deja
+      // perdu, on ne monte plus. C'est la protection demandee du bloc vitesse
+      // — « barre rapide et propre », pas « monter jusqu'a ce que ca grince ».
+      maxRpe: 7.5,
+      // Series loggees dans le contexte vitesse exigees avant toute derive
+      // vers le haut. Sans historique, la charge du programme fait foi : un
+      // programme jamais joue ne change pas de comportement.
+      minHistoryRows: 1,
+      // Statuts qui coupent la derive haute.
+      blockingStatuses: ['recalibrating', 'watch', 'failed', 'major_fail']
     },
     // coachAggressivenessFactor() / coachObservedAggressiveness() — scaling.js
     // La vitesse de progression etait DECLAREE par l'athlete (curseur libre

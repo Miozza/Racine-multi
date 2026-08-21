@@ -114,10 +114,28 @@ function coachRpeReactivityShift(hist,lastLoad,lastReps,target){
   }
 
   // 2. Reps depassees sur la derniere serie.
+  // Deux lectures du meme fait, la plus severe gagne :
+  //   - l'ecart ABSOLU (minExtra), qui parle bien des cibles longues ;
+  //   - le RATIO reps/cible, seul a distinguer « 4 reps pour 2 » (un
+  //     doublement) de « 10 reps pour 8 » (un debordement mineur). Sans lui,
+  //     une cible de 2 reps donnait le meme credit forfaitaire quel que soit
+  //     le depassement — l'angle mort a l'origine du defaut Squat vitesse de
+  //     phase2_fable5.
   var R=M.repsOvershoot;
-  if(R&&target>0&&lastReps>0&&(lastReps-target)>=(Number(R.minExtra)||2)){
-    shift+=Number(R.shift)||0;
-    notes.push(lastReps+" reps pour "+target+" demandees");
+  if(R&&target>0&&lastReps>0){
+    var shiftFromReps=0;
+    if((lastReps-target)>=(Number(R.minExtra)||2))shiftFromReps=Number(R.shift)||0;
+    var ratio=lastReps/target;
+    (R.ladder||[]).some(function(rung){
+      if(ratio<Number(rung.minRatio))return false;
+      var st=Number(rung.shift)||0;
+      if(st>shiftFromReps)shiftFromReps=st;
+      return true;
+    });
+    if(shiftFromReps>0){
+      shift+=shiftFromReps;
+      notes.push(lastReps+" reps pour "+target+" demandees");
+    }
   }
 
   return {shift:shift,notes:notes};
@@ -324,6 +342,8 @@ function coachReferenceSeedWorkingLoad(declaredRef,range){
 //  4. coachRuleReferenceReelleValidee    — reference reelle plus haute deja validee : repart de la, pas de l'ancienne suggestion.
 //  5. coachRuleHistorySignalAdjustment   — tendance recente (stalled/blocked/watch) : plafonne ou avertit.
 //  6. coachRuleLastSetGuards             — dernier set reel : saut max prudent, hausse graduelle, freins RPE >=8.5/>=9, projection Epley si ecart de reps.
+//  6b. coachRuleRepSurplusLift           — reps DEPASSEES : projection Epley vers le HAUT (symetrique de la reduction du point 6).
+//  6c. coachRuleSpeedStimulusBand        — bloc vitesse : derive lente vers le pourcentage cible du bloc, dans les deux sens.
 //  7. coachRuleRecentHardBrake           — RPE eleve recent non resolu par une reference plus haute depuis : bloque.
 //  8. coachRuleFloorValidation           — plancher : un dernier set reellement reussi n'est jamais sous-suggere (dernier mot, place apres les freins).
 //  9. coachRuleAthleteStateCap           — mouvement sous surveillance dans athlete_state : cap jusqu'a confirmation.
@@ -345,6 +365,8 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleReferenceReelleValidee(ctx);
   coachRuleHistorySignalAdjustment(ctx);
   coachRuleLastSetGuards(ctx);
+  coachRuleRepSurplusLift(ctx);
+  coachRuleSpeedStimulusBand(ctx);
   coachRuleRecentHardBrake(ctx);
   coachRuleFloorValidation(ctx);
   coachRuleAthleteStateCap(ctx);
@@ -668,6 +690,270 @@ function coachRuleLastSetGuards(ctx){
   }
 }
 
+// ── Surplus de reps : la capacite revelee, pas seulement l'ambition ────────
+// Le moteur savait deja projeter Epley vers le BAS (fin de
+// coachRuleLastSetGuards) : « dernier 135 x 2 pour 5 reps demandees » reduit
+// la suggestion. La projection vers le HAUT n'existait pas. Consequence
+// directe du bug signale : 135 x 2 @7 et 135 x 5 @7 sur une cible de 2 reps
+// ne se separaient que par un cran forfaitaire de reactivite, alors qu'Epley
+// dit 135 lb d'un cote et ~148 lb de l'autre pour la meme cible.
+//
+// La projection ne devient JAMAIS la suggestion telle quelle : on en franchit
+// une part par seance (`converge`, reglee par intention), et le saut maximal
+// prudent garde le dernier mot. Une seule performance ne fait pas bondir la
+// barre — c'est un plancher qui monte, pas un bond.
+function coachRepSurplusTuning(ctx){
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.repsSurplus)||null;
+  if(!T)return null;
+  var byIntent=T.byIntent||{};
+  var intents=(ctx&&ctx.moveContext&&Array.isArray(ctx.moveContext.intents))?ctx.moveContext.intents:[];
+  for(var i=0;i<intents.length;i++){
+    if(byIntent[intents[i]])return {tuning:byIntent[intents[i]],intent:intents[i],table:T};
+  }
+  return T.fallback?{tuning:T.fallback,intent:'',table:T}:null;
+}
+
+// Capacite projetee a la cible de reps depuis une serie qui a DEPASSE la cible.
+// Retourne null quand il n'y a pas de surplus affirme, quand le RPE est trop
+// haut pour croire la marge, ou quand le statut de la ligne l'interdit.
+function coachRepSurplusProjection(ctx){
+  if(!ctx||!ctx.last||!ctx.lastHasValidLoad||!(ctx.lastLoad>0))return null;
+  var picked=coachRepSurplusTuning(ctx);
+  if(!picked)return null;
+  var T=picked.table, tuning=picked.tuning;
+  var lastReps=coachHistoryRepsNumber(ctx.last);
+  var target=Number(ctx.target)||0;
+  if(!(lastReps>0)||!(target>0)||lastReps<=target)return null;
+  var ratio=lastReps/target;
+  if(ratio<(Number(T.minRatio)||1.25))return null;
+  if(!(ctx.lastRpe>0)||ctx.lastRpe>(Number(tuning.maxRpe)||8))return null;
+  var blocking=T.blockingStatuses||[];
+  if(ctx.last.status&&blocking.indexOf(ctx.last.status)!==-1)return null;
+  if(ctx.cap&&ctx.cap.status&&blocking.indexOf(ctx.cap.status)!==-1)return null;
+  var oneRm=epley1RM(ctx.lastLoad,lastReps);
+  var capacity=oneRm?estimateLoadForRepsFrom1RM(oneRm,target):0;
+  if(!(capacity>ctx.lastLoad))return null;
+  var converge=Number(tuning.converge);
+  if(!(converge>0))return null;
+  return {
+    capacity:capacity,
+    ratio:ratio,
+    lastReps:lastReps,
+    intent:picked.intent,
+    proposed:ctx.lastLoad+(capacity-ctx.lastLoad)*converge
+  };
+}
+
+function coachRuleRepSurplusLift(ctx){
+  // Le contexte limite (technique/WOD/light/vitesse) a sa propre porte :
+  // coachRuleSpeedStimulusBand pour la vitesse, rien pour les autres. Un drill
+  // technique ne merite pas de charge parce qu'il a fait des reps en plus.
+  if(ctx.contextLimited||ctx.isDeload)return;
+  if(isTechnicalMovementInContext(ctx.label,ctx.moveContext))return;
+  if(!ctx.hist||ctx.hist.length<2)return;
+  var proj=coachRepSurplusProjection(ctx);
+  if(!proj)return;
+  // Meme plafond que la hausse ordinaire : le saut maximal prudent, elargi au
+  // plus par le barreau RPE. Un surplus de reps rend le moteur plus prompt a
+  // utiliser la marge existante, il ne l'elargit pas (contrat de progression).
+  var rung=coachRpeProgressionRung(ctx.label,ctx.lastRpe);
+  var baseMaxJump=coachMaxJumpForExercise(ctx.label,ctx.lastLoad);
+  var maxJump=rung?Math.max(baseMaxJump,Math.round(baseMaxJump*rung.jumpFactor)):baseMaxJump;
+  var oneStep=nextLoadForExercise(ctx.label,ctx.lastLoad,1,ctx.currentLoad);
+  var maxAllowed=Math.max(ctx.lastLoad+maxJump,(oneStep>ctx.lastLoad)?oneStep:0);
+  var next=Math.min(proj.proposed,maxAllowed);
+  if(!(next>ctx.suggested))return;
+  ctx.suggested=next;
+  ctx.mode="nearest";
+  ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  ctx.reason="Reps depassees : "+proj.lastReps+" reps pour "+ctx.target+" demandees a "+ctx.lastLoad
+    +" lb @RPE "+ctx.lastRpe+". Capacite projetee ~"+Math.round(proj.capacity)+" lb sur "+ctx.target
+    +" reps (Epley) : la charge etait sous-estimee, le moteur en franchit une partie.";
+  ctx.brainAdjusted=true;
+}
+
+// ── Bloc vitesse : preserver le stimulus, pas la charge absolue ────────────
+// Un bloc vitesse est prescrit en POURCENTAGE du 1RM. Une charge absolue
+// ecrite dans un programme devient trop legere des que l'athlete progresse :
+// « ~60 % » ecrit 145 lb pour l'athlete de reference finit a 47 % pour un
+// athlete plus fort. Le moteur doit ramener la charge dans la bande declaree,
+// LENTEMENT et dans les deux sens — jamais transformer un bloc vitesse en
+// bloc lourd, jamais monter jusqu'a ce que le RPE grimpe.
+//
+// Ancre = capacite de force REELLE du mouvement, pas l'e1RM du set de vitesse
+// lui-meme : une serie a RPE 7 sur un bloc vitesse n'est pas proche de
+// l'echec, son e1RM sous-estime enormement. Sans ancre fiable, la regle ne
+// fait rien : un historique incomplet garde le comportement d'avant.
+function coachSpeedAnchorOneRm(label,mv){
+  // 1. Capacite mesuree par le travail lourd reel (athlete_state). Les
+  //    contextes limites n'ecrivent jamais `ranges` : ce qu'on lit ici vient
+  //    donc bien d'un bloc principal, jamais du bloc vitesse lui-meme.
+  var best=0,source='';
+  var ranges=(mv&&mv.ranges)||null;
+  if(ranges){
+    Object.keys(ranges).forEach(function(rg){
+      var r=ranges[rg];if(!r)return;
+      var est=Number(r.estimated1RM)||0;
+      if(!est){
+        var l=parseLoad(r.currentLoad);if(l===null||l===undefined)l=Number(r.currentLoad)||0;
+        est=epley1RM(l,Number(r.currentReps)||Number(r.actualReps)||0);
+      }
+      if(est>best){best=est;source='athlete_state';}
+    });
+  }
+  // 2. References de travail saisies (state.movementRefs). Un trophee 1RM y
+  //    est ici LEGITIME : on cherche une ancre de pourcentage, pas une charge
+  //    de travail — contrairement a coachDeclaredRangeReference().
+  if(!(best>0)&&typeof state!=='undefined'&&state&&state.movementRefs){
+    var wanted=(typeof coachMovementLookupLabels==='function')
+      ? coachMovementLookupLabels(label).map(coachNormalizeMoveText)
+      : [coachNormalizeMoveText(label)];
+    var mvCfg=(typeof movements!=='undefined'&&movements)?movements:{};
+    Object.keys(state.movementRefs).forEach(function(k){
+      var e=state.movementRefs[k];
+      if(!e||e.implausible)return;
+      var mvKey=e.movement||k.split('__')[0];
+      var nm=mvCfg[mvKey]&&mvCfg[mvKey].name;
+      if(!nm||wanted.indexOf(coachNormalizeMoveText(nm))<0)return;
+      var l=parseLoad(e.load);if(l===null||l===undefined)l=Number(e.load)||0;
+      var est=epley1RM(l,Number(e.reps)||1);
+      if(est>best){best=est;source='reference';}
+    });
+  }
+  // 3. Tests de calibration du profil (PR_FIELD_MAP). Deja des entrees du
+  //    moteur (elles alimentent scaleRatios) : les relire ici n'ouvre aucune
+  //    nouvelle source de donnees.
+  if(!(best>0)&&typeof PR_FIELD_MAP==='object'&&typeof prCfgMatchesResult==='function'){
+    var profile=(typeof state!=='undefined'&&state)?state.profile:null;
+    if(profile){
+      Object.keys(PR_FIELD_MAP).forEach(function(id){
+        var cfg=PR_FIELD_MAP[id];
+        if(!cfg||!cfg.profile||!prCfgMatchesResult(cfg,label))return;
+        var v=Number(profile[cfg.profile])||0;
+        if(!(v>0))return;
+        var est=epley1RM(v,Number(cfg.reps)||1);
+        if(est>best){best=est;source='profil';}
+      });
+    }
+  }
+  return best>0?{oneRm:best,source:source}:null;
+}
+
+// Part du saut maximal debloquee par ce que la derniere serie a montre.
+// Cible juste atteinte = derive minimale ; reps depassees = marge complete.
+// C'est ce qui separe 135 x 2 @7 de 135 x 5 @7 dans un bloc vitesse, ou la
+// bande seule donnerait exactement la meme reponse aux deux.
+function coachSpeedDriftFactor(T,lastReps,target){
+  var D=(T&&T.drift)||{};
+  var base=Number(D.base);
+  if(!(base>0))base=0.5;
+  if(!(lastReps>0)||!(target>0))return base;
+  var ratio=lastReps/target;
+  var ladder=D.surplus||[];
+  for(var i=0;i<ladder.length;i++){
+    if(ratio>=Number(ladder[i].minRatio)){
+      var f=Number(ladder[i].factor);
+      return (f>base)?f:base;
+    }
+  }
+  return base;
+}
+
+function coachRuleSpeedStimulusBand(ctx){
+  var mc=ctx.moveContext;
+  if(!mc||!mc.isSpeed||!mc.speedBand)return;
+  // Un deload ne recalibre rien : sa charge basse est voulue.
+  if(ctx.isDeload)return;
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
+  if(!T)return;
+  var anchor=coachSpeedAnchorOneRm(ctx.label,ctx.mv);
+  if(!anchor||!(anchor.oneRm>0))return; // historique incomplet : rien ne bouge.
+  var band=mc.speedBand;
+  // `aim` = le pourcentage que le bloc annonce (« ~60 % »). C'est vers lui que
+  // la charge derive, pas vers le bas de la bande : s'arreter au plancher
+  // laisserait le stimulus sous ce que le coach a ecrit. `ceil` reste le
+  // garde-fou dur — au-dela, ce n'est plus un bloc vitesse.
+  var aim=anchor.oneRm*(Number(band.aim)||band.min);
+  var ceil=anchor.oneRm*band.max;
+  var maxJump=coachMaxJumpForExercise(ctx.label,ctx.lastHasValidLoad?ctx.lastLoad:ctx.suggested);
+  var pctOf=function(v){return Math.round((v/anchor.oneRm)*100);};
+
+  // ── Sens BAS : un bloc vitesse ne devient jamais un bloc lourd. ──────────
+  // Protection, donc pas conditionnee a l'historique — mais bornee au meme
+  // saut maximal pour ne jamais s'effondrer d'un coup.
+  if(ctx.suggested>ceil){
+    var down=Math.max(ceil,ctx.suggested-maxJump);
+    if(down<ctx.suggested){
+      ctx.suggested=down;
+      ctx.mode="down";
+      ctx.severity=ctx.severity==="critical"?ctx.severity:"watch";
+      ctx.reason="Stimulus vitesse : "+pctOf(down)+" % du 1RM estime ("+Math.round(anchor.oneRm)
+        +" lb). Au-dela de "+Math.round(band.max*100)+" % ce n'est plus de la vitesse — charge ramenee dans la bande.";
+      ctx.brainAdjusted=true;
+      ctx.speedBandApplied=true;
+    }
+    return;
+  }
+
+  if(!(ctx.suggested<aim))return; // deja a la cible du bloc : rien a faire.
+
+  // ── Sens HAUT : uniquement sur preuve loggee dans CE contexte. ───────────
+  var rows=(Array.isArray(ctx.hist)?ctx.hist:[]).filter(function(r){
+    return coachHistoryHasValidLoad(r,ctx.label,ctx.moveContext)&&coachHistoryRepsNumber(r)>0;
+  });
+  if(rows.length<(Number(T.minHistoryRows)||1))return;
+  var lastReps=coachHistoryRepsNumber(ctx.last);
+  var blocking=T.blockingStatuses||[];
+  var statusOk=!(ctx.last&&ctx.last.status&&blocking.indexOf(ctx.last.status)!==-1);
+  var rpeOk=ctx.lastRpe>0&&ctx.lastRpe<=(Number(T.maxRpe)||7.5);
+  var repsOk=!ctx.target||lastReps>=ctx.target;
+
+  // Protection du stimulus : barre lente, technique degradee ou reps non
+  // sorties = on ne monte plus, et on plafonne a la charge qui vient d'etre
+  // portee. C'est la limite qui separe « charge trop facile pour produire le
+  // stimulus » de « monter jusqu'a ce que le RPE devienne eleve » : sous la
+  // bande cible ou pas, un bloc vitesse qui grince ne monte pas.
+  if(!ctx.lastHasValidLoad||!statusOk||!rpeOk||!repsOk){
+    if(ctx.lastHasValidLoad&&ctx.lastLoad>0){
+      if(ctx.suggested>ctx.lastLoad){ctx.suggested=ctx.lastLoad;ctx.mode="down";}
+      ctx.severity=(ctx.severity==="critical")?ctx.severity:"warning";
+      ctx.reason="Stimulus vitesse protege : derniere serie "+ctx.lastLoad+" lb x "+(lastReps||0)
+        +" @RPE "+(ctx.lastRpe||"?")+" — barre plus assez rapide ou cible non sortie. Aucune hausse vers la bande "
+        +Math.round(band.min*100)+"-"+Math.round(band.max*100)+" % tant que ce n'est pas propre.";
+      ctx.brainAdjusted=true;
+      ctx.speedBandApplied=true;
+    }
+    return;
+  }
+
+  // Jamais moins que ce que l'athlete vient de faire proprement dans ce bloc :
+  // c'est exactement la charge figee que le programme reproposait.
+  var base=Math.max(ctx.suggested,ctx.lastLoad);
+  if(base>=aim){
+    if(base>ctx.suggested){
+      ctx.suggested=base;ctx.mode="nearest";
+      ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+      ctx.reason="Stimulus vitesse : "+ctx.lastLoad+" lb deja sorti proprement ("+pctOf(base)+" % du 1RM estime). Le moteur ne redescend pas sous cette charge.";
+      ctx.brainAdjusted=true;ctx.speedBandApplied=true;
+    }
+    return;
+  }
+  var converge=Number(T.converge)||0.5;
+  var allowed=maxJump*coachSpeedDriftFactor(T,lastReps,ctx.target);
+  var stepUp=Math.min((aim-base)*converge,allowed);
+  var next=Math.min(base+stepUp,aim);
+  if(!(next>ctx.suggested))return;
+  ctx.suggested=next;
+  ctx.mode="nearest";
+  ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  ctx.reason="Stimulus vitesse sous-charge : "+Math.round(base)+" lb = "+pctOf(base)+" % du 1RM estime ("
+    +Math.round(anchor.oneRm)+" lb, source "+anchor.source+"), le bloc vise "+Math.round(band.min*100)+"-"
+    +Math.round(band.max*100)+" %. Rapprochement progressif vers "+Math.round(aim)+" lb"
+    +(lastReps>ctx.target?" — "+lastReps+" reps pour "+ctx.target+" demandees":"")+".";
+  ctx.brainAdjusted=true;
+  ctx.speedBandApplied=true;
+}
+
 function coachRuleRecentHardBrake(ctx){
   if(!ctx.contextLimited&&!ctx.isDeload){
     var recentHardBrake=coachRecentUnresolvedHighRpeBrake(ctx.hist,ctx.label,ctx.moveContext,ctx.target,ctx.suggested);
@@ -773,6 +1059,10 @@ function coachRuleRoundingAndMovementCap(ctx){
 }
 
 function coachRuleContextLimitedRounding(ctx){
+  // Un bloc vitesse est un contexte limite, mais sa charge suit un
+  // pourcentage cible : re-clamper sur le nombre du programme annulerait
+  // exactement la recalibration de coachRuleSpeedStimulusBand.
+  if(ctx.speedBandApplied)return;
   if(ctx.contextLimited&&ctx.rounded>ctx.programNum){
     ctx.rounded=roundLoadForExercise(ctx.label,ctx.programNum,"nearest",ctx.currentLoad)||ctx.programNum;
     ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
@@ -957,7 +1247,24 @@ function updateAthleteStateFromResults(results,dateStr){
       confidence=0.50;
       status="watch";
     }else if(cls.status==="easy_success"){
+      // Symetrie avec les branches d'echec ci-dessus : elles projettent deja
+      // Epley vers le BAS quand les reps manquent. Une serie qui DEPASSE la
+      // cible a RPE bas prouve, avec le meme calcul, une capacite superieure
+      // a la charge portee — 135 lb x 5 pour 2 reps demandees vaut ~148 lb
+      // sur 2 reps. Ecrire `load` tel quel effacait cette preuve : la memoire
+      // de capacite restait a 135 lb et la seance suivante repartait de la.
+      // Bornee au saut maximal prudent : une seule seance ne redefinit pas
+      // une capacite d'un bond.
       capacityLoad=load;
+      if(reps>targetReps&&targetReps>0&&oneRM){
+        var surplusCapacity=estimateLoadForRepsFrom1RM(oneRM,targetReps);
+        var surplusCeiling=load+((typeof coachMaxJumpForExercise==='function')?coachMaxJumpForExercise(label,load):10);
+        if(surplusCapacity>load){
+          var boundedCapacity=Math.min(surplusCapacity,surplusCeiling);
+          capacityLoad=roundLoadForExercise(label,boundedCapacity,"down")||load;
+          if(capacityLoad<load)capacityLoad=load;
+        }
+      }
       confidence=0.85;
       status="upgrade_ready";
     }else if(cls.status==="hard_success"){

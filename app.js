@@ -1,5 +1,5 @@
-// Racine V4.5.64 — lisibilité de la séance : deux exercices, cible en toutes lettres, kicker WOD, note du WOD
-var APP_VERSION = "V4.5.64";
+// Racine V4.5.65 — moteur de charges : les reps en plus comptent, le bloc vitesse suit son pourcentage cible
+var APP_VERSION = "V4.5.65";
 
 // Architecture stable
 // programs/*.js = plan prévu

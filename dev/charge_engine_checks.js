@@ -731,6 +731,56 @@ try {
     resetState();
   }
 
+  // ─── Surplus de reps : la capacite revelee, pas un forfait (V4.5.65) ──────
+  // Le moteur projetait deja Epley vers le BAS quand les reps manquaient. La
+  // projection vers le HAUT n'existait pas : sur une cible courte, 2 reps et
+  // 5 reps a la meme charge et au meme RPE se ressemblaient trop.
+  {
+    const mainCtx = { label:'Back Squat', intents:['strength'], kind:'main' };
+    function seedSurplus(rows, target){
+      resetState();
+      const range = ctx.repRange(target);
+      const last = rows[rows.length - 1];
+      ctx.state.athleteState.movements['Back Squat'] = {
+        ranges: { [range]: { currentLoad:last.load, actualLoad:last.load, currentReps:target, actualReps:last.reps, rpe:last.rpe, confidence:0.9, status:'upgrade_ready' } },
+        history: rows.map((r, i) => ({ date:'2026-0' + (i+3) + '-01', load:r.load, reps:r.reps, rpe:r.rpe, range:range, status:'easy_success', context:mainCtx }))
+      };
+    }
+    const sRow = (load, reps, rpe) => ({ load:load, reps:reps, rpe:rpe });
+    function decideMain(prog, target){
+      return ctx.guardedSuggestedLoadDecision('Back Squat', prog, target, { kind:'main', blockTitle:'Force principale' });
+    }
+
+    seedSurplus([sRow(135,2,7), sRow(135,2,7)], 2);
+    const cible = decideMain('135 lb', 2).loadNum;
+    seedSurplus([sRow(135,5,7), sRow(135,5,7)], 2);
+    const surplus = decideMain('135 lb', 2).loadNum;
+    assert(surplus > cible,
+      'Surplus de reps : 135 x 5 pour 2 demandees pese plus que 135 x 2 au meme RPE (' + surplus + ' > ' + cible + ').');
+
+    // Le saut maximal prudent garde le dernier mot : le surplus rend le moteur
+    // plus prompt a utiliser la marge, il ne l'elargit jamais.
+    const plafondSurplus = 135 + ctx.coachMaxJumpForExercise('Back Squat', 135);
+    assert(surplus <= plafondSurplus,
+      'Surplus de reps : la hausse reste sous le saut maximal prudent (' + surplus + ' <= ' + plafondSurplus + ').');
+
+    // Le RPE reste le signal majeur : un surplus a RPE 9.5 ne vaut rien.
+    seedSurplus([sRow(135,5,9.5), sRow(135,5,9.5)], 2);
+    const surplusDur = decideMain('135 lb', 2).loadNum;
+    assert(surplusDur < surplus,
+      'Surplus de reps a RPE 9.5 : aucun credit, ce n est pas le meme signal (' + surplusDur + ' < ' + surplus + ').');
+
+    // Un contexte technique/WOD ne merite pas de charge parce qu il a fait des
+    // reps en plus : la porte du surplus reste fermee.
+    const techCtx = ctx.coachBuildMovementContext('Back Squat', { note:'technique, qualite du geste', kind:'accessory' });
+    seedSurplus([sRow(135,5,7), sRow(135,5,7)], 2);
+    ctx.state.athleteState.movements['Back Squat'].history.forEach(r => { r.context = techCtx; });
+    const techSurplus = ctx.guardedSuggestedLoadDecision('Back Squat', '135 lb', 2, techCtx).loadNum;
+    assert(techSurplus <= 135,
+      'Contexte technique : un surplus de reps ne declenche aucune hausse (' + techSurplus + ' <= 135).');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

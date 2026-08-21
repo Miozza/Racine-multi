@@ -212,6 +212,60 @@ function coachTextIncludesAny(text, words){
   return (words||[]).some(function(w){return n.indexOf(coachNormalizeMoveText(w))>=0;});
 }
 
+// ── Bloc VITESSE : intention a part entiere ─────────────────────────────────
+// Un bloc vitesse (effort dynamique) est defini par un POURCENTAGE du 1RM,
+// pas par une charge absolue. C'est ce qui le distingue d'un drill technique,
+// avec lequel il etait confondu : le mot « vitesse » tombait dans la regex
+// `technique` et coupait toute auto-progression, si bien qu'une charge de
+// programme figee restait figee pendant que l'athlete progressait.
+//
+// La detection est volontairement etroite (voir COACH_MOVEMENT_TUNING.
+// speedStimulus) : le mot « vitesse » sert partout dans le catalogue de
+// simple consigne d'arret (« Stop si la vitesse meurt »). Trois conditions
+// cumulatives, dans cet ordre :
+//   1. aucune consigne d'avertissement ne porte le mot ;
+//   2. un mot-cle de vitesse/explosivite est present ;
+//   3. une cible en POURCENTAGE sous-maximale est declaree.
+// La condition 3 est aussi ce qui rend la recalibration possible : sans
+// pourcentage cible, il n'y a rien vers quoi converger.
+//
+// Le texte brut est indispensable ici : coachNormalizeMoveText() retire le
+// signe « % ». On normalise donc seulement la casse et les accents.
+function coachNormalizeKeepSymbols(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function coachSpeedStimulusBandFromText(raw){
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
+  if(!T)return null;
+  var text=coachNormalizeKeepSymbols(raw);
+  if(!text)return null;
+  if((T.cuePatterns||[]).some(function(re){return re.test(text);}))return null;
+  if(!(T.keywordPatterns||[]).some(function(re){return re.test(text);}))return null;
+  var m=T.pctPattern?text.match(T.pctPattern):null;
+  if(!m)return null;
+  var a=Number(m[1])/100;
+  var b=m[2]?Number(m[2])/100:0;
+  var lo=b?Math.min(a,b):a;
+  var hi=b?Math.max(a,b):a;
+  var minPct=Number(T.minDeclaredPct)||0.30;
+  var maxPct=Number(T.maxDeclaredPct)||0.80;
+  if(!(lo>=minPct)||!(hi<=maxPct))return null;
+  if(!b){
+    var spread=Number(T.singlePctSpread)||0.05;
+    lo=Math.max(minPct,a-spread);
+    hi=Math.min(maxPct,a+spread);
+  }
+  // Arrondi au point de pourcentage : sans lui, 0,60 - 0,05 sort a
+  // 0,5499999999999999 et s'affiche « 54 % » dans l'explication du bouton (!).
+  var r2=function(x){return Math.round(x*100)/100;};
+  // La cible visee : le pourcentage DECLARE quand le bloc en annonce un seul
+  // (« ~60 % » vise 60 %, pas le bas de la bande), le milieu quand il annonce
+  // une plage. La bande, elle, reste les garde-fous.
+  var aim=b?r2((lo+hi)/2):r2(a);
+  return {min:r2(lo),max:r2(hi),declared:r2(a),aim:aim};
+}
+
 function coachExtractMovementIntent(parts){
   var raw=(Array.isArray(parts)?parts.join(' '):String(parts||''));
   var n=coachNormalizeMoveText(raw);
@@ -219,6 +273,11 @@ function coachExtractMovementIntent(parts){
   function add(x){if(x&&intents.indexOf(x)===-1)intents.push(x);}
   if(/amrap|emom|for time|wod|cap|time cap/.test(n))add('wod');
   if(/technique|qualite|quality|drill|skill|vitesse|speed|primer|ramp up|rampup/.test(n))add('technique');
+  // `speed` s'AJOUTE a `technique`, elle ne le remplace pas : un bloc vitesse
+  // reste un contexte a progression limitee (il ne remplace jamais une
+  // capacite principale dans athlete_state). La regle dediee du moteur lui
+  // rend seulement sa derive vers la bande cible.
+  if(coachSpeedStimulusBandFromText(raw))add('speed');
   if(/rappel|recall/.test(n))add('recall');
   if(/progression|regression|scale|scaling/.test(n))add('progression');
   if(/leger|legere|light|facile|easy|warm up|warmup|activation|mobilite|mobility/.test(n))add('light');
@@ -238,11 +297,15 @@ function coachBuildMovementContext(nameOrKey, opts){
   if(kind==='wod'&&intents.indexOf('wod')===-1)intents.push('wod');
   if(kind==='warmup'&&intents.indexOf('light')===-1)intents.push('light');
   var equipment=coachMovementEquipmentFamily(label)||coachMovementEquipmentFamily(raw)||'';
+  // La bande cible est calculee une seule fois ici : le moteur la relit sans
+  // re-parser le texte, et le bouton (!) peut l'afficher telle quelle.
+  var speedBand=coachSpeedStimulusBandFromText(textParts.join(' '));
   return {
     rawName:raw,
     label:label,
     equipment:equipment,
     intents:intents,
+    speedBand:speedBand,
     primaryIntent:intents[0]||'',
     kind:opts.kind||opts.blockKind||'',
     blockTitle:opts.blockTitle||opts.title||'',
@@ -258,7 +321,8 @@ function coachBuildMovementContext(nameOrKey, opts){
     isRecall:intents.indexOf('recall')>=0,
     isStrength:intents.indexOf('strength')>=0,
     isHypertrophy:intents.indexOf('hypertrophy')>=0,
-    isRecovery:intents.indexOf('recovery')>=0
+    isRecovery:intents.indexOf('recovery')>=0,
+    isSpeed:intents.indexOf('speed')>=0
   };
 }
 
@@ -287,6 +351,7 @@ function coachIsLimitedProgressionContext(ctx){
 function coachContextProgressionReason(ctx){
   if(!ctx)return '';
   if(ctx.isWod||coachContextHasIntent(ctx,'wod'))return 'Contexte WOD : ne pas auto-progresser comme un mouvement principal.';
+  if(ctx.isSpeed||coachContextHasIntent(ctx,'speed'))return 'Contexte vitesse : la charge suit le pourcentage cible du bloc, pas une progression de mouvement principal.';
   if(ctx.isTechnical||coachContextHasIntent(ctx,'technique'))return 'Contexte technique : pas d’auto-progression comme un mouvement principal.';
   if(ctx.isLight||coachContextHasIntent(ctx,'light'))return 'Contexte léger/warm-up : pas d’auto-progression comme un mouvement principal.';
   if(ctx.isProgression||coachContextHasIntent(ctx,'progression'))return 'Contexte progression/scale : pas d’auto-progression comme un mouvement principal.';

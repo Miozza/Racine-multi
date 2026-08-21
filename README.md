@@ -1,8 +1,8 @@
 # Racine — prototype multi-utilisateur
 
-- Version : `V4.5.64`
+- Version : `V4.5.65`
 
-Racine est une PWA d'entraînement en JavaScript vanilla, sans framework et sans serveur. Cette branche transforme l'ancien outil personnel en prototype multi-utilisateur local : plusieurs profils peuvent utiliser la même app sur un appareil, avec des charges calibrées à leur niveau.
+Racine est une PWA d'entraînement en JavaScript vanilla, sans framework et sans serveur. Cette branche transforme l'ancien outil personnel en prototype multi-utilisateur local : plusieurs profils peuvent utiliser la même app sur un appareil, avec des charges calibrées à leur niveau. La version courante corrige le moteur de charges sur deux angles morts : un bloc prescrit en pourcentage (« squat vitesse ~60 % ») restait figé sur la charge écrite dans le programme, et les répétitions faites au-delà de la cible ne remontaient jamais la capacité estimée.
 
 ## Direction produit
 
