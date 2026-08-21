@@ -1,5 +1,5 @@
-// Racine V4.5.64 — lisibilité de la séance : deux exercices, cible en toutes lettres, kicker WOD, note du WOD
-var APP_VERSION = "V4.5.64";
+// Racine V4.5.66 — la courbe porte enfin les répétitions, et sait se lire en e1RM
+var APP_VERSION = "V4.5.66";
 
 // Architecture stable
 // programs/*.js = plan prévu

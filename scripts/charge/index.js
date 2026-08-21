@@ -22,6 +22,13 @@
     brainIntentKey: typeof coachBrainIntentKey === 'function' ? coachBrainIntentKey : null,
     brainMemory: window.CoachBrainMemory || null,
     filterHistory: window.CoachHistory && CoachHistory.filterForProgression ? CoachHistory.filterForProgression : (typeof coachFilterHistoryForProgression === 'function' ? coachFilterHistoryForProgression : null),
+    // Lecture partagee : cette ligne d'historique est-elle une charge reduite
+    // volontairement (reprise, deload, technique, leger) plutot qu'une baisse ?
+    // La courbe de progression et le resume de seance s'en servent pour ne pas
+    // annoncer une chute la ou le programme a demande moins.
+    isContextualLoadRow: typeof coachIsContextualLoadRow === 'function' ? coachIsContextualLoadRow : null,
+    contextualLoadReason: typeof coachContextualLoadReason === 'function' ? coachContextualLoadReason : null,
+    isLimitedContext: typeof coachIsLimitedProgressionContext === 'function' ? coachIsLimitedProgressionContext : null,
     suggestLoad: window.coachSafeSuggestedLoad || (typeof athleteSuggestedLoad === 'function' ? athleteSuggestedLoad : null),
     suggestForExercise: typeof coachSuggestForExercise === 'function' ? coachSuggestForExercise : null,
     enrichSessionResults: typeof enrichSessionResults === 'function' ? enrichSessionResults : null,

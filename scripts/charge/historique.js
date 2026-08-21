@@ -64,8 +64,30 @@ function coachHistoryContext(row){
 }
 
 function coachHistoryContextIsLimited(row){
+  // Marqueur direct posé a la sauvegarde par updateAthleteStateFromResults :
+  // il survit meme quand le contexte lui-meme n'a pas ete recopie sur la ligne.
+  if(row && row.status === 'context_logged') return true;
   var ctx=coachHistoryContext(row);
   return (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
+}
+
+// Une charge REDUITE VOLONTAIREMENT n'est pas une baisse de capacite.
+// Semaine de reprise, deload, travail technique ou leger : le programme a
+// demande moins, l'athlete a fait ce qui etait demande. Le moteur le sait deja
+// (il ecarte ces lignes de la progression), mais tout ce qui LIT l'historique
+// ensuite — courbe de progression, resume de fin de seance — le prenait pour
+// une chute. D'ou cette lecture partagee, une seule definition pour tous.
+function coachIsContextualLoadRow(row){
+  return coachHistoryContextIsLimited(row);
+}
+// Raison lisible, pour que l'ecran puisse dire POURQUOI la ligne est ecartee.
+function coachContextualLoadReason(row){
+  var ctx=coachHistoryContext(row);
+  if(ctx && typeof coachContextProgressionReason==='function'){
+    var why=coachContextProgressionReason(ctx);
+    if(why) return why;
+  }
+  return coachIsContextualLoadRow(row) ? 'Charge reduite volontairement par le programme.' : '';
 }
 
 function coachIsBodyweightExternalLoadMovement(label, context){

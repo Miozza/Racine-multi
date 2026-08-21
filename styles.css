@@ -6268,11 +6268,24 @@ body.arnold-mode{
 .pcx-progress-svg circle{fill:var(--gold);stroke:#07111f;stroke-width:2}
 .pcx-progress-svg circle.last{fill:var(--green);stroke-width:3}
 .pcx-progress-svg circle.best{fill:var(--cyan);stroke-width:3}
+/* Point de contexte : séance volontairement allégée (reprise, deload,
+   technique). Il reste sur la courbe — la séance a bien eu lieu — mais il
+   est creux, pour qu'on ne le relise pas comme une chute de capacité. Il ne
+   pèse ni sur la tendance, ni sur le meilleur, ni sur le RPE moyen. */
+.pcx-progress-svg circle.context{fill:#07111f;stroke:var(--muted);stroke-width:2;stroke-dasharray:2.5 2}
+.pcx-progress-svg circle.context.last{fill:#07111f;stroke:var(--muted);stroke-width:2.5}
+/* e1RM extrapolé : au-delà d'une douzaine de reps, Epley n'est plus une
+   mesure mais une projection. Le point le dit au lieu de se faire passer
+   pour une donnée de même qualité que les autres. */
+.pcx-progress-svg circle.stretched{stroke:var(--orange);stroke-dasharray:2 2}
 .pcx-progress-svg text{fill:var(--text2);font-family:var(--font-hud);font-size:11px;letter-spacing:.04em}
 .pcx-progress-svg .pcx-progress-gridline text{text-anchor:end;fill:rgba(226,232,240,.78);font-size:10px}
 .pcx-progress-svg .pcx-progress-axis-title{fill:var(--white);font-size:11px;text-anchor:start}
 .pcx-progress-svg .pcx-progress-date{fill:var(--text2);font-family:var(--font-main);font-weight:900;font-size:11px;text-anchor:middle}
 .pcx-progress-svg .pcx-progress-point-label{fill:var(--white);font-family:var(--font-hud);font-size:10px;text-anchor:middle;paint-order:stroke;stroke:#07111f;stroke-width:3px;stroke-linejoin:round}
+.pcx-progress-metric{align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px}
+.pcx-progress-metric-label{font-family:var(--font-hud);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pcx-progress-metric-hint{flex:1 1 100%;min-width:0;font-family:var(--font-main);font-size:11px;line-height:1.4;color:var(--muted)}
 .pcx-progress-scale-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .pcx-progress-scale-row span{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:12px;padding:8px;color:var(--white);font-size:12px;font-weight:900;line-height:1.2}
 .pcx-progress-scale-row b{display:block;color:var(--text2);font-family:var(--font-hud);font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
