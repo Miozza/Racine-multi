@@ -11,6 +11,12 @@
        quand la barre ralentit.
     6. Sans ancre de force ni historique, rien ne bouge : les anciens
        historiques incomplets gardent le comportement d'avant.
+    7. Une serie sortie proprement n'est jamais sous-suggeree, meme sans ancre.
+    8. Une charge au-dessus de la bande, jamais portee, revient dedans tout de
+       suite — une protection qui protege dans six semaines n'en est pas une.
+    9. Une cible posee en clair (`pctOf1RM`) vaut declaration d'intention.
+   10. Hygiene du catalogue : aucun bloc du dépôt ne declare un pourcentage
+       que le moteur lirait comme des livres.
 
   Usage :
     node dev/phase2_fable5_checks.js
@@ -224,6 +230,80 @@ try {
   // 7 semaines de bloc vitesse : S8 le retire, la note change.
   assert(vitesseCount > 0 && vitesseCount <= 8,
     'Detection etroite : ' + vitesseCount + ' exercice(s) vitesse sur ' + exCount + ' dans tout le programme.');
+
+  // ─── 8. Plancher sans ancre (R3) ─────────────────────────────────────────
+  // Un athlete sans capacite de force connue restait bloque sur le nombre du
+  // programme, meme apres l'avoir depasse proprement pendant des semaines.
+  const sansAncreMaisPropre = suggest('125 lb', [row(155, 2, 7), row(155, 2, 7)], null);
+  assert(sansAncreMaisPropre.loadNum === 155,
+    'Sans ancre : 155 lb x 2 @7 deja sortis, le moteur ne repropose pas 125 lb (' + sansAncreMaisPropre.loadNum + ').');
+
+  const sansAncreEtSale = suggest('125 lb', [row(155, 1, 9.5), row(155, 1, 9.5)], null);
+  assert(sansAncreEtSale.loadNum <= 125,
+    'Sans ancre : une serie ratee a RPE 9.5 ne pose aucun plancher (' + sansAncreEtSale.loadNum + ').');
+
+  // ─── 9. Retour dans la bande immediat si la charge n a jamais ete portee (R4) ─
+  const jamaisPortee = suggest('245 lb', [], undefined);
+  assert(pct(jamaisPortee.loadNum) <= 65,
+    'Charge de programme jamais portee : ramenee dans la bande en une fois (' + jamaisPortee.loadNum + ' lb = ' + pct(jamaisPortee.loadNum) + ' %).');
+
+  // Une charge REELLEMENT portee, elle, redescend par paliers.
+  const portee = suggest('245 lb', [row(245, 2, 7), row(245, 2, 7)], undefined);
+  assert(portee.loadNum >= 245 - ctx.coachMaxJumpForExercise('Back Squat', 245),
+    'Charge reellement portee : la reduction reste bornee au saut maximal, pas un effondrement (' + portee.loadNum + ' lb).');
+
+  // ─── 10. Cible declaree en clair (R5) ────────────────────────────────────
+  // Un programme qui pose sa cible proprement, en clair, ne doit pas etre le
+  // seul a ne pas etre reconnu faute de tournure de phrase.
+  const declare = ctx.coachBuildMovementContext('Back Squat', {
+    kind: 'secondary', blockTitle: 'B. Squat vitesse', format: '6×2',
+    note: 'Descente contrôlée, remontée explosive. Intention de vitesse.',
+    pctOf1RM: 0.60, day: 'vendredi', week: 1
+  });
+  assert(declare.isSpeed === true && !!declare.speedBand && declare.speedBand.declared === 0.60,
+    'Cible posee en clair (pctOf1RM: 0.60) : bloc vitesse reconnu sans aucun % dans le texte.');
+  const sansCible = ctx.coachBuildMovementContext('Back Squat', {
+    kind: 'secondary', blockTitle: 'B. Squat vitesse', format: '6×2',
+    note: 'Descente contrôlée, remontée explosive. Intention de vitesse.',
+    day: 'vendredi', week: 1
+  });
+  assert(sansCible.isSpeed === false,
+    'Sans cible declaree ni % ecrit : pas de bloc vitesse. La detection reste etroite.');
+
+  // ─── 11. Hygiene du catalogue : aucun pourcentage lu comme des livres ────
+  // Le defaut est structurel, pas propre a phase2_fable5 : tout programme qui
+  // ecrit « 60-65 % » dans une charge doit etre reconnu comme un pourcentage,
+  // sinon parseLoad() en fait 60 lb.
+  const progDir = path.join(root, 'programs');
+  const tousProgrammes = {};
+  ctx.window.COACH_BERTIN_PROGRAMS = tousProgrammes;
+  fs.readdirSync(progDir).filter(f => f.endsWith('.js')).forEach(f => {
+    try { vm.runInNewContext(read('programs/' + f), ctx, { filename: f }); } catch (e) {}
+  });
+  const nonResolus = [];
+  let blocsPct = 0;
+  Object.keys(tousProgrammes).forEach(id => {
+    const prog = tousProgrammes[id];
+    if (!prog || typeof prog.getBlocks !== 'function') return;
+    (prog.days || []).forEach(day => {
+      for (let w = 1; w <= ((prog.weekLabels || []).length || 1); w++) {
+        let blocks = [];
+        try { blocks = prog.getBlocks(day, w) || []; } catch (e) { return; }
+        blocks.forEach(b => (b.exercises || []).forEach(ex => {
+          const load = String(ex.load || '');
+          if (load.indexOf('%') < 0) return;
+          if (/\b(lb|lbs|kg)\b/i.test(load)) return; // charge en livres qui mentionne un %
+          blocsPct++;
+          if (!ctx.coachPercentTargetFromText(load) && ctx.parseLoad(load) !== null) {
+            nonResolus.push(id + ' / ' + day + ' S' + w + ' / ' + ex.name + ' : "' + load + '"');
+          }
+        }));
+      }
+    });
+  });
+  assert(blocsPct > 0, 'Le catalogue contient bien des charges en pourcentage a proteger (' + blocsPct + ' occurrences).');
+  assert(nonResolus.length === 0,
+    'Aucune charge en pourcentage ne retombe sur parseLoad() : ' + (nonResolus.slice(0, 5).join(' | ') || 'catalogue propre') + '.');
 
 } catch (err) {
   fail('Erreur pendant les tests phase2_fable5 : ' + (err && err.stack ? err.stack : err));

@@ -341,6 +341,63 @@ suivant du rack — jamais au pas nominal. Un plafond plus petit que le plus pet
 mouvement possible fige le mouvement au lieu de le protéger ; c'est l'erreur
 symétrique et elle est tout aussi grave.
 
+### 5. Une semaine de deload se déclare (depuis V4.5.66)
+
+Un deload ne se déduit **jamais** d'un numéro de semaine. Il se déclare, dans
+l'un de ces trois endroits, et le moteur les lit tous les trois :
+
+```txt
+weekLabels / weekGoals du programme   → « S7 Deload », « récupération », « facile »
+note / titre / kind du bloc           → intention `recovery` ou `light`
+contexte de la séance                 → ctx.isRecovery · ctx.isLight
+```
+
+`coachIsDeloadWeekOrContext()` ouvrait sur `if(weekNum===6) return true;` —
+vestige de l'époque où l'app ne portait qu'un seul cycle de six semaines. Sur un
+catalogue de 42 programmes de 1 à 16 semaines, ce raccourci déclenchait un
+**deload fantôme en S6 sur 14 programmes**, dont « S6 Rotation B max » de
+`phase2_fable5` (semaine de 3RM) cappée à 85 % de la dernière référence.
+
+Les 19 programmes dont la S6 est un vrai deload le déclarent tous dans leur
+libellé : la lecture de libellé rendait le hardcode redondant **et** nuisible.
+
+### 6. Un pourcentage n'est pas une charge (depuis V4.5.66)
+
+`parseLoad()` attrape le premier nombre d'un texte de charge. Une charge écrite
+`"75-82 %"` valait donc **75 lb** — puis était encore multipliée par le ratio de
+profil. 39 charges du catalogue sont écrites en pourcentage.
+
+Un pourcentage est une **cible relative** ; il ne devient une charge qu'une fois
+résolu contre la capacité réelle de l'athlète :
+
+```txt
+athlete_state (ranges.estimated1RM)   ← le travail lourd réel
+  → state.movementRefs                ← références de travail saisies
+    → PR_FIELD_MAP / profil           ← tests de calibration
+      → sinon : RIEN
+```
+
+« Sinon : rien » est la partie importante. Sans ancre fiable, la charge repart du
+chemin « non numérique » (historique, puis repères d'équipement) — strictement
+mieux qu'un nombre de livres inventé, qui deviendrait la première référence
+loggée de l'athlète et empoisonnerait tout son historique.
+
+Une charge portant une **unité explicite** (« 60 % (135 lb) ») reste une charge
+en livres et suit le chemin habituel.
+
+Un programme peut aussi poser sa cible **en clair** sur l'exercice, ce qui
+dispense de toute lecture de phrase :
+
+```js
+{ name:"Back Squat", format:"6×2", load:"—", pctOf1RM: 0.60, note:"…" }
+```
+
+C'est la forme à préférer pour tout nouveau programme. La lecture par regex reste
+le repli pour les programmes existants.
+
+Garde-fou d'hygiène : `dev/phase2_fable5_checks.js` balaie le catalogue entier et
+échoue si **une seule** charge en pourcentage retombe sur `parseLoad()`.
+
 ## Garde-fous obligatoires
 
 Avant une release qui touche aux charges, exécuter :

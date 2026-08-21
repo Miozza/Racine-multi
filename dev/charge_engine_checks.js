@@ -781,6 +781,67 @@ try {
     resetState();
   }
 
+  // ─── Un deload se DECLARE, il ne se deduit pas d'un numero (V4.5.66) ──────
+  // `if(weekNum===6)return true;` datait du temps ou l'app portait un seul
+  // cycle de 6 semaines. Sur un catalogue de 42 programmes il declenchait un
+  // deload fantome en S6 — « S6 Rotation B max » de phase2_fable5, semaine de
+  // 3RM, se retrouvait cappee a 85 % de la derniere reference.
+  {
+    const infoSansDeload = { 6:{label:'S6 Rotation B max', goal:'3RM propres. RPE 9 max.'},
+                             7:{label:'S7 Deload', goal:'Volume divise par deux.'} };
+    const buildWeekInfoOrigine = ctx.buildWeekInfo;
+    ctx.buildWeekInfo = function(){ return infoSansDeload; };
+
+    assert(ctx.coachIsDeloadWeekOrContext({ week:6, kind:'main' }) === false,
+      'Semaine 6 non declaree deload : le moteur ne l invente pas.');
+    assert(ctx.coachIsDeloadWeekOrContext({ week:7, kind:'main' }) === true,
+      'Semaine 7 declaree « Deload » dans le libelle : detectee.');
+
+    // La S6 d un programme qui declare VRAIMENT son deload en S6 reste couverte.
+    ctx.buildWeekInfo = function(){ return { 6:{label:'S6 Deload', goal:'Recuperation.'} }; };
+    assert(ctx.coachIsDeloadWeekOrContext({ week:6, kind:'main' }) === true,
+      'Semaine 6 declaree « Deload » : toujours detectee, sans hardcode.');
+
+    // Un contexte de recuperation reste un deload quel que soit le numero.
+    assert(ctx.coachIsDeloadWeekOrContext({ week:2, isRecovery:true }) === true,
+      'Contexte recuperation : deload detecte hors de toute semaine particuliere.');
+
+    ctx.buildWeekInfo = buildWeekInfoOrigine;
+    resetState();
+  }
+
+  // ─── Charge de programme ecrite en pourcentage (V4.5.66) ─────────────────
+  // parseLoad('75-82%') vaut 75 : sans traitement, un Push Press prescrit a
+  // 75-82 % du 1RM sortait a 75 lb, puis encore multiplie par le ratio profil.
+  {
+    resetState();
+    const pctCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'main', blockTitle:'A. Bench Press', load:'75-82%' });
+    assert(!!pctCtx.percentTarget, 'Une charge « 75-82% » est reconnue comme une cible en pourcentage.');
+    assert(pctCtx.percentTarget.aim > 0.75 && pctCtx.percentTarget.aim < 0.82,
+      'La cible visee est le milieu de la plage declaree (' + pctCtx.percentTarget.aim + ').');
+
+    const lbCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'main', load:'205 lb' });
+    assert(!lbCtx.percentTarget, 'Une charge en livres n est jamais lue comme un pourcentage.');
+    const mixteCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'main', load:'60 % (135 lb)' });
+    assert(!mixteCtx.percentTarget, 'Une charge portant une unite explicite reste une charge en livres.');
+
+    // Avec une capacite reelle connue, le pourcentage se resout dessus.
+    ctx.state.athleteState.movements['Bench Press'] = {
+      ranges: { strength:{ currentLoad:205, currentReps:3, actualLoad:205, actualReps:3, rpe:8, confidence:0.9, status:'upgrade_ready', estimated1RM:225, lastUpdated:'2026-01-01' } },
+      history: []
+    };
+    const resolu = ctx.guardedSuggestedLoadDecision('Bench Press', '75-82%', 3, pctCtx);
+    assert(resolu.loadNum > 150,
+      'Pourcentage resolu sur la capacite reelle, pas lu comme 75 lb (' + resolu.loadNum + ' lb pour un 1RM de 225).');
+
+    // Sans capacite connue, le moteur n invente pas un nombre de livres.
+    resetState();
+    const inconnu = ctx.guardedSuggestedLoadDecision('Bench Press', '75-82%', 3, pctCtx);
+    assert(inconnu.loadNum !== 75,
+      'Sans capacite connue, « 75-82% » ne devient jamais 75 lb (' + inconnu.loadNum + ').');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

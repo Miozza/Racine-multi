@@ -1,5 +1,5 @@
-// Racine V4.5.65 — moteur de charges : les reps en plus comptent, le bloc vitesse suit son pourcentage cible
-var APP_VERSION = "V4.5.65";
+// Racine V4.5.66 — moteur de charges : un deload se déclare, un pourcentage se résout
+var APP_VERSION = "V4.5.66";
 
 // Architecture stable
 // programs/*.js = plan prévu

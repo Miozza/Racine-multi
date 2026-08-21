@@ -4,7 +4,18 @@
 
 function coachIsDeloadWeekOrContext(context){
   var weekNum=Number((context&&context.week)||(state&&state.week)||0)||0;
-  if(weekNum===6)return true;
+  // La semaine 6 n'est PAS un deload en soi. `if(weekNum===6)return true;`
+  // datait de l'epoque ou l'app ne portait qu'un seul cycle de 6 semaines ;
+  // le catalogue en compte 42, de 1 a 16 semaines. Le hardcode declenchait un
+  // deload fantome en S6 sur 14 programmes — dont « S6 Rotation B max » de
+  // phase2_fable5 (semaine de 3RM, la plus lourde du bloc), cappee a 85 % de
+  // la derniere reference : 175 lb au lieu de 210. Les 19 programmes dont la
+  // S6 est un VRAI deload la declarent tous dans weekLabels/weekGoals et sont
+  // donc couverts par la lecture de libelle plus bas, qui est arrivee apres
+  // ce hardcode et le rend redondant.
+  //
+  // Une semaine de deload se DECLARE (libelle ou objectif de semaine, note du
+  // bloc, contexte recuperation) ; elle ne se deduit jamais d'un numero.
   if(context&&(context.isRecovery||context.isLight))return true;
   var raw=[context&&context.primaryIntent,context&&context.kind,context&&context.blockTitle,context&&context.note,context&&context.text,context&&context.format].filter(Boolean).join(' ');
   var n=(typeof coachNormalizeMoveText==='function')?coachNormalizeMoveText(raw):String(raw||'').toLowerCase();
@@ -415,15 +426,38 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   var lastRpe=last?coachHistoryRpeNumber(last):0;
   var bestControlled=coachRecentBestControlledLoad(hist,8.5,label,moveContext);
   var historySignal=(typeof coachBuildMovementHistorySignal==='function')?coachBuildMovementHistorySignal(label,hist,moveContext,target):null;
-  var programNum=parseLoad(currentLoad);
-  if(programNum!==null&&programNum!==undefined){
-    programNum=coachApplyUserLoadScale(label,programNum);
+  // Charge ecrite en POURCENTAGE du 1RM (« 60-65 % », « ~60 % ») : ce ne sont
+  // pas des livres. parseLoad() y attrape le premier nombre — « 75-82 % »
+  // devenait 75 lb pour un Push Press a 75-82 % du 1RM, puis etait encore
+  // multiplie par le ratio de profil. Un pourcentage se resout contre la
+  // capacite reelle de l'athlete ; sans ancre fiable il ne vaut RIEN, et la
+  // charge repart du chemin « non numerique » (historique, puis reperes) —
+  // strictement mieux qu'un nombre de livres invente.
+  var percentTarget=(typeof coachPercentTargetFromText==='function')
+    ? ((moveContext&&moveContext.percentTarget)||coachPercentTargetFromText(currentLoad))
+    : null;
+  var percentAnchor=null;
+  var programNum;
+  if(percentTarget){
+    percentAnchor=coachStrengthAnchorOneRm(label,mv);
+    programNum=(percentAnchor&&percentAnchor.oneRm>0)
+      ? roundLoadForExercise(label,percentAnchor.oneRm*percentTarget.aim,'nearest',currentLoad)
+      : null;
+  }else{
+    programNum=parseLoad(currentLoad);
+    if(programNum!==null&&programNum!==undefined){
+      programNum=coachApplyUserLoadScale(label,programNum);
+    }
   }
   var originalText=displayLoadForEquipment(label,currentLoad);
   var contextLimited=(typeof coachIsLimitedProgressionContext==='function')?coachIsLimitedProgressionContext(moveContext):false;
   var contextLimitReason=(typeof coachContextProgressionReason==='function')?coachContextProgressionReason(moveContext):'';
   var isDeload=coachIsDeloadWeekOrContext(moveContext);
   var seedReason="Charge du programme, arrondie selon l'equipement.";
+  if(percentTarget&&programNum!==null&&programNum!==undefined){
+    seedReason="Charge du programme en pourcentage ("+Math.round(percentTarget.aim*100)+" % du 1RM) resolue sur ta capacite reelle : "
+      +Math.round(percentAnchor.oneRm)+" lb estimes (source "+percentAnchor.source+").";
+  }
   if(programNum===null||programNum===undefined){
     // Déclaration rétablie : le refactor du filtre de vraisemblance
     // (coachIsImplausibleLoadRow) avait supprimé ce var mais laissé son usage
@@ -784,7 +818,9 @@ function coachRuleRepSurplusLift(ctx){
 // lui-meme : une serie a RPE 7 sur un bloc vitesse n'est pas proche de
 // l'echec, son e1RM sous-estime enormement. Sans ancre fiable, la regle ne
 // fait rien : un historique incomplet garde le comportement d'avant.
-function coachSpeedAnchorOneRm(label,mv){
+// Sert aussi a resoudre une charge de programme ecrite en pourcentage
+// (coachBuildSuggestionContext) : meme question, meme reponse.
+function coachStrengthAnchorOneRm(label,mv){
   // 1. Capacite mesuree par le travail lourd reel (athlete_state). Les
   //    contextes limites n'ecrivent jamais `ranges` : ce qu'on lit ici vient
   //    donc bien d'un bloc principal, jamais du bloc vitesse lui-meme.
@@ -859,6 +895,31 @@ function coachSpeedDriftFactor(T,lastReps,target){
   return base;
 }
 
+// Une serie sortie proprement dans le bloc (RPE dans la cible, reps faites,
+// statut sain) est un fait, pas une estimation : reproposer MOINS que ca,
+// c'est exactement la charge figee qu'on corrige. Ce plancher ne demande donc
+// aucune ancre de force — il ne fait que refuser de redescendre sous ce que
+// l'athlete vient de faire. Sans lui, un athlete sans capacite de force
+// connue restait bloque sur le nombre du programme meme apres l'avoir
+// depasse proprement pendant des semaines.
+function coachSpeedCleanFloor(ctx,T){
+  if(!ctx.lastHasValidLoad||!(ctx.lastLoad>0))return false;
+  if(!(ctx.suggested<ctx.lastLoad))return false;
+  var lastReps=coachHistoryRepsNumber(ctx.last);
+  var blocking=(T&&T.blockingStatuses)||[];
+  if(ctx.last&&ctx.last.status&&blocking.indexOf(ctx.last.status)!==-1)return false;
+  if(!(ctx.lastRpe>0)||ctx.lastRpe>(Number(T&&T.maxRpe)||7.5))return false;
+  if(ctx.target&&!(lastReps>=ctx.target))return false;
+  ctx.suggested=ctx.lastLoad;
+  ctx.mode="nearest";
+  ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  ctx.reason="Stimulus vitesse : "+ctx.lastLoad+" lb x "+lastReps+" @RPE "+ctx.lastRpe
+    +" deja sorti proprement dans ce bloc. Le moteur ne redescend pas sous cette charge.";
+  ctx.brainAdjusted=true;
+  ctx.speedBandApplied=true;
+  return true;
+}
+
 function coachRuleSpeedStimulusBand(ctx){
   var mc=ctx.moveContext;
   if(!mc||!mc.isSpeed||!mc.speedBand)return;
@@ -866,8 +927,10 @@ function coachRuleSpeedStimulusBand(ctx){
   if(ctx.isDeload)return;
   var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
   if(!T)return;
-  var anchor=coachSpeedAnchorOneRm(ctx.label,ctx.mv);
-  if(!anchor||!(anchor.oneRm>0))return; // historique incomplet : rien ne bouge.
+  // Plancher d'abord : il vaut AVEC comme SANS ancre.
+  coachSpeedCleanFloor(ctx,T);
+  var anchor=coachStrengthAnchorOneRm(ctx.label,ctx.mv);
+  if(!anchor||!(anchor.oneRm>0))return; // aucune capacite connue : rien de plus.
   var band=mc.speedBand;
   // `aim` = le pourcentage que le bloc annonce (« ~60 % »). C'est vers lui que
   // la charge derive, pas vers le bas de la bande : s'arreter au plancher
@@ -882,7 +945,16 @@ function coachRuleSpeedStimulusBand(ctx){
   // Protection, donc pas conditionnee a l'historique — mais bornee au meme
   // saut maximal pour ne jamais s'effondrer d'un coup.
   if(ctx.suggested>ceil){
-    var down=Math.max(ceil,ctx.suggested-maxJump);
+    // Reduire une charge que l'athlete a REELLEMENT portee se fait par
+    // paliers : un effondrement brutal casse la confiance dans la suggestion.
+    // Mais une charge jamais portee n'est qu'un nombre ecrit dans un
+    // programme : la ramener d'un coup dans la bande ne coute rien, et la
+    // faire descendre de 10 lb par seance laissait le bloc lourd pendant des
+    // semaines — une protection qui protege trop tard n'en est pas une.
+    var dejaPortee=(Array.isArray(ctx.hist)?ctx.hist:[]).some(function(r){
+      return coachHistoryHasValidLoad(r,ctx.label,ctx.moveContext)&&coachHistoryLoadNumber(r)>=ctx.suggested;
+    });
+    var down=dejaPortee?Math.max(ceil,ctx.suggested-maxJump):ceil;
     if(down<ctx.suggested){
       ctx.suggested=down;
       ctx.mode="down";
@@ -1119,7 +1191,7 @@ function plannedMapFromSessionExercises(){
       var plannedLoad=parseLoad(it.suggested);
       var targetMin=Number(it.targetMin)||0;
       var targetMax=Number(it.targetMax)||targetMin||0;
-      var ctx=(typeof coachBuildMovementContext==='function'?coachBuildMovementContext(it.name||it.key,{kind:it.kind,format:it.format,note:it.note,text:it.text,blockTitle:it.blockTitle,day:(state&&state.day),week:(state&&state.week)}):null);
+      var ctx=(typeof coachBuildMovementContext==='function'?coachBuildMovementContext(it.name||it.key,{kind:it.kind,format:it.format,note:it.note,text:it.text,blockTitle:it.blockTitle,load:it.load,pctOf1RM:it.pctOf1RM,day:(state&&state.day),week:(state&&state.week)}):null);
       map[it.key]={name:label,load:plannedLoad,reps:targetMin||targetMax, targetMin:targetMin, targetMax:targetMax, format:it.format||"", kind:it.kind||"", context:ctx, bodyweightMovement:(typeof coachIsBodyweightExternalLoadMovement==='function'?coachIsBodyweightExternalLoadMovement(label,ctx):false)};
       map[label]=map[it.key];
       map[normalizeExerciseName(label)]=map[it.key];
@@ -1621,6 +1693,11 @@ function coachSuggestForExercise(exercise, block, opts){
     note: exercise.note,
     text: block.text,
     format: exercise.format,
+    // `load` sert a lire une charge ecrite en pourcentage (« 60-65 % ») ;
+    // `pctOf1RM` est la cible posee explicitement par le programme, qui
+    // dispense de toute lecture de phrase. Voir docs/CHARGE_PROGRESSION_CONTRACT.md.
+    load: exercise.load,
+    pctOf1RM: exercise.pctOf1RM,
     day:  (opts.day  !== undefined) ? opts.day  : (st ? st.day  : undefined),
     week: (opts.week !== undefined) ? opts.week : (st ? st.week : undefined)
   };

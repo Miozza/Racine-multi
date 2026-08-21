@@ -235,17 +235,52 @@ function coachNormalizeKeepSymbols(s){
   return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
 
-function coachSpeedStimulusBandFromText(raw){
+// Cible en POURCENTAGE du 1RM lue dans un texte de charge de programme.
+// « 60-65 % », « ~60 % », « RPE 7 / ~70 % » : ces textes ne sont PAS des
+// livres. parseLoad() y attrape pourtant le premier nombre — « 60-65 % »
+// devenait 60 lb pour un Push Press a 60-65 % du 1RM. Le pourcentage doit
+// etre resolu contre la capacite reelle de l'athlete, ou a defaut ignore.
+//
+// Exige un `%` ET l'absence d'unite explicite : « 60 % (135 lb) » reste une
+// charge en livres et suit le chemin habituel.
+function coachPercentTargetFromText(raw){
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
+  if(!T||!T.pctPattern)return null;
+  var text=coachNormalizeKeepSymbols(raw);
+  if(!text||/\b(lb|lbs|kg)\b/.test(text))return null;
+  var m=text.match(T.pctPattern);
+  if(!m)return null;
+  var a=Number(m[1])/100;
+  var b=m[2]?Number(m[2])/100:0;
+  var lo=b?Math.min(a,b):a;
+  var hi=b?Math.max(a,b):a;
+  if(!(lo>0.15)||!(hi<=1.10))return null;
+  var r2=function(x){return Math.round(x*100)/100;};
+  return {min:r2(lo),max:r2(hi),aim:r2(b?(lo+hi)/2:a)};
+}
+
+// `declaredPct` (R5) : une cible posee EXPLICITEMENT par le programme, en
+// clair, sur l'exercice — `pctOf1RM: 0.60`. Elle est lue en premier et evite
+// toute dependance a une tournure de phrase. La lecture par regex reste le
+// repli pour les programmes existants, qui ecrivent « ~60 % » dans leur note.
+function coachSpeedStimulusBandFromText(raw, declaredPct){
   var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
   if(!T)return null;
   var text=coachNormalizeKeepSymbols(raw);
   if(!text)return null;
   if((T.cuePatterns||[]).some(function(re){return re.test(text);}))return null;
   if(!(T.keywordPatterns||[]).some(function(re){return re.test(text);}))return null;
-  var m=T.pctPattern?text.match(T.pctPattern):null;
-  if(!m)return null;
-  var a=Number(m[1])/100;
-  var b=m[2]?Number(m[2])/100:0;
+  var a,b=0;
+  var declared=Number(declaredPct);
+  if(declared>0){
+    // Tolere 0,60 comme 60 : un programme peut ecrire l'un ou l'autre.
+    a=declared>1?declared/100:declared;
+  }else{
+    var m=T.pctPattern?text.match(T.pctPattern):null;
+    if(!m)return null;
+    a=Number(m[1])/100;
+    b=m[2]?Number(m[2])/100:0;
+  }
   var lo=b?Math.min(a,b):a;
   var hi=b?Math.max(a,b):a;
   var minPct=Number(T.minDeclaredPct)||0.30;
@@ -266,7 +301,11 @@ function coachSpeedStimulusBandFromText(raw){
   return {min:r2(lo),max:r2(hi),declared:r2(a),aim:aim};
 }
 
-function coachExtractMovementIntent(parts){
+// `declaredPct` (optionnel) : cible en pourcentage posee explicitement par le
+// programme sur l'exercice (`pctOf1RM`). Elle vaut declaration d'intention au
+// meme titre qu'un « ~60 % » ecrit dans la note — sinon un programme qui fait
+// les choses proprement, en clair, serait le seul a ne pas etre reconnu.
+function coachExtractMovementIntent(parts, declaredPct){
   var raw=(Array.isArray(parts)?parts.join(' '):String(parts||''));
   var n=coachNormalizeMoveText(raw);
   var intents=[];
@@ -277,7 +316,7 @@ function coachExtractMovementIntent(parts){
   // reste un contexte a progression limitee (il ne remplace jamais une
   // capacite principale dans athlete_state). La regle dediee du moteur lui
   // rend seulement sa derive vers la bande cible.
-  if(coachSpeedStimulusBandFromText(raw))add('speed');
+  if(coachSpeedStimulusBandFromText(raw, declaredPct))add('speed');
   if(/rappel|recall/.test(n))add('recall');
   if(/progression|regression|scale|scaling/.test(n))add('progression');
   if(/leger|legere|light|facile|easy|warm up|warmup|activation|mobilite|mobility/.test(n))add('light');
@@ -292,20 +331,25 @@ function coachBuildMovementContext(nameOrKey, opts){
   var raw=String(nameOrKey||opts.name||opts.key||'').trim();
   var label=canonicalMovementLabel(raw);
   var textParts=[raw,label,opts.kind,opts.blockKind,opts.blockTitle,opts.title,opts.note,opts.text,opts.format].filter(Boolean);
-  var intents=coachExtractMovementIntent(textParts);
+  var intents=coachExtractMovementIntent(textParts, opts.pctOf1RM);
   var kind=String(opts.kind||opts.blockKind||'').toLowerCase();
   if(kind==='wod'&&intents.indexOf('wod')===-1)intents.push('wod');
   if(kind==='warmup'&&intents.indexOf('light')===-1)intents.push('light');
   var equipment=coachMovementEquipmentFamily(label)||coachMovementEquipmentFamily(raw)||'';
   // La bande cible est calculee une seule fois ici : le moteur la relit sans
   // re-parser le texte, et le bouton (!) peut l'afficher telle quelle.
-  var speedBand=coachSpeedStimulusBandFromText(textParts.join(' '));
+  var speedBand=coachSpeedStimulusBandFromText(textParts.join(' '), opts.pctOf1RM);
+  // Cible en pourcentage de la CHARGE du programme (« 60-65 % »), lue a part :
+  // elle sert a resoudre la charge, meme quand le bloc n'est pas un bloc
+  // vitesse (voir coachBuildSuggestionContext).
+  var percentTarget=coachPercentTargetFromText(opts.load);
   return {
     rawName:raw,
     label:label,
     equipment:equipment,
     intents:intents,
     speedBand:speedBand,
+    percentTarget:percentTarget,
     primaryIntent:intents[0]||'',
     kind:opts.kind||opts.blockKind||'',
     blockTitle:opts.blockTitle||opts.title||'',

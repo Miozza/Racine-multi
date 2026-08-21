@@ -809,8 +809,8 @@
     },
     {
       "path": "dev/phase2_fable5_checks.js",
-      "size": 11775,
-      "lines": 239,
+      "size": 16644,
+      "lines": 319,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
