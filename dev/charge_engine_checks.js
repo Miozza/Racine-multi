@@ -731,6 +731,117 @@ try {
     resetState();
   }
 
+  // ─── Surplus de reps : la capacite revelee, pas un forfait (V4.5.67) ──────
+  // Le moteur projetait deja Epley vers le BAS quand les reps manquaient. La
+  // projection vers le HAUT n'existait pas : sur une cible courte, 2 reps et
+  // 5 reps a la meme charge et au meme RPE se ressemblaient trop.
+  {
+    const mainCtx = { label:'Back Squat', intents:['strength'], kind:'main' };
+    function seedSurplus(rows, target){
+      resetState();
+      const range = ctx.repRange(target);
+      const last = rows[rows.length - 1];
+      ctx.state.athleteState.movements['Back Squat'] = {
+        ranges: { [range]: { currentLoad:last.load, actualLoad:last.load, currentReps:target, actualReps:last.reps, rpe:last.rpe, confidence:0.9, status:'upgrade_ready' } },
+        history: rows.map((r, i) => ({ date:'2026-0' + (i+3) + '-01', load:r.load, reps:r.reps, rpe:r.rpe, range:range, status:'easy_success', context:mainCtx }))
+      };
+    }
+    const sRow = (load, reps, rpe) => ({ load:load, reps:reps, rpe:rpe });
+    function decideMain(prog, target){
+      return ctx.guardedSuggestedLoadDecision('Back Squat', prog, target, { kind:'main', blockTitle:'Force principale' });
+    }
+
+    seedSurplus([sRow(135,2,7), sRow(135,2,7)], 2);
+    const cible = decideMain('135 lb', 2).loadNum;
+    seedSurplus([sRow(135,5,7), sRow(135,5,7)], 2);
+    const surplus = decideMain('135 lb', 2).loadNum;
+    assert(surplus > cible,
+      'Surplus de reps : 135 x 5 pour 2 demandees pese plus que 135 x 2 au meme RPE (' + surplus + ' > ' + cible + ').');
+
+    // Le saut maximal prudent garde le dernier mot : le surplus rend le moteur
+    // plus prompt a utiliser la marge, il ne l'elargit jamais.
+    const plafondSurplus = 135 + ctx.coachMaxJumpForExercise('Back Squat', 135);
+    assert(surplus <= plafondSurplus,
+      'Surplus de reps : la hausse reste sous le saut maximal prudent (' + surplus + ' <= ' + plafondSurplus + ').');
+
+    // Le RPE reste le signal majeur : un surplus a RPE 9.5 ne vaut rien.
+    seedSurplus([sRow(135,5,9.5), sRow(135,5,9.5)], 2);
+    const surplusDur = decideMain('135 lb', 2).loadNum;
+    assert(surplusDur < surplus,
+      'Surplus de reps a RPE 9.5 : aucun credit, ce n est pas le meme signal (' + surplusDur + ' < ' + surplus + ').');
+
+    // Un contexte technique/WOD ne merite pas de charge parce qu il a fait des
+    // reps en plus : la porte du surplus reste fermee.
+    const techCtx = ctx.coachBuildMovementContext('Back Squat', { note:'technique, qualite du geste', kind:'accessory' });
+    seedSurplus([sRow(135,5,7), sRow(135,5,7)], 2);
+    ctx.state.athleteState.movements['Back Squat'].history.forEach(r => { r.context = techCtx; });
+    const techSurplus = ctx.guardedSuggestedLoadDecision('Back Squat', '135 lb', 2, techCtx).loadNum;
+    assert(techSurplus <= 135,
+      'Contexte technique : un surplus de reps ne declenche aucune hausse (' + techSurplus + ' <= 135).');
+    resetState();
+  }
+
+  // ─── Un deload se DECLARE, il ne se deduit pas d'un numero (V4.5.68) ──────
+  // `if(weekNum===6)return true;` datait du temps ou l'app portait un seul
+  // cycle de 6 semaines. Sur un catalogue de 42 programmes il declenchait un
+  // deload fantome en S6 — « S6 Rotation B max » de phase2_fable5, semaine de
+  // 3RM, se retrouvait cappee a 85 % de la derniere reference.
+  {
+    const infoSansDeload = { 6:{label:'S6 Rotation B max', goal:'3RM propres. RPE 9 max.'},
+                             7:{label:'S7 Deload', goal:'Volume divise par deux.'} };
+    const buildWeekInfoOrigine = ctx.buildWeekInfo;
+    ctx.buildWeekInfo = function(){ return infoSansDeload; };
+
+    assert(ctx.coachIsDeloadWeekOrContext({ week:6, kind:'main' }) === false,
+      'Semaine 6 non declaree deload : le moteur ne l invente pas.');
+    assert(ctx.coachIsDeloadWeekOrContext({ week:7, kind:'main' }) === true,
+      'Semaine 7 declaree « Deload » dans le libelle : detectee.');
+
+    // La S6 d un programme qui declare VRAIMENT son deload en S6 reste couverte.
+    ctx.buildWeekInfo = function(){ return { 6:{label:'S6 Deload', goal:'Recuperation.'} }; };
+    assert(ctx.coachIsDeloadWeekOrContext({ week:6, kind:'main' }) === true,
+      'Semaine 6 declaree « Deload » : toujours detectee, sans hardcode.');
+
+    // Un contexte de recuperation reste un deload quel que soit le numero.
+    assert(ctx.coachIsDeloadWeekOrContext({ week:2, isRecovery:true }) === true,
+      'Contexte recuperation : deload detecte hors de toute semaine particuliere.');
+
+    ctx.buildWeekInfo = buildWeekInfoOrigine;
+    resetState();
+  }
+
+  // ─── Charge de programme ecrite en pourcentage (V4.5.68) ─────────────────
+  // parseLoad('75-82%') vaut 75 : sans traitement, un Push Press prescrit a
+  // 75-82 % du 1RM sortait a 75 lb, puis encore multiplie par le ratio profil.
+  {
+    resetState();
+    const pctCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'main', blockTitle:'A. Bench Press', load:'75-82%' });
+    assert(!!pctCtx.percentTarget, 'Une charge « 75-82% » est reconnue comme une cible en pourcentage.');
+    assert(pctCtx.percentTarget.aim > 0.75 && pctCtx.percentTarget.aim < 0.82,
+      'La cible visee est le milieu de la plage declaree (' + pctCtx.percentTarget.aim + ').');
+
+    const lbCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'main', load:'205 lb' });
+    assert(!lbCtx.percentTarget, 'Une charge en livres n est jamais lue comme un pourcentage.');
+    const mixteCtx = ctx.coachBuildMovementContext('Bench Press', { kind:'main', load:'60 % (135 lb)' });
+    assert(!mixteCtx.percentTarget, 'Une charge portant une unite explicite reste une charge en livres.');
+
+    // Avec une capacite reelle connue, le pourcentage se resout dessus.
+    ctx.state.athleteState.movements['Bench Press'] = {
+      ranges: { strength:{ currentLoad:205, currentReps:3, actualLoad:205, actualReps:3, rpe:8, confidence:0.9, status:'upgrade_ready', estimated1RM:225, lastUpdated:'2026-01-01' } },
+      history: []
+    };
+    const resolu = ctx.guardedSuggestedLoadDecision('Bench Press', '75-82%', 3, pctCtx);
+    assert(resolu.loadNum > 150,
+      'Pourcentage resolu sur la capacite reelle, pas lu comme 75 lb (' + resolu.loadNum + ' lb pour un 1RM de 225).');
+
+    // Sans capacite connue, le moteur n invente pas un nombre de livres.
+    resetState();
+    const inconnu = ctx.guardedSuggestedLoadDecision('Bench Press', '75-82%', 3, pctCtx);
+    assert(inconnu.loadNum !== 75,
+      'Sans capacite connue, « 75-82% » ne devient jamais 75 lb (' + inconnu.loadNum + ').');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

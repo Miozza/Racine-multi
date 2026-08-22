@@ -1,5 +1,5 @@
-// Racine V4.5.66 — la courbe porte enfin les répétitions, et sait se lire en e1RM
-var APP_VERSION = "V4.5.66";
+// Racine V4.5.68 — moteur de charges : un deload se déclare, un pourcentage se résout
+var APP_VERSION = "V4.5.68";
 
 // Architecture stable
 // programs/*.js = plan prévu
