@@ -16,6 +16,20 @@
     return name;
   }
 
+  // Une charge REDUITE VOLONTAIREMENT n'est pas une baisse. Semaine de reprise,
+  // deload, travail technique ou leger : le programme a demande moins, et
+  // l'athlete a fait ce qui etait demande. Sans cette lecture, une semaine de
+  // reprise faisait tomber TOUS ses mouvements charges dans « Ce qui bloque » —
+  // le moteur de charges, lui, ecarte deja ces lignes depuis toujours.
+  // La definition vient du moteur : elle n'est pas redupliquee ici.
+  function isContextualLoad(input, result){
+    if(input && input.limitedContext !== undefined) return !!input.limitedContext;
+    try{
+      if(window.CoachCharge && CoachCharge.isContextualLoadRow) return !!CoachCharge.isContextualLoadRow(result);
+    }catch(e){}
+    return false;
+  }
+
   api.analyzeMovementResult = function(input){
     input = input || {};
     var name = movementName(input.name || input.key);
@@ -39,8 +53,11 @@
       status:"neutral",
       progressLine:"",
       watchLine:"",
-      blockedLine:""
+      blockedLine:"",
+      contextLine:""
     };
+    var contextual = isContextualLoad(input, result);
+    out.contextual = contextual;
 
     if(result.autoPr){
       out.status = "progress";
@@ -63,6 +80,11 @@
       return out;
     }
     if(delta < 0){
+      if(contextual){
+        out.status = "context";
+        out.contextLine = name + " : charge allegee voulue par le programme, pas une baisse.";
+        return out;
+      }
       out.status = "blocked";
       out.blockedLine = name + " : charge en baisse vs derniere reference.";
       return out;
@@ -78,6 +100,11 @@
       return out;
     }
     if(!previousLoad){
+      if(contextual){
+        out.status = "context";
+        out.contextLine = name + " : seance allegee, elle ne sert pas de reference.";
+        return out;
+      }
       out.status = "watch";
       out.watchLine = name + " : premiere reference utile a accumuler.";
       return out;

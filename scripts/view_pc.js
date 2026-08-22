@@ -525,6 +525,12 @@ function pcRenderRoadmapTab(){
 // Source: state.athleteState.movements + fallback state.history.
 // Ne modifie jamais les données durables.
 var pcProgressRange = pcProgressRange || "all";
+// Charge seule ou charge ET répétitions ? Une courbe de charge nue met 195×3 et
+// 195×8 au même point alors qu'elles ne valent pas la même chose. Le e1RM
+// (Epley, la math de base du moteur — voir scripts/charge/historique.js) les
+// sépare : 214 lb contre 247 lb. Deux lectures, pas une vérité contre l'autre —
+// la charge dit ce qui a été soulevé, le e1RM dit ce que ça vaut.
+var pcProgressMetricMode = pcProgressMetricMode || "load";
 var pcProgressSelected = pcProgressSelected || null;
 // Comparaison multi-mouvements : ids sélectionnés (boutons toggle). null = pas
 // encore initialisé (on préremplit alors avec les deux premiers candidats).
@@ -616,7 +622,7 @@ function pcProgAddRow(map, tracker, rawLabel, row, source, order){
   item.rows.push({
     _key:key,_order:order||0,date:date,sortDate:pcProgRowDate(row,order),
     load:load,reps:reps,rpe:rpe,e1rm:e1rm,range:row.range||"",source:source||"historique",
-    status:row.status||"",planned:row.planned||null,rawLabel:rawLabel||tracker.label,
+    status:row.status||"",planned:row.planned||null,context:row.context||null,rawLabel:rawLabel||tracker.label,
     note:row.note||row.comment||"", cycle:row.cycle||row.goal||"", week:row.week||row.semaine||"", day:row.day||row.jour||row.plannedDay||""
   });
 }
@@ -679,22 +685,62 @@ function pcProgCondenseRowsByDate(item, rows){
     return merged;
   });
 }
+// Une charge réduite VOLONTAIREMENT n'est pas une baisse de capacité. Semaine
+// de reprise, deload, technique, léger : le programme a demandé moins, et
+// l'athlète a fait ce qui était demandé. Le moteur de charges le sait depuis
+// toujours (updateAthleteStateFromResults marque ces lignes `context_logged` et
+// les écarte de la progression) — mais la courbe, elle, les lisait comme
+// n'importe quel point. Une semaine de reprise à la fin d'un cycle suffisait
+// donc à retourner le verdict en « baisse suspecte », pour TOUS les mouvements
+// de cette semaine-là. La définition n'est pas dupliquée ici : elle vient du
+// moteur (CoachCharge.isContextualLoadRow).
+function pcProgIsContextRow(row){
+  if(!row) return false;
+  if(row.status === 'context_logged') return true;
+  try{
+    if(window.CoachCharge && CoachCharge.isContextualLoadRow) return !!CoachCharge.isContextualLoadRow(row);
+  }catch(e){}
+  return false;
+}
+// Les points qui mesurent une CAPACITÉ. Les points de contexte restent
+// affichés — la séance a bien eu lieu — mais ne pèsent ni sur la tendance, ni
+// sur le meilleur, ni sur le RPE moyen : leur RPE 6-7 délibéré ferait passer un
+// cycle dur pour un cycle facile.
+function pcProgCapacityRows(rows){
+  var kept=(rows||[]).filter(function(r){return !pcProgIsContextRow(r);});
+  // Un mouvement travaillé UNIQUEMENT en contexte n'a pas d'autre lecture que
+  // ses propres points : mieux vaut une tendance faible qu'aucune courbe.
+  return kept.length>=2 ? kept : (rows||[]);
+}
 function pcProgFinalizeItem(item){
   var sortedRows=(item.rows||[]).slice().sort(function(a,b){return (a.sortDate-b.sortDate)||(a._order-b._order);});
   item.rows=pcProgCondenseRowsByDate(item, sortedRows);
-  var last=item.rows[item.rows.length-1]||{};
-  var first=item.rows[0]||{};
+  var capacityRows=pcProgCapacityRows(item.rows);
+  item.contextRows=item.rows.filter(pcProgIsContextRow);
+  // Trois comptes distincts, et ils ne se confondent pas :
+  //  · contextPoints  = séances allégées vues (information) ;
+  //  · contextExcluded = celles réellement écartées de la tendance — zéro quand
+  //    le repli a dû tout garder, sinon l'écran annoncerait avoir écarté des
+  //    points qu'il a comptés ;
+  //  · capacityPoints  = séances qui mesurent vraiment une capacité.
+  item.contextExcluded=item.rows.length-capacityRows.length;
+  var last=capacityRows[capacityRows.length-1]||{};
+  var first=capacityRows[0]||{};
   var hasPositiveLoad=item.rows.some(function(r){return Number(r.load)>0;});
-  item.metric=((/weighted_pull_up|weighted_dip|muscle_up/.test(item.id))&&!hasPositiveLoad)?"reps":"load";
-  var best=item.rows.reduce(function(acc,r){
+  // Un mouvement au poids du corps n'a pas de charge à tracer : ses reps SONT sa
+  // progression. Le mode e1RM ne s'applique donc qu'aux mouvements chargés.
+  item.metric=((/weighted_pull_up|weighted_dip|muscle_up/.test(item.id))&&!hasPositiveLoad)
+    ? "reps"
+    : (pcProgressMetricMode==="e1rm" ? "e1rm" : "load");
+  var best=capacityRows.reduce(function(acc,r){
     if(item.metric==="reps")return (Number(r.reps)||0)>(Number(acc.reps)||0)?r:acc;
     return (Number(r.e1rm)||0)>(Number(acc.e1rm)||0)?r:acc;
-  },item.rows[0]||{});
+  },capacityRows[0]||{});
   var avgRpe=0,rpeCount=0;
-  item.rows.forEach(function(r){if(Number(r.rpe)>0){avgRpe+=Number(r.rpe);rpeCount++;}});
+  capacityRows.forEach(function(r){if(Number(r.rpe)>0){avgRpe+=Number(r.rpe);rpeCount++;}});
   avgRpe=rpeCount?Math.round((avgRpe/rpeCount)*10)/10:0;
-  var firstMetric=item.metric==="reps"?(Number(first.reps)||0):(Number(first.load)||0);
-  var lastMetric=item.metric==="reps"?(Number(last.reps)||0):(Number(last.load)||0);
+  var firstMetric=pcProgMetricValue(item,first);
+  var lastMetric=pcProgMetricValue(item,last);
   var deltaMetric=lastMetric-firstMetric;
   var deltaLoad=(Number(last.load)||0)-(Number(first.load)||0);
   var deltaE1rm=(Number(last.e1rm)||0)-(Number(first.e1rm)||0);
@@ -706,7 +752,7 @@ function pcProgFinalizeItem(item){
     if(deltaE1rm>=10||deltaLoad>=10)trend="up";
     else if(deltaE1rm<=-10||deltaLoad<=-10)trend="down";
   }
-  item.stats={last:last,first:first,best:best,avgRpe:avgRpe,deltaMetric:deltaMetric,deltaLoad:deltaLoad,deltaE1rm:deltaE1rm,trend:trend,points:item.rows.length};
+  item.stats={last:last,first:first,best:best,avgRpe:avgRpe,deltaMetric:deltaMetric,deltaLoad:deltaLoad,deltaE1rm:deltaE1rm,trend:trend,points:item.rows.length,capacityPoints:item.rows.length-item.contextRows.length,contextPoints:item.contextRows.length,contextExcluded:item.contextExcluded};
   return item;
 }
 function pcBuildProgressionSeries(){
@@ -753,9 +799,39 @@ function pcProgCloneWithRows(item,rows){
 function pcProgFilteredSeries(raw){
   return (raw||[]).map(function(item){return pcProgCloneWithRows(item,pcProgRowsForRange(item,pcProgressRange));}).filter(function(item){return item.rows.length>=1;});
 }
-function pcProgMetricValue(item,row){return item&&item.metric==="reps"?(Number(row&&row.reps)||0):(Number(row&&row.load)||0);}
+function pcProgMetricValue(item,row){
+  var m=item&&item.metric;
+  if(m==="reps")return Number(row&&row.reps)||0;
+  if(m==="e1rm")return Number(row&&row.e1rm)||0;
+  return Number(row&&row.load)||0;
+}
 function pcProgMetricUnit(item){return item&&item.metric==="reps"?" reps":" lb";}
-function pcProgMetricName(item){return item&&item.metric==="reps"?"Reps":"Charge";}
+function pcProgMetricName(item){
+  var m=item&&item.metric;
+  if(m==="reps")return "Reps";
+  if(m==="e1rm")return "e1RM estimé";
+  return "Charge";
+}
+// Étiquette d'un point : elle porte TOUJOURS le nombre de répétitions. C'était
+// l'incohérence de fond de la courbe — « 195 lb » puis « 195 lb » pouvaient être
+// un triple et un huit, deux performances très différentes affichées identiques.
+// L'unité est déjà dans le titre d'axe et sur les graduations, donc l'écrire
+// aussi sur chaque point coûtait la place que les reps prennent maintenant.
+function pcProgPointLabelText(item,row,val){
+  var reps=Number(row&&row.reps)||0;
+  if(item&&item.metric==="reps")return pcProgFormatNumber(val)+" reps";
+  var load=Number(row&&row.load)||0;
+  var set=pcProgFormatNumber(load)+(reps?"×"+pcProgFormatNumber(reps):"");
+  if(item&&item.metric==="e1rm")return pcProgFormatNumber(val)+" · "+set;
+  return set;
+}
+// Epley cesse d'être fiable au-delà d'une douzaine de répétitions : le e1RM
+// d'une série de 20 est une extrapolation, pas une mesure. On le dit plutôt que
+// de laisser lire un chiffre comme s'il valait les autres.
+var PC_E1RM_TRUST_REPS = 12;
+function pcProgE1rmIsStretched(row){
+  return (Number(row&&row.reps)||0) > PC_E1RM_TRUST_REPS;
+}
 function pcProgFormatNumber(v){
   v=Number(v)||0;
   if(Math.abs(v)>=100)return String(Math.round(v));
@@ -789,6 +865,10 @@ function pcProgScale(item){
 }
 function pcProgPointClass(item,row,lastIndex,i,best){
   var cls="";
+  // Un point de contexte reste sur la courbe — la séance a eu lieu — mais il se
+  // distingue à l'œil, sinon on relit une chute là où il n'y en a pas.
+  if(pcProgIsContextRow(row))cls+=" context";
+  if(item&&item.metric==="e1rm"&&pcProgE1rmIsStretched(row))cls+=" stretched";
   if(i===lastIndex)cls+=" last";
   if(best&&row===best)cls+=" best";
   if(pcProgressSelected&&pcProgressSelected.id===item.id&&pcProgressSelected.key===row._key)cls+=" selected";
@@ -820,12 +900,12 @@ function pcProgSvg(item){
     if(rows.length>10 && i!==0 && i!==lastIndex && r!==best)return '';
     var yy=Math.round(y(val));
     var dy=yy<top+18?18:-9;
-    return '<text class="pcx-progress-point-label" x="'+Math.round(x(i))+'" y="'+(yy+dy)+'">'+pcEsc(pcProgFormatMetric(item,val))+'</text>';
+    return '<text class="pcx-progress-point-label" x="'+Math.round(x(i))+'" y="'+(yy+dy)+'">'+pcEsc(pcProgPointLabelText(item,r,val))+'</text>';
   }).join('');
   var dots=rows.map(function(r,i){
     var val=pcProgMetricValue(item,r);
     var cls=pcProgPointClass(item,r,lastIndex,i,best);
-    var title=pcProgFullDateLabel(r.date)+' · '+pcProgMetricName(item)+' '+pcProgFormatMetric(item,val)+' · '+pcProgSetText(r)+(r.rpe?' @RPE '+r.rpe:'')+(r.e1rm?' · e1RM '+r.e1rm+' lb':'')+(r._groupCount>1?' · '+r._groupCount+' entrées condensées':'');
+    var title=pcProgFullDateLabel(r.date)+' · '+pcProgMetricName(item)+' '+pcProgFormatMetric(item,val)+' · '+pcProgSetText(r)+(r.rpe?' @RPE '+r.rpe:'')+(r.e1rm?' · e1RM '+r.e1rm+' lb':'')+(r._groupCount>1?' · '+r._groupCount+' entrées condensées':'')+(pcProgIsContextRow(r)?' · charge allégée voulue, hors tendance':'')+((item.metric==='e1rm'&&pcProgE1rmIsStretched(r))?' · e1RM extrapolé au-delà de '+PC_E1RM_TRUST_REPS+' reps':'');
     return '<circle class="'+pcEsc(cls)+'" data-pc-prog-point="'+pcEsc(item.id)+'" data-pc-prog-key="'+pcEsc(r._key)+'" cx="'+Math.round(x(i))+'" cy="'+Math.round(y(val))+'" r="'+(cls?6:4.5)+'"><title>'+pcEsc(title)+'</title></circle>';
   }).join('');
   return '<svg class="pcx-progress-svg" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Progression '+pcEsc(item.label)+'">'+
@@ -854,16 +934,36 @@ function pcProgTrendLabel(item){
   var txt=s.points<2?"1 point":(sign+Math.round(delta)+unit);
   return '<span class="pcx-progress-trend '+cls+'">'+pcEsc(txt)+'</span>';
 }
+function pcProgContextNote(item){
+  var n=Number((item&&item.stats&&item.stats.contextExcluded)||0);
+  if(!(n>0))return "";
+  return " "+n+" séance"+(n>1?"s":"")+" à charge allégée voulue (reprise, deload, technique) "+(n>1?"sont écartées":"est écartée")+" de la tendance.";
+}
 function pcProgInsight(item){
   var s=item.stats||{}, last=s.last||{};
   var points=Number(s.points||0), avg=Number(s.avgRpe||0), lastRpe=Number(last.rpe||0);
-  if(points<2)return {cls:"watch",title:"Pas assez de données",text:"Garde le mouvement en suivi, mais ne tire pas encore de conclusion."};
-  if(s.trend==="up" && avg && avg<=8.4 && lastRpe<9)return {cls:"good",title:"Progression propre",text:"La tendance monte sans RPE moyen trop haut."};
-  if(s.trend==="up" && (avg>=8.6 || lastRpe>=9))return {cls:"warn",title:"Monte cher",text:"La progression existe, mais elle coûte cher en RPE. À surveiller."};
-  if(s.trend==="stable" && (avg>=8.6 || lastRpe>=9))return {cls:"warn",title:"Stable mais lourd",text:"La charge ne monte pas beaucoup et l’effort reste élevé."};
-  if(s.trend==="down")return {cls:"bad",title:"Baisse suspecte",text:"La tendance descend. Possible fatigue, deload, douleur ou mauvais mapping."};
-  if(s.trend==="stable")return {cls:"flat",title:"Stable",text:"Rien d’alarmant, mais pas de progression nette sur la période."};
+  var note=pcProgContextNote(item);
+  var capacity=Number(s.capacityPoints||0);
+  if(points<2)return {cls:"watch",title:"Pas assez de données",text:"Garde le mouvement en suivi, mais ne tire pas encore de conclusion."+note};
+  // Rien que du contexte : il n'y a pas de capacité à juger, donc pas de verdict.
+  if(capacity<2 && Number(s.contextPoints||0)>0){
+    return {cls:"flat",title:"Semaine allégée",text:"Ces séances étaient volontairement légères (reprise, deload, technique). Pas de conclusion à en tirer sur la capacité."};
+  }
+  if(s.trend==="up" && avg && avg<=8.4 && lastRpe<9)return {cls:"good",title:"Progression propre",text:"La tendance monte sans RPE moyen trop haut."+note};
+  if(s.trend==="up" && (avg>=8.6 || lastRpe>=9))return {cls:"warn",title:"Monte cher",text:"La progression existe, mais elle coûte cher en RPE. À surveiller."+note};
+  if(s.trend==="stable" && (avg>=8.6 || lastRpe>=9))return {cls:"warn",title:"Stable mais lourd",text:"La charge ne monte pas beaucoup et l’effort reste élevé."+note};
+  if(s.trend==="down")return {cls:"bad",title:"Baisse suspecte",text:"La tendance descend hors des séances volontairement allégées. Possible fatigue, douleur ou mauvais mapping."+note};
+  if(s.trend==="stable")return {cls:"flat",title:"Stable",text:"Rien d’alarmant, mais pas de progression nette sur la période."+note};
   return {cls:"watch",title:"À surveiller",text:"Données utilisables, mais tendance encore ambiguë."};
+}
+function pcProgContextReason(row){
+  try{
+    if(window.CoachCharge && CoachCharge.contextualLoadReason){
+      var why=CoachCharge.contextualLoadReason(row);
+      if(why) return why;
+    }
+  }catch(e){}
+  return "Charge allégée voulue par le programme.";
 }
 function pcProgSelectedDetail(item){
   if(!pcProgressSelected||pcProgressSelected.id!==item.id)return "";
@@ -881,6 +981,7 @@ function pcProgSelectedDetail(item){
       '<span><b>Source</b>'+pcEsc(row.source||'historique')+'</span>'+ 
       '<span><b>Prévu</b>'+pcEsc(planned)+'</span>'+ 
       '<span><b>Contexte</b>'+pcEsc([row.cycle,row.week?('S'+row.week):'',row.day].filter(Boolean).join(' · ')||'—')+'</span>'+ 
+      (pcProgIsContextRow(row)?'<span><b>Hors tendance</b>'+pcEsc(pcProgContextReason(row))+'</span>':'')+ 
     '</div>'+ (row._groupCount>1?'<p class="pcx-muted">Sets condensés ce jour-là : '+pcEsc((row._groupRows||[]).map(function(r){return pcProgSetText(r)+(r.rpe?' @RPE '+r.rpe:'');}).join(' · '))+'</p>':'')+ (row.note?'<p>'+pcEsc(row.note)+'</p>':'')+'</div>';
 }
 function pcRenderProgressCard(item){
@@ -984,7 +1085,15 @@ function pcRenderProgressControls(series,enough,onePoint){
     '<div class="pcx-progress-stats"><span>'+series.length+' mouvements suivis</span><span>'+enough+' graphiques utiles</span><span>'+onePoint+' avec un seul point</span></div></div>'+ 
     '<div class="pcx-progress-controls"><button type="button" class="pcx-progress-filter '+(pcProgressRange==='4w'?'active':'')+'" data-pc-progress-range="4w">4 sem.</button>'+ 
     '<button type="button" class="pcx-progress-filter '+(pcProgressRange==='8w'?'active':'')+'" data-pc-progress-range="8w">8 sem.</button>'+ 
-    '<button type="button" class="pcx-progress-filter '+(pcProgressRange==='all'?'active':'')+'" data-pc-progress-range="all">Tout</button></div></section>';
+    '<button type="button" class="pcx-progress-filter '+(pcProgressRange==='all'?'active':'')+'" data-pc-progress-range="all">Tout</button></div>'+
+    '<div class="pcx-progress-controls pcx-progress-metric">'+
+      '<span class="pcx-progress-metric-label">Lire en</span>'+
+      '<button type="button" class="pcx-progress-filter '+(pcProgressMetricMode==='load'?'active':'')+'" data-pc-progress-metric="load">Charge</button>'+
+      '<button type="button" class="pcx-progress-filter '+(pcProgressMetricMode==='e1rm'?'active':'')+'" data-pc-progress-metric="e1rm">e1RM</button>'+
+      '<span class="pcx-progress-metric-hint">'+(pcProgressMetricMode==='e1rm'
+        ? 'Charge ET répétitions combinées (Epley). 195×3 = 214, 195×8 = 247 : deux séries au même poids ne valent pas la même chose. Au-delà de '+PC_E1RM_TRUST_REPS+' reps, le e1RM est une extrapolation.'
+        : 'Le poids soulevé, tel quel. Chaque point porte ses répétitions — sans elles, 195×3 et 195×8 se lisaient pareil.')+'</span>'+
+    '</div></section>';
 }
 function pcRenderProgressTab(){
   var raw=pcBuildProgressionSeries();
@@ -1002,6 +1111,7 @@ function pcRenderProgressTab(){
 }
 function pcBindProgression(){
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-progress-range]'),function(btn){btn.onclick=function(){pcProgressRange=btn.getAttribute('data-pc-progress-range')||'all';pcProgressSelected=null;pcRenderProgressInto();};});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pc-progress-metric]'),function(btn){btn.onclick=function(){pcProgressMetricMode=btn.getAttribute('data-pc-progress-metric')==='e1rm'?'e1rm':'load';pcProgressSelected=null;pcRenderProgressInto();};});
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-prog-point]'),function(dot){dot.onclick=function(){pcProgressSelected={id:dot.getAttribute('data-pc-prog-point'),key:dot.getAttribute('data-pc-prog-key')};pcRenderProgressInto();};});
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-compare-toggle]'),function(btn){btn.onclick=function(){
     var id=btn.getAttribute('data-pc-compare-toggle');

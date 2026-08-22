@@ -127,7 +127,7 @@
         // Reps depassees sur la derniere serie : 10 reps la ou 8 etaient
         // demandees, au meme RPE, est un signal fort et deja enregistre.
         //
-        // V4.5.65 — le seuil etait ABSOLU (« au moins 2 reps de plus ») et le
+        // V4.5.67 — le seuil etait ABSOLU (« au moins 2 reps de plus ») et le
         // credit FORFAITAIRE (un cran). Sur une cible de 2 reps, 4 reps et
         // 8 reps valaient donc exactement la meme chose, alors que le second
         // dit quatre fois plus fort que la charge est sous-estimee. Le ratio

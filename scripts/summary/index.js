@@ -94,15 +94,22 @@
       var prev = previousRow(name, load, reps, rpe, helpers);
       var prevLoad = prev ? asNumber(prev.load || prev.actualLoad || prev.capacityLoad, 0) : 0;
       var prevRpe = prev ? asNumber(prev.rpe, 0) : 0;
+      // Charge réduite volontairement (reprise, deload, technique, léger) : le
+      // programme a demandé moins. Sans cette lecture, une semaine de reprise
+      // faisait tomber TOUS ses mouvements chargés dans « Ce qui bloque ».
+      var contextual = false;
+      try{
+        if(window.CoachCharge && CoachCharge.isContextualLoadRow) contextual = !!CoachCharge.isContextualLoadRow(r);
+      }catch(e){ contextual = false; }
       var progressSignal = progress && progress.analyzeMovementResult
-        ? progress.analyzeMovementResult({key:key, name:name, result:r, load:load, reps:reps, rpe:rpe, previous:prev})
+        ? progress.analyzeMovementResult({key:key, name:name, result:r, load:load, reps:reps, rpe:rpe, previous:prev, limitedContext:contextual})
         : null;
       var delta = progressSignal ? progressSignal.delta : (prevLoad && load ? roundDelta(load - prevLoad, helpers) : 0);
       var arrow = '';
       if(delta > 0) arrow = ' ↑ +' + delta + ' lb';
       else if(delta < 0) arrow = ' ↓ ' + delta + ' lb';
 
-      summary.lines.push(name + ' : ' + load + ' lb × ' + reps + (arrow ? '  ' + arrow : '') + (rpe ? ' | RPE ' + rpe : ''));
+      summary.lines.push(name + ' : ' + load + ' lb × ' + reps + (arrow ? '  ' + arrow : '') + (rpe ? ' | RPE ' + rpe : '') + (contextual ? ' | séance allégée voulue' : ''));
 
       if(r.autoPr){
         summary.autoPrLines.push((r.prLabel || name) + ' : ' + (r.prOld ? r.prOld + ' → ' : '') + r.prNew + ' lb × ' + r.prReps);
@@ -124,15 +131,21 @@
         pushUnique(summary.blockedLines, progressSignal.blockedLine);
       }else if(progressSignal && progressSignal.watchLine){
         pushUnique(summary.watchLines, progressSignal.watchLine);
+      }else if(progressSignal && progressSignal.status === 'context'){
+        // Charge allégée demandée par le programme : rien à signaler. Le verdict
+        // s'arrête ici, sinon la cascade de repli ci-dessous pourrait le
+        // requalifier en alerte — c'est exactement ce qu'on vient d'écarter.
       }else if(r.status === 'major_fail' || r.status === 'failed' || rpe >= 9.5){
         pushUnique(summary.blockedLines, name + ' : RPE ' + rpe + ', ne pas monter avant confirmation.');
-      }else if(delta < 0){
+      }else if(delta < 0 && !contextual){
         pushUnique(summary.blockedLines, name + ' : charge en baisse vs dernière référence.');
+      }else if(delta < 0 && contextual){
+        // Rien à signaler : la baisse était demandée.
       }else if(rpe >= 9){
         pushUnique(summary.watchLines, name + ' : RPE haut, maintenir avant de monter.');
       }else if(prevLoad && prevRpe >= 9 && load >= prevLoad){
         pushUnique(summary.watchLines, name + ' : dernière référence déjà difficile, progression à confirmer.');
-      }else if(!prevLoad){
+      }else if(!prevLoad && !contextual){
         pushUnique(summary.watchLines, name + ' : première référence utile à accumuler.');
       }
     });

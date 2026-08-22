@@ -194,7 +194,7 @@ Le barreau RPE 8 vaut zéro cran : par défaut, un **maintien annoncé** — pas
 zone morte silencieuse d'avant, où 7,5 progressait, 8,5 freinait et 8 ne faisait
 rien sans jamais le dire. Une tendance qui s'allège peut le promouvoir à un cran.
 
-#### Les répétitions en plus sont une capacité, pas un bonus (depuis V4.5.65)
+#### Les répétitions en plus sont une capacité, pas un bonus (depuis V4.5.67)
 
 Le moteur savait projeter Epley vers le **bas** : « dernier 135 × 2 pour 5 reps
 demandées » réduit la suggestion (`coachRuleLastSetGuards`, écart de reps). La
@@ -203,7 +203,7 @@ ne laissait aucune trace, alors que le même calcul dit ~148 lb sur 2 reps.
 
 Deux conséquences réparées ensemble :
 
-| Ce qui manquait | Où | Depuis V4.5.65 |
+| Ce qui manquait | Où | Depuis V4.5.67 |
 |---|---|---|
 | Le crédit de reps était **forfaitaire** (+1 cran dès 2 reps de plus) | `rpeProgression.modifiers.repsOvershoot` | lit aussi le **ratio** reps/cible ; la lecture la plus sévère des deux gagne |
 | Aucune projection Epley vers le haut | `coachRuleRepSurplusLift()` | franchit une part de l'écart par séance, réglée par intention (`repsSurplus`) |
@@ -223,7 +223,7 @@ s'appliquent jamais telles quelles :
 - Les freins ≥ 8,5 et ≥ 9 sont **hors de portée**.
 - Un contexte technique / WOD / léger n'a **aucun** crédit de surplus.
 
-#### Un bloc vitesse suit un pourcentage, pas une charge absolue (depuis V4.5.65)
+#### Un bloc vitesse suit un pourcentage, pas une charge absolue (depuis V4.5.67)
 
 Un bloc d'effort dynamique est prescrit en **% du 1RM**. Une charge absolue
 écrite dans un programme est un pourcentage de l'**athlète de référence** : elle
@@ -341,7 +341,7 @@ suivant du rack — jamais au pas nominal. Un plafond plus petit que le plus pet
 mouvement possible fige le mouvement au lieu de le protéger ; c'est l'erreur
 symétrique et elle est tout aussi grave.
 
-### 5. Une semaine de deload se déclare (depuis V4.5.66)
+### 5. Une semaine de deload se déclare (depuis V4.5.68)
 
 Un deload ne se déduit **jamais** d'un numéro de semaine. Il se déclare, dans
 l'un de ces trois endroits, et le moteur les lit tous les trois :
@@ -361,7 +361,7 @@ catalogue de 42 programmes de 1 à 16 semaines, ce raccourci déclenchait un
 Les 19 programmes dont la S6 est un vrai deload le déclarent tous dans leur
 libellé : la lecture de libellé rendait le hardcode redondant **et** nuisible.
 
-### 6. Un pourcentage n'est pas une charge (depuis V4.5.66)
+### 6. Un pourcentage n'est pas une charge (depuis V4.5.68)
 
 `parseLoad()` attrape le premier nombre d'un texte de charge. Une charge écrite
 `"75-82 %"` valait donc **75 lb** — puis était encore multipliée par le ratio de

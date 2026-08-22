@@ -731,7 +731,7 @@ try {
     resetState();
   }
 
-  // ─── Surplus de reps : la capacite revelee, pas un forfait (V4.5.65) ──────
+  // ─── Surplus de reps : la capacite revelee, pas un forfait (V4.5.67) ──────
   // Le moteur projetait deja Epley vers le BAS quand les reps manquaient. La
   // projection vers le HAUT n'existait pas : sur une cible courte, 2 reps et
   // 5 reps a la meme charge et au meme RPE se ressemblaient trop.
@@ -781,7 +781,7 @@ try {
     resetState();
   }
 
-  // ─── Un deload se DECLARE, il ne se deduit pas d'un numero (V4.5.66) ──────
+  // ─── Un deload se DECLARE, il ne se deduit pas d'un numero (V4.5.68) ──────
   // `if(weekNum===6)return true;` datait du temps ou l'app portait un seul
   // cycle de 6 semaines. Sur un catalogue de 42 programmes il declenchait un
   // deload fantome en S6 — « S6 Rotation B max » de phase2_fable5, semaine de
@@ -810,7 +810,7 @@ try {
     resetState();
   }
 
-  // ─── Charge de programme ecrite en pourcentage (V4.5.66) ─────────────────
+  // ─── Charge de programme ecrite en pourcentage (V4.5.68) ─────────────────
   // parseLoad('75-82%') vaut 75 : sans traitement, un Push Press prescrit a
   // 75-82 % du 1RM sortait a 75 lb, puis encore multiplie par le ratio profil.
   {
