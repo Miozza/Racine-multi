@@ -902,6 +902,56 @@ try {
     resetState();
   }
 
+  // 13. Un cap faible doit pouvoir etre depasse par une seance recente propre,
+  //     y compris sur un mouvement a petites charges.
+  //
+  // Cas reel signale par l'athlete (Weighted Pull-up) :
+  //   23/06  20 lb x 6 @ 8,5   30/06  25 lb x 5 @ 9,5   07/07  25 lb x 6 @ 9
+  //   11/08  25 lb x 3 @ 8     18/08  30 lb x 3 @ 8  (propre, la plus recente)
+  // et le moteur reproposait 25 lb. Le cap de surveillance ne pouvait pas etre
+  // ignore : la porte de sortie exigeait +15 lb ABSOLUS, soit 40 lb — sur un
+  // mouvement dont toute la plage de travail tient dans 20-40 lb. Le seuil est
+  // desormais le plus petit de l'absolu et du relatif (table athleteStateCap).
+  {
+    resetState();
+    const wpuCtx = ctx.coachBuildMovementContext('Weighted Pull-up', {kind:'main', blockTitle:'A. Weighted Pull-up', format:'4x3', note:'Tirage strict et lourd.', load:'30-40 lb'});
+    const meta = {label:wpuCtx.label, equipment:wpuCtx.equipment, intents:wpuCtx.intents, primaryIntent:wpuCtx.primaryIntent};
+    const wpuHist = [
+      {date:'2026-06-23', load:20, reps:6, rpe:8.5, status:'success', context:meta},
+      {date:'2026-06-30', load:25, reps:5, rpe:9.5, status:'hard',    context:meta},
+      {date:'2026-07-07', load:25, reps:6, rpe:9,   status:'hard',    context:meta},
+      {date:'2026-08-11', load:25, reps:3, rpe:8,   status:'success', context:meta},
+      {date:'2026-08-18', load:30, reps:3, rpe:8,   status:'success', context:meta}
+    ];
+
+    // Cap faible ANTERIEUR a la seance propre : il doit s'effacer devant elle.
+    ctx.state.athleteState.movements['Weighted Pull-up'] = {history:wpuHist,
+      ranges:{strength:{currentLoad:25, currentReps:3, confidence:0.48, status:'ok', lastUpdated:'2026-08-11'}}};
+    const apresPreuve = ctx.guardedSuggestedLoadDecision('Weighted Pull-up', '30-40 lb', 3, wpuCtx);
+    assert(apresPreuve.loadNum >= 30,
+      'Une seance recente et propre a 30 lb depasse un cap a 25 lb sur un mouvement a petites charges ('
+      + apresPreuve.loadNum + ' lb).');
+
+    // Cap POSTERIEUR a la seance : la protection reste, c'est son role.
+    ctx.state.athleteState.movements['Weighted Pull-up'] = {history:wpuHist,
+      ranges:{strength:{currentLoad:25, currentReps:3, confidence:0.48, status:'watch', lastUpdated:'2026-08-19'}}};
+    const capRecent = ctx.guardedSuggestedLoadDecision('Weighted Pull-up', '30-40 lb', 3, wpuCtx);
+    assert(capRecent.loadNum <= 25,
+      'Un cap plus RECENT que la derniere seance protege toujours (' + capRecent.loadNum + ' lb).');
+
+    // Sur une barre lourde, le seuil absolu continue de gouverner : une seance
+    // a peine plus lourde ne balaie pas un cap de surveillance.
+    const bsCtx = ctx.coachBuildMovementContext('Back Squat', {kind:'main', format:'5x3', load:'250 lb'});
+    const bsMeta = {label:bsCtx.label, equipment:bsCtx.equipment, intents:bsCtx.intents, primaryIntent:bsCtx.primaryIntent};
+    ctx.state.athleteState.movements['Back Squat'] = {history:[
+      {date:'2026-08-18', load:210, reps:3, rpe:8, status:'success', context:bsMeta}
+    ], ranges:{strength:{currentLoad:200, currentReps:3, confidence:0.48, status:'watch', lastUpdated:'2026-08-11'}}};
+    const barre = ctx.guardedSuggestedLoadDecision('Back Squat', '250 lb', 3, bsCtx);
+    assert(barre.loadNum <= 200,
+      'Sur une barre lourde, +10 lb ne suffisent pas a balayer un cap de surveillance (' + barre.loadNum + ' lb).');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

@@ -351,6 +351,29 @@
       // explicite de l'admin. Un plafond manuel s'applique sans historique.
       manual: {}
     },
+    // coachRuleAthleteStateCap() — suggestion.js
+    //
+    // Un cap de surveillance protege un mouvement tant que sa capacite n'est
+    // pas confirmee. Il doit pouvoir etre IGNORE quand une seance reelle,
+    // PLUS RECENTE et controlee, prouve nettement mieux — sinon une vieille
+    // capacite basse gele le mouvement indefiniment.
+    //
+    // Le seuil de « nettement mieux » etait ABSOLU (+15 lb), en dur dans
+    // suggestion.js. Calibre pour une barre, il est inatteignable sur un
+    // mouvement dont toute la plage de travail tient dans 20-40 lb — Weighted
+    // Pull-up, haltere leger, bande. Cas reel releve par un athlete : 30 lb
+    // x 3 @ RPE 8, plus recent et propre, ne pouvait pas depasser un cap a
+    // 25 lb, parce qu'il aurait fallu 40 lb (+60 %). La porte de sortie
+    // existait, elle etait juste hors d'atteinte.
+    //
+    // Meme raisonnement que maxJumpBase.relativeCeiling : un seuil purement
+    // absolu n'a pas de sens aux deux extremites de l'echelle. Le plus PETIT
+    // des deux gagne — l'absolu gouverne les charges lourdes, le relatif les
+    // charges legeres — sans jamais tomber sous un cran d'equipement, ce qui
+    // rendrait la porte trop facile a franchir.
+    athleteStateCap: {
+      ignoreLowCap: {absoluteGap: 15, relativeGap: 0.15, maxRpe: 8.5}
+    },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },
     // updateAthleteStateFromResults() — suggestion.js

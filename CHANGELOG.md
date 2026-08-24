@@ -1,3 +1,14 @@
+## V4.6.2 — Une preuve récente passe devant une vieille capacité sous surveillance
+
+Second défaut signalé par l'athlète sur le même cycle, reproduit à partir de son historique réel.
+
+- **Le symptôme.** Weighted Pull-up : 30 lb × 3 @ RPE 8 le 18 août, propre, et le moteur reproposait 25 lb la semaine suivante.
+- **La cause.** Le cap d'`athlete_state` gèle un mouvement tant que sa capacité n'est pas confirmée (statut `watch`/`recalibrating`, ou confiance sous 55 %). Il a une porte de sortie : une séance **plus récente et contrôlée** qui prouve nettement mieux. Cette porte exigeait `bestControlled.load >= capLoad + 15` — quinze livres **absolues**, en dur dans `suggestion.js`. Calibré pour une barre, ce seuil est inatteignable sur un mouvement dont toute la plage de travail tient dans 20-40 lb : dépasser un cap à 25 lb aurait demandé 40 lb, soit +60 %. La porte existait, elle était hors d'atteinte.
+- **La correction.** L'écart exigé est le **plus petit** de l'absolu (15 lb) et du relatif (15 % de la capacité), avec un plancher à un cran d'équipement. Même raisonnement que `maxJumpBase.relativeCeiling`, écrit noir sur blanc dans la table depuis V4.5 : un seuil purement absolu n'a pas de sens aux deux extrémités de l'échelle. Le seuil vit maintenant dans `COACH_MOVEMENT_TUNING.athleteStateCap`, pas en dur dans la logique de décision — comme l'exige la règle de tuning par mouvement.
+- **Ce qui ne change pas.** Sur une barre lourde, l'absolu continue de gouverner : +10 lb ne balaient toujours pas un cap de surveillance. Et un cap **plus récent** que la dernière séance protège toujours — une capacité écrite après la séance est un signal plus frais que la séance elle-même.
+- **Garde-fous** : 3 assertions ajoutées à `dev/charge_engine_checks.js`, rejouant l'historique réel de l'athlète (5 séances du 23 juin au 18 août) plus le cas barre lourde et le cas cap récent. Validées par mutation. Golden master identique sur ses 20 scénarios.
+- **Portée** : `scripts/charge/movement_tuning.js` (nouveau bloc `athleteStateCap`), `scripts/charge/suggestion.js` (le seuil lu dans la table au lieu d'être en dur). Aucune fonction gelée touchée, aucun fichier `data/`, aucun programme retouché.
+
 ## V4.6.1 — Une consigne d'arrêt n'est pas une intention technique
 
 Défaut signalé sur données réelles, reproduit, corrigé — et l'outil qui manquait pour diagnostiquer les suivants.
