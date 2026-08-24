@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 202019,
-      "lines": 1116,
+      "size": 204132,
+      "lines": 1128,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,8 +140,8 @@
     },
     {
       "path": "app.js",
-      "size": 149206,
-      "lines": 2940,
+      "size": 150307,
+      "lines": 2956,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
       "exposes": [
@@ -953,8 +953,8 @@
     },
     {
       "path": "dev/regression_checks.js",
-      "size": 13773,
-      "lines": 236,
+      "size": 21436,
+      "lines": 335,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],

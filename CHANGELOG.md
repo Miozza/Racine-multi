@@ -1,3 +1,15 @@
+## V4.6.5 — « montée vers 3RM » demande trois reps, pas huit
+
+Trouvé dans la trace de cycle envoyée par l'athlète — exactement ce pour quoi la trace a été construite.
+
+- **Le symptôme.** Le jour le plus lourd du bloc, le moteur proposait **moins** que la dernière série réussie. Pause Back Squat : 145 lb après un 170 × 3 @ RPE 8. Weighted Pull-up : 25 lb après un 30 × 3 @ RPE 8.
+- **La cause.** `parseTargetReps()` lit une plage (`8-12`), un schéma de séries (`5×3`) ou un compte écrit (`100 reps`). Le format **`montée vers 3RM` ne matchait rien** et retombait sur la valeur par défaut — 8 ou 10 reps selon l'appelant. Le moteur croyait donc qu'on demandait 8 répétitions un jour de 3RM, constatait que la dernière série de 3 « ne se traduit pas directement en 8 reps », et projetait Epley **vers le bas**. La baisse était logique une fois la cible fausse : c'est la cible qui était fausse.
+- **La correction.** Un rep-max **est** une cible de répétitions : `3RM` veut dire trois reps, au maximum de ce qui sort proprement. La lecture est placée après la règle `N×M` (« 5×3 @ 85 % du 1RM » vaut 3 reps, pas 1) et ignorée si le format contient un `%` — « 80 % du 1RM » ne demande pas UNE répétition.
+- **Mesuré sur le catalogue** : 7 formats concernés, tous de la forme `montée vers NRM`, et **aucun format du dépôt ne contient de `%`** — le correctif ne peut rien casser ailleurs. Sur le cycle réel de l'athlète (`phase2_fable5`), les 7 séances touchées sont toutes des jours de test : Pause Back Squat, Weighted Pull-up, Strict Press, Box Squat, Pendlay Row, Close-Grip Bench Press.
+- **Vérifié sur ses données réelles**, avant/après : Weighted Pull-up 25 → **30 lb**, Pause Back Squat 145 → **170 lb**.
+- **Garde-fous** : 6 assertions ajoutées à `dev/regression_checks.js`, propriétaire du contrat `parseTargetReps`. Validées par mutation (retrait de la lecture, retrait du garde-fou pourcentage).
+- **Portée** : `app.js` (`parseTargetReps`). Aucun programme retouché, aucune donnée touchée, aucun autre comportement modifié.
+
 ## V4.6.4 — La trace du moteur couvre le cycle complet
 
 Demandé par l'utilisateur : « pourquoi pas le cycle complet, ça te ferait mieux connaître le chemin fait et l'historique depuis le début. » Bonne intuition, et pour une raison précise : c'est le **contexte de chaque semaine** qui l'avait piégé sur le Pause Back Squat. Une trace de cycle montre exactement où l'étiquette d'un mouvement bascule d'une semaine à l'autre.
