@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 197829,
-      "lines": 1095,
+      "size": 202019,
+      "lines": 1116,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,7 +140,7 @@
     },
     {
       "path": "app.js",
-      "size": 149236,
+      "size": 149206,
       "lines": 2940,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -1709,8 +1709,8 @@
     },
     {
       "path": "index.html",
-      "size": 22977,
-      "lines": 443,
+      "size": 23094,
+      "lines": 447,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2905,8 +2905,8 @@
     },
     {
       "path": "scripts/charge_diagnostic_ui.js",
-      "size": 19799,
-      "lines": 344,
+      "size": 20243,
+      "lines": 354,
       "role": "UI admin de diagnostic charges (lecture seule) : analyse la séance affichée vs historique, export JSON séance/semaine.",
       "category": "ACTIF",
       "exposes": [
@@ -3760,8 +3760,8 @@
     },
     {
       "path": "scripts/charge/trace.js",
-      "size": 11970,
-      "lines": 254,
+      "size": 13739,
+      "lines": 289,
       "role": "Domaine charge — extraction de diagnostic : pour chaque séance de l'historique, dit si elle a compté dans la suggestion et, sinon, quel filtre l'a écartée (nature de contexte, seed manuel, ligne invraisemblable, clé de contexte). Reconstitue aussi ce que le moteur aurait proposé avant chaque séance. Lecture seule.",
       "category": "ACTIF",
       "exposes": [
@@ -3779,8 +3779,8 @@
     },
     {
       "path": "dev/charge_trace_checks.js",
-      "size": 12109,
-      "lines": 209,
+      "size": 14943,
+      "lines": 254,
       "role": "Garde-fou de la trace du moteur : elle nomme le filtre qui a écarté chaque séance, distingue les quatre motifs d'écart, reconstitue la suggestion d'avant chaque séance, et reste strictement en lecture seule — y compris quand la suggestion finale lève.",
       "category": "ACTIF",
       "exposes": [],

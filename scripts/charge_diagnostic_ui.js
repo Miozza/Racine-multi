@@ -289,18 +289,26 @@ function renderChargeDiagnosticPanel(){
   }
   box.innerHTML=html;
 }
+// Deux exports coexistent dans ce panneau. Leurs noms de fichier doivent les
+// distinguer au premier coup d'oeil dans le dossier Telechargements : l'analyse
+// dit ce qui a l'air anormal, la trace dit pourquoi une charge est proposee.
+function chargeDiagnosticFileName(report){
+  return 'racine-analyse-seance-'+((report&&report.cycle)||'cycle')+'-S'+((report&&report.week)||'')+'-'+((report&&report.day)||'semaine')+'.json';
+}
 function exportChargeDiagnostic(scope){
   var report=buildChargeDiagnosticReport(scope||'day');
-  var name='coach-beurt-charge-diagnostic-'+(report.cycle||'cycle')+'-S'+report.week+'-'+(report.day||'semaine')+'.json';
-  download(name,JSON.stringify(report,null,2));
+  download(chargeDiagnosticFileName(report),JSON.stringify(report,null,2));
 }
 function copyChargeDiagnostic(scope){
   var report=buildChargeDiagnosticReport(scope||'day');
   var txt=JSON.stringify(report,null,2);
+  var count=(report.rows||[]).length;
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(function(){alert('Diagnostic copie.');}).catch(function(){download('coach-beurt-charge-diagnostic.json',txt);});
+    navigator.clipboard.writeText(txt)
+      .then(function(){alert('Analyse de la seance copiee ('+count+' mouvements).');})
+      .catch(function(){download(chargeDiagnosticFileName(report),txt);});
   }else{
-    download('coach-beurt-charge-diagnostic.json',txt);
+    download(chargeDiagnosticFileName(report),txt);
   }
 }
 // ─── Trace complete : historique + ce que le moteur en a fait ──────────────
@@ -313,7 +321,8 @@ function chargeTraceReport(scope){
   return CoachChargeTrace.report(scope||'week');
 }
 function chargeTraceFileName(report){
-  return 'racine-trace-charges-'+((report&&report.cycle)||'cycle')+'-S'+((report&&report.semaine)||'')+'.json';
+  var portee=(report&&report.portee==='cycle')?'cycle-complet':('S'+((report&&report.semaine)||''));
+  return 'racine-trace-charges-'+((report&&report.cycle)||'cycle')+'-'+portee+'.json';
 }
 function exportChargeTrace(scope){
   var report=chargeTraceReport(scope);
@@ -337,8 +346,9 @@ function setupChargeDiagnosticBindings(){
   var refresh=$('refreshChargeDiagnosticBtn'); if(refresh)refresh.onclick=renderChargeDiagnosticPanel;
   var copyDay=$('copyChargeDiagnosticDayBtn'); if(copyDay)copyDay.onclick=function(){copyChargeDiagnostic('day');};
   var exportDay=$('exportChargeDiagnosticDayBtn'); if(exportDay)exportDay.onclick=function(){exportChargeDiagnostic('day');};
-  var exportWeek=$('exportChargeDiagnosticWeekBtn'); if(exportWeek)exportWeek.onclick=function(){exportChargeDiagnostic('week');};
   var copyTrace=$('copyChargeTraceBtn'); if(copyTrace)copyTrace.onclick=function(){copyChargeTrace('week');};
-  var exportTrace=$('exportChargeTraceBtn'); if(exportTrace)exportTrace.onclick=function(){exportChargeTrace('week');};
-  var exportTraceDay=$('exportChargeTraceDayBtn'); if(exportTraceDay)exportTraceDay.onclick=function(){exportChargeTrace('day');};
+  // Le cycle complet passe par un fichier : mesure sur le plus gros programme
+  // du catalogue (16 semaines x 4 jours), il pese ~440 Ko — copiable, mais
+  // impossible a coller confortablement dans un message.
+  var exportTrace=$('exportChargeTraceBtn'); if(exportTrace)exportTrace.onclick=function(){exportChargeTrace('cycle');};
 }

@@ -1,3 +1,24 @@
+## V4.6.4 — La trace du moteur couvre le cycle complet
+
+Demandé par l'utilisateur : « pourquoi pas le cycle complet, ça te ferait mieux connaître le chemin fait et l'historique depuis le début. » Bonne intuition, et pour une raison précise : c'est le **contexte de chaque semaine** qui l'avait piégé sur le Pause Back Squat. Une trace de cycle montre exactement où l'étiquette d'un mouvement bascule d'une semaine à l'autre.
+
+- **Nouvelle portée `cycle`.** `CoachChargeTrace.report('cycle')` parcourt toutes les semaines du programme actif, jour par jour. Un mouvement y apparaît sous le contexte de **chaque** semaine où il est programmé, avec sa charge prescrite, ses intentions lues, sa suggestion et ses séances retenues ou écartées — c'est-à-dire tout ce qui change d'une semaine à l'autre.
+- **Le rejeu n'est payé qu'une fois par mouvement.** L'historique d'un mouvement ne dépend pas de la semaine où il est listé : le reconstituer à chaque occurrence coûterait N fois le prix pour N fois le même résultat. La reconstitution se fait donc à la première rencontre, tout le reste est conservé sur chaque occurrence.
+- **Mesuré avant de promettre**, sur le programme le plus lourd du catalogue (`heritage225`, 16 semaines × 4 jours) : **259 ms et 443 Ko** pour 288 entrées, contre 27 ms et 32 Ko pour une semaine. Utilisable, mais impossible à coller confortablement dans un message.
+- **D'où le partage des deux boutons de la trace** : **Copier la semaine** pour ce qui se colle dans un message, **Fichier — cycle complet** pour le chemin entier. Chaque bouton dit sa portée, le titre du groupe dit déjà le contenu. Le nom du fichier suit : `racine-trace-charges-<cycle>-cycle-complet.json`.
+- **Garde-fous** : 12 assertions ajoutées à `dev/charge_trace_checks.js` (50 au total) — toutes les semaines parcourues, tous les jours, une entrée par séance, rejeu unique par mouvement, contexte et suggestion présents sur chaque occurrence, portée semaine inchangée. Validées par mutation.
+- **Portée** : `scripts/charge/trace.js`, `index.html`, `scripts/charge_diagnostic_ui.js`. Aucun changement de comportement du moteur, aucune donnée touchée.
+
+## V4.6.3 — Le panneau Diagnostic dit ce que chaque bouton donne
+
+Signalé par l'utilisateur : « j'ai l'impression que ça veut tout dire la même chose. » Il avait raison — j'avais ajouté trois boutons à un panneau qui en comptait déjà quatre, sans jamais réorganiser.
+
+- **Le problème.** Sept actions alignées, nommées par leur *format* et leur *portée* (« Copier JSON séance », « Exporter JSON semaine », « Copier trace semaine », « Exporter trace du jour »…), jamais par ce qu'elles donnent. Rien ne disait laquelle utiliser, ni en quoi un « JSON séance » diffère d'une « trace semaine ». Deux outils réellement différents étaient noyés dans une liste indifférenciée.
+- **La correction.** Deux groupes, chacun sous une question en clair — *Les charges d'aujourd'hui ont-elles l'air normales ?* et *Pourquoi le moteur propose cette charge ?* Le premier compare la séance affichée à l'historique et signale les incohérences ; le second sort la trace du moteur à envoyer au dev. À l'intérieur d'un groupe, les boutons ne portent plus que le moyen de sortie — **Copier** ou **Fichier** — puisque le contenu est déjà annoncé par le titre.
+- **Deux boutons retirés**, tous deux redondants par leur seule portée : « Exporter JSON semaine » (l'analyse existe déjà pour la séance affichée) et « Exporter trace du jour » (la trace semaine contient le jour). Sept boutons, cinq restent.
+- **Les fichiers se distinguent aussi.** L'analyse sort désormais en `racine-analyse-seance-*.json`, la trace en `racine-trace-charges-*.json` — au lieu d'un vieux `coach-beurt-charge-diagnostic-*.json` qu'on ne pouvait pas différencier dans le dossier Téléchargements. La confirmation de copie annonce ce qui a été copié et combien de mouvements.
+- **Portée** : `index.html` (le panneau), `scripts/charge_diagnostic_ui.js` (branchements et noms de fichiers). Aucun changement de comportement du moteur, aucune donnée touchée.
+
 ## V4.6.2 — Une preuve récente passe devant une vieille capacité sous surveillance
 
 Second défaut signalé par l'athlète sur le même cycle, reproduit à partir de son historique réel.

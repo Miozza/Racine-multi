@@ -1,5 +1,5 @@
-// Racine V4.6.2 — une preuve récente passe devant une vieille capacité sous surveillance
-var APP_VERSION = "V4.6.2";
+// Racine V4.6.4 — la trace du moteur couvre le cycle complet
+var APP_VERSION = "V4.6.4";
 
 // Architecture stable
 // programs/*.js = plan prévu
