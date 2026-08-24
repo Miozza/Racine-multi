@@ -21,6 +21,10 @@
     buildBrainStats: typeof coachBrainBuildStats === 'function' ? coachBrainBuildStats : null,
     brainIntentKey: typeof coachBrainIntentKey === 'function' ? coachBrainIntentKey : null,
     brainMemory: window.CoachBrainMemory || null,
+    // Plafond de progression (deduit ou manuel) et calibration par profil :
+    // deux modules du domaine charge, exposes par la meme porte publique.
+    ceiling: window.CoachCeiling || null,
+    tuningOverride: window.CoachTuningOverride || null,
     filterHistory: window.CoachHistory && CoachHistory.filterForProgression ? CoachHistory.filterForProgression : (typeof coachFilterHistoryForProgression === 'function' ? coachFilterHistoryForProgression : null),
     // Lecture partagee : cette ligne d'historique est-elle une charge reduite
     // volontairement (reprise, deload, technique, leger) plutot qu'une baisse ?

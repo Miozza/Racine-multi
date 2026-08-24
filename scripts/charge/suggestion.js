@@ -357,6 +357,7 @@ function coachReferenceSeedWorkingLoad(declaredRef,range){
 //  6c. coachRuleSpeedStimulusBand        — bloc vitesse : derive lente vers le pourcentage cible du bloc, dans les deux sens.
 //  7. coachRuleRecentHardBrake           — RPE eleve recent non resolu par une reference plus haute depuis : bloque.
 //  8. coachRuleFloorValidation           — plancher : un dernier set reellement reussi n'est jamais sous-suggere (dernier mot, place apres les freins).
+//  8b. coachRuleCeilingCap               — plafond deduit (pointe stable + effort eleve) ou manuel : la charge ne monte plus, la progression passe par les reps (scripts/charge/ceiling.js).
 //  9. coachRuleAthleteStateCap           — mouvement sous surveillance dans athlete_state : cap jusqu'a confirmation.
 // 10. coachRuleDeloadCap                 — semaine 6 / contexte recuperation : cap a 80-85% de la derniere reference fiable.
 // 11. coachRuleRoundingAndMovementCap    — arrondi equipement + cap de progression specifique au mouvement (MOVEMENT_PROGRESSION_CAPS).
@@ -380,6 +381,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleSpeedStimulusBand(ctx);
   coachRuleRecentHardBrake(ctx);
   coachRuleFloorValidation(ctx);
+  if(typeof coachRuleCeilingCap==='function')coachRuleCeilingCap(ctx);
   coachRuleAthleteStateCap(ctx);
   coachRuleDeloadCap(ctx);
   coachRuleRoundingAndMovementCap(ctx);

@@ -23,6 +23,8 @@ node dev/simulate_users.js
 node dev/charge_engine_checks.js
 node dev/charge_suggestion_golden_master.js
 node dev/movement_tuning_boundary_checks.js
+node dev/ceiling_checks.js
+node dev/tuning_override_checks.js
 node dev/suggest_helper_checks.js
 node dev/client_charge_safety_checks.js
 node dev/progression_contract_checks.js
@@ -72,6 +74,10 @@ Documents d’implémentation associés à la sécurité des charges client :
   refactor structurel de `guardedSuggestedLoadDecision()` en pipeline de
   règles nommées + table de tuning centralisée par mouvement ; filet de
   sécurité : `dev/charge_suggestion_golden_master.js`)
+- `docs/superpowers/plans/2026-08-24-plafond-et-surcharge-tuning.md` (plan du
+  plafond de progression déduit par famille de mouvement et de la surcharge de
+  tuning par profil — panneau ⚙ Réglages → Calibration du moteur ; garde-fous :
+  `dev/ceiling_checks.js`, `dev/tuning_override_checks.js`)
 
 Contrôles manuels minimum :
 
@@ -84,6 +90,11 @@ Contrôles manuels minimum :
 7. Vérifier qu'un profil débutant ne reçoit pas automatiquement un programme RX comme choix naturel.
 8. Ouvrir `Cycle Strict Muscle-Up — 10 semaines / 4 jours` et vérifier S1, S4, S8 et S10.
 9. Confirmer que le cycle strict muscle-up mentionne clairement : aucun kipping, déloads, critères de feu vert et protection coude/épaule.
+10. Profil admin → ⚙ Réglages → **Calibration du moteur** : le panneau s'affiche, chaque champ montre sa valeur d'usine et ses bornes.
+11. Baisser `ceiling.families.isolation.minStagnant`, puis ouvrir un mouvement d'isolation avec assez d'historique : la charge ne monte plus et le panneau `(!)` explique que la progression passe par les répétitions.
+12. Fixer un plafond manuel sur un mouvement : effet immédiat, sans historique.
+13. Basculer sur un profil client : la calibration ne l'a pas suivi (valeurs d'usine).
+14. Exporter le profil admin puis le réimporter : calibration et plafonds manuels sont revenus.
 
 Règle de sécurité : les données vivantes d'un utilisateur réel doivent rester dans le cellulaire/localStorage ou dans un export JSON manuel. Le dossier `data/` du repo peut être inclus, mais il doit rester neutre et sans historique réel.
 

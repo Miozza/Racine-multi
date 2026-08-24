@@ -87,6 +87,11 @@
     if(findIndex(reg, id) < 0) return false;
     reg.activeProfileId = id;
     writeRegistry(reg);
+    // La calibration du moteur est stockée SOUS la clé d'état du profil : elle
+    // change donc en même temps que le profil actif. Sans cette réapplication,
+    // le moteur garderait en mémoire les réglages du profil précédent jusqu'au
+    // prochain rechargement — un client hériterait de la calibration de l'admin.
+    try{ if(window.CoachTuningOverride && CoachTuningOverride.apply) CoachTuningOverride.apply(); }catch(e){}
     return true;
   };
 

@@ -317,6 +317,57 @@ vérifier si une table existante dans `movement_tuning.js` peut l'accueillir
 inline. `dev/movement_tuning_boundary_checks.js` fait respecter cette règle
 mécaniquement et doit passer avant toute livraison touchant ces fichiers.
 
+### Plafond de progression et calibration par profil
+
+Deux modules encadrent la **fin** d'une progression, là où le reste du moteur
+n'encadrait que sa vitesse.
+
+```txt
+scripts/charge/ceiling.js          plafond DÉDUIT du comportement, par famille
+scripts/charge/tuning_override.js  calque de réglages scalaires, par profil
+scripts/profiles/admin_tuning.js   panneau ⚙ Réglages → Calibration du moteur
+```
+
+Règles durables :
+
+- **Un plafond ne se déclare jamais en livres dans le code.** Il se déduit de
+  deux signaux qui doivent tenir ensemble — pointe stable **et** effort élevé —
+  et il se défait dès que la dernière série au palier redevient nettement moins
+  chère. Un plafond écrit en dur serait celui du créateur, livré à tous. La
+  table `ceiling.manual` est **vide** à la livraison : seule la calibration d'un
+  profil la remplit, sur geste explicite.
+- **Les seuils du plafond vivent dans `movement_tuning.js`**, comme tout seuil
+  du moteur (§ Règle de tuning par mouvement ci-dessus). `ceiling.js` lit la
+  table, il ne porte aucun chiffre.
+- **La famille d'un mouvement est lue par les détecteurs existants**
+  (`isIsolationMovement`, `coachIsMainLoadContext`). Aucune nouvelle taxonomie,
+  aucune nouvelle regex de nom de mouvement.
+- **Seuls des scalaires déclarés sont surchargeables par profil.** Jamais une
+  regex (non sérialisable en JSON), jamais un tableau (fusion ambiguë). Un
+  chemin absent de `CoachTuningOverride.PARAMS` est ignoré à la lecture comme à
+  l'écriture, même s'il est présent dans le stockage.
+- **Les bornes sont côté app**, vérifiées à la lecture, à l'écriture et à
+  l'application. Un stockage édité à la main ne peut pas injecter une valeur
+  aberrante dans le moteur.
+- **Les valeurs d'usine sont capturées au chargement**, avant toute
+  application : la surcharge est un calque, jamais une écriture destructrice, et
+  « remettre à l'usine » restaure exactement la valeur livrée.
+- **La calibration se réapplique au changement de profil**
+  (`CoachProfiles.setActive()`). Sans ça, un client hériterait de la calibration
+  de l'admin jusqu'au prochain rechargement.
+- **L'appel de la règle de plafond dans la cascade est défensif**
+  (`if(typeof coachRuleCeilingCap==='function')`). Module absent (cache PWA à
+  moitié rafraîchi) = comportement d'avant, jamais une séance cassée.
+- **Clé de stockage : `racineState::<id>::tuning-override-v1`.** Ce préfixe est
+  balayé par `exportProfileBlob()` et réécrit par `importProfileBlob()` : la
+  calibration voyage avec l'export du profil sans code supplémentaire.
+  Corollaire : **aucun secret ne doit jamais vivre sous ce préfixe**, tout y est
+  exporté en clair.
+
+Garde-fous : `dev/ceiling_checks.js` et `dev/tuning_override_checks.js`.
+Contexte et décisions :
+`docs/superpowers/plans/2026-08-24-plafond-et-surcharge-tuning.md`.
+
 
 ## Domaine session
 
