@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 197829,
-      "lines": 1095,
+      "size": 199813,
+      "lines": 1105,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,7 +140,7 @@
     },
     {
       "path": "app.js",
-      "size": 149236,
+      "size": 149216,
       "lines": 2940,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -1709,8 +1709,8 @@
     },
     {
       "path": "index.html",
-      "size": 22977,
-      "lines": 443,
+      "size": 22941,
+      "lines": 447,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2905,8 +2905,8 @@
     },
     {
       "path": "scripts/charge_diagnostic_ui.js",
-      "size": 19799,
-      "lines": 344,
+      "size": 19951,
+      "lines": 350,
       "role": "UI admin de diagnostic charges (lecture seule) : analyse la séance affichée vs historique, export JSON séance/semaine.",
       "category": "ACTIF",
       "exposes": [

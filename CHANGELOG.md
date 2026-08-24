@@ -1,3 +1,13 @@
+## V4.6.3 — Le panneau Diagnostic dit ce que chaque bouton donne
+
+Signalé par l'utilisateur : « j'ai l'impression que ça veut tout dire la même chose. » Il avait raison — j'avais ajouté trois boutons à un panneau qui en comptait déjà quatre, sans jamais réorganiser.
+
+- **Le problème.** Sept actions alignées, nommées par leur *format* et leur *portée* (« Copier JSON séance », « Exporter JSON semaine », « Copier trace semaine », « Exporter trace du jour »…), jamais par ce qu'elles donnent. Rien ne disait laquelle utiliser, ni en quoi un « JSON séance » diffère d'une « trace semaine ». Deux outils réellement différents étaient noyés dans une liste indifférenciée.
+- **La correction.** Deux groupes, chacun sous une question en clair — *Les charges d'aujourd'hui ont-elles l'air normales ?* et *Pourquoi le moteur propose cette charge ?* Le premier compare la séance affichée à l'historique et signale les incohérences ; le second sort la trace du moteur à envoyer au dev. À l'intérieur d'un groupe, les boutons ne portent plus que le moyen de sortie — **Copier** ou **Fichier** — puisque le contenu est déjà annoncé par le titre.
+- **Deux boutons retirés**, tous deux redondants par leur seule portée : « Exporter JSON semaine » (l'analyse existe déjà pour la séance affichée) et « Exporter trace du jour » (la trace semaine contient le jour). Sept boutons, cinq restent.
+- **Les fichiers se distinguent aussi.** L'analyse sort désormais en `racine-analyse-seance-*.json`, la trace en `racine-trace-charges-*.json` — au lieu d'un vieux `coach-beurt-charge-diagnostic-*.json` qu'on ne pouvait pas différencier dans le dossier Téléchargements. La confirmation de copie annonce ce qui a été copié et combien de mouvements.
+- **Portée** : `index.html` (le panneau), `scripts/charge_diagnostic_ui.js` (branchements et noms de fichiers). Aucun changement de comportement du moteur, aucune donnée touchée.
+
 ## V4.6.2 — Une preuve récente passe devant une vieille capacité sous surveillance
 
 Second défaut signalé par l'athlète sur le même cycle, reproduit à partir de son historique réel.

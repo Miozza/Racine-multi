@@ -1,5 +1,5 @@
-// Racine V4.6.2 — une preuve récente passe devant une vieille capacité sous surveillance
-var APP_VERSION = "V4.6.2";
+// Racine V4.6.3 — le panneau Diagnostic dit ce que chaque bouton donne
+var APP_VERSION = "V4.6.3";
 
 // Architecture stable
 // programs/*.js = plan prévu
