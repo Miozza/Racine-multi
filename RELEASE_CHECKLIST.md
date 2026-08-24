@@ -21,6 +21,7 @@ node dev/ai_export_movement_context_smoke.js
 node dev/simulate_multi_users.js
 node dev/simulate_users.js
 node dev/charge_engine_checks.js
+node dev/charge_trace_checks.js
 node dev/charge_suggestion_golden_master.js
 node dev/movement_tuning_boundary_checks.js
 node dev/ceiling_checks.js
@@ -95,6 +96,7 @@ Contrôles manuels minimum :
 12. Fixer un plafond manuel sur un mouvement : effet immédiat, sans historique.
 13. Basculer sur un profil client : la calibration ne l'a pas suivi (valeurs d'usine).
 14. Exporter le profil admin puis le réimporter : calibration et plafonds manuels sont revenus.
+15. ⚙ Réglages → Diagnostic charges → **Copier trace semaine** : le presse-papier contient un JSON avec, pour chaque mouvement, les séances retenues et le motif d'écart des autres.
 
 Règle de sécurité : les données vivantes d'un utilisateur réel doivent rester dans le cellulaire/localStorage ou dans un export JSON manuel. Le dossier `data/` du repo peut être inclus, mais il doit rester neutre et sans historique réel.
 

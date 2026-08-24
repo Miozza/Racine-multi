@@ -24,6 +24,8 @@
     // Plafond de progression (deduit ou manuel) et calibration par profil :
     // deux modules du domaine charge, exposes par la meme porte publique.
     ceiling: window.CoachCeiling || null,
+    // Extraction de diagnostic : l'historique avec ce que le moteur en a fait.
+    trace: window.CoachChargeTrace || null,
     tuningOverride: window.CoachTuningOverride || null,
     filterHistory: window.CoachHistory && CoachHistory.filterForProgression ? CoachHistory.filterForProgression : (typeof coachFilterHistoryForProgression === 'function' ? coachFilterHistoryForProgression : null),
     // Lecture partagee : cette ligne d'historique est-elle une charge reduite

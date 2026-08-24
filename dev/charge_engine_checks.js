@@ -842,6 +842,66 @@ try {
     resetState();
   }
 
+  // 12. « vitesse » en CONSIGNE D'ARRET n'est pas une intention technique.
+  //
+  // Cas reel signale par l'athlete : « Pause Back Squat — 3RM avec pause.
+  // Aucune bataille : si la vitesse meurt, c'est fini. » (S3 de phase2_fable5).
+  // Le mot « vitesse » declarait un contexte technique, ce qui (a) coupait
+  // l'auto-progression sur un mouvement principal et (b) — bien plus grave —
+  // ecartait TOUT l'historique des semaines voisines, dont le contexte n'etait
+  // pas limite. Deux semaines a 170 lb x 3 @ RPE 7 ne pesaient rien et le
+  // moteur reproposait indefiniment la charge ecrite dans le programme.
+  {
+    resetState();
+    const cueNote = "3RM avec pause. Aucune bataille : si la vitesse meurt, c'est fini. Ce chiffre devient ta reference de variation.";
+    const cueCtx = ctx.coachBuildMovementContext('Pause Back Squat', {kind:'main', blockTitle:'A. Pause Back Squat', format:'montee vers 3RM', note:cueNote, load:'190-205 lb'});
+    assert(notIncludes(cueCtx.intents, 'technique'),
+      'Une consigne d\'arret (« si la vitesse meurt ») ne declare pas une intention technique.');
+    assert(!ctx.coachIsLimitedProgressionContext(cueCtx),
+      'Un 3RM dont la note parle de vitesse de barre reste un contexte de progression normal.');
+
+    // Le juge de vitesse de barre, meme formulation, meme verdict.
+    const judgeCtx = ctx.coachBuildMovementContext('Bench Press', {kind:'main', format:'5x3', note:'Vitesse de barre comme juge. Arret des que la barre ralentit.', load:'205-215 lb'});
+    assert(!ctx.coachIsLimitedProgressionContext(judgeCtx),
+      '« Vitesse de barre comme juge » reste un contexte de progression normal.');
+
+    // A l'oppose : un VRAI bloc vitesse declare un pourcentage cible. Il reste
+    // un contexte limite — il ne progresse jamais comme un mouvement principal.
+    const speedCtx = ctx.coachBuildMovementContext('Back Squat', {kind:'main', format:'6x2', note:'Squat vitesse ~60 %, intention de vitesse, pas de charge.', load:'~60 %'});
+    assert(includes(speedCtx.intents, 'speed'), 'Un bloc vitesse avec pourcentage cible reste reconnu comme bloc vitesse.');
+    assert(ctx.coachIsLimitedProgressionContext(speedCtx),
+      'Un vrai bloc vitesse reste un contexte a progression limitee.');
+
+    // Un bloc vitesse peut se declarer en clair, sans le mot « vitesse » : la
+    // cible en pourcentage fait foi, et il reste un contexte limite.
+    const speedDeclare = ctx.coachBuildMovementContext('Back Squat', {kind:'main', format:'6x2', note:'Remontee explosive, barre rapide.', load:'135 lb', pctOf1RM:0.60});
+    assert(includes(speedDeclare.intents, 'speed'), 'Une cible posee en clair (pctOf1RM) declare un bloc vitesse.');
+    assert(includes(speedDeclare.intents, 'technique'),
+      'Un bloc vitesse declare en clair reste marque technique, meme sans le mot « vitesse ».');
+    assert(ctx.coachIsLimitedProgressionContext(speedDeclare),
+      'Et il reste un contexte a progression limitee.');
+
+    // Un mot technique franc n'est pas affecte par la correction.
+    const techCtx = ctx.coachBuildMovementContext('Power Clean', {kind:'technique', format:'5x2', note:'Travail technique, barre legere.', load:'95 lb'});
+    assert(ctx.coachIsLimitedProgressionContext(techCtx), 'Un vrai contexte technique reste limite.');
+
+    // Le vrai degat : l'historique des semaines normales survit au filtre.
+    const normalCtx = ctx.coachBuildMovementContext('Pause Back Squat', {kind:'main', format:'5x3', note:'Pause 2 sec au fond, remontee explosive.', load:'165-175 lb'});
+    const hist = [
+      {date:'2026-08-10', load:170, reps:3, rpe:7, status:'success', context:{label:normalCtx.label, equipment:normalCtx.equipment, intents:normalCtx.intents, primaryIntent:normalCtx.primaryIntent}},
+      {date:'2026-08-17', load:170, reps:3, rpe:7, status:'success', context:{label:normalCtx.label, equipment:normalCtx.equipment, intents:normalCtx.intents, primaryIntent:normalCtx.primaryIntent}}
+    ];
+    const gardees = ctx.coachFilterHistoryForProgression(hist, cueCtx);
+    assert(gardees.length === 2,
+      'Les seances des semaines normales comptent dans une semaine dont la note parle de vitesse de barre (' + gardees.length + '/2).');
+
+    ctx.state.athleteState.movements['Pause Back Squat'] = {history:hist, ranges:{}};
+    const d3 = ctx.guardedSuggestedLoadDecision('Pause Back Squat', '190-205 lb', 3, cueCtx);
+    assert(d3.loadNum >= 170,
+      'Apres deux seances a 170 lb x 3 @ RPE 7, le moteur ne repropose pas moins (' + d3.loadNum + ' lb).');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }
