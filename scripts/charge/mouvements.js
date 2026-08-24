@@ -263,12 +263,26 @@ function coachPercentTargetFromText(raw){
 // clair, sur l'exercice — `pctOf1RM: 0.60`. Elle est lue en premier et evite
 // toute dependance a une tournure de phrase. La lecture par regex reste le
 // repli pour les programmes existants, qui ecrivent « ~60 % » dans leur note.
+// Le mot « vitesse » employe comme CONSIGNE D'ARRET (« si la vitesse meurt »,
+// « vitesse de barre comme juge ») n'est pas une intention de programmation.
+// La liste vit dans COACH_MOVEMENT_TUNING.speedStimulus.cuePatterns ; deux
+// lecteurs s'en servent — la detection de bloc vitesse ci-dessous et le
+// detecteur d'intention technique (coachExtractMovementIntent). Une seule
+// liste, un seul proprietaire.
+function coachIsSpeedCueText(raw){
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
+  if(!T)return false;
+  var text=coachNormalizeKeepSymbols(raw);
+  if(!text)return false;
+  return (T.cuePatterns||[]).some(function(re){return re.test(text);});
+}
+
 function coachSpeedStimulusBandFromText(raw, declaredPct){
   var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.speedStimulus)||null;
   if(!T)return null;
   var text=coachNormalizeKeepSymbols(raw);
   if(!text)return null;
-  if((T.cuePatterns||[]).some(function(re){return re.test(text);}))return null;
+  if(coachIsSpeedCueText(raw))return null;
   if(!(T.keywordPatterns||[]).some(function(re){return re.test(text);}))return null;
   var a,b=0;
   var declared=Number(declaredPct);
@@ -311,12 +325,33 @@ function coachExtractMovementIntent(parts, declaredPct){
   var intents=[];
   function add(x){if(x&&intents.indexOf(x)===-1)intents.push(x);}
   if(/amrap|emom|for time|wod|cap|time cap/.test(n))add('wod');
-  if(/technique|qualite|quality|drill|skill|vitesse|speed|primer|ramp up|rampup/.test(n))add('technique');
+  // Mots qui declarent VRAIMENT une intention technique, quel que soit le reste
+  // de la phrase.
+  if(/technique|qualite|quality|drill|skill|primer|ramp up|rampup/.test(n))add('technique');
+  // « vitesse » / « speed » sont ambigus. Employes comme consigne d'arret — « si
+  // la vitesse meurt, c'est fini », « vitesse de barre comme juge » — ils
+  // parlent de la QUALITE d'execution d'une serie lourde, pas d'un drill.
+  // Les lire comme une intention technique coupait toute auto-progression sur
+  // un mouvement principal, ET faisait disparaitre l'historique des semaines
+  // voisines : le filtre de progression ne compare que des contextes de meme
+  // nature (limite vs non limite), donc les seances precedentes, elles non
+  // limitees, etaient ecartees. Le moteur reproposait alors indefiniment la
+  // charge ecrite dans le programme. Cas reel : « Pause Back Squat — 3RM avec
+  // pause. Aucune bataille : si la vitesse meurt, c'est fini. » (S3 de
+  // phase2_fable5), ou deux semaines a 170 lb x 3 @ RPE 7 ne pesaient rien.
+  // Un VRAI bloc vitesse, lui, declare un pourcentage cible : il reste un
+  // contexte a progression limitee via `speed` juste en dessous.
+  else if(/vitesse|speed/.test(n)&&!coachIsSpeedCueText(raw))add('technique');
   // `speed` s'AJOUTE a `technique`, elle ne le remplace pas : un bloc vitesse
   // reste un contexte a progression limitee (il ne remplace jamais une
   // capacite principale dans athlete_state). La regle dediee du moteur lui
   // rend seulement sa derive vers la bande cible.
-  if(coachSpeedStimulusBandFromText(raw, declaredPct))add('speed');
+  if(coachSpeedStimulusBandFromText(raw, declaredPct)){
+    add('speed');
+    // Un bloc vitesse reconnu reste technique meme si le mot « vitesse » a ete
+    // ecarte ci-dessus : c'est la declaration de pourcentage qui fait foi.
+    add('technique');
+  }
   if(/rappel|recall/.test(n))add('recall');
   if(/progression|regression|scale|scaling/.test(n))add('progression');
   if(/leger|legere|light|facile|easy|warm up|warmup|activation|mobilite|mobility/.test(n))add('light');

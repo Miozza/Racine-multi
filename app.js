@@ -1,5 +1,5 @@
-// Racine V4.6.0 — le moteur sait s’arrêter : plafond de progression déduit + calibration par profil
-var APP_VERSION = "V4.6.0";
+// Racine V4.6.1 — une consigne d’arrêt n’est pas une intention technique + trace du moteur
+var APP_VERSION = "V4.6.1";
 
 // Architecture stable
 // programs/*.js = plan prévu

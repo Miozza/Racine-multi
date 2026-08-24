@@ -303,9 +303,42 @@ function copyChargeDiagnostic(scope){
     download('coach-beurt-charge-diagnostic.json',txt);
   }
 }
+// ─── Trace complete : historique + ce que le moteur en a fait ──────────────
+// L'export ci-dessus explique la DECISION du jour. La trace, elle, explique ce
+// qui n'a jamais atteint la decision : quelles seances ont ete ecartees, et
+// par quel filtre. C'est le seul export qui permet de diagnostiquer « toutes
+// mes seances sont dans Historique mais le moteur ne les voit pas ».
+function chargeTraceReport(scope){
+  if(!(window.CoachChargeTrace&&CoachChargeTrace.report))return null;
+  return CoachChargeTrace.report(scope||'week');
+}
+function chargeTraceFileName(report){
+  return 'racine-trace-charges-'+((report&&report.cycle)||'cycle')+'-S'+((report&&report.semaine)||'')+'.json';
+}
+function exportChargeTrace(scope){
+  var report=chargeTraceReport(scope);
+  if(!report){alert('Trace indisponible : module non charge.');return;}
+  download(chargeTraceFileName(report),JSON.stringify(report,null,2));
+}
+function copyChargeTrace(scope){
+  var report=chargeTraceReport(scope);
+  if(!report){alert('Trace indisponible : module non charge.');return;}
+  var txt=JSON.stringify(report,null,2);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt)
+      .then(function(){alert('Trace copiee ('+(report.mouvements||[]).length+' mouvements). Colle-la dans le chat de dev.');})
+      .catch(function(){download(chargeTraceFileName(report),txt);});
+  }else{
+    download(chargeTraceFileName(report),txt);
+  }
+}
+
 function setupChargeDiagnosticBindings(){
   var refresh=$('refreshChargeDiagnosticBtn'); if(refresh)refresh.onclick=renderChargeDiagnosticPanel;
   var copyDay=$('copyChargeDiagnosticDayBtn'); if(copyDay)copyDay.onclick=function(){copyChargeDiagnostic('day');};
   var exportDay=$('exportChargeDiagnosticDayBtn'); if(exportDay)exportDay.onclick=function(){exportChargeDiagnostic('day');};
   var exportWeek=$('exportChargeDiagnosticWeekBtn'); if(exportWeek)exportWeek.onclick=function(){exportChargeDiagnostic('week');};
+  var copyTrace=$('copyChargeTraceBtn'); if(copyTrace)copyTrace.onclick=function(){copyChargeTrace('week');};
+  var exportTrace=$('exportChargeTraceBtn'); if(exportTrace)exportTrace.onclick=function(){exportChargeTrace('week');};
+  var exportTraceDay=$('exportChargeTraceDayBtn'); if(exportTraceDay)exportTraceDay.onclick=function(){exportChargeTrace('day');};
 }
