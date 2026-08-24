@@ -1,5 +1,5 @@
-// Racine V4.6.5 — « montée vers 3RM » demande trois reps, pas huit
-var APP_VERSION = "V4.6.5";
+// Racine V4.6.6 — les séances mal étiquetées par une ancienne version comptent à nouveau
+var APP_VERSION = "V4.6.6";
 
 // Architecture stable
 // programs/*.js = plan prévu

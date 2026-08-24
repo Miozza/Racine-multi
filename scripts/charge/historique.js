@@ -58,17 +58,85 @@ function coachDefaultLoadSeedForMovement(label, targetReps){
   return coachFirstMatchingTuningLoad(n, T.defaultLoadSeeds);
 }
 
+// ─── Relecture des contextes d'historique ───────────────────────────────────
+// Une ligne d'historique stocke le contexte tel qu'il a ete LU le jour de la
+// seance : les intentions deja resolues, pas seulement le texte d'origine. Ce
+// choix a un cout : quand le detecteur d'intention est corrige, les lignes
+// deja ecrites gardent leur ancienne etiquette — pour toujours.
+//
+// Cas reel : jusqu'a V4.6.1, le mot « vitesse » employe comme consigne d'arret
+// (« si la vitesse meurt, c'est fini ») declarait un contexte technique. Les
+// seances loggees avant le correctif portent donc `intents:['technique']` et
+// le statut `context_logged`. Le filtre de progression ne melangeant pas les
+// contextes limites et normaux, ces seances restaient invisibles pour le
+// moteur alors meme que le bug etait repare. Trace d'un cycle reel :
+// 18 lignes ecartees sur ce seul motif, dont la seance la plus recente.
+//
+// La ligne stocke aussi son texte brut (note, titre de bloc, format, kind).
+// On RELIT donc les intentions avec le detecteur d'aujourd'hui, sans jamais
+// reecrire la ligne : rien ne part dans le localStorage, la donnee de
+// l'athlete n'est pas touchee, et une future correction du detecteur
+// beneficiera retroactivement de la meme facon.
+//
+// Une ligne sans texte brut (version ancienne qui ne stockait que le resultat
+// de la lecture) n'est pas relisible : elle garde ce qu'elle porte.
+var COACH_REDERIVED_CTX = (typeof WeakMap === 'function') ? new WeakMap() : null;
+
+function coachStoredContextHasRawText(ctx){
+  return !!(ctx && (ctx.note || ctx.blockTitle || ctx.format || ctx.kind || ctx.text));
+}
+
+function coachRederiveStoredContext(stored){
+  if(!stored || typeof stored !== 'object')return stored;
+  if(typeof coachExtractMovementIntent !== 'function')return stored;
+  if(!coachStoredContextHasRawText(stored))return stored;
+  if(COACH_REDERIVED_CTX && COACH_REDERIVED_CTX.has(stored))return COACH_REDERIVED_CTX.get(stored);
+
+  var parts=[stored.rawName,stored.label,stored.kind,stored.blockTitle,stored.note,stored.text,stored.format].filter(Boolean);
+  var intents=coachExtractMovementIntent(parts, stored.pctOf1RM);
+  var previous=Array.isArray(stored.intents)?stored.intents:[];
+  var unchanged=previous.length===intents.length&&intents.every(function(x,i){return previous[i]===x;});
+  var out=stored;
+  if(!unchanged){
+    out=Object.assign({},stored,{
+      intents:intents,
+      primaryIntent:intents[0]||'',
+      isWod:intents.indexOf('wod')>=0,
+      isTechnical:intents.indexOf('technique')>=0,
+      isLight:intents.indexOf('light')>=0,
+      isProgression:intents.indexOf('progression')>=0,
+      isRecall:intents.indexOf('recall')>=0,
+      isStrength:intents.indexOf('strength')>=0,
+      isHypertrophy:intents.indexOf('hypertrophy')>=0,
+      isRecovery:intents.indexOf('recovery')>=0,
+      isSpeed:intents.indexOf('speed')>=0,
+      // Trace pour le diagnostic : cette ligne a ete relue, et voici ce
+      // qu'elle disait avant.
+      rederivedFrom:previous.slice()
+    });
+  }
+  if(COACH_REDERIVED_CTX)COACH_REDERIVED_CTX.set(stored,out);
+  return out;
+}
+
 function coachHistoryContext(row){
   if(!row)return null;
-  return row.context || (row.planned&&row.planned.context) || null;
+  var stored=row.context || (row.planned&&row.planned.context) || null;
+  return stored?coachRederiveStoredContext(stored):null;
 }
 
 function coachHistoryContextIsLimited(row){
-  // Marqueur direct posé a la sauvegarde par updateAthleteStateFromResults :
-  // il survit meme quand le contexte lui-meme n'a pas ete recopie sur la ligne.
-  if(row && row.status === 'context_logged') return true;
   var ctx=coachHistoryContext(row);
-  return (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
+  var limited=(typeof coachIsLimitedProgressionContext==='function')?coachIsLimitedProgressionContext(ctx):false;
+  // `context_logged` est un marqueur pose a la sauvegarde : il survit meme
+  // quand le contexte n'a pas ete recopie sur la ligne. Mais il porte le
+  // verdict d'un detecteur qui a pu etre corrige depuis. Quand la ligne est
+  // relisible, c'est la relecture qui fait foi ; sinon le marqueur reste la
+  // seule information disponible et garde le dernier mot.
+  var stored=row&&(row.context||(row.planned&&row.planned.context));
+  if(coachStoredContextHasRawText(stored))return limited;
+  if(row && row.status === 'context_logged') return true;
+  return limited;
 }
 
 // Une charge REDUITE VOLONTAIREMENT n'est pas une baisse de capacite.

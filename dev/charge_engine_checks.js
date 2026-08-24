@@ -952,6 +952,71 @@ try {
     resetState();
   }
 
+  // 14. Une ligne mal etiquetee par une ANCIENNE version est relue, pas perdue.
+  //
+  // Une ligne d'historique stocke les intentions deja resolues. Quand le
+  // detecteur est corrige, les lignes deja ecrites gardent leur ancienne
+  // etiquette — et le filtre de progression, qui ne melange pas contextes
+  // limites et normaux, les ecarte pour toujours. Trace d'un cycle reel :
+  // 18 lignes perdues sur ce seul motif, dont la seance la plus recente.
+  // La ligne stocke aussi son texte brut : on relit donc les intentions avec
+  // le detecteur d'aujourd'hui, sans jamais reecrire la ligne.
+  {
+    resetState();
+    const noteCue = "3RM avec pause. Aucune bataille : si la vitesse meurt, c'est fini.";
+    const noteTech = 'Travail technique, barre legere.';
+    const vieuxContexte = (note) => ({
+      rawName:'Pause Back Squat', label:'Pause Back Squat', equipment:'barbell',
+      intents:['technique'], primaryIntent:'technique', isTechnical:true,
+      kind:'main', blockTitle:'A. Pause Back Squat', note:note, text:'', format:'montee vers 3RM'
+    });
+    const vieilleLigne = (note, statut) => ({date:'2026-08-24', load:170, reps:3, rpe:7, status:statut, context:vieuxContexte(note)});
+
+    const relue = ctx.coachHistoryContext(vieilleLigne(noteCue, 'context_logged'));
+    assert(Array.isArray(relue.intents) && relue.intents.indexOf('technique') === -1,
+      'Une ligne etiquetee « technique » par une consigne d\'arret est relue sans cette intention.');
+    assert(Array.isArray(relue.rederivedFrom) && relue.rederivedFrom.indexOf('technique') >= 0,
+      'La relecture garde trace de ce que la ligne disait avant.');
+    assert(ctx.coachHistoryContextIsLimited(vieilleLigne(noteCue, 'context_logged')) === false,
+      'Le marqueur `context_logged` ne survit pas a une relecture qui le contredit.');
+
+    // Une note vraiment technique n'est pas « reparee » : elle est confirmee.
+    assert(ctx.coachHistoryContextIsLimited(vieilleLigne(noteTech, 'context_logged')) === true,
+      'Une ligne dont la note dit vraiment « technique » reste un contexte limite.');
+
+    // Sans texte brut, rien a relire : le marqueur garde le dernier mot.
+    const sansTexte = {date:'2026-05-01', load:150, reps:3, rpe:8, status:'context_logged',
+      context:{label:'Pause Back Squat', equipment:'barbell', intents:['technique'], primaryIntent:'technique'}};
+    assert(ctx.coachHistoryContextIsLimited(sansTexte) === true,
+      'Une ligne non relisible garde son marqueur : on n\'invente pas ce qu\'on ne peut pas relire.');
+    // Et ses intentions stockees ne sont pas effacees non plus : sans texte a
+    // relire, les remplacer par le resultat d'une lecture a vide reviendrait a
+    // declarer normale toute ligne ancienne, sur la seule foi de son nom.
+    assert(ctx.coachHistoryContext(sansTexte).intents.indexOf('technique') >= 0,
+      'Une ligne non relisible garde aussi ses intentions d\'origine.');
+
+    // La donnee stockee n'est JAMAIS reecrite : la relecture est une lecture.
+    const ligneIntacte = vieilleLigne(noteCue, 'context_logged');
+    const avant = JSON.stringify(ligneIntacte);
+    ctx.coachHistoryContext(ligneIntacte);
+    ctx.coachHistoryContextIsLimited(ligneIntacte);
+    assert(JSON.stringify(ligneIntacte) === avant,
+      'La relecture ne modifie pas la ligne stockee (rien ne part dans le localStorage).');
+
+    // Bout en bout : les trois seances reelles de l'athlete comptent a nouveau.
+    const ctxS3 = ctx.coachBuildMovementContext('Pause Back Squat', {kind:'main', blockTitle:'A. Pause Back Squat', format:'montee vers 3RM', note:noteCue, load:'190-205 lb'});
+    const normal = (note) => Object.assign(vieuxContexte(note), {intents:[], primaryIntent:'', isTechnical:false});
+    const histReel = [
+      {date:'2026-08-10', load:160, reps:3, rpe:7, status:'upgrade_ready', context:normal('Pause 2 sec au fond.')},
+      {date:'2026-08-17', load:170, reps:3, rpe:8, status:'success',       context:normal('Pause 2 sec au fond.')},
+      vieilleLigne(noteCue, 'context_logged')
+    ];
+    const gardees = ctx.coachFilterHistoryForProgression(histReel, ctxS3);
+    assert(gardees.length === 3,
+      'Les trois seances reelles comptent a nouveau dans la progression (' + gardees.length + '/3).');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

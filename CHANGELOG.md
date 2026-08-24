@@ -1,3 +1,16 @@
+## V4.6.6 — Les séances mal étiquetées par une ancienne version comptent à nouveau
+
+Résidu du correctif V4.6.1, mesuré dans la trace de cycle de l'athlète : **18 lignes d'historique écartées**, dont sa séance la plus récente.
+
+- **Le problème.** Une ligne d'historique ne stocke pas seulement le texte du bloc : elle stocke les **intentions déjà résolues**, telles que le détecteur les a lues le jour de la séance. Quand le détecteur est corrigé, les lignes déjà écrites gardent leur ancienne étiquette — pour toujours. Le filtre de progression ne mélangeant pas contextes limités et normaux, ces séances restaient invisibles pour le moteur alors même que le bug était réparé. Mesuré : Face Pull en perdait 4, Strict Press 3, Pause Back Squat sa séance du 24 août.
+- **La correction.** La ligne stocke aussi son **texte brut** (note, titre de bloc, format, `kind`). Les intentions sont donc **relues à la lecture** avec le détecteur d'aujourd'hui. Rien n'est réécrit : la donnée de l'athlète n'est pas touchée, rien de nouveau ne part dans le `localStorage`, et une future correction du détecteur bénéficiera rétroactivement de la même façon. La relecture est mise en cache par `WeakMap` — donc jamais sérialisée.
+- **Le marqueur `context_logged`** posé à la sauvegarde portait le verdict du même détecteur. Il ne fait plus autorité quand la ligne est relisible et que la relecture le contredit ; il garde le dernier mot quand il n'y a rien à relire.
+- **Ce qui ne change pas.** Une ligne dont la note dit vraiment « technique » reste un contexte limité — elle est confirmée, pas « réparée ». Une ligne ancienne sans texte brut garde ses intentions et son marqueur : on n'invente pas ce qu'on ne peut pas relire.
+- **Vérifié sur les données réelles de l'athlète** : ses trois séances de Pause Back Squat comptent à nouveau (3/3 au lieu de 2/3).
+- **Garde-fous** : 8 assertions ajoutées à `dev/charge_engine_checks.js`, dont une qui vérifie que la ligne stockée ressort **octet pour octet identique** après relecture. Validées par mutation (4 mutations, toutes attrapées). Golden master identique sur ses 20 scénarios.
+- **Reste ouvert** : le `status` de ces lignes vaut toujours `context_logged`, ce qui les empêche de servir de **plancher de validation**. Elles comptent pour l'échelle RPE, la tendance et la meilleure charge contrôlée — mais pas comme preuve qu'une charge est acquise. Corriger ça demanderait de réécrire le statut stocké, donc une migration : pas fait sans décision explicite.
+- **Portée** : `scripts/charge/historique.js`. Aucun fichier `data/`, aucun programme retouché, aucune écriture de stockage ajoutée.
+
 ## V4.6.5 — « montée vers 3RM » demande trois reps, pas huit
 
 Trouvé dans la trace de cycle envoyée par l'athlète — exactement ce pour quoi la trace a été construite.

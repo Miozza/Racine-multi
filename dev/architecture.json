@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 204132,
-      "lines": 1128,
+      "size": 206863,
+      "lines": 1141,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,7 +140,7 @@
     },
     {
       "path": "app.js",
-      "size": 150307,
+      "size": 150330,
       "lines": 2956,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -531,8 +531,8 @@
     },
     {
       "path": "dev/charge_engine_checks.js",
-      "size": 61182,
-      "lines": 968,
+      "size": 65462,
+      "lines": 1033,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -2707,8 +2707,8 @@
     },
     {
       "path": "scripts/charge/historique.js",
-      "size": 16725,
-      "lines": 347,
+      "size": 22402,
+      "lines": 458,
       "role": "Signaux historiques du moteur : e1RM Epley (epley1RM), projection entre plages de reps, agressivité par profil.",
       "category": "ACTIF",
       "exposes": [
