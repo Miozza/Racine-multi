@@ -1,3 +1,14 @@
+## V4.6.4 — La trace du moteur couvre le cycle complet
+
+Demandé par l'utilisateur : « pourquoi pas le cycle complet, ça te ferait mieux connaître le chemin fait et l'historique depuis le début. » Bonne intuition, et pour une raison précise : c'est le **contexte de chaque semaine** qui l'avait piégé sur le Pause Back Squat. Une trace de cycle montre exactement où l'étiquette d'un mouvement bascule d'une semaine à l'autre.
+
+- **Nouvelle portée `cycle`.** `CoachChargeTrace.report('cycle')` parcourt toutes les semaines du programme actif, jour par jour. Un mouvement y apparaît sous le contexte de **chaque** semaine où il est programmé, avec sa charge prescrite, ses intentions lues, sa suggestion et ses séances retenues ou écartées — c'est-à-dire tout ce qui change d'une semaine à l'autre.
+- **Le rejeu n'est payé qu'une fois par mouvement.** L'historique d'un mouvement ne dépend pas de la semaine où il est listé : le reconstituer à chaque occurrence coûterait N fois le prix pour N fois le même résultat. La reconstitution se fait donc à la première rencontre, tout le reste est conservé sur chaque occurrence.
+- **Mesuré avant de promettre**, sur le programme le plus lourd du catalogue (`heritage225`, 16 semaines × 4 jours) : **259 ms et 443 Ko** pour 288 entrées, contre 27 ms et 32 Ko pour une semaine. Utilisable, mais impossible à coller confortablement dans un message.
+- **D'où le partage des deux boutons de la trace** : **Copier la semaine** pour ce qui se colle dans un message, **Fichier — cycle complet** pour le chemin entier. Chaque bouton dit sa portée, le titre du groupe dit déjà le contenu. Le nom du fichier suit : `racine-trace-charges-<cycle>-cycle-complet.json`.
+- **Garde-fous** : 12 assertions ajoutées à `dev/charge_trace_checks.js` (50 au total) — toutes les semaines parcourues, tous les jours, une entrée par séance, rejeu unique par mouvement, contexte et suggestion présents sur chaque occurrence, portée semaine inchangée. Validées par mutation.
+- **Portée** : `scripts/charge/trace.js`, `index.html`, `scripts/charge_diagnostic_ui.js`. Aucun changement de comportement du moteur, aucune donnée touchée.
+
 ## V4.6.3 — Le panneau Diagnostic dit ce que chaque bouton donne
 
 Signalé par l'utilisateur : « j'ai l'impression que ça veut tout dire la même chose. » Il avait raison — j'avais ajouté trois boutons à un panneau qui en comptait déjà quatre, sans jamais réorganiser.

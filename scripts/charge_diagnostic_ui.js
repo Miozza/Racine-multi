@@ -321,7 +321,8 @@ function chargeTraceReport(scope){
   return CoachChargeTrace.report(scope||'week');
 }
 function chargeTraceFileName(report){
-  return 'racine-trace-charges-'+((report&&report.cycle)||'cycle')+'-S'+((report&&report.semaine)||'')+'.json';
+  var portee=(report&&report.portee==='cycle')?'cycle-complet':('S'+((report&&report.semaine)||''));
+  return 'racine-trace-charges-'+((report&&report.cycle)||'cycle')+'-'+portee+'.json';
 }
 function exportChargeTrace(scope){
   var report=chargeTraceReport(scope);
@@ -346,5 +347,8 @@ function setupChargeDiagnosticBindings(){
   var copyDay=$('copyChargeDiagnosticDayBtn'); if(copyDay)copyDay.onclick=function(){copyChargeDiagnostic('day');};
   var exportDay=$('exportChargeDiagnosticDayBtn'); if(exportDay)exportDay.onclick=function(){exportChargeDiagnostic('day');};
   var copyTrace=$('copyChargeTraceBtn'); if(copyTrace)copyTrace.onclick=function(){copyChargeTrace('week');};
-  var exportTrace=$('exportChargeTraceBtn'); if(exportTrace)exportTrace.onclick=function(){exportChargeTrace('week');};
+  // Le cycle complet passe par un fichier : mesure sur le plus gros programme
+  // du catalogue (16 semaines x 4 jours), il pese ~440 Ko — copiable, mais
+  // impossible a coller confortablement dans un message.
+  var exportTrace=$('exportChargeTraceBtn'); if(exportTrace)exportTrace.onclick=function(){exportChargeTrace('cycle');};
 }

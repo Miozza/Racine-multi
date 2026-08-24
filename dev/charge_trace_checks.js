@@ -41,16 +41,25 @@ const ctx = {
   buildWeekInfo: function(){ return {3:{label:'S3', goal:'3RM propres.'}}; },
   weekIdx: function(){ return 2; },
   collectSessionExercises: function(){ return []; },
-  currentDayOrder: function(){ return ['lundi']; },
+  currentDayOrder: function(){ return ['lundi','mardi']; },
+  totalWeeks: function(){ return 3; },
   parseTargetReps: function(format, fallback){
     const nums = String(format || '').match(/\d+/g) || [];
     if(!nums.length)return {min:fallback||8, max:fallback||8};
     const last = Number(nums[nums.length-1]) || fallback || 8;
     return {min:last, max:last};
   },
-  buildWorkout: function(){
+  // Deux jours, trois semaines : le mouvement principal revient chaque semaine
+  // (c'est ce que la portee cycle doit montrer), le second jour porte un autre
+  // mouvement pour verifier que le balayage ne s'arrete pas au premier.
+  buildWorkout: function(day, week){
+    if(day === 'mardi'){
+      return { blocks: [ { title:'A. Weighted Pull-up', kind:'main', exercises:[
+        {name:'Weighted Pull-up', format:'4x3', load:'25-30 lb', note:'Tirage strict.'}
+      ]} ] };
+    }
     return { blocks: [ { title:'A. Pause Back Squat', kind:'main', exercises:[
-      {name:'Pause Back Squat', format:'5x3', load:'190-205 lb', note:'3RM avec pause.'}
+      {name:'Pause Back Squat', format:'5x3', load:'190-205 lb', note:'Semaine ' + week + '.'}
     ]} ] };
   }
 };
@@ -200,6 +209,42 @@ assert(!!report.note && /reconstitution/i.test(report.note),
 assert(typeof T.text(report) === 'string' && T.text(report).indexOf('racine_charge_trace') === 0,
   'La sortie texte est copiable telle quelle.');
 assert(JSON.stringify(report).length > 200, 'Le rapport n\'est pas vide.');
+
+// ─── 7. Portee cycle : le chemin complet, sans payer dix fois le meme rejeu ──
+// Un mouvement revient a chaque semaine ou il est programme. Son historique ne
+// change pas — le rejouer a chaque fois couterait N fois le prix pour N fois le
+// meme resultat. Mais son CONTEXTE change d'une semaine a l'autre, et c'est
+// justement ce qu'une trace de cycle doit montrer.
+{
+  const cycle = T.report('cycle');
+  assert(cycle.portee === 'cycle', 'Le rapport porte sa portee.');
+  assert(cycle.semainesTracees === 3, 'Toutes les semaines du programme sont parcourues (' + cycle.semainesTracees + ').');
+  assert(cycle.mouvements.length === 6, 'Chaque seance du cycle donne une entree (3 semaines x 2 jours) : ' + cycle.mouvements.length + '.');
+
+  const squats = cycle.mouvements.filter(m => m.mouvement === 'Pause Back Squat');
+  assert(squats.length === 3, 'Le mouvement principal apparait une fois par semaine.');
+  assert(cycle.mouvements.some(m => m.mouvement === 'Weighted Pull-up'),
+    'Le balayage ne s\'arrete pas au premier jour du cycle.');
+
+  // La reconstitution n'est payee qu'une fois par mouvement.
+  const avecRejeu = squats.filter(m => m.historique.lignes.some(l => l.reconstitutionAvantCetteSeance));
+  assert(avecRejeu.length === 1, 'La reconstitution est faite une seule fois par mouvement (' + avecRejeu.length + ').');
+
+  // Tout le reste, lui, est bien present sur CHAQUE occurrence : c'est ce qui
+  // permet de voir ou une etiquette bascule d'une semaine a l'autre.
+  assert(squats.every(m => m.contexteDuJour && typeof m.contexteDuJour.limite === 'boolean'),
+    'Chaque occurrence porte le contexte de SA semaine.');
+  assert(squats.every(m => m.suggestion && m.programme),
+    'Chaque occurrence porte sa suggestion et sa charge prescrite.');
+  assert(squats.every(m => m.historique.lignesTracees === squats[0].historique.lignesTracees),
+    'L\'historique reste complet sur chaque occurrence.');
+  assert(cycle.resume.length === cycle.mouvements.length, 'Une ligne de resume par occurrence.');
+
+  // La portee semaine ne regarde toujours qu'une semaine.
+  const semaine = T.report('week');
+  assert(semaine.mouvements.length === 2, 'La portee semaine reste limitee a la semaine en cours.');
+  assert(!semaine.semainesTracees, 'Seule la portee cycle annonce un nombre de semaines.');
+}
 
 if(failed){
   console.error('\nÉCHEC charge_trace_checks.js — ' + failed + ' controle(s) sur ' + checks + '.');

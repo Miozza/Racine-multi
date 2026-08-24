@@ -142,7 +142,7 @@
         contexteLigne:{intentions:intentsOf(rCtx), limite:rCtx?limited(rCtx):null, equipement:(rCtx&&rCtx.equipment)||''},
         retenue:v.kept,
         pourquoiEcartee:v.reason,
-        reconstitutionAvantCetteSeance:replayAt(mv,i,label,ctx,target,programLoad)
+        reconstitutionAvantCetteSeance:opts.skipReplay?null:replayAt(mv,i,label,ctx,target,programLoad)
       });
     }
 
@@ -198,7 +198,16 @@
   }
 
   // Trace de tous les exercices chargés d'une journée du cycle actif.
-  api.day = function(day,week){
+  // `seen` (optionnel) : ensemble des mouvements deja reconstitues. Sur une
+  // trace de cycle complet, un mouvement revient a chaque semaine ou il est
+  // programme — son historique, lui, ne change pas. Rejouer le moteur sur les
+  // memes lignes dix fois couterait dix fois le prix pour dix fois le meme
+  // resultat. La reconstitution se fait donc a la PREMIERE rencontre ; les
+  // occurrences suivantes gardent tout le reste — contexte de la semaine,
+  // charge prescrite, suggestion, lignes retenues ou ecartees — qui, lui,
+  // change bel et bien d'une semaine a l'autre. C'est meme tout l'interet
+  // d'une trace de cycle : voir OU l'etiquette d'un mouvement bascule.
+  api.day = function(day,week,seen){
     day=day||(typeof state!=='undefined'&&state?state.day:'');
     week=week||(typeof state!=='undefined'&&state?state.week:1);
     var out=[];
@@ -208,10 +217,17 @@
     (w&&w.blocks||[]).forEach(function(b){
       (b.exercises||[]).forEach(function(ex){
         var parsed=(typeof parseTargetReps==='function')?parseTargetReps(ex.format,8):{min:8,max:8};
+        var already=false;
+        if(seen){
+          var seenKey=norm(ex.name);
+          already=seen[seenKey]===true;
+          seen[seenKey]=true;
+        }
         out.push(api.movement(ex.name,{
           kind:b.kind, blockTitle:b.title, format:ex.format, note:ex.note, text:b.text,
           load:ex.load, pctOf1RM:ex.pctOf1RM, programLoad:ex.load,
-          targetReps:parsed.min||parsed.max||8, day:day, week:week
+          targetReps:parsed.min||parsed.max||8, day:day, week:week,
+          skipReplay:already
         }));
       });
     });
@@ -219,14 +235,32 @@
   };
 
   // Rapport complet, prêt à être copié dans le chat de dev.
+  // Portees : 'day' (la seance affichee), 'week' (la semaine en cours),
+  // 'cycle' (tout le programme actif, semaine par semaine). Le cycle est la
+  // portee qui montre le CHEMIN : un mouvement y apparait sous le contexte de
+  // chaque semaine, et c'est la qu'on voit une etiquette basculer d'une
+  // semaine a l'autre — la cause exacte du cas Pause Back Squat.
   api.report = function(scope){
-    scope=(scope==='day')?'day':'week';
+    if(scope!=='day'&&scope!=='cycle')scope='week';
     var week=(typeof state!=='undefined'&&state)?state.week:1;
-    var days=[];
-    if(scope==='day'){ days=[(typeof state!=='undefined'&&state)?state.day:'']; }
-    else if(typeof currentDayOrder==='function'){ days=currentDayOrder()||[]; }
+    var cycleWeeks=0;
     var traces=[];
-    days.forEach(function(d){ traces=traces.concat(api.day(d,week)); });
+    if(scope==='cycle'){
+      var weeks=(typeof totalWeeks==='function')?(Number(totalWeeks())||1):1;
+      var cycleDays=(typeof currentDayOrder==='function')?(currentDayOrder()||[]):[];
+      var seen={};
+      for(var w=1;w<=weeks;w++){
+        for(var di=0;di<cycleDays.length;di++){
+          traces=traces.concat(api.day(cycleDays[di],w,seen));
+        }
+      }
+      cycleWeeks=weeks;
+    }else{
+      var days=[];
+      if(scope==='day'){ days=[(typeof state!=='undefined'&&state)?state.day:'']; }
+      else if(typeof currentDayOrder==='function'){ days=currentDayOrder()||[]; }
+      days.forEach(function(d){ traces=traces.concat(api.day(d,week)); });
+    }
     // Un mouvement peut revenir plusieurs fois dans la semaine : on garde
     // chaque occurrence (le contexte differe, c'est justement le sujet).
     return {
@@ -234,6 +268,7 @@
       version:(typeof APP_VERSION!=='undefined')?APP_VERSION:'',
       genereLe:new Date().toISOString(),
       portee:scope,
+      semainesTracees:cycleWeeks||null,
       cycle:(typeof state!=='undefined'&&state&&state.cycle)?state.cycle.goal:'',
       semaine:week,
       profil:(window.CoachProfiles&&CoachProfiles.getActive&&CoachProfiles.getActive())?CoachProfiles.getActive().name:'',

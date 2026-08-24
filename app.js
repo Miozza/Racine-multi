@@ -1,5 +1,5 @@
-// Racine V4.6.3 — le panneau Diagnostic dit ce que chaque bouton donne
-var APP_VERSION = "V4.6.3";
+// Racine V4.6.4 — la trace du moteur couvre le cycle complet
+var APP_VERSION = "V4.6.4";
 
 // Architecture stable
 // programs/*.js = plan prévu
