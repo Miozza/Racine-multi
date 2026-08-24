@@ -1,5 +1,5 @@
-// Racine V4.6.4 — la trace du moteur couvre le cycle complet
-var APP_VERSION = "V4.6.4";
+// Racine V4.6.6 — les séances mal étiquetées par une ancienne version comptent à nouveau
+var APP_VERSION = "V4.6.6";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -800,6 +800,22 @@ function parseTargetReps(format, repsHint){
   // Chercher un nombre simple après "x" ou "×"
   var singleMatch = String(format||"").match(/[x×]\s*(\d+)/i);
   if(singleMatch) return {min:Number(singleMatch[1]), max:Number(singleMatch[1])};
+  // « montée vers 3RM » : un rep-max EST une cible de répétitions — 3RM veut
+  // dire trois reps, au maximum de ce qui sort proprement. Sans cette lecture,
+  // le format ne matchait aucune règle et retombait sur repsHint (8 ou 10) :
+  // le moteur croyait qu'on demandait 8 reps le jour le plus lourd du bloc, et
+  // projetait Epley VERS LE BAS depuis la dernière série de 3. Mesuré sur un
+  // cycle réel (phase2_fable5) : les 7 séances « montée vers NRM » du bloc,
+  // toutes touchées — Pause Back Squat proposé à 145 lb après un 170 × 3,
+  // Weighted Pull-up à 25 lb après un 30 × 3. Une baisse le jour du test.
+  //
+  // Un pourcentage n'est pas une cible de reps : « 80 % du 1RM » ne demande
+  // pas UNE répétition. Le rep-max n'est donc lu que si aucun % n'est écrit.
+  // Placé après la règle « ×N » : « 5×3 @ 85 % 1RM » vaut 3 reps, pas 1.
+  var repMaxMatch = String(format||"").match(/(\d+)\s*RM\b/i);
+  if(repMaxMatch && String(format||"").indexOf("%") === -1){
+    return {min:Number(repMaxMatch[1]), max:Number(repMaxMatch[1])};
+  }
   // Un compte écrit en toutes lettres, sans « × » : « cumul 100 reps »,
   // « Validation : 1 rep propre ». Sans cette lecture, la cible retombait sur
   // repsHint (10) et l'écran proposait 10 répétitions pour un objectif de 100 —

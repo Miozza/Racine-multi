@@ -1,3 +1,28 @@
+## V4.6.6 — Les séances mal étiquetées par une ancienne version comptent à nouveau
+
+Résidu du correctif V4.6.1, mesuré dans la trace de cycle de l'athlète : **18 lignes d'historique écartées**, dont sa séance la plus récente.
+
+- **Le problème.** Une ligne d'historique ne stocke pas seulement le texte du bloc : elle stocke les **intentions déjà résolues**, telles que le détecteur les a lues le jour de la séance. Quand le détecteur est corrigé, les lignes déjà écrites gardent leur ancienne étiquette — pour toujours. Le filtre de progression ne mélangeant pas contextes limités et normaux, ces séances restaient invisibles pour le moteur alors même que le bug était réparé. Mesuré : Face Pull en perdait 4, Strict Press 3, Pause Back Squat sa séance du 24 août.
+- **La correction.** La ligne stocke aussi son **texte brut** (note, titre de bloc, format, `kind`). Les intentions sont donc **relues à la lecture** avec le détecteur d'aujourd'hui. Rien n'est réécrit : la donnée de l'athlète n'est pas touchée, rien de nouveau ne part dans le `localStorage`, et une future correction du détecteur bénéficiera rétroactivement de la même façon. La relecture est mise en cache par `WeakMap` — donc jamais sérialisée.
+- **Le marqueur `context_logged`** posé à la sauvegarde portait le verdict du même détecteur. Il ne fait plus autorité quand la ligne est relisible et que la relecture le contredit ; il garde le dernier mot quand il n'y a rien à relire.
+- **Ce qui ne change pas.** Une ligne dont la note dit vraiment « technique » reste un contexte limité — elle est confirmée, pas « réparée ». Une ligne ancienne sans texte brut garde ses intentions et son marqueur : on n'invente pas ce qu'on ne peut pas relire.
+- **Vérifié sur les données réelles de l'athlète** : ses trois séances de Pause Back Squat comptent à nouveau (3/3 au lieu de 2/3).
+- **Garde-fous** : 8 assertions ajoutées à `dev/charge_engine_checks.js`, dont une qui vérifie que la ligne stockée ressort **octet pour octet identique** après relecture. Validées par mutation (4 mutations, toutes attrapées). Golden master identique sur ses 20 scénarios.
+- **Reste ouvert** : le `status` de ces lignes vaut toujours `context_logged`, ce qui les empêche de servir de **plancher de validation**. Elles comptent pour l'échelle RPE, la tendance et la meilleure charge contrôlée — mais pas comme preuve qu'une charge est acquise. Corriger ça demanderait de réécrire le statut stocké, donc une migration : pas fait sans décision explicite.
+- **Portée** : `scripts/charge/historique.js`. Aucun fichier `data/`, aucun programme retouché, aucune écriture de stockage ajoutée.
+
+## V4.6.5 — « montée vers 3RM » demande trois reps, pas huit
+
+Trouvé dans la trace de cycle envoyée par l'athlète — exactement ce pour quoi la trace a été construite.
+
+- **Le symptôme.** Le jour le plus lourd du bloc, le moteur proposait **moins** que la dernière série réussie. Pause Back Squat : 145 lb après un 170 × 3 @ RPE 8. Weighted Pull-up : 25 lb après un 30 × 3 @ RPE 8.
+- **La cause.** `parseTargetReps()` lit une plage (`8-12`), un schéma de séries (`5×3`) ou un compte écrit (`100 reps`). Le format **`montée vers 3RM` ne matchait rien** et retombait sur la valeur par défaut — 8 ou 10 reps selon l'appelant. Le moteur croyait donc qu'on demandait 8 répétitions un jour de 3RM, constatait que la dernière série de 3 « ne se traduit pas directement en 8 reps », et projetait Epley **vers le bas**. La baisse était logique une fois la cible fausse : c'est la cible qui était fausse.
+- **La correction.** Un rep-max **est** une cible de répétitions : `3RM` veut dire trois reps, au maximum de ce qui sort proprement. La lecture est placée après la règle `N×M` (« 5×3 @ 85 % du 1RM » vaut 3 reps, pas 1) et ignorée si le format contient un `%` — « 80 % du 1RM » ne demande pas UNE répétition.
+- **Mesuré sur le catalogue** : 7 formats concernés, tous de la forme `montée vers NRM`, et **aucun format du dépôt ne contient de `%`** — le correctif ne peut rien casser ailleurs. Sur le cycle réel de l'athlète (`phase2_fable5`), les 7 séances touchées sont toutes des jours de test : Pause Back Squat, Weighted Pull-up, Strict Press, Box Squat, Pendlay Row, Close-Grip Bench Press.
+- **Vérifié sur ses données réelles**, avant/après : Weighted Pull-up 25 → **30 lb**, Pause Back Squat 145 → **170 lb**.
+- **Garde-fous** : 6 assertions ajoutées à `dev/regression_checks.js`, propriétaire du contrat `parseTargetReps`. Validées par mutation (retrait de la lecture, retrait du garde-fou pourcentage).
+- **Portée** : `app.js` (`parseTargetReps`). Aucun programme retouché, aucune donnée touchée, aucun autre comportement modifié.
+
 ## V4.6.4 — La trace du moteur couvre le cycle complet
 
 Demandé par l'utilisateur : « pourquoi pas le cycle complet, ça te ferait mieux connaître le chemin fait et l'historique depuis le début. » Bonne intuition, et pour une raison précise : c'est le **contexte de chaque semaine** qui l'avait piégé sur le Pause Back Squat. Une trace de cycle montre exactement où l'étiquette d'un mouvement bascule d'une semaine à l'autre.

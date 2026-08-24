@@ -256,6 +256,21 @@ if(parseTargetRepsSrc){
   assert(target('4×15-20') === '15-20', 'Une plage garde la priorité sur tout le reste.');
   assert(target('4×10/côté') === '10-10', 'Un format N×M reste lu par le « × ».');
   assert(target('5-6 reps strict') === '5-6', 'Une plage suivie du mot reps reste une plage.');
+  // Un rep-max EST une cible de répétitions. Sans cette lecture, « montée vers
+  // 3RM » ne matchait aucune règle et retombait sur le repli : le moteur
+  // croyait qu'on demandait 8 ou 10 reps le jour le plus lourd du bloc, et
+  // projetait Epley vers le BAS depuis la dernière série de 3. Mesuré sur un
+  // cycle réel (phase2_fable5) : les 7 séances « montée vers NRM » touchées —
+  // Pause Back Squat proposé à 145 lb après un 170 × 3 @ RPE 8.
+  assert(target('montée vers 3RM') === '3-3', '« montée vers 3RM » déclare une cible de 3 reps.');
+  assert(target('montée vers 5RM') === '5-5', '« montée vers 5RM » déclare une cible de 5 reps.');
+  assert(target('montée vers 3RM test') === '3-3', 'Un suffixe après le rep-max ne l’efface pas.');
+  assert(target('3RM') === '3-3', 'Le rep-max seul suffit.');
+  // Un pourcentage n'est pas une cible de reps : « 80 % du 1RM » ne demande
+  // pas UNE répétition.
+  assert(target('à 80% du 1RM') === '10-10', 'Un pourcentage de 1RM ne déclare aucune cible de reps.');
+  // Et le schéma de séries garde la priorité sur le rep-max cité après lui.
+  assert(target('5×3 @ 85% du 1RM') === '3-3', 'Un format N×M reste prioritaire sur un 1RM cité en pourcentage.');
 }
 
 // 2. Deux exercices ne se compressent pas comme quatre. Le palier de densité
