@@ -299,6 +299,58 @@
       // Le plancher d'une hausse meritee n'est PAS defini ici : il vient de
       // coachRpeEarnedLoad(), qui relit l'echelon RPE reel de l'athlete.
     },
+    // coachCeilingForMovement() / coachRuleCeilingCap() — scripts/charge/ceiling.js
+    //
+    // Tous les reglages ci-dessus portent une VITESSE de progression
+    // (maxJumpBase, rpeProgression, brainGate.damping, progressionSpeed) ;
+    // aucun ne porte d'ASYMPTOTE. Un Lateral Raise a RPE 7 monte donc d'un
+    // cran par seance indefiniment, alors qu'il plafonne pour de bon bien
+    // avant une barre lourde : la fin de la progression n'est pas la meme
+    // chose qu'une progression lente.
+    //
+    // Le plafond est DEDUIT du comportement, jamais declare en livres : un
+    // chiffre ecrit ici serait le plafond du createur, pas celui de
+    // l'athlete. Deux signaux doivent tenir ensemble sur la meme fenetre :
+    //   1. la pointe ne bouge plus depuis `minStagnant` seances comparables ;
+    //   2. elle coute cher — au moins `minHardRows` series au palier a RPE
+    //      >= `minRpe`.
+    // Une pointe stable SANS effort eleve n'est pas un plafond : c'est un
+    // programme qui n'a pas encore demande plus. Un effort eleve SANS
+    // stagnation non plus : c'est une seance dure, deja traitee par les
+    // freins RPE.
+    //
+    // Trois familles, trois vitesses de plafonnement. Une isolation se
+    // declare plafonnee vite (le cran est petit, la fenetre utile est
+    // courte) ; un mouvement principal exige beaucoup plus de preuves —
+    // se tromper la couterait des mois de progression. La famille est lue
+    // par les detecteurs qui existent deja (isIsolationMovement,
+    // coachIsMainLoadContext) : aucune nouvelle regex de nom de mouvement.
+    ceiling: {
+      enabled: true,
+      // Seances comparables regardees. Au-dela, un vieux palier n'a plus
+      // valeur de preuve — l'athlete d'il y a six mois n'est pas celui-ci.
+      window: 8,
+      // Deux charges au meme palier a ce ratio pres. Une plaque de 2,5 lb
+      // ajoutee a 200 lb ne relance pas le compteur de stagnation ; +10 lb
+      // sur 200 lb, si.
+      plateauTolerance: 0.02,
+      // Sortie de plafond : si la derniere serie AU PALIER redescend d'au
+      // moins ce RPE sous le seuil de la famille, le plafond tombe
+      // immediatement. C'est la contrepartie indispensable de la deduction :
+      // ce qui se deduit d'un comportement doit se defaire quand le
+      // comportement change.
+      releaseRpeDrop: 1,
+      families: {
+        isolation: {minStagnant: 3, minRpe: 8,   minHardRows: 2},
+        accessory: {minStagnant: 4, minRpe: 8.5, minHardRows: 2},
+        main:      {minStagnant: 6, minRpe: 9,   minHardRows: 2}
+      },
+      // Plafonds manuels, par nom de mouvement normalise. VIDE en usine et
+      // jamais ecrit par le moteur : c'est la surcharge de profil
+      // (scripts/charge/tuning_override.js) qui le remplit, sur geste
+      // explicite de l'admin. Un plafond manuel s'applique sans historique.
+      manual: {}
+    },
     // coachDeloadMultiplierForContext() — suggestion.js
     deloadMultiplier: { main: 0.85, other: 0.80 },
     // updateAthleteStateFromResults() — suggestion.js

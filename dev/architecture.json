@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-29",
+  "generatedAt": "2026-08-24",
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 191,
+    "ACTIF": 200,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 85622,
-      "lines": 641,
+      "size": 191755,
+      "lines": 1071,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 18499,
-      "lines": 128,
+      "size": 7307,
+      "lines": 131,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -108,8 +108,8 @@
     },
     {
       "path": "README.md",
-      "size": 5490,
-      "lines": 103,
+      "size": 5875,
+      "lines": 104,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
       "exposes": [],
@@ -124,8 +124,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 4118,
-      "lines": 99,
+      "size": 6041,
+      "lines": 131,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,8 +140,8 @@
     },
     {
       "path": "app.js",
-      "size": 125374,
-      "lines": 2525,
+      "size": 149249,
+      "lines": 2940,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
       "exposes": [
@@ -547,8 +547,8 @@
     },
     {
       "path": "dev/charge_suggestion_golden_master.js",
-      "size": 8706,
-      "lines": 164,
+      "size": 8776,
+      "lines": 166,
       "role": "Validation : golden master des suggestions de charge, détecte toute dérive du moteur.",
       "category": "ACTIF",
       "exposes": [],
@@ -1471,8 +1471,8 @@
     },
     {
       "path": "docs/STRUCTURE_CONTRACT.md",
-      "size": 11582,
-      "lines": 294,
+      "size": 17344,
+      "lines": 394,
       "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
       "category": "ACTIF",
       "exposes": [],
@@ -1709,8 +1709,8 @@
     },
     {
       "path": "index.html",
-      "size": 21311,
-      "lines": 419,
+      "size": 22322,
+      "lines": 436,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2727,8 +2727,8 @@
     },
     {
       "path": "scripts/charge/index.js",
-      "size": 2728,
-      "lines": 31,
+      "size": 3731,
+      "lines": 43,
       "role": "Porte publique unique du moteur de charges : agrège les fonctions globales historiques sous window.CoachCharge.",
       "category": "ACTIF",
       "exposes": [
@@ -2805,8 +2805,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 6066,
-      "lines": 128,
+      "size": 22811,
+      "lines": 435,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2863,8 +2863,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 62849,
-      "lines": 1117,
+      "size": 95083,
+      "lines": 1714,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [
@@ -2959,8 +2959,8 @@
     },
     {
       "path": "scripts/globals.d.ts",
-      "size": 3547,
-      "lines": 90,
+      "size": 3652,
+      "lines": 93,
       "role": "Declarations des globales window.* pour l editeur. Pas du code : jamais charge par le navigateur, absent d index.html et du service worker. Supprimable sans effet sur l application.",
       "category": "ACTIF",
       "exposes": [],
@@ -3085,8 +3085,8 @@
     },
     {
       "path": "scripts/profiles/storage.js",
-      "size": 16138,
-      "lines": 377,
+      "size": 18288,
+      "lines": 413,
       "role": "API publique multi-profils CoachProfiles : registre local + stockage namespacé par profil, flag admin.",
       "category": "ACTIF",
       "exposes": [
@@ -3629,8 +3629,8 @@
     },
     {
       "path": "styles.css",
-      "size": 230784,
-      "lines": 6894,
+      "size": 274399,
+      "lines": 8139,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],
@@ -3652,6 +3652,107 @@
       "size": 366,
       "lines": 9,
       "role": "Test end-to-end Playwright de l application.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/ceiling.js",
+      "size": 8889,
+      "lines": 210,
+      "role": "Domaine charge — plafond de progression DÉDUIT du comportement (pointe stable + effort élevé), par famille de mouvement, plus les plafonds manuels posés par la calibration de profil. Expose coachRuleCeilingCap(), branché défensivement dans la cascade de suggestion.js. Aucun seuil en dur : tout vient de COACH_MOVEMENT_TUNING.ceiling.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachCeiling",
+        "coachCeilingForMovement",
+        "coachDeduceCeiling",
+        "coachCeilingManualLoad",
+        "coachRuleCeilingCap"
+      ],
+      "consumedBy": [
+        "scripts/charge/suggestion.js",
+        "dev/ceiling_checks.js",
+        "dev/charge_suggestion_golden_master.js"
+      ],
+      "consumes": [
+        "scripts/charge/movement_tuning.js",
+        "scripts/charge/historique.js",
+        "scripts/charge/mouvements.js"
+      ]
+    },
+    {
+      "path": "scripts/charge/tuning_override.js",
+      "size": 12512,
+      "lines": 269,
+      "role": "Domaine charge — surcharge par profil de 23 paramètres scalaires de COACH_MOVEMENT_TUNING, plus les plafonds manuels par mouvement. Calque non destructif (valeurs d'usine capturées au chargement), bornes vérifiées à la lecture/écriture/application, stockage racineState::<id>::tuning-override-v1 (donc emporté par l'export de profil).",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachTuningOverride"
+      ],
+      "consumedBy": [
+        "scripts/profiles/admin_tuning.js",
+        "scripts/profiles/storage.js",
+        "dev/tuning_override_checks.js",
+        "dev/charge_suggestion_golden_master.js"
+      ],
+      "consumes": [
+        "scripts/charge/movement_tuning.js",
+        "scripts/state/storage.js",
+        "scripts/profiles/storage.js"
+      ]
+    },
+    {
+      "path": "scripts/profiles/admin_tuning.js",
+      "size": 7693,
+      "lines": 159,
+      "role": "Panneau admin « Calibration du moteur » (⚙ Réglages) : rend la table PARAMS de CoachTuningOverride pour le profil actif — valeur d'usine, bornes, marquage des écarts, retour à l'usine, plafonds manuels par mouvement. Ne connaît aucun seuil.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.RacineAdminTuning"
+      ],
+      "consumedBy": [
+        "app.js",
+        "index.html"
+      ],
+      "consumes": [
+        "scripts/charge/tuning_override.js",
+        "scripts/charge/mouvements.js",
+        "scripts/ui_modals.js"
+      ]
+    },
+    {
+      "path": "dev/ceiling_checks.js",
+      "size": 16243,
+      "lines": 271,
+      "role": "Garde-fou du plafond de progression : les deux signaux doivent tenir ensemble, la sortie de plafond existe, aucun plafond en contexte limité/deload ni sous une charge validée, plafond manuel prioritaire et immédiat, et un seuil abaissé par la calibration déplace bien le plafond. Épingle le contrat, pas les chiffres (les seuils sont lus dans la table).",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/ceiling.js",
+        "scripts/charge/movement_tuning.js",
+        "scripts/charge/suggestion.js"
+      ]
+    },
+    {
+      "path": "dev/tuning_override_checks.js",
+      "size": 12429,
+      "lines": 208,
+      "role": "Garde-fou de la surcharge de tuning : chaque paramètre déclaré pointe une valeur numérique vivante, ses bornes encadrent l'usine, une valeur hors bornes est ramenée dedans, le retour à l'usine est exact, aucune regex ni tableau n'est surchargeable, isolation entre profils, stockage sous le préfixe exporté, et les modules de décision lisent la table à l'exécution.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/tuning_override.js",
+        "scripts/charge/movement_tuning.js"
+      ]
+    },
+    {
+      "path": "docs/superpowers/plans/2026-08-24-plafond-et-surcharge-tuning.md",
+      "size": 17177,
+      "lines": 301,
+      "role": "Plan d'implémentation du plafond de progression déduit et de la calibration du moteur par profil : le problème (aucun réglage ne portait d'asymptote), la décision (plafond déduit, jamais déclaré), pourquoi la surcharge existe, pourquoi elle ne touche pas le moteur, pourquoi cette clé de stockage, les risques et ce qui reste ouvert.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],

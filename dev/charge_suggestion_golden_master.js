@@ -57,6 +57,7 @@ const loadOrder = [
   'scripts/app_helpers.js',
   'scripts/charge/equipement.js',
   'scripts/charge/movement_tuning.js',
+  'scripts/charge/tuning_override.js',
   'scripts/charge/utilitaires.js',
   'scripts/charge/mouvements.js',
   'scripts/charge/rpe.js',
@@ -65,6 +66,7 @@ const loadOrder = [
   'scripts/charge/brain_stats.js',
   'scripts/charge/brain_memory.js',
   'scripts/charge/brain_journal.js',
+  'scripts/charge/ceiling.js',
   'scripts/charge/suggestion.js'
 ];
 loadOrder.forEach(file => vm.runInNewContext(read(file), ctx, { filename: file }));

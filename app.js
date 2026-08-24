@@ -1,5 +1,5 @@
-// Racine V4.5.68 — moteur de charges : un deload se déclare, un pourcentage se résout
-var APP_VERSION = "V4.5.68";
+// Racine V4.6.0 — le moteur sait s’arrêter : plafond de progression déduit + calibration par profil
+var APP_VERSION = "V4.6.0";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2640,6 +2640,7 @@ function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalis
 function renderSettings(){
   if(window.CoachOnboarding && CoachOnboarding.renderSettingsPanel)CoachOnboarding.renderSettingsPanel();
   if(window.RacineAdminPrograms && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminPrograms.render();
+  if(window.RacineAdminTuning && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminTuning.render();
   renderChargeSettings();
   if(typeof renderChargeDiagnosticPanel==="function")renderChargeDiagnosticPanel();
 }
