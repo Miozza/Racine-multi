@@ -1,10 +1,12 @@
-# ETAT ACTUEL — V4.6.1
+# ETAT ACTUEL — V4.6.2
 
-Version actuelle : V4.6.1
+Version actuelle : V4.6.2
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version corrige un défaut signalé sur données réelles et livre l'outil qui permet d'en diagnostiquer d'autres.
+Racine est un prototype multi-utilisateur local. Cette version corrige deux défauts signalés sur données réelles et livre l'outil qui permet d'en diagnostiquer d'autres.
+
+**Une preuve récente passe devant une vieille capacité sous surveillance.** Le cap d'`athlete_state` gèle un mouvement tant que sa capacité n'est pas confirmée, avec une porte de sortie : une séance plus récente et contrôlée qui prouve nettement mieux. Cette porte exigeait **+15 lb absolus**, seuil calibré pour une barre et inatteignable sur un mouvement dont toute la plage de travail tient dans 20-40 lb. Cas mesuré : Weighted Pull-up, 30 lb × 3 @ RPE 8 le 18 août, plus récent et propre, incapable de dépasser un cap à 25 lb — il aurait fallu 40 lb, soit +60 %. L'écart exigé est désormais **le plus petit de l'absolu et du relatif** (15 % de la capacité), plancher à un cran d'équipement : l'absolu continue de gouverner les barres lourdes, le relatif débloque les charges légères. Un cap **plus récent** que la dernière séance protège toujours — c'est son rôle.
 
 **Une consigne d'arrêt n'est pas une intention de programmation.** Le mot « vitesse » sert partout dans le catalogue à dire quand s'arrêter — « si la vitesse meurt, c'est fini », « vitesse de barre comme juge ». Le détecteur d'intention le lisait comme une déclaration technique. Deux dégâts, dont le second est le vrai : l'auto-progression était coupée sur un mouvement principal, et surtout **tout l'historique des semaines voisines disparaissait**, parce que le filtre de progression ne compare que des contextes de même nature. Cas mesuré : Pause Back Squat en S3 de `phase2_fable5`, deux semaines à 170 lb × 3 @ RPE 7 ne pesant rien, le moteur reproposant indéfiniment la charge écrite dans le programme. Balayage du catalogue complet : 10 378 contextes analysés, **76 libérés** (Bench Press ×30, Power Clean ×30, Strict Press ×11, Close-Grip Bench Press ×3, Pause Back Squat, DB Shoulder Press), **zéro nouvellement limité**. Un vrai bloc vitesse — celui qui déclare un pourcentage cible — reste un contexte à progression limitée.
 

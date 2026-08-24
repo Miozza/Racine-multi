@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 195557,
-      "lines": 1084,
+      "size": 197829,
+      "lines": 1095,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 7577,
-      "lines": 135,
+      "size": 8485,
+      "lines": 137,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,7 +140,7 @@
     },
     {
       "path": "app.js",
-      "size": 149241,
+      "size": 149236,
       "lines": 2940,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -531,8 +531,8 @@
     },
     {
       "path": "dev/charge_engine_checks.js",
-      "size": 57758,
-      "lines": 918,
+      "size": 61182,
+      "lines": 968,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -2805,8 +2805,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 22811,
-      "lines": 435,
+      "size": 24142,
+      "lines": 458,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2863,8 +2863,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 95083,
-      "lines": 1714,
+      "size": 95965,
+      "lines": 1724,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [

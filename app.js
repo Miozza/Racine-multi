@@ -1,5 +1,5 @@
-// Racine V4.6.1 — une consigne d’arrêt n’est pas une intention technique + trace du moteur
-var APP_VERSION = "V4.6.1";
+// Racine V4.6.2 — une preuve récente passe devant une vieille capacité sous surveillance
+var APP_VERSION = "V4.6.2";
 
 // Architecture stable
 // programs/*.js = plan prévu

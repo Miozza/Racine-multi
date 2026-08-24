@@ -1083,7 +1083,17 @@ function coachRuleAthleteStateCap(ctx){
     var capDate=String((ctx.cap&&ctx.cap.lastUpdated)||"");
     var controlledDate=String((ctx.bestControlled&&ctx.bestControlled.row&&ctx.bestControlled.row.date)||"");
     var controlledIsNewer=!capDate||!controlledDate||controlledDate>capDate;
-    var ignoreLowCap=ctx.bestControlled&&hasCapLoad&&ctx.bestControlled.load>=capLoad+15&&ctx.bestControlled.rpe<=8.5&&controlledIsNewer;
+    // Ecart exige pour ignorer un cap faible : le plus petit de l'absolu et du
+    // relatif, plancher a un cran d'equipement. Table : COACH_MOVEMENT_TUNING.
+    // athleteStateCap (un +15 lb en dur rendait cette porte inatteignable sur
+    // un mouvement dont la plage de travail tient dans 20-40 lb).
+    var capT=((window.COACH_MOVEMENT_TUNING||{}).athleteStateCap||{}).ignoreLowCap||{absoluteGap:15,relativeGap:0.15,maxRpe:8.5};
+    var capStep=(typeof coachLoadStepForExercise==='function')?coachLoadStepForExercise(ctx.label,ctx.currentLoad):5;
+    // Plancher a un cran : sur une charge minuscule, 15 % ne valent presque
+    // rien et n'importe quelle seance franchirait la porte — le cap ne
+    // protegerait plus personne.
+    var capGap=Math.max(capStep, Math.min(Number(capT.absoluteGap)||15, capLoad*(Number(capT.relativeGap)||0.15)));
+    var ignoreLowCap=ctx.bestControlled&&hasCapLoad&&ctx.bestControlled.load>=capLoad+capGap&&ctx.bestControlled.rpe<=(Number(capT.maxRpe)||8.5)&&controlledIsNewer;
     if(hasCapLoad&&capLoad>0&&ctx.suggested>capLoad&&!ignoreLowCap){ctx.suggested=capLoad;ctx.mode="down";ctx.severity="warning";ctx.reason="Mouvement sous surveillance dans athlete_state : charge cappee jusqu'a confirmation.";}
     else if(ignoreLowCap&&!ctx.isDeload){ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;ctx.reason="Cap athlete_state ignore : historique reel controle plus recent/plus fiable que le cap faible.";}
   }
