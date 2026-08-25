@@ -1,5 +1,5 @@
-// Racine V4.6.6 — les séances mal étiquetées par une ancienne version comptent à nouveau
-var APP_VERSION = "V4.6.6";
+// Racine V4.6.7 — la calibration du moteur ne se règle plus, elle se lit
+var APP_VERSION = "V4.6.7";
 
 // Architecture stable
 // programs/*.js = plan prévu

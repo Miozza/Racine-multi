@@ -530,6 +530,33 @@
       "consumes": []
     },
     {
+      "path": "dev/calibration_readout_checks.js",
+      "size": 10545,
+      "lines": 228,
+      "role": "Garde-fou des deux règles de lecture du panneau Calibration : une prédiction testée qui rate ses reps est un apprentissage et ne signale jamais un mouvement (sinon l'écran redevient une machine à brider le moteur), et rien ne s'affiche sous les seuils de prudence. Vérifie aussi que le seul blocage signalé est celui où Brain n'apprend rien (proposition jamais testée), que la précision se tait sur un échantillon court, et que l'écran ne rend plus aucun paramètre scalaire.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/profiles/admin_tuning.js",
+        "scripts/charge/brain_memory.js"
+      ]
+    },
+    {
+      "path": "dev/ceiling_checks.js",
+      "size": 16243,
+      "lines": 271,
+      "role": "Garde-fou du plafond de progression : les deux signaux doivent tenir ensemble, la sortie de plafond existe, aucun plafond en contexte limité/deload ni sous une charge validée, plafond manuel prioritaire et immédiat, et un seuil abaissé par la calibration déplace bien le plafond. Épingle le contrat, pas les chiffres (les seuils sont lus dans la table).",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/ceiling.js",
+        "scripts/charge/movement_tuning.js",
+        "scripts/charge/suggestion.js"
+      ]
+    },
+    {
       "path": "dev/charge_engine_checks.js",
       "size": 65462,
       "lines": 1033,
@@ -554,6 +581,19 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": []
+    },
+    {
+      "path": "dev/charge_trace_checks.js",
+      "size": 14943,
+      "lines": 254,
+      "role": "Garde-fou de la trace du moteur : elle nomme le filtre qui a écarté chaque séance, distingue les quatre motifs d'écart, reconstitue la suggestion d'avant chaque séance, et reste strictement en lecture seule — y compris quand la suggestion finale lève.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/trace.js",
+        "scripts/charge/suggestion.js"
+      ]
     },
     {
       "path": "dev/client_charge_safety_checks.js",
@@ -666,9 +706,9 @@
       "consumes": []
     },
     {
-      "path": "dev/history_progress_checks.js",
-      "size": 4126,
-      "lines": 65,
+      "path": "dev/history_edit_checks.js",
+      "size": 7359,
+      "lines": 113,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -682,9 +722,9 @@
       "consumes": []
     },
     {
-      "path": "dev/history_edit_checks.js",
-      "size": 7359,
-      "lines": 113,
+      "path": "dev/history_progress_checks.js",
+      "size": 4126,
+      "lines": 65,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -936,22 +976,6 @@
       "consumes": []
     },
     {
-      "path": "dev/retour_au_travail_checks.js",
-      "size": 13343,
-      "lines": 224,
-      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [
-        {
-          "path": "RELEASE_CHECKLIST.md",
-          "vector": "release-checklist-cmd",
-          "line": 0
-        }
-      ],
-      "consumes": []
-    },
-    {
       "path": "dev/regression_checks.js",
       "size": 21436,
       "lines": 335,
@@ -971,6 +995,22 @@
       "path": "dev/repro_bug1_charges_client.js",
       "size": 12792,
       "lines": 207,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/retour_au_travail_checks.js",
+      "size": 13343,
+      "lines": 224,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -1120,6 +1160,19 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/tuning_override_checks.js",
+      "size": 12943,
+      "lines": 215,
+      "role": "Garde-fou de la surcharge de tuning : chaque paramètre déclaré pointe une valeur numérique vivante, ses bornes encadrent l'usine, une valeur hors bornes est ramenée dedans, le retour à l'usine est exact, aucune regex ni tableau n'est surchargeable, isolation entre profils, stockage sous le préfixe exporté, et les modules de décision lisent la table à l'exécution. Le compte exact de paramètres n'est plus épinglé depuis V4.6.7 : il épinglait une promesse d'interface retirée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/tuning_override.js",
+        "scripts/charge/movement_tuning.js"
+      ]
     },
     {
       "path": "dev/verify-architecture.js",
@@ -1580,6 +1633,16 @@
       "size": 53832,
       "lines": 990,
       "role": "Plan daté de refonte de la suggestion de charge. Rapport périssable, pas un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "docs/superpowers/plans/2026-08-24-plafond-et-surcharge-tuning.md",
+      "size": 17177,
+      "lines": 301,
+      "role": "Plan d'implémentation du plafond de progression déduit et de la calibration du moteur par profil : le problème (aucun réglage ne portait d'asymptote), la décision (plafond déduit, jamais déclaré), pourquoi la surcharge existe, pourquoi elle ne touche pas le moteur, pourquoi cette clé de stockage, les risques et ce qui reste ouvert.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],
@@ -2685,6 +2748,30 @@
       "consumes": []
     },
     {
+      "path": "scripts/charge/ceiling.js",
+      "size": 8889,
+      "lines": 210,
+      "role": "Domaine charge — plafond de progression DÉDUIT du comportement (pointe stable + effort élevé), par famille de mouvement, plus les plafonds manuels posés par la calibration de profil. Expose coachRuleCeilingCap(), branché défensivement dans la cascade de suggestion.js. Aucun seuil en dur : tout vient de COACH_MOVEMENT_TUNING.ceiling.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachCeiling",
+        "coachCeilingForMovement",
+        "coachDeduceCeiling",
+        "coachCeilingManualLoad",
+        "coachRuleCeilingCap"
+      ],
+      "consumedBy": [
+        "scripts/charge/suggestion.js",
+        "dev/ceiling_checks.js",
+        "dev/charge_suggestion_golden_master.js"
+      ],
+      "consumes": [
+        "scripts/charge/movement_tuning.js",
+        "scripts/charge/historique.js",
+        "scripts/charge/mouvements.js"
+      ]
+    },
+    {
       "path": "scripts/charge/equipement.js",
       "size": 5782,
       "lines": 136,
@@ -2881,6 +2968,46 @@
       "consumes": []
     },
     {
+      "path": "scripts/charge/trace.js",
+      "size": 13739,
+      "lines": 289,
+      "role": "Domaine charge — extraction de diagnostic : pour chaque séance de l'historique, dit si elle a compté dans la suggestion et, sinon, quel filtre l'a écartée (nature de contexte, seed manuel, ligne invraisemblable, clé de contexte). Reconstitue aussi ce que le moteur aurait proposé avant chaque séance. Lecture seule.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachChargeTrace"
+      ],
+      "consumedBy": [
+        "scripts/charge_diagnostic_ui.js",
+        "dev/charge_trace_checks.js"
+      ],
+      "consumes": [
+        "scripts/charge/suggestion.js",
+        "scripts/charge/historique.js",
+        "scripts/charge/mouvements.js"
+      ]
+    },
+    {
+      "path": "scripts/charge/tuning_override.js",
+      "size": 12512,
+      "lines": 269,
+      "role": "Domaine charge — surcharge par profil de paramètres scalaires de COACH_MOVEMENT_TUNING, plus les plafonds manuels par mouvement. Calque non destructif (valeurs d'usine capturées au chargement), bornes vérifiées à la lecture/écriture/application, stockage racineState::<id>::tuning-override-v1 (donc emporté par l'export de profil). Depuis V4.6.7 les scalaires ne sont plus exposés dans aucun écran — outil de dev ; seuls les plafonds manuels restent posables par le panneau Calibration.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachTuningOverride"
+      ],
+      "consumedBy": [
+        "scripts/profiles/admin_tuning.js",
+        "scripts/profiles/storage.js",
+        "dev/tuning_override_checks.js",
+        "dev/charge_suggestion_golden_master.js"
+      ],
+      "consumes": [
+        "scripts/charge/movement_tuning.js",
+        "scripts/state/storage.js",
+        "scripts/profiles/storage.js"
+      ]
+    },
+    {
       "path": "scripts/charge/utilitaires.js",
       "size": 4562,
       "lines": 102,
@@ -3026,6 +3153,28 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "scripts/profiles/admin_tuning.js",
+      "size": 20877,
+      "lines": 453,
+      "role": "Panneau admin « Calibration du moteur » (⚙ Réglages) — LECTURE SEULE depuis V4.6.7 : montre la précision récente mesurée par Brain, les mouvements où il n'apprend rien (propositions refusées sans essai) ou ne progresse plus (courbe plafonnée), et ceux sans aucun repère de charge. Deux gestes seulement, tous deux en livres sur un mouvement du catalogue : poser un plafond manuel, donner une charge de départ. Ne rend plus la table PARAMS et n'écrit plus aucun paramètre scalaire du moteur.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.RacineAdminTuning"
+      ],
+      "consumedBy": [
+        "app.js",
+        "index.html"
+      ],
+      "consumes": [
+        "scripts/charge/brain_memory.js",
+        "scripts/charge/tuning_override.js",
+        "scripts/charge/mouvements.js",
+        "scripts/charge/historique.js",
+        "scripts/ui/movement_picker.js",
+        "scripts/ui_modals.js"
+      ]
     },
     {
       "path": "scripts/profiles/onboarding.js",
@@ -3250,8 +3399,8 @@
     },
     {
       "path": "scripts/session/extra_movements.js",
-      "size": 17484,
-      "lines": 398,
+      "size": 13186,
+      "lines": 294,
       "role": "Mouvements faits hors programme sur l'écran Résultats : liste éphémère, catalogue fermé, sélecteur plein écran, construction des items de séance.",
       "category": "ACTIF",
       "exposes": [
@@ -3267,7 +3416,8 @@
       "consumes": [
         "CoachCharge",
         "RacineMovementSwaps",
-        "CoachProfiles"
+        "CoachProfiles",
+        "scripts/ui/movement_picker.js"
       ]
     },
     {
@@ -3399,24 +3549,6 @@
       "consumes": []
     },
     {
-      "path": "scripts/session/voice_note.js",
-      "size": 14332,
-      "lines": 354,
-      "role": "Note par mouvement dans la séance guidée : bouton titre + modale, écrite via setGuidedResult.",
-      "category": "ACTIF",
-      "exposes": [
-        "window.CoachVoiceNote"
-      ],
-      "consumedBy": [
-        {
-          "path": "index.html",
-          "vector": "script-tag",
-          "line": 362
-        }
-      ],
-      "consumes": []
-    },
-    {
       "path": "scripts/session/view.js",
       "size": 27803,
       "lines": 620,
@@ -3430,6 +3562,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 363
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/voice_note.js",
+      "size": 14332,
+      "lines": 354,
+      "role": "Note par mouvement dans la séance guidée : bouton titre + modale, écrite via setGuidedResult.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachVoiceNote"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 362
         }
       ],
       "consumes": []
@@ -3549,6 +3699,25 @@
       "consumes": []
     },
     {
+      "path": "scripts/ui/movement_picker.js",
+      "size": 9047,
+      "lines": 204,
+      "role": "Sélecteur de mouvement plein écran réutilisable (recherche pliée, sections Programme actif / Bibliothèque, lignes bloquées avec leur raison, mono ou multi-sélection). Extrait sans changement de comportement de scripts/session/extra_movements.js en V4.6.7, parce que le panneau Calibration avait besoin du même geste : le moteur de charges ne reconnaît un mouvement que par son nom exact, une saisie libre pose des réglages qui ne s'appliquent jamais. Ne connaît aucune règle métier.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.RacineMovementPicker"
+      ],
+      "consumedBy": [
+        "scripts/session/extra_movements.js",
+        "scripts/profiles/admin_tuning.js",
+        "index.html"
+      ],
+      "consumes": [
+        "scripts/profiles/swaps.js",
+        "scripts/ui_modals.js"
+      ]
+    },
+    {
       "path": "scripts/ui_modals.js",
       "size": 37648,
       "lines": 707,
@@ -3656,139 +3825,6 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": []
-    },
-    {
-      "path": "scripts/charge/ceiling.js",
-      "size": 8889,
-      "lines": 210,
-      "role": "Domaine charge — plafond de progression DÉDUIT du comportement (pointe stable + effort élevé), par famille de mouvement, plus les plafonds manuels posés par la calibration de profil. Expose coachRuleCeilingCap(), branché défensivement dans la cascade de suggestion.js. Aucun seuil en dur : tout vient de COACH_MOVEMENT_TUNING.ceiling.",
-      "category": "ACTIF",
-      "exposes": [
-        "window.CoachCeiling",
-        "coachCeilingForMovement",
-        "coachDeduceCeiling",
-        "coachCeilingManualLoad",
-        "coachRuleCeilingCap"
-      ],
-      "consumedBy": [
-        "scripts/charge/suggestion.js",
-        "dev/ceiling_checks.js",
-        "dev/charge_suggestion_golden_master.js"
-      ],
-      "consumes": [
-        "scripts/charge/movement_tuning.js",
-        "scripts/charge/historique.js",
-        "scripts/charge/mouvements.js"
-      ]
-    },
-    {
-      "path": "scripts/charge/tuning_override.js",
-      "size": 12512,
-      "lines": 269,
-      "role": "Domaine charge — surcharge par profil de 23 paramètres scalaires de COACH_MOVEMENT_TUNING, plus les plafonds manuels par mouvement. Calque non destructif (valeurs d'usine capturées au chargement), bornes vérifiées à la lecture/écriture/application, stockage racineState::<id>::tuning-override-v1 (donc emporté par l'export de profil).",
-      "category": "ACTIF",
-      "exposes": [
-        "window.CoachTuningOverride"
-      ],
-      "consumedBy": [
-        "scripts/profiles/admin_tuning.js",
-        "scripts/profiles/storage.js",
-        "dev/tuning_override_checks.js",
-        "dev/charge_suggestion_golden_master.js"
-      ],
-      "consumes": [
-        "scripts/charge/movement_tuning.js",
-        "scripts/state/storage.js",
-        "scripts/profiles/storage.js"
-      ]
-    },
-    {
-      "path": "scripts/profiles/admin_tuning.js",
-      "size": 7693,
-      "lines": 159,
-      "role": "Panneau admin « Calibration du moteur » (⚙ Réglages) : rend la table PARAMS de CoachTuningOverride pour le profil actif — valeur d'usine, bornes, marquage des écarts, retour à l'usine, plafonds manuels par mouvement. Ne connaît aucun seuil.",
-      "category": "ACTIF",
-      "exposes": [
-        "window.RacineAdminTuning"
-      ],
-      "consumedBy": [
-        "app.js",
-        "index.html"
-      ],
-      "consumes": [
-        "scripts/charge/tuning_override.js",
-        "scripts/charge/mouvements.js",
-        "scripts/ui_modals.js"
-      ]
-    },
-    {
-      "path": "dev/ceiling_checks.js",
-      "size": 16243,
-      "lines": 271,
-      "role": "Garde-fou du plafond de progression : les deux signaux doivent tenir ensemble, la sortie de plafond existe, aucun plafond en contexte limité/deload ni sous une charge validée, plafond manuel prioritaire et immédiat, et un seuil abaissé par la calibration déplace bien le plafond. Épingle le contrat, pas les chiffres (les seuils sont lus dans la table).",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [],
-      "consumes": [
-        "scripts/charge/ceiling.js",
-        "scripts/charge/movement_tuning.js",
-        "scripts/charge/suggestion.js"
-      ]
-    },
-    {
-      "path": "dev/tuning_override_checks.js",
-      "size": 12429,
-      "lines": 208,
-      "role": "Garde-fou de la surcharge de tuning : chaque paramètre déclaré pointe une valeur numérique vivante, ses bornes encadrent l'usine, une valeur hors bornes est ramenée dedans, le retour à l'usine est exact, aucune regex ni tableau n'est surchargeable, isolation entre profils, stockage sous le préfixe exporté, et les modules de décision lisent la table à l'exécution.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [],
-      "consumes": [
-        "scripts/charge/tuning_override.js",
-        "scripts/charge/movement_tuning.js"
-      ]
-    },
-    {
-      "path": "docs/superpowers/plans/2026-08-24-plafond-et-surcharge-tuning.md",
-      "size": 17177,
-      "lines": 301,
-      "role": "Plan d'implémentation du plafond de progression déduit et de la calibration du moteur par profil : le problème (aucun réglage ne portait d'asymptote), la décision (plafond déduit, jamais déclaré), pourquoi la surcharge existe, pourquoi elle ne touche pas le moteur, pourquoi cette clé de stockage, les risques et ce qui reste ouvert.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [],
-      "consumes": []
-    },
-    {
-      "path": "scripts/charge/trace.js",
-      "size": 13739,
-      "lines": 289,
-      "role": "Domaine charge — extraction de diagnostic : pour chaque séance de l'historique, dit si elle a compté dans la suggestion et, sinon, quel filtre l'a écartée (nature de contexte, seed manuel, ligne invraisemblable, clé de contexte). Reconstitue aussi ce que le moteur aurait proposé avant chaque séance. Lecture seule.",
-      "category": "ACTIF",
-      "exposes": [
-        "window.CoachChargeTrace"
-      ],
-      "consumedBy": [
-        "scripts/charge_diagnostic_ui.js",
-        "dev/charge_trace_checks.js"
-      ],
-      "consumes": [
-        "scripts/charge/suggestion.js",
-        "scripts/charge/historique.js",
-        "scripts/charge/mouvements.js"
-      ]
-    },
-    {
-      "path": "dev/charge_trace_checks.js",
-      "size": 14943,
-      "lines": 254,
-      "role": "Garde-fou de la trace du moteur : elle nomme le filtre qui a écarté chaque séance, distingue les quatre motifs d'écart, reconstitue la suggestion d'avant chaque séance, et reste strictement en lecture seule — y compris quand la suggestion finale lève.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [],
-      "consumes": [
-        "scripts/charge/trace.js",
-        "scripts/charge/suggestion.js"
-      ]
     }
   ]
 }
