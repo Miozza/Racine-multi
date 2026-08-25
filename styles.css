@@ -8036,65 +8036,97 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 }
 
 /* ── Panneau admin « Calibration du moteur » ─────────────────────────────────
-   Réglages du moteur de charges, profil actif seulement. Même grammaire que le
-   reste des Réglages : fond HUD, Inter pour la phrase, Orbitron pour tout ce
-   qui est chiffré (valeur, bornes, plafond). Un écart à l'usine se voit d'un
-   coup d'œil — un réglage silencieux qu'on ne sait pas défaire est pire que
-   pas de réglage du tout. */
-.tuning-banner{
-  font-family:var(--font-hud);
-  font-size:11px;
-  letter-spacing:.05em;
-  line-height:1.5;
-  color:var(--cyan);
-  border:1px solid rgba(0,212,255,.35);
-  background:rgba(0,212,255,.07);
-  border-radius:8px;
-  padding:9px 12px;
-  margin-bottom:14px;
+   V4.6.7 : ce panneau ne règle plus rien, il montre ce que le moteur a appris.
+   Même grammaire que le reste des Réglages — Orbitron pour tout ce qui est
+   chiffré (précision, tendance, plafond), Inter pour la phrase qui explique.
+   Le chiffre de précision est la seule mesure qui bouge encore : il porte donc
+   la hiérarchie visuelle, pas les actions. */
+.calib-hero{
+  border:1px solid rgba(0,212,255,.30);
+  background:linear-gradient(180deg, rgba(0,212,255,.09), rgba(0,212,255,.02));
+  border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:18px;
 }
-.tuning-row{
-  border-top:1px solid var(--border2);
-  padding:10px 0 12px;
+.calib-hero-empty{
+  border-color:var(--border2);
+  background:var(--panel2);
 }
-.tuning-row label{ margin-top:0; }
-/* Écart à l'usine : un liseré bleu, pas une couleur d'alerte. Ce n'est pas une
-   erreur, c'est un choix assumé du coach. */
-.tuning-row-changed{
-  border-left:2px solid var(--blue);
-  padding-left:10px;
-}
-.tuning-controls{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.tuning-controls .input-field{
-  flex:1 1 auto;
-  min-width:0;
-  margin-top:0;
-  text-align:right;
-}
-.tuning-controls .btn-ghost{
-  flex:0 0 auto;
-  min-height:44px;
-}
-.tuning-meta{
+.calib-hero-label{
   font-family:var(--font-hud);
   font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.calib-hero-value{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:10px;
+  font-family:var(--font-hud);
+  font-size:30px;
+  font-weight:700;
+  letter-spacing:.02em;
+  line-height:1.2;
+  color:var(--cyan);
+  margin-top:2px;
+}
+.calib-hero-empty .calib-hero-value{ color:var(--muted); }
+.calib-trend{
+  font-size:12px;
+  font-weight:700;
   letter-spacing:.04em;
+}
+/* La tendance descend ou monte : ce n'est ni une alerte ni un succès, c'est la
+   direction de la courbe d'erreur. Elle reste dans la palette, jamais rouge. */
+.calib-trend.up{ color:var(--cyan); }
+.calib-trend.down{ color:var(--muted); }
+.calib-trend.flat{ color:var(--muted); }
+.calib-hero-note{
+  font-size:12px;
+  line-height:1.5;
   color:var(--muted);
   margin-top:6px;
 }
-.tuning-row-changed .tuning-meta strong{ color:var(--cyan); }
-.tuning-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:16px;
+/* Titres de section du panneau : ils séparent une lecture (« ce qu'il n'arrive
+   pas à apprendre ») d'une déclaration (« ce que tu lui as dit »). Sans cet
+   espace, la deuxième colle au dernier item de la première et les deux se
+   lisent comme une seule liste. */
+#adminTuningBody h3{ margin-top:22px; }
+#adminTuningBody h3:first-of-type{ margin-top:4px; }
+.calib-item{
+  border-top:1px solid var(--border2);
+  border-left:2px solid var(--border2);
+  padding:12px 0 14px 12px;
+  margin-top:2px;
 }
-.tuning-actions .btn-danger{ min-height:44px; }
-.tuning-cap-row{
+/* Trois natures, trois liserés. Aucun n'est rouge : rien ici n'est une erreur
+   du moteur, ce sont des endroits où il lui manque quelque chose. */
+.calib-item-untested{ border-left-color:var(--blue); }
+.calib-item-stuck{ border-left-color:var(--cyan); }
+.calib-item-seedless{ border-left-color:var(--border); }
+.calib-item-name{
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  overflow-wrap:anywhere;
+}
+.calib-item-title{
+  font-family:var(--font-hud);
+  font-size:11px;
+  letter-spacing:.05em;
+  color:var(--cyan);
+  margin-top:3px;
+}
+.calib-item-why{
+  font-size:12.5px;
+  line-height:1.55;
+  color:var(--muted);
+  margin:6px 0 10px;
+}
+.calib-act{ min-height:44px; }
+.calib-cap-row{
   display:flex;
   align-items:center;
   gap:10px;
@@ -8104,14 +8136,14 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   padding:8px 12px;
   margin:8px 0;
 }
-.tuning-cap-name{
+.calib-cap-name{
   flex:1 1 auto;
   min-width:0;
   overflow-wrap:anywhere;
   font-size:13px;
   color:var(--text2);
 }
-.tuning-cap-load{
+.calib-cap-load{
   flex:0 0 auto;
   font-family:var(--font-hud);
   font-size:13px;
@@ -8119,20 +8151,14 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   letter-spacing:.04em;
   color:var(--cyan);
 }
-.tuning-cap-row .btn-ghost{
+.calib-cap-row .btn-ghost{
   flex:0 0 auto;
   min-height:38px;
 }
-.tuning-cap-add{
+.calib-actions{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  margin-top:10px;
+  margin-top:14px;
 }
-.tuning-cap-add .input-field{ margin-top:0; }
-.tuning-cap-add #adminTuningCapName{ flex:1 1 160px; }
-.tuning-cap-add #adminTuningCapLoad{ flex:0 0 92px; text-align:right; }
-.tuning-cap-add .btn-accent{
-  flex:0 0 auto;
-  min-height:44px;
-}
+.calib-actions .btn-ghost{ min-height:44px; }

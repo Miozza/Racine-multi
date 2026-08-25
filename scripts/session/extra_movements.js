@@ -37,16 +37,8 @@
 
   // ── Utilitaires ────────────────────────────────────────────────────────────
   function norm(s){ return String(s==null?"":s).trim().toLowerCase(); }
-  function fold(s){
-    var v = norm(s);
-    try{ return v.normalize("NFD").replace(/[\u0300-\u036f]/g,""); }catch(e){ return v; }
-  }
-  function esc(s){
-    if(typeof escHtml === "function") return escHtml(s);
-    return String(s==null?"":s).replace(/[&<>"']/g,function(ch){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
-    });
-  }
+  // Échappement et recherche pliée vivent désormais dans le sélecteur
+  // (scripts/ui/movement_picker.js) : c'est lui qui rend le HTML.
   // Libellé du moteur (canonicalMovementLabel) : sert seulement à comparer deux
   // noms entre eux, jamais de clé de résultat — sinon le journal brut perdrait
   // la variante réellement choisie (« Single-Leg Hip Thrust » → « Hip Thrust »).
@@ -264,135 +256,39 @@
   };
 
   // ── Sélecteur plein écran ──────────────────────────────────────────────────
+  // La modale elle-même vit dans scripts/ui/movement_picker.js depuis V4.6.7 :
+  // le panneau admin en avait besoin à l'identique. Ce qui reste ici est la
+  // seule chose qui appartient à l'écran Résultats — l'anti-collision avec la
+  // séance du jour et ce qu'on fait de la sélection.
   api.openPicker = function(){
-    var existing = document.getElementById("extraMvPicker");
-    if(existing) existing.parentNode && existing.parentNode.removeChild(existing);
+    if(!(window.RacineMovementPicker && RacineMovementPicker.open)) return null;
 
-    var cat = catalog();
     // Programmés du dernier rendu + hors programme déjà ajoutés depuis.
     var occupied = occupiedIndex(occupiedNames(sessionItems).concat(chosen));
-    var picked = {};   // clé normalisée -> nom exact du catalogue
 
-    var modal = document.createElement("div");
-    modal.id = "extraMvPicker";
-    modal.className = "extra-mv-modal";
-    modal.innerHTML =
-      '<div class="extra-mv-sheet" role="dialog" aria-modal="true" aria-label="Ajouter un mouvement">'+
-        '<div class="extra-mv-head">'+
-          '<div>'+
-            '<div class="extra-mv-eyebrow">Hors programme</div>'+
-            '<div class="extra-mv-title">Ajouter un mouvement</div>'+
-          '</div>'+
-          '<button type="button" class="extra-mv-close" data-extra-close aria-label="Fermer">✕</button>'+
-        '</div>'+
-        '<input class="extra-mv-search" id="extraMvSearch" type="text" inputmode="search" '+
-          'autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Rechercher un mouvement"/>'+
-        '<div class="extra-mv-list" id="extraMvList"></div>'+
-        '<div class="extra-mv-foot">'+
-          '<button type="button" class="extra-mv-confirm" id="extraMvConfirm">Confirmer</button>'+
-          '<p class="extra-mv-foot-note">Sélection multiple · noms du catalogue seulement.</p>'+
-        '</div>'+
-      '</div>';
-    document.body.appendChild(modal);
-    try{ if(typeof lockBodyScrollForModal === "function") lockBodyScrollForModal(); }catch(e){}
-    setTimeout(function(){ modal.classList.add("visible"); }, 20);
-
-    var listEl = modal.querySelector("#extraMvList");
-    var searchEl = modal.querySelector("#extraMvSearch");
-    var confirmEl = modal.querySelector("#extraMvConfirm");
-
-    function rowHtml(name){
-      var key = norm(name);
-      var owner = occupiedBy(occupied, name);
-      if(owner){
-        // Même nom : « déjà dans la séance » suffit. Nom différent qui retombe
-        // sur la même capacité : on nomme le mouvement qui occupe la place.
-        var why = (norm(owner) === key) ? "déjà dans la séance" : ("déjà : " + owner);
-        return '<button type="button" class="extra-mv-row is-blocked" disabled>'+
-          '<span class="extra-mv-row-name">'+esc(name)+'</span>'+
-          '<span class="extra-mv-row-tag">'+esc(why)+'</span>'+
-        '</button>';
-      }
-      var on = !!picked[key];
-      return '<button type="button" class="extra-mv-row'+(on?" is-picked":"")+'" data-extra-name="'+esc(name)+'">'+
-        '<span class="extra-mv-row-name">'+esc(name)+'</span>'+
-        '<span class="extra-mv-row-mark">'+(on?"✓":"+")+'</span>'+
-      '</button>';
-    }
-
-    function section(title, names){
-      if(!names.length) return "";
-      return '<div class="extra-mv-section">'+
-        '<div class="extra-mv-section-title">'+esc(title)+'</div>'+
-        names.map(rowHtml).join("")+
-      '</div>';
-    }
-
-    function renderList(){
-      var q = fold(searchEl ? searchEl.value : "");
-      function keep(n){ return !q || fold(n).indexOf(q) >= 0; }
-      var prog = cat.program.filter(keep);
-      var rest = cat.others.filter(keep);
-      var html = section("Programme actif", prog) + section("Bibliothèque", rest);
-      if(!html){
-        html = '<p class="extra-mv-empty">'+
-          (cat.program.length + cat.others.length
-            ? "Aucun mouvement du catalogue ne correspond."
-            : "Catalogue de mouvements indisponible.")+
-        '</p>';
-      }
-      listEl.innerHTML = html;
-      Array.prototype.forEach.call(listEl.querySelectorAll("[data-extra-name]"), function(btn){
-        btn.addEventListener("click", function(){
-          var name = btn.getAttribute("data-extra-name");
-          var key = norm(name);
-          if(picked[key]) delete picked[key]; else picked[key] = name;
-          btn.classList.toggle("is-picked", !!picked[key]);
-          var mark = btn.querySelector(".extra-mv-row-mark");
-          if(mark) mark.textContent = picked[key] ? "✓" : "+";
-          syncConfirm();
+    return RacineMovementPicker.open({
+      eyebrow: "Hors programme",
+      title: "Ajouter un mouvement",
+      footNote: "Sélection multiple · noms du catalogue seulement.",
+      catalog: catalog(),
+      sectionTitles: { program: "Programme actif", others: "Bibliothèque" },
+      // Même nom : « déjà dans la séance » suffit. Nom différent qui retombe
+      // sur la même capacité : on nomme le mouvement qui occupe la place.
+      blocked: function(name){
+        var owner = occupiedBy(occupied, name);
+        if(!owner) return "";
+        return (norm(owner) === norm(name)) ? "déjà dans la séance" : ("déjà : " + owner);
+      },
+      onPick: function(names){
+        names.forEach(function(label){
+          if(occupiedBy(occupied, label)) return;
+          if(!api.add(label)) return;
+          occupied = occupiedIndex(occupiedNames(sessionItems).concat(chosen));
+          if(renderCard) renderCard(buildItem(label));
         });
-      });
-    }
-
-    function syncConfirm(){
-      if(!confirmEl) return;
-      var n = Object.keys(picked).length;
-      confirmEl.textContent = n ? ("Confirmer ("+n+")") : "Confirmer";
-      confirmEl.classList.toggle("is-armed", n > 0);
-    }
-
-    // L'écran ne se ferme que par Confirmer ou ✕ : pas de fermeture au tap sur
-    // le fond, une sélection en cours ne doit pas disparaître par accident.
-    function close(){
-      modal.classList.remove("visible");
-      setTimeout(function(){
-        if(modal.parentNode) modal.parentNode.removeChild(modal);
-        try{ if(typeof unlockBodyScrollForModal === "function") unlockBodyScrollForModal(); }catch(e){}
-      }, 200);
-    }
-
-    function commit(){
-      var names = Object.keys(picked).map(function(k){ return picked[k]; });
-      names.forEach(function(label){
-        if(occupiedBy(occupied, label)) return;
-        if(!api.add(label)) return;
-        occupied = occupiedIndex(occupiedNames(sessionItems).concat(chosen));
-        if(renderCard) renderCard(buildItem(label));
-      });
-      // Le bouton d'ajout reste en fin de liste après chaque ajout.
-      mountAddButton();
-      close();
-    }
-
-    if(searchEl) searchEl.addEventListener("input", renderList);
-    Array.prototype.forEach.call(modal.querySelectorAll("[data-extra-close]"), function(btn){
-      btn.addEventListener("click", close);
+        // Le bouton d'ajout reste en fin de liste après chaque ajout.
+        mountAddButton();
+      }
     });
-    if(confirmEl) confirmEl.addEventListener("click", commit);
-
-    renderList();
-    syncConfirm();
-    return modal;
   };
 })();

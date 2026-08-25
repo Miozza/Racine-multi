@@ -1,10 +1,20 @@
-# ETAT ACTUEL — V4.6.6
+# ETAT ACTUEL — V4.6.7
 
-Version actuelle : V4.6.6
+Version actuelle : V4.6.7
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version corrige deux défauts signalés sur données réelles et livre l'outil qui permet d'en diagnostiquer d'autres.
+Racine est un prototype multi-utilisateur local. Cette version retire un écran de configuration et le remplace par une lecture.
+
+**La calibration du moteur ne se règle plus, elle se lit.** Le panneau ⚙ Réglages → Calibration du moteur exposait 23 paramètres scalaires. Trois mentaient : « Confiance minimale du portail » n'était lu par personne (le seuil est en dur dans `brain_stats.js:252`), « Saut maximal de base » ne s'appliquait à aucun mouvement d'isolation (`historique.js:351` reprend le cran d'équipement), « Convergence du surplus (defaut) » ne se déclenchait que si aucune intention ne matchait — presque jamais. Trente-trois autres constantes du moteur n'étaient pas exposées du tout. Le champ affiché n'était pas le champ qui agissait.
+
+Or le moteur **mesure déjà sa propre erreur**, mouvement par mouvement : `brain_memory.js:215-231` compare la charge proposée à celle réellement faite et étiquette tout seul. `precisionRecent` et `precisionTrend()` existaient depuis des mois et n'étaient lus par **aucune vue** — seulement par un script de test. Le panneau montre désormais ça, et n'offre que les deux gestes qu'aucune mesure ne remplace : poser un plafond en livres, donner une charge de départ. Aucun curseur, aucun pourcentage.
+
+Deux règles de lecture, tenues par `dev/calibration_readout_checks.js` : une prédiction testée qui rate ses répétitions est un **apprentissage** et ne signale jamais rien — l'y mettre pousserait à brider le moteur, la boucle auto-bloquante déjà corrigée sur `brainGate` ; et rien ne s'affiche sous les seuils de prudence. Le seul blocage signalé est celui où Brain n'apprend **rien** : la proposition refusée sans jamais être testée (`humanOverrideDown`), qui n'incrémente pas `testedPredictions` et se reproposera indéfiniment.
+
+Le sélecteur de mouvement plein écran du bouton « + Ajouter un mouvement » est devenu un composant (`scripts/ui/movement_picker.js`) : les deux gestes du panneau passent par lui, donc par des noms exacts du catalogue. L'ancien champ texte libre acceptait « lateral raise db » et stockait un plafond qui ne s'appliquait jamais.
+
+Rappel : `scripts/charge/tuning_override.js` **reste** — outil de dev, borné, testé, emporté par l'export. Les calibrations déjà posées continuent de s'appliquer ; elles ne sont simplement plus modifiables depuis un écran.
 
 **Une preuve récente passe devant une vieille capacité sous surveillance.** Le cap d'`athlete_state` gèle un mouvement tant que sa capacité n'est pas confirmée, avec une porte de sortie : une séance plus récente et contrôlée qui prouve nettement mieux. Cette porte exigeait **+15 lb absolus**, seuil calibré pour une barre et inatteignable sur un mouvement dont toute la plage de travail tient dans 20-40 lb. Cas mesuré : Weighted Pull-up, 30 lb × 3 @ RPE 8 le 18 août, plus récent et propre, incapable de dépasser un cap à 25 lb — il aurait fallu 40 lb, soit +60 %. L'écart exigé est désormais **le plus petit de l'absolu et du relatif** (15 % de la capacité), plancher à un cran d'équipement : l'absolu continue de gouverner les barres lourdes, le relatif débloque les charges légères. Un cap **plus récent** que la dernière séance protège toujours — c'est son rôle.
 
@@ -12,7 +22,7 @@ Racine est un prototype multi-utilisateur local. Cette version corrige deux déf
 
 **Trace du moteur** (⚙ Réglages → Diagnostic charges). Le panneau `(!)` explique la décision ; il ne dit rien de ce qui n'a jamais atteint la décision. La trace répond ligne par ligne : cette séance a-t-elle compté, et sinon **par quel filtre** a-t-elle été écartée — nature de contexte différente, seed manuel, ligne invraisemblable, clé de contexte. Elle reconstitue aussi ce que le moteur aurait proposé avant chaque séance, en rejouant la cascade sur les seules lignes antérieures. Lecture seule, exportable en JSON ou copiable d'un bouton depuis l'iPhone. C'est l'export à envoyer quand une charge proposée ne colle pas à ce qui a été réellement soulevé.
 
-Rappel de la livraison précédente, toujours d'actualité : le moteur a désormais une **asymptote**. Le plafond de progression est déduit du comportement — pointe stable **et** effort élevé, jamais déclaré en livres — avec sortie automatique dès qu'une série redevient moins chère, et trois familles de vitesse de plafonnement. Et ses 23 paramètres scalaires se règlent **par profil** (⚙ Réglages → Calibration du moteur), stockés sous la clé d'état du profil, donc emportés par l'export.
+Rappel des livraisons précédentes, toujours d'actualité : le moteur a une **asymptote** — plafond déduit du comportement (pointe stable **et** effort élevé, jamais déclaré en livres), sortie automatique dès qu'une série redevient moins chère, trois familles de vitesse de plafonnement. Les plafonds **manuels** restent posables par profil et sont stockés sous la clé d'état du profil, donc emportés par l'export. Une preuve récente passe devant une vieille capacité sous surveillance (écart exigé = le plus petit de l'absolu et du relatif). Et une consigne d'arrêt (« si la vitesse meurt ») n'est plus lue comme une intention de programmation.
 
 ## La Saison — portée active
 

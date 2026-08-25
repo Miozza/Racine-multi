@@ -71,8 +71,16 @@ const O = ctx.window.CoachTuningOverride;
 const T = ctx.window.COACH_MOVEMENT_TUNING;
 
 // ─── 1. Table de parametres ────────────────────────────────────────────────
+// Depuis V4.6.7 ce module n'alimente plus d'ecran : le panneau « Calibration du
+// moteur » ne configure plus rien, il lit ce que Brain a appris. La surcharge
+// reste un OUTIL DE DEV — borne, teste, emporte par l'export de profil — et les
+// calibrations deja posees continuent de s'appliquer.
+//
+// Le compte exact (23) n'est donc plus epingle : il pinglait une promesse
+// d'interface qui n'existe plus. Ce qui reste verifie, parametre par parametre,
+// est le seul contrat qui compte encore : un chemin declare pointe une valeur
+// vivante, ses bornes tiennent, et le retour a l'usine est exact.
 assert(Array.isArray(O.PARAMS) && O.PARAMS.length > 0, 'La table PARAMS existe.');
-assert(O.PARAMS.length === 23, 'La table declare 23 parametres (' + O.PARAMS.length + ').');
 const seen = {};
 O.PARAMS.forEach(p => { seen[p.path] = (seen[p.path] || 0) + 1; });
 assert(Object.keys(seen).length === O.PARAMS.length, 'Aucun chemin declare deux fois.');
