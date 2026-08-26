@@ -27,6 +27,7 @@ node dev/movement_tuning_boundary_checks.js
 node dev/ceiling_checks.js
 node dev/tuning_override_checks.js
 node dev/calibration_readout_checks.js
+node dev/rpe_ladder_checks.js
 node dev/suggest_helper_checks.js
 node dev/client_charge_safety_checks.js
 node dev/progression_contract_checks.js

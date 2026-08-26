@@ -183,14 +183,14 @@ function coachBrainBuildStats(label,history,context,targetReps,proposedLoad,last
   var easyRecent=(lastRpe>0&&lastRpe<=7.5&&lastReps&&(!target||lastReps>=target));
   if(sensitivity==='high')required=2;
   if(confidence<0.85)required=Math.max(required,2);
-  if(confidence<0.65)required=Math.max(required,3);
+  if(confidence<coachBrainConfidenceFloor())required=Math.max(required,3);
   if(shortfalls>0)required=Math.max(required,3);
   if(easyRecent&&sensitivity!=='high'&&shortfalls===0)required=1;
   if(ambition>0.78&&confidence>=0.70)required=Math.max(1,required-1);
 
   var validations=coachBrainValidationCount(recent,Number(lastLoad)||coachBrainRowLoad(last),target);
   var status='normal';
-  if(confidence<0.65)status='uncertain';
+  if(confidence<coachBrainConfidenceFloor())status='uncertain';
   else if(confidence<0.85)status='confirm';
   else status='trusted';
   var built = {
@@ -221,6 +221,24 @@ function coachBrainBuildStats(label,history,context,targetReps,proposedLoad,last
   }catch(e){}
   return built;
 }
+// Seuil de confiance sous lequel Brain se declare incertain. Une seule valeur
+// pour les TROIS prudences qu'il declenche ensemble — exiger plus de
+// confirmations, afficher le statut « incertain », amortir la hausse au
+// portail. Elles disent la meme chose : « je ne suis pas sur ».
+//
+// V4.6.8 — ce seuil etait ecrit en dur a trois endroits ici, pendant que
+// COACH_MOVEMENT_TUNING.brainGate.confidenceFloor en declarait un quatrieme que
+// personne ne lisait. Les quatre valaient 0,65 : aucun comportement n'etait
+// faux, mais le fichier dont le contrat est « tout seuil vit ICI » mentait, et
+// le premier qui aurait bouge la table n'aurait rien change au moteur.
+// Lecture a l'EXECUTION, jamais capturee au chargement (garde-fou :
+// dev/tuning_override_checks.js).
+function coachBrainConfidenceFloor(){
+  var G=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.brainGate)||null;
+  var v=G?Number(G.confidenceFloor):NaN;
+  return (v>0&&v<1)?v:0.65;
+}
+
 // Hausse amortie par le portail de confiance. Table : COACH_MOVEMENT_TUNING
 // .brainGate. Amortir plutot que geler : un gel complet enferme les charges
 // legeres, dont la confiance ne peut plus grandir faute d'observations.
@@ -249,7 +267,7 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   var shouldGate=false;
   var level='watch';
   var extra='';
-  if(stats.confidenceRaw<0.65){
+  if(stats.confidenceRaw<coachBrainConfidenceFloor()){
     shouldGate=true;
     extra='Confiance de prediction faible ('+stats.confidence+'%).';
   }else if(stats.validations<stats.requiredConfirmations && stats.ambitionRaw<0.78){

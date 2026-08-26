@@ -124,8 +124,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 6263,
-      "lines": 133,
+      "size": 6849,
+      "lines": 136,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -1022,6 +1022,20 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/rpe_ladder_checks.js",
+      "size": 9865,
+      "lines": 192,
+      "role": "Garde-fou du barreau RPE et du seuil de confiance. Épingle deux contrats : les crans annoncés par le barreau sont atteignables (le rack fait loi — un plafond en pourcentage qui interdit un cran d'équipement fige le mouvement), et les crans BONUS de la réactivité restent sous le saut maximal prudent (sinon trois signaux positifs se multiplient et 20 lb mène à 40 lb en une séance). Vérifie aussi que zéro est une charge valide (Weighted Pull-up) et que les trois prudences de Brain lisent le même brainGate.confidenceFloor.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/suggestion.js",
+        "scripts/charge/brain_stats.js",
+        "scripts/charge/movement_tuning.js"
+      ]
     },
     {
       "path": "dev/season_checks.js",
@@ -2731,8 +2745,8 @@
     },
     {
       "path": "scripts/charge/brain_stats.js",
-      "size": 12815,
-      "lines": 265,
+      "size": 15553,
+      "lines": 311,
       "role": "Statistiques locales Brain par mouvement + intention (confiance, précision).",
       "category": "ACTIF",
       "exposes": [
@@ -2892,8 +2906,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 24142,
-      "lines": 458,
+      "size": 25131,
+      "lines": 471,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2950,8 +2964,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 95965,
-      "lines": 1724,
+      "size": 98301,
+      "lines": 1766,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [

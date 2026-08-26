@@ -1,5 +1,5 @@
-// Racine V4.6.7 — la calibration du moteur ne se règle plus, elle se lit
-var APP_VERSION = "V4.6.7";
+// Racine V4.6.8 — le barreau RPE tient enfin sa promesse sur l'isolation
+var APP_VERSION = "V4.6.8";
 
 // Architecture stable
 // programs/*.js = plan prévu

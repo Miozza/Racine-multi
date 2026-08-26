@@ -1,10 +1,20 @@
-# ETAT ACTUEL — V4.6.7
+# ETAT ACTUEL — V4.6.8
 
-Version actuelle : V4.6.7
+Version actuelle : V4.6.8
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version retire un écran de configuration et le remplace par une lecture.
+Racine est un prototype multi-utilisateur local. Cette version corrige un défaut du moteur mesuré sur le barreau RPE.
+
+**Le barreau RPE annonçait des crans qu'il ne pouvait pas donner.** Sur un mouvement d'isolation, `maxJumpBase` vaut un cran nominal et `jumpFactor` vaut 1 : le barreau « 2 crans à RPE ≤ 6 » était systématiquement raboté à un seul. Mesure avant correctif, Lateral Raise DB à 20 lb : RPE 6 et RPE 7,5 donnaient tous deux +2,5 lb — et l'explication à l'écran disait pourtant « Hausse de 2 crans vers 22,5 lb ». C'est mot pour mot le défaut déjà corrigé pour les barres — « le RPE portait presque aucune information » — laissé intact sur l'isolation.
+
+**Le rack fait loi.** Un cran d'équipement est la plus petite progression qui existe réellement : un plafond en pourcentage qui l'interdit ne protège pas, il fige. Deux crans d'haltère font toujours plus de 15 % (20 → 25 = +25 %), donc le plafond relatif interdisait ce barreau à *toutes* les charges. Les crans annoncés par le barreau passent désormais toujours. La contrepartie est stricte : les crans **bonus** de la réactivité (tendance, reps dépassées) restent sous le saut maximal prudent — sinon trois signaux positifs se multiplient et 20 lb mène à 40 lb en une séance sur la foi d'un seul RPE 6.
+
+Résultat : isolation à RPE 6 → 25 lb, à RPE 7 → 22,5 lb, à RPE 8 → pas de hausse. Les barres ne bougent pas, le frein n'y mordait déjà pas. Un seul scénario du golden master a changé, et aucune des 51 courbes de `dev/simulate_multi_users.js`.
+
+**Un seul seuil de confiance.** `brainGate.confidenceFloor` était déclaré dans la table et lu par personne : les trois prudences qu'il déclenche ensemble — exiger plus de confirmations, afficher « incertain », amortir la hausse au portail — portaient chacune leur 0,65 en dur. Les quatre valeurs étant identiques, aucun comportement n'était faux ; mais le fichier dont le contrat est « tout seuil vit ici » mentait. Les trois lisent maintenant la table. Zéro changement de comportement aujourd'hui.
+
+Garde-fou : `dev/rpe_ladder_checks.js`, vérifié par mutation dans les deux sens.
 
 **La calibration du moteur ne se règle plus, elle se lit.** Le panneau ⚙ Réglages → Calibration du moteur exposait 23 paramètres scalaires. Trois mentaient : « Confiance minimale du portail » n'était lu par personne (le seuil est en dur dans `brain_stats.js:252`), « Saut maximal de base » ne s'appliquait à aucun mouvement d'isolation (`historique.js:351` reprend le cran d'équipement), « Convergence du surplus (defaut) » ne se déclenchait que si aucune intention ne matchait — presque jamais. Trente-trois autres constantes du moteur n'étaient pas exposées du tout. Le champ affiché n'était pas le champ qui agissait.
 
