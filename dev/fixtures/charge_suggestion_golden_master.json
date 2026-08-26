@@ -452,10 +452,10 @@
   },
   "isolation_small_step": {
     "label": "Lateral Raise DB",
-    "loadText": "22.5 lb / main",
-    "loadNum": 22.5,
+    "loadText": "25 lb / main",
+    "loadNum": 25,
     "severity": "watch",
-    "reason": "Progression prete : dernier 20 lb x 12 @RPE 6. Hausse de 2 crans vers 22.5 lb.",
+    "reason": "Progression prete : dernier 20 lb x 12 @RPE 6. Hausse de 2 crans vers 25 lb.",
     "last": {
       "date": "2026-01-02",
       "reps": 12,
@@ -553,7 +553,7 @@
       "comfort": "high",
       "lastReps": 12,
       "status": "uncertain",
-      "proposedLoad": 22.5,
+      "proposedLoad": 25,
       "lastLoad": 20
     }
   },

@@ -1,5 +1,5 @@
-// Racine V4.6.7 — la calibration du moteur ne se règle plus, elle se lit
-var APP_VERSION = "V4.6.7";
+// Racine V4.6.9 — le kind d'un bloc déclare enfin son intention
+var APP_VERSION = "V4.6.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

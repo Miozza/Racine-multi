@@ -85,7 +85,17 @@
         ]
       },
       // Isolation : le cran d'equipement est deja petit et le geste est plus
-      // sensible a la fatigue. Progression plus fine, jamais de saut elargi.
+      // sensible a la fatigue. Progression plus fine, jamais de saut elargi
+      // (jumpFactor reste a 1 partout ici).
+      //
+      // V4.6.8 — le rung « 2 crans a RPE <= 6 » etait INATTEIGNABLE : sur une
+      // isolation, maxJumpBase vaut un cran nominal et jumpFactor vaut 1, donc
+      // le saut maximal prudent le rabotait systematiquement a un seul cran.
+      // Mesure : Lateral Raise DB a 20 lb donnait +2,5 lb a RPE 6 comme a
+      // RPE 7,5 — le RPE ne portait aucune information, exactement le defaut
+      // que ce barreau existe pour corriger. Les crans ANNONCES ici passent
+      // desormais toujours (coachRpeMaxAllowedLoad, suggestion.js) ; seuls les
+      // crans bonus de `modifiers` restent soumis au saut maximal.
       isolation: {
         ladder: [
           {maxRpe:6,   steps:2, jumpFactor:1},
@@ -292,6 +302,10 @@
     // le moteur en proposait un. Les freins RPE (>= 8,5 et >= 9) sont en
     // amont et ne sont pas concernes : le portail ne voit que des hausses.
     brainGate: {
+      // Lu par coachBrainConfidenceFloor() — scripts/charge/brain_stats.js.
+      // UN seuil pour les trois prudences qu'il declenche ensemble : exiger plus
+      // de confirmations, afficher « incertain », amortir la hausse. Jusqu'a
+      // V4.6.7 cette ligne etait declarative : les trois etaient en dur.
       confidenceFloor: 0.65,
       // Part de la hausse proposee qui survit au portail. 0 = ancien
       // comportement (gel complet), 1 = portail sans effet.

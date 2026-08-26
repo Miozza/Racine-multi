@@ -1,10 +1,30 @@
-# ETAT ACTUEL — V4.6.7
+# ETAT ACTUEL — V4.6.9
 
-Version actuelle : V4.6.7
+Version actuelle : V4.6.9
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version retire un écran de configuration et le remplace par une lecture.
+Racine est un prototype multi-utilisateur local. Cette version réconcilie deux définitions de « principal » qui ne se parlaient pas.
+
+**Le `kind` d'un bloc déclare enfin son intention.** `coachIsMainLoadContext()` matche `/main/` : un bloc `kind:"main"` était donc traité comme principal pour le deload et le plafond. Mais `coachExtractMovementIntent()` ne lisait que des mots — *lourd*, *force*, *principal*, *hypertrophie* — et le même bloc ne déclarait aucune intention, retombant sur le repli générique. Mesure sur le catalogue : **1 643 exercices** de bloc `main` et **1 720** de bloc `hypertrophy` étaient dans ce cas.
+
+L'effet n'est pas symétrique, et c'est le point. Côté force, 0,40 → 0,50 vaut +0,7 à +3,4 lb avant arrondi ; le cran du rack fait 5 lb sur une barre, donc l'écart disparaît presque toujours (1 cas sur 11 mesurés). Cette moitié corrige une incohérence, pas une charge. Côté hypertrophie, 0,40 → 0,30 est un écart qui **survit à l'arrondi** (5 cas sur 11) : le moteur rattrapait plus vite que ce que la programmation demande, alors que sur un bloc d'hypertrophie des répétitions en plus viennent souvent du volume, pas d'une réserve de force.
+
+Un mot explicite l'emporte toujours, dans les deux sens : un bloc `main` qui écrit « hypertrophie » est traité comme tel, un bloc `hypertrophy` qui écrit « force » aussi. Les autres `kind` — `accessory` en tête — ne sont pas devinés : « accessoire » n'est pas synonyme d'hypertrophie, c'est une décision de programmation.
+
+**L'emplacement de la règle n'est pas négociable.** Elle vit dans `coachExtractMovementIntent()` parce que `coachRederiveStoredContext()` relit les lignes déjà loggées avec ce même détecteur : les deux côtés de la comparaison de contexte bougent ensemble. Placée dans le constructeur de contexte, elle changerait la clé du jour sans changer celle des lignes stockées, et les 28 blocs Power Clean principaux du catalogue perdraient tout leur historique — le bug « vitesse » réintroduit. `dev/intent_from_kind_checks.js` en fait son test central.
+
+Golden master inchangé, aucune des 51 courbes de `dev/simulate_multi_users.js` ne bouge : le changement est correct sans être spectaculaire, et c'est ce que la mesure annonçait.
+
+**Le barreau RPE annonçait des crans qu'il ne pouvait pas donner.** Sur un mouvement d'isolation, `maxJumpBase` vaut un cran nominal et `jumpFactor` vaut 1 : le barreau « 2 crans à RPE ≤ 6 » était systématiquement raboté à un seul. Mesure avant correctif, Lateral Raise DB à 20 lb : RPE 6 et RPE 7,5 donnaient tous deux +2,5 lb — et l'explication à l'écran disait pourtant « Hausse de 2 crans vers 22,5 lb ». C'est mot pour mot le défaut déjà corrigé pour les barres — « le RPE portait presque aucune information » — laissé intact sur l'isolation.
+
+**Le rack fait loi.** Un cran d'équipement est la plus petite progression qui existe réellement : un plafond en pourcentage qui l'interdit ne protège pas, il fige. Deux crans d'haltère font toujours plus de 15 % (20 → 25 = +25 %), donc le plafond relatif interdisait ce barreau à *toutes* les charges. Les crans annoncés par le barreau passent désormais toujours. La contrepartie est stricte : les crans **bonus** de la réactivité (tendance, reps dépassées) restent sous le saut maximal prudent — sinon trois signaux positifs se multiplient et 20 lb mène à 40 lb en une séance sur la foi d'un seul RPE 6.
+
+Résultat : isolation à RPE 6 → 25 lb, à RPE 7 → 22,5 lb, à RPE 8 → pas de hausse. Les barres ne bougent pas, le frein n'y mordait déjà pas. Un seul scénario du golden master a changé, et aucune des 51 courbes de `dev/simulate_multi_users.js`.
+
+**Un seul seuil de confiance.** `brainGate.confidenceFloor` était déclaré dans la table et lu par personne : les trois prudences qu'il déclenche ensemble — exiger plus de confirmations, afficher « incertain », amortir la hausse au portail — portaient chacune leur 0,65 en dur. Les quatre valeurs étant identiques, aucun comportement n'était faux ; mais le fichier dont le contrat est « tout seuil vit ici » mentait. Les trois lisent maintenant la table. Zéro changement de comportement aujourd'hui.
+
+Garde-fou : `dev/rpe_ladder_checks.js`, vérifié par mutation dans les deux sens.
 
 **La calibration du moteur ne se règle plus, elle se lit.** Le panneau ⚙ Réglages → Calibration du moteur exposait 23 paramètres scalaires. Trois mentaient : « Confiance minimale du portail » n'était lu par personne (le seuil est en dur dans `brain_stats.js:252`), « Saut maximal de base » ne s'appliquait à aucun mouvement d'isolation (`historique.js:351` reprend le cran d'équipement), « Convergence du surplus (defaut) » ne se déclenchait que si aucune intention ne matchait — presque jamais. Trente-trois autres constantes du moteur n'étaient pas exposées du tout. Le champ affiché n'était pas le champ qui agissait.
 

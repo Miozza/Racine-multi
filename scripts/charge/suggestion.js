@@ -166,6 +166,49 @@ function coachNextLoadSteps(label,from,steps,loadText){
   return cur;
 }
 
+// Plafond de hausse d'une seance, pour un barreau RPE donne.
+//
+// V4.6.8 — le barreau annoncait des crans qu'il ne pouvait pas donner. Sur une
+// isolation, `maxJumpBase` vaut UN cran nominal et `jumpFactor` vaut toujours 1 :
+// le rung « 2 crans a RPE <= 6 » etait donc systematiquement rabote a un seul.
+// Mesure avant correctif sur Lateral Raise DB a 20 lb : RPE 6 et RPE 7,5
+// donnaient tous deux +2,5 lb. C'est mot pour mot le defaut que V4.5.56 avait
+// corrige pour les barres — « le RPE portait presque aucune information » — et
+// laisse intact sur l'isolation.
+//
+// Regle posee : LES CRANS DU BARREAU PASSENT TOUJOURS. Le rack fait loi, parce
+// qu'un cran d'equipement est la plus petite progression qui existe reellement :
+// un plafond en pourcentage qui l'interdit n'est pas de la prudence, il fige le
+// mouvement. Deux crans d'haltere font toujours plus de 15 % (20 -> 25 = +25 %),
+// donc le plafond relatif interdisait ce rung a TOUTES les charges.
+//
+// Ce que la regle ne fait PAS : elargir les crans BONUS de la reactivite
+// (tendance, reps depassees). Ceux-la restent sous le saut maximal prudent —
+// sinon trois signaux positifs se multiplieraient et 20 lb menerait a 40 lb en
+// une seance sur la foi d'un seul RPE 6.
+function coachRpeMaxAllowedLoad(label,lastLoad,rung,loadText){
+  var last=Number(lastLoad);
+  // Zero est une charge VALIDE : sur un Weighted Pull-up ou un Weighted Dip, le
+  // poids du corps seul est le point de depart legitime, et l'appelant l'a deja
+  // valide (ctx.lastHasValidLoad, cf. coachIsBodyweightExternalLoadMovement).
+  // Refuser 0 ici gelait le lest a 0 lb pour toujours — regression relevee par
+  // dev/simulate_multi_users.js sur le profil strict_mu_candidate, ou une
+  // suggestion de 10 lb retombait a 0.
+  if(!(last>=0)||!isFinite(last))return 0;
+  var baseMaxJump=coachMaxJumpForExercise(label,last);
+  var jumpFactor=(rung&&Number(rung.jumpFactor))||1;
+  var maxJump=Math.max(baseMaxJump,Math.round(baseMaxJump*jumpFactor));
+  var oneStep=nextLoadForExercise(label,last,1,loadText);
+  // Plancher garanti : la charge atteinte par les crans du barreau seul.
+  var rungSteps=(rung&&Number(rung.steps))||0;
+  var earned=(rungSteps>0)?coachNextLoadSteps(label,last,rungSteps,loadText):0;
+  return Math.max(
+    last+maxJump,
+    (oneStep>last)?oneStep:0,
+    (earned>last)?earned:0
+  );
+}
+
 function coachLastSetIsSimilarOrHarder(target,lastReps){
   target=Number(target)||0;lastReps=Number(lastReps)||0;
   if(!target||!lastReps)return true;
@@ -630,10 +673,7 @@ function coachRpeEarnedLoad(ctx){
   var react=coachRpeReactivityShift(ctx.hist,ctx.lastLoad,lastReps,ctx.target);
   var steps=Math.max(0,rung.steps+react.shift);
   if(steps<=0)return ctx.lastLoad;
-  var baseMaxJump=coachMaxJumpForExercise(ctx.label,ctx.lastLoad);
-  var maxJump=Math.max(baseMaxJump,Math.round(baseMaxJump*rung.jumpFactor));
-  var oneStep=nextLoadForExercise(ctx.label,ctx.lastLoad,1,ctx.currentLoad);
-  var maxAllowed=Math.max(ctx.lastLoad+maxJump,(oneStep>ctx.lastLoad)?oneStep:0);
+  var maxAllowed=coachRpeMaxAllowedLoad(ctx.label,ctx.lastLoad,rung,ctx.currentLoad);
   var next=coachNextLoadSteps(ctx.label,ctx.lastLoad,steps,ctx.currentLoad);
   while(next>maxAllowed){
     var back=nextLoadForExercise(ctx.label,next,-1,ctx.currentLoad);
@@ -649,13 +689,17 @@ function coachRuleLastSetGuards(ctx){
   // facile autorise un saut plus large, une seance limite garde le saut de
   // base. Les freins RPE >= 8.5 / >= 9 plus bas ne sont pas concernes.
   var rung=coachRpeProgressionRung(ctx.label,ctx.lastRpe);
-  var baseMaxJump=coachMaxJumpForExercise(ctx.label,ctx.lastLoad);
-  var maxJump=rung?Math.max(baseMaxJump,Math.round(baseMaxJump*rung.jumpFactor)):baseMaxJump;
   var lastReps=coachHistoryRepsNumber(ctx.last);
   var repsReached=!ctx.target || !lastReps || lastReps>=ctx.target;
-  if(ctx.lastHasValidLoad&&ctx.lastRpe<=8&&ctx.suggested>ctx.lastLoad+maxJump){
-    ctx.suggested=ctx.lastLoad+maxJump;ctx.mode="down";ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
-    ctx.reason="Progression limitee : derniere reference "+ctx.lastLoad+" lb @RPE "+ctx.lastRpe+". Saut maximal prudent +"+maxJump+" lb.";
+  // Meme plafond que la charge meritee : les crans du barreau passent, le reste
+  // est rabote. Sans ce partage, une charge de programme egale aux crans merites
+  // etait d'abord ecrasee ici, puis relevee vingt lignes plus bas — meme
+  // resultat, mais l'explication affichee etait celle du frein, pas celle du
+  // merite.
+  var maxAllowed=coachRpeMaxAllowedLoad(ctx.label,ctx.lastLoad,rung,ctx.currentLoad);
+  if(ctx.lastHasValidLoad&&ctx.lastRpe<=8&&ctx.suggested>maxAllowed){
+    ctx.suggested=maxAllowed;ctx.mode="down";ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+    ctx.reason="Progression limitee : derniere reference "+ctx.lastLoad+" lb @RPE "+ctx.lastRpe+". Saut maximal prudent jusqu'a "+maxAllowed+" lb.";
     ctx.brainAdjusted=true;
   }
   if(ctx.lastHasValidLoad&&ctx.lastRpe>0&&rung&&repsReached&&!ctx.contextLimited&&!isTechnicalMovementInContext(ctx.label,ctx.moveContext)&&!ctx.isDeload&&ctx.hist.length>=2){
@@ -664,11 +708,10 @@ function coachRuleLastSetGuards(ctx){
     // possible. Cas reel (anterieur a V4.5.56) : Lateral Raise DB a 20 lb,
     // saut isolation 2 lb, haltere suivant 22,5 lb — le mouvement etait fige
     // definitivement. Le plafond ne descend donc jamais sous un cran.
-    var oneStep=nextLoadForExercise(ctx.label,ctx.lastLoad,1,ctx.currentLoad);
-    var maxAllowed=Math.max(ctx.lastLoad+maxJump, (oneStep>ctx.lastLoad)?oneStep:0);
     // Le barreau RPE donne l'ambition de base, la reactivite la corrige d'un
     // cran selon la tendance recente, puis le saut maximal rabote. Ordre
-    // volontaire : le garde-fou passe toujours en dernier.
+    // volontaire : le garde-fou passe toujours en dernier — mais il ne descend
+    // jamais sous les crans que le barreau lui-meme annonce (maxAllowed).
     var react=coachRpeReactivityShift(ctx.hist,ctx.lastLoad,lastReps,ctx.target);
     var steps=Math.max(0,rung.steps+react.shift);
     var next=steps>0?coachNextLoadSteps(ctx.label,ctx.lastLoad,steps,ctx.currentLoad):ctx.lastLoad;

@@ -124,8 +124,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 6263,
-      "lines": 133,
+      "size": 6885,
+      "lines": 137,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -738,6 +738,20 @@
       "consumes": []
     },
     {
+      "path": "dev/intent_from_kind_checks.js",
+      "size": 9348,
+      "lines": 164,
+      "role": "Garde-fou de la règle « le kind d'un bloc produit son intention » : main → force, hypertrophy → hypertrophie, un mot explicite l'emporte dans les deux sens, les autres kind ne sont pas devinés, et aucun contexte ne devient limité. Son test central protège l'EMPLACEMENT de la règle : une ligne loggée avant le correctif doit continuer de compter, ce qui n'est vrai que parce que coachRederiveStoredContext relit les lignes stockées avec le même détecteur. Déplacer la règle hors de coachExtractMovementIntent réintroduirait le bug « vitesse » sur les mouvements à comparaison stricte de contexte.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/mouvements.js",
+        "scripts/charge/historique.js",
+        "scripts/charge/movement_tuning.js"
+      ]
+    },
+    {
       "path": "dev/json_export_ios_checks.js",
       "size": 8890,
       "lines": 179,
@@ -1022,6 +1036,20 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/rpe_ladder_checks.js",
+      "size": 9865,
+      "lines": 192,
+      "role": "Garde-fou du barreau RPE et du seuil de confiance. Épingle deux contrats : les crans annoncés par le barreau sont atteignables (le rack fait loi — un plafond en pourcentage qui interdit un cran d'équipement fige le mouvement), et les crans BONUS de la réactivité restent sous le saut maximal prudent (sinon trois signaux positifs se multiplient et 20 lb mène à 40 lb en une séance). Vérifie aussi que zéro est une charge valide (Weighted Pull-up) et que les trois prudences de Brain lisent le même brainGate.confidenceFloor.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/suggestion.js",
+        "scripts/charge/brain_stats.js",
+        "scripts/charge/movement_tuning.js"
+      ]
     },
     {
       "path": "dev/season_checks.js",
@@ -2731,8 +2759,8 @@
     },
     {
       "path": "scripts/charge/brain_stats.js",
-      "size": 12815,
-      "lines": 265,
+      "size": 15553,
+      "lines": 311,
       "role": "Statistiques locales Brain par mouvement + intention (confiance, précision).",
       "category": "ACTIF",
       "exposes": [
@@ -2794,8 +2822,8 @@
     },
     {
       "path": "scripts/charge/historique.js",
-      "size": 22402,
-      "lines": 458,
+      "size": 22630,
+      "lines": 460,
       "role": "Signaux historiques du moteur : e1RM Epley (epley1RM), projection entre plages de reps, agressivité par profil.",
       "category": "ACTIF",
       "exposes": [
@@ -2855,8 +2883,8 @@
     },
     {
       "path": "scripts/charge/mouvements.js",
-      "size": 23510,
-      "lines": 460,
+      "size": 25660,
+      "lines": 493,
       "role": "Familles, alias et correspondances de mouvements ; construction du contexte (technique/wod/light) via buildContext.",
       "category": "ACTIF",
       "exposes": [
@@ -2892,8 +2920,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 24142,
-      "lines": 458,
+      "size": 25131,
+      "lines": 471,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2950,8 +2978,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 95965,
-      "lines": 1724,
+      "size": 98301,
+      "lines": 1766,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [
