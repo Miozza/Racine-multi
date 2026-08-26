@@ -124,8 +124,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 6849,
-      "lines": 136,
+      "size": 6885,
+      "lines": 137,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -736,6 +736,20 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/intent_from_kind_checks.js",
+      "size": 9348,
+      "lines": 164,
+      "role": "Garde-fou de la règle « le kind d'un bloc produit son intention » : main → force, hypertrophy → hypertrophie, un mot explicite l'emporte dans les deux sens, les autres kind ne sont pas devinés, et aucun contexte ne devient limité. Son test central protège l'EMPLACEMENT de la règle : une ligne loggée avant le correctif doit continuer de compter, ce qui n'est vrai que parce que coachRederiveStoredContext relit les lignes stockées avec le même détecteur. Déplacer la règle hors de coachExtractMovementIntent réintroduirait le bug « vitesse » sur les mouvements à comparaison stricte de contexte.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/mouvements.js",
+        "scripts/charge/historique.js",
+        "scripts/charge/movement_tuning.js"
+      ]
     },
     {
       "path": "dev/json_export_ios_checks.js",
@@ -2808,8 +2822,8 @@
     },
     {
       "path": "scripts/charge/historique.js",
-      "size": 22402,
-      "lines": 458,
+      "size": 22630,
+      "lines": 460,
       "role": "Signaux historiques du moteur : e1RM Epley (epley1RM), projection entre plages de reps, agressivité par profil.",
       "category": "ACTIF",
       "exposes": [
@@ -2869,8 +2883,8 @@
     },
     {
       "path": "scripts/charge/mouvements.js",
-      "size": 23510,
-      "lines": 460,
+      "size": 25660,
+      "lines": 493,
       "role": "Familles, alias et correspondances de mouvements ; construction du contexte (technique/wod/light) via buildContext.",
       "category": "ACTIF",
       "exposes": [

@@ -1,10 +1,20 @@
-# ETAT ACTUEL — V4.6.8
+# ETAT ACTUEL — V4.6.9
 
-Version actuelle : V4.6.8
+Version actuelle : V4.6.9
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version corrige un défaut du moteur mesuré sur le barreau RPE.
+Racine est un prototype multi-utilisateur local. Cette version réconcilie deux définitions de « principal » qui ne se parlaient pas.
+
+**Le `kind` d'un bloc déclare enfin son intention.** `coachIsMainLoadContext()` matche `/main/` : un bloc `kind:"main"` était donc traité comme principal pour le deload et le plafond. Mais `coachExtractMovementIntent()` ne lisait que des mots — *lourd*, *force*, *principal*, *hypertrophie* — et le même bloc ne déclarait aucune intention, retombant sur le repli générique. Mesure sur le catalogue : **1 643 exercices** de bloc `main` et **1 720** de bloc `hypertrophy` étaient dans ce cas.
+
+L'effet n'est pas symétrique, et c'est le point. Côté force, 0,40 → 0,50 vaut +0,7 à +3,4 lb avant arrondi ; le cran du rack fait 5 lb sur une barre, donc l'écart disparaît presque toujours (1 cas sur 11 mesurés). Cette moitié corrige une incohérence, pas une charge. Côté hypertrophie, 0,40 → 0,30 est un écart qui **survit à l'arrondi** (5 cas sur 11) : le moteur rattrapait plus vite que ce que la programmation demande, alors que sur un bloc d'hypertrophie des répétitions en plus viennent souvent du volume, pas d'une réserve de force.
+
+Un mot explicite l'emporte toujours, dans les deux sens : un bloc `main` qui écrit « hypertrophie » est traité comme tel, un bloc `hypertrophy` qui écrit « force » aussi. Les autres `kind` — `accessory` en tête — ne sont pas devinés : « accessoire » n'est pas synonyme d'hypertrophie, c'est une décision de programmation.
+
+**L'emplacement de la règle n'est pas négociable.** Elle vit dans `coachExtractMovementIntent()` parce que `coachRederiveStoredContext()` relit les lignes déjà loggées avec ce même détecteur : les deux côtés de la comparaison de contexte bougent ensemble. Placée dans le constructeur de contexte, elle changerait la clé du jour sans changer celle des lignes stockées, et les 28 blocs Power Clean principaux du catalogue perdraient tout leur historique — le bug « vitesse » réintroduit. `dev/intent_from_kind_checks.js` en fait son test central.
+
+Golden master inchangé, aucune des 51 courbes de `dev/simulate_multi_users.js` ne bouge : le changement est correct sans être spectaculaire, et c'est ce que la mesure annonçait.
 
 **Le barreau RPE annonçait des crans qu'il ne pouvait pas donner.** Sur un mouvement d'isolation, `maxJumpBase` vaut un cran nominal et `jumpFactor` vaut 1 : le barreau « 2 crans à RPE ≤ 6 » était systématiquement raboté à un seul. Mesure avant correctif, Lateral Raise DB à 20 lb : RPE 6 et RPE 7,5 donnaient tous deux +2,5 lb — et l'explication à l'écran disait pourtant « Hausse de 2 crans vers 22,5 lb ». C'est mot pour mot le défaut déjà corrigé pour les barres — « le RPE portait presque aucune information » — laissé intact sur l'isolation.
 

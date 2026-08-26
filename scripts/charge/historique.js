@@ -93,7 +93,10 @@ function coachRederiveStoredContext(stored){
   if(COACH_REDERIVED_CTX && COACH_REDERIVED_CTX.has(stored))return COACH_REDERIVED_CTX.get(stored);
 
   var parts=[stored.rawName,stored.label,stored.kind,stored.blockTitle,stored.note,stored.text,stored.format].filter(Boolean);
-  var intents=coachExtractMovementIntent(parts, stored.pctOf1RM);
+  // Le `kind` est passe explicitement : sans lui, la ligne stockee ne
+  // recevrait pas l'intention que son bloc declare, et sa cle de contexte
+  // divergerait de celle du jour (voir coachExtractMovementIntent).
+  var intents=coachExtractMovementIntent(parts, stored.pctOf1RM, stored.kind);
   var previous=Array.isArray(stored.intents)?stored.intents:[];
   var unchanged=previous.length===intents.length&&intents.every(function(x,i){return previous[i]===x;});
   var out=stored;

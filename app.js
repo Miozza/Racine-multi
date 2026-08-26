@@ -1,5 +1,5 @@
-// Racine V4.6.8 — le barreau RPE tient enfin sa promesse sur l'isolation
-var APP_VERSION = "V4.6.8";
+// Racine V4.6.9 — le kind d'un bloc déclare enfin son intention
+var APP_VERSION = "V4.6.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

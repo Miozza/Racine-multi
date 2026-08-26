@@ -319,7 +319,7 @@ function coachSpeedStimulusBandFromText(raw, declaredPct){
 // programme sur l'exercice (`pctOf1RM`). Elle vaut declaration d'intention au
 // meme titre qu'un « ~60 % » ecrit dans la note — sinon un programme qui fait
 // les choses proprement, en clair, serait le seul a ne pas etre reconnu.
-function coachExtractMovementIntent(parts, declaredPct){
+function coachExtractMovementIntent(parts, declaredPct, kind){
   var raw=(Array.isArray(parts)?parts.join(' '):String(parts||''));
   var n=coachNormalizeMoveText(raw);
   var intents=[];
@@ -358,6 +358,40 @@ function coachExtractMovementIntent(parts, declaredPct){
   if(/lourd|heavy|force|strength|principal|prioritaire/.test(n))add('strength');
   if(/hypertrophie|pump|volume|accessoire|support/.test(n))add('hypertrophy');
   if(/deload|recuperation|reset/.test(n))add('recovery');
+  // ─── Le `kind` du bloc produit son intention (V4.6.9) ────────────────────
+  // Deux definitions de « principal » cohabitaient sans se parler :
+  // coachIsMainLoadContext() matche /main/ et traite donc un bloc kind:"main"
+  // comme principal pour le deload et le plafond, pendant qu'ICI le mot
+  // « main » ne declarait rien — il fallait ecrire « lourd », « force » ou
+  // « principal ». Mesure sur le catalogue : 1 643 exercices d'un bloc
+  // kind:"main" et 1 720 d'un bloc kind:"hypertrophy" tombaient sur le repli
+  // generique au lieu de leur propre reglage.
+  //
+  // L'effet n'est pas le meme des deux cotes, et c'est le point :
+  //  · main : 0,40 -> 0,50, soit +0,7 a +3,4 lb avant arrondi. Le cran du rack
+  //    fait 5 lb sur une barre, donc l'ecart disparait presque toujours
+  //    (1 cas sur 11 mesures). Cette moitie corrige une incoherence, pas une
+  //    charge.
+  //  · hypertrophie : 0,40 -> 0,30, un ecart qui SURVIT a l'arrondi (5 cas sur
+  //    11). Le moteur rattrapait plus vite que ce que la programmation demande
+  //    — sur un bloc d'hypertrophie, des reps en plus viennent souvent du
+  //    volume, pas d'une reserve de force.
+  //
+  // Surchargeable : un mot explicite dans le bloc ou la note l'emporte
+  // toujours. Le kind ne fait que combler le silence.
+  //
+  // EMPLACEMENT NON NEGOCIABLE — cette regle doit vivre ICI et pas dans
+  // coachBuildMovementContext(), parce que coachRederiveStoredContext()
+  // (historique.js) relit les lignes DEJA LOGGEES avec ce meme detecteur. Les
+  // deux cotes de la comparaison de contexte bougent donc ensemble. Placee
+  // dans le constructeur de contexte, elle changerait la cle du jour sans
+  // changer celle des lignes stockees : les 28 Power Clean d'un bloc principal
+  // perdraient tout leur historique, exactement le bug « vitesse » de V4.6.1.
+  var k=coachNormalizeMoveText(kind||'');
+  if(intents.indexOf('strength')===-1&&intents.indexOf('hypertrophy')===-1){
+    if(k==='main')add('strength');
+    else if(k==='hypertrophy')add('hypertrophy');
+  }
   return intents;
 }
 
@@ -366,7 +400,7 @@ function coachBuildMovementContext(nameOrKey, opts){
   var raw=String(nameOrKey||opts.name||opts.key||'').trim();
   var label=canonicalMovementLabel(raw);
   var textParts=[raw,label,opts.kind,opts.blockKind,opts.blockTitle,opts.title,opts.note,opts.text,opts.format].filter(Boolean);
-  var intents=coachExtractMovementIntent(textParts, opts.pctOf1RM);
+  var intents=coachExtractMovementIntent(textParts, opts.pctOf1RM, opts.kind||opts.blockKind);
   var kind=String(opts.kind||opts.blockKind||'').toLowerCase();
   if(kind==='wod'&&intents.indexOf('wod')===-1)intents.push('wod');
   if(kind==='warmup'&&intents.indexOf('light')===-1)intents.push('light');
