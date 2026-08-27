@@ -124,8 +124,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 6885,
-      "lines": 137,
+      "size": 6921,
+      "lines": 138,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -652,6 +652,19 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": []
+    },
+    {
+      "path": "dev/deload_detection_checks.js",
+      "size": 8197,
+      "lines": 145,
+      "role": "Garde-fou de la séparation « bloc léger » / « semaine de deload ». Un bloc léger reste un contexte à progression limitée mais n'est plus amputé de 20 %, une consigne de position (« légèrement fléchis ») ne déclenche plus de réduction, et les trois voies d'un vrai deload — mot dans la note, contexte récupération, libellé de semaine — restent détectées. Rejoue le cas réel du Cuban Press de phase2_fable5, proposé à 10 lb pendant huit semaines alors que l'athlète soulevait 15.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/suggestion.js",
+        "scripts/charge/mouvements.js"
+      ]
     },
     {
       "path": "dev/deload_guard_checks.js",
@@ -2978,8 +2991,8 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 98301,
-      "lines": 1766,
+      "size": 99915,
+      "lines": 1793,
       "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
       "category": "ACTIF",
       "exposes": [

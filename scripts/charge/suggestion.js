@@ -16,7 +16,34 @@ function coachIsDeloadWeekOrContext(context){
   //
   // Une semaine de deload se DECLARE (libelle ou objectif de semaine, note du
   // bloc, contexte recuperation) ; elle ne se deduit jamais d'un numero.
-  if(context&&(context.isRecovery||context.isLight))return true;
+  //
+  // V4.6.10 — `isLight` a ete retire de cette ligne. Un bloc LEGER n'est pas
+  // une semaine de DELOAD : ce sont deux notions differentes, et les confondre
+  // coutait 20 % de charge a un exercice sur cinq du catalogue.
+  //
+  // Un bloc leger ne doit pas AUTO-PROGRESSER — c'est deja garanti ailleurs par
+  // coachIsLimitedProgressionContext(), qui lit toujours isLight et n'a pas
+  // change. Mais il ne doit pas non plus etre AMPUTE a chaque seance : rien
+  // dans « leger » ne dit « reduis ce que l'athlete souleve deja ».
+  //
+  // Mesure sur le catalogue au moment du correctif : 2 189 exercices etaient
+  // mis en deload, dont 122 par un vrai mot (deload, recuperation) et 2 067
+  // par le seul isLight — un faux positif 17 fois plus frequent que le vrai
+  // cas. Le mot n'a souvent meme pas valeur de consigne de charge : « coudes
+  // LEGEREMENT flechis » (DB Fly, arnold_split_beurt) normalise en `leger` et
+  // suffisait a declencher la reduction.
+  //
+  // Cas reel qui a fait remonter le defaut, trace complete de phase2_fable5 :
+  // Cuban Press, bloc « socle fixe », note « Leger et lent. Rotation externe
+  // complete a chaque rep. » L'athlete faisait 15 lb x 10 @ RPE 7,5 depuis
+  // trois semaines, le programme ecrivait 15-25 lb, le moteur proposait 10 lb
+  // — sous le minimum ecrit ET sous ce qu'il soulevait — pendant les huit
+  // semaines du cycle. Sur ces huit semaines, AUCUN des deloads appliques
+  // n'etait un vrai deload.
+  //
+  // Aucun deload legitime n'est perdu : ils se declarent tous par le mot
+  // (ligne ci-dessous) ou par le libelle de semaine (plus bas).
+  if(context&&context.isRecovery)return true;
   var raw=[context&&context.primaryIntent,context&&context.kind,context&&context.blockTitle,context&&context.note,context&&context.text,context&&context.format].filter(Boolean).join(' ');
   var n=(typeof coachNormalizeMoveText==='function')?coachNormalizeMoveText(raw):String(raw||'').toLowerCase();
   if(/deload|recuperation|recovery|reset/.test(n))return true;

@@ -1,10 +1,22 @@
-# ETAT ACTUEL — V4.6.9
+# ETAT ACTUEL — V4.6.10
 
-Version actuelle : V4.6.9
+Version actuelle : V4.6.10
 
 ## État courant
 
-Racine est un prototype multi-utilisateur local. Cette version réconcilie deux définitions de « principal » qui ne se parlaient pas.
+Racine est un prototype multi-utilisateur local. Cette version corrige un défaut remonté par une trace de cycle réelle : le moteur amputait des charges qu'il n'avait aucune raison de toucher.
+
+**Un bloc léger n'est pas une semaine de deload.** `coachIsDeloadWeekOrContext()` retournait vrai dès que le contexte portait `isLight`. Un mouvement étiqueté léger était donc traité comme une semaine de deload et sa charge réduite à 80 % de la dernière référence — à chaque séance, indéfiniment.
+
+Deux notions confondues. Un bloc léger ne doit pas **auto-progresser** : c'est déjà garanti par `coachIsLimitedProgressionContext()`, qui lit toujours `isLight` et n'a pas changé. Mais il ne doit pas non plus être **amputé** : rien dans « léger » ne dit « enlève 20 % à ce que l'athlète soulève déjà ».
+
+Mesure sur le catalogue au moment du correctif : 2 189 exercices étaient mis en deload, dont **122 par un vrai mot** (*deload*, *récupération*) et **2 067 par le seul `isLight`** — un faux positif dix-sept fois plus fréquent que le vrai cas. Le mot déclencheur n'avait souvent aucune valeur de consigne de charge : « coudes **légèrement** fléchis » suffisait.
+
+Le cas qui a fait remonter le défaut vient d'une trace complète de `phase2_fable5`. Cuban Press, bloc « socle fixe », note « Léger et lent. Rotation externe complète à chaque rep. » L'athlète faisait 15 lb × 10 @ RPE 7,5 depuis trois semaines, le programme écrivait 15-25 lb, et le moteur proposait **10 lb** — sous le minimum écrit *et* sous ce qu'il soulevait — pendant les huit semaines du cycle. Sur ces huit semaines, aucun des deloads appliqués n'était un vrai deload.
+
+Effet mesuré sur ce cycle : 9 suggestions changent (Cuban Press 10 → 15 sur huit semaines, Front Squat 115 → 135 en S7), 12 entrées cessent d'être en deload, aucune n'était légitime. Golden master inchangé, aucune des 51 courbes de `dev/simulate_multi_users.js` ne bouge. Aucun deload réel n'est perdu : ils se déclarent tous par le mot ou par le libellé de semaine.
+
+Reste ouvert, non traité ici : « léger » employé comme **consigne d'exécution** produit toujours un contexte léger, donc coupe l'auto-progression. C'est la cause racine, de la même famille que le mot « vitesse » corrigé précédemment, et elle demande un détecteur de consigne. Sur un bloc dont la note dit « ce bloc ne tourne jamais : c'est le socle », l'absence d'auto-progression est d'ailleurs le comportement voulu.
 
 **Le `kind` d'un bloc déclare enfin son intention.** `coachIsMainLoadContext()` matche `/main/` : un bloc `kind:"main"` était donc traité comme principal pour le deload et le plafond. Mais `coachExtractMovementIntent()` ne lisait que des mots — *lourd*, *force*, *principal*, *hypertrophie* — et le même bloc ne déclarait aucune intention, retombant sur le repli générique. Mesure sur le catalogue : **1 643 exercices** de bloc `main` et **1 720** de bloc `hypertrophy` étaient dans ce cas.
 
