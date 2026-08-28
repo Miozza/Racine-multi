@@ -1045,6 +1045,71 @@ try {
       'EMOM dans un bloc kind:"accessory" ne declare pas un contexte WOD.');
   }
 
+  // ── Bornes du facteur d'echelle : l'emprunt n'a pas les droits de la mesure ─
+  // Le ratio de famille _upperPull est la moyenne de row8RM, chestRow8RM et
+  // latPulldown10RM — cette derniere a une reference de 20, un numero de plaque
+  // machine. Un athlete a 40 y vaut un ratio composant de 2,0, sous le garde-fou
+  // de l'onboarding, donc il ENTRE dans la moyenne et tire toute la famille.
+  // Mesure : Pendlay Row 155 lb ecrits -> 250 lb suggeres en 5x5, sans une seule
+  // seance loggee pour le contredire.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{
+      row8RM:1.6, chestRow8RM:1.6, latPulldown10RM:1.6, _upperPull:1.6,
+      backSquat5RM:0.5, frontSquat:0.5, _lowerBody:0.5, _overall:1.0
+    }};
+
+    const vierge = ctx.coachApplyUnprovenLoadScale('Pendlay Row', 155);
+    assert(vierge.borrowed === true, 'Un mouvement hors des 12 references emprunte le ratio de sa famille.');
+    assert(vierge.clamped === true, 'Un ratio emprunte au-dela de la bande de confiance est borne.');
+    assert(vierge.rawRatio === 1.6 && vierge.ratio === 1.2,
+      'Le ratio emprunte 1,60 est ramene a 1,20 (obtenu ' + vierge.ratio + ').');
+    assert(vierge.load < 200,
+      'Pendlay Row ne sort plus a 250 lb sur un ratio emprunte (obtenu ' + vierge.load + ' lb).');
+    assert(/tirage/.test(String(vierge.source)),
+      'L\'emprunt nomme la famille dont il vient, pour que la suggestion puisse le dire.');
+
+    // SEULE la borne haute s'applique. Une borne basse REMONTERAIT la charge
+    // d'un athlete que le ratio juge plus faible — la direction dangereuse, et
+    // sur le mouvement dont on sait le moins de choses.
+    const faible = ctx.coachApplyUnprovenLoadScale('Leg Press', 200);
+    assert(faible.clamped === false && faible.ratio === 0.5,
+      'Un ratio emprunte BAS n\'est jamais remonte : sous-suggerer est la direction sure (obtenu ' + faible.ratio + ').');
+
+    // La provenance est toujours nommee : sans elle, une charge bornee serait
+    // indiscernable d'une charge normale dans le panneau (!). (Le chemin des 12
+    // mouvements de reference passe par PR_FIELD_MAP, defini dans app.js et
+    // absent de ce bac a sable : ici tout retombe sur la famille, ce qui est
+    // exactement le chemin que ces bornes protegent.)
+    assert(/bas du corps/.test(String(ctx.coachUserLoadRatioSource('Back Squat').source)),
+      'Le ratio nomme la famille dont il vient.');
+    resetState();
+  }
+
+  // ── L'historique reel prime sur le ratio ────────────────────────────────
+  // Le moteur n'avait aucun moyen de distinguer « il a merite 100 » de « le
+  // ratio a invente 100 » : la charge de programme, gonflee par un ratio,
+  // passait sans qu'aucune regle ne se declenche.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_upperPull:1.6, _overall:1.0}};
+    const rowCtx = ctx.coachBuildMovementContext('Barbell Row', {kind:'accessory', blockTitle:'B. Volume dorsal', format:'4x8', load:'100 lb'});
+    ctx.state.athleteState.movements['Barbell Row'] = {ranges:{}, status:'ok', history:[
+      {date:'2026-06-01', load:95, reps:8, rpe:7, status:'success', context:rowCtx, planned:{load:95, reps:8, targetMin:8, context:rowCtx}},
+      {date:'2026-06-08', load:100, reps:8, rpe:7, status:'success', context:rowCtx, planned:{load:100, reps:8, targetMin:8, context:rowCtx}}
+    ]};
+    // 100 lb ecrits x 1,6 = 160 lb. L'athlete vient de sortir 100 lb @ RPE 7 :
+    // son evidence merite un cran, pas soixante livres.
+    const d = ctx.guardedSuggestedLoadDecision('Barbell Row', '100 lb', 8, rowCtx);
+    assert(d.loadNum < 160,
+      'Le ratio de programme ne depasse pas l\'evidence loggee (obtenu ' + d.loadNum + ' lb pour 160 lb demandes).');
+    assert(d.loadNum >= 100,
+      'Le plafond ne descend jamais sous la derniere seance reussie (obtenu ' + d.loadNum + ' lb).');
+    assert(/evidence reelle|merite/.test(String(d.reason)),
+      'La suggestion dit POURQUOI elle ne suit pas le nombre du programme.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

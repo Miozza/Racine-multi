@@ -441,6 +441,8 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   if(built.early)return built.decision;
   var ctx=built.ctx;
 
+  coachRuleUnprovenScaleWatch(ctx);
+  coachRuleProgramScaleGuard(ctx);
   coachRuleContextLimited(ctx);
   coachRuleReferenceDeTravail(ctx);
   coachRuleLiftFromControlledHistory(ctx);
@@ -510,6 +512,12 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     : null;
   var percentAnchor=null;
   var programNum;
+  // L'historique reel decide, le ratio ne fait que combler son absence. Un
+  // mouvement deja travaille n'a pas besoin d'un emprunt a ses voisins pour
+  // savoir ce que l'athlete souleve : il le sait. Un mouvement vierge, lui,
+  // n'a que l'emprunt — et c'est la que la bande resserree protege.
+  var hasRealHistoryForScale=hist.some(function(r){return coachHistoryHasValidLoad(r,label,moveContext);});
+  var scaleInfo=null;
   if(percentTarget){
     percentAnchor=coachStrengthAnchorOneRm(label,mv);
     programNum=(percentAnchor&&percentAnchor.oneRm>0)
@@ -518,7 +526,12 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   }else{
     programNum=parseLoad(currentLoad);
     if(programNum!==null&&programNum!==undefined){
-      programNum=coachApplyUserLoadScale(label,programNum);
+      if(typeof coachScaleProgramLoad==='function'){
+        scaleInfo=coachScaleProgramLoad(label,programNum,hasRealHistoryForScale);
+        programNum=scaleInfo.load;
+      }else{
+        programNum=coachApplyUserLoadScale(label,programNum);
+      }
     }
   }
   var originalText=displayLoadForEquipment(label,currentLoad);
@@ -526,6 +539,18 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   var contextLimitReason=(typeof coachContextProgressionReason==='function')?coachContextProgressionReason(moveContext):'';
   var isDeload=coachIsDeloadWeekOrContext(moveContext);
   var seedReason="Charge du programme, arrondie selon l'equipement.";
+  // Un emprunt reste un emprunt, et l'athlete a le droit de le savoir : sans
+  // cette phrase, 250 lb tires d'une moyenne de famille sortaient avec le meme
+  // libelle qu'une charge mesuree sur lui.
+  if(scaleInfo&&scaleInfo.borrowed&&scaleInfo.ratio!==1&&programNum!==null&&programNum!==undefined){
+    seedReason="Charge du programme mise a ton echelle par emprunt ("+scaleInfo.source
+      +") : aucune seance loggee sur ce mouvement.";
+    if(scaleInfo.clamped){
+      seedReason+=" Ratio emprunte "+scaleInfo.rawRatio.toFixed(2)+" ramene a "
+        +scaleInfo.ratio.toFixed(2)+" — hors de la bande de confiance d'un ratio non prouve.";
+    }
+    seedReason+=" Ta premiere seance reelle reprend la main.";
+  }
   if(percentTarget&&programNum!==null&&programNum!==undefined){
     seedReason="Charge du programme en pourcentage ("+Math.round(percentTarget.aim*100)+" % du 1RM) resolue sur ta capacite reelle : "
       +Math.round(percentAnchor.oneRm)+" lb estimes (source "+percentAnchor.source+").";
@@ -563,6 +588,9 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     bestControlled:bestControlled, historySignal:historySignal, programNum:programNum,
     originalText:originalText, contextLimited:contextLimited, contextLimitReason:contextLimitReason,
     isDeload:isDeload, suggested:programNum, severity:"ok", reason:seedReason, mode:"nearest",
+    // Provenance de la mise a l'echelle : emprunt ou mesure, bornee ou non.
+    // Nul quand l'historique reel a decide — c'est justement l'information.
+    scaleInfo:scaleInfo, hasRealHistory:hasRealHistoryForScale,
     // brainAdjusted — Trace explicite : passe a true chaque fois qu'une regle
     // depassant le simple arrondi equipement intervient (historique, RPE,
     // deload, cap contextuel). Remplace la detection par mots-cles sur
@@ -574,6 +602,58 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     // présenter comme une capacité mesurée : marquée en finalisation.
     uncalibrated:uncalibrated
   }};
+}
+
+// Un ratio emprunte et borne n'est pas une capacite mesuree : il ne sort
+// jamais en « ok » silencieux. Meme traitement que le profil non calibre.
+function coachRuleUnprovenScaleWatch(ctx){
+  if(ctx.scaleInfo&&ctx.scaleInfo.clamped&&ctx.severity==="ok"){
+    ctx.severity="watch";
+    ctx.brainAdjusted=true;
+  }
+}
+
+// ── Le programme propose, l'evidence de l'athlete dispose ──────────────────
+// Sur un mouvement DEJA travaille, la charge du programme reste un nombre
+// generique passe par un ratio. Elle n'a aucune autorite pour depasser ce que
+// l'athlete a reellement demontre — et le moteur n'avait aucun moyen de faire
+// la difference entre « il a merite 100 » et « le ratio a invente 100 ».
+//
+// Cas mesure (phase2_fable5) : Face Pull, 12 seances loggees entre 70 et 90 lb,
+// derniere a 90 x 20 @ RPE 7. Le programme ecrit 60 lb, le ratio de famille
+// _upperPull (1,60) en fait 100 lb, et le saut maximal prudent autorisait
+// justement 100 : aucune regle ne se declenchait, la suggestion sortait a
+// 100 lb avec la raison « Charge du programme, arrondie selon l'equipement ».
+// Le ratio parlait plus fort que douze seances.
+//
+// Le plafond est ce que l'evidence MERITE — dernier poids plus l'echelon du
+// barreau RPE (coachRpeEarnedLoad), jamais moins que la meilleure reference
+// controlee. Les regles suivantes peuvent toujours monter au-dessus : un
+// surplus de reps ou une reference plus haute restent des faits mesures, pas
+// un emprunt. Cette regle ne rabote que la SUPPOSITION.
+function coachRuleProgramScaleGuard(ctx){
+  if(!ctx.hasRealHistory||ctx.contextLimited||ctx.isDeload)return;
+  if(!ctx.lastHasValidLoad||!(ctx.lastLoad>0))return;
+  if(!ctx.hist||ctx.hist.length<2)return;
+  // Ne vise QUE l'inflation par le ratio. Un ratio de 1 n'a rien invente : la
+  // charge est celle que le programme a ecrite, et c'est aux regles de
+  // progression — et au portail Brain — de la traiter, avec leur propre
+  // explication. Sans cette porte, cette regle volait le mot de la fin a
+  // Brain sur des cas ou elle ne changeait meme pas le nombre.
+  if(!ctx.scaleInfo||!(Number(ctx.scaleInfo.ratio)>1))return;
+  var earned=(typeof coachRpeEarnedLoad==='function')?coachRpeEarnedLoad(ctx):0;
+  var controlled=(ctx.bestControlled&&ctx.bestControlled.load)||0;
+  var evidence=Math.max(Number(earned)||0,Number(controlled)||0,ctx.lastLoad);
+  if(!(evidence>0)||!(ctx.suggested>evidence))return;
+  var asked=ctx.suggested;
+  ctx.suggested=evidence;
+  ctx.mode="down";
+  ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  ctx.reason="Charge du programme ramenee a ton evidence reelle : "+Math.round(asked)
+    +" lb demandes apres mise a l'echelle, mais ton travail loggé merite "+Math.round(evidence)
+    +" lb (dernier "+ctx.lastLoad+" lb @RPE "+ctx.lastRpe+"). Le ratio de programme ne depasse pas tes seances.";
+  ctx.brainAdjusted=true;
+  ctx.programScaleCapped={asked:asked,evidence:evidence};
 }
 
 function coachRuleContextLimited(ctx){

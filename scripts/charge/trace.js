@@ -157,6 +157,21 @@
     }catch(e){ decision={propose:null,texte:'',severite:'',raison:'Suggestion impossible : '+(e&&e.message)}; }
 
     var programNum=num(programLoad);
+    // La trace passe par la MEME porte que le moteur. Tant qu'elle appelait
+    // coachApplyUserLoadScale en direct, elle affichait 250 lb la ou le moteur
+    // en proposait 185 : elle decrivait un calcul que personne ne faisait, et
+    // c'est precisement ce qu'une trace ne doit jamais faire.
+    var histHasReal=hist.some(function(r){
+      return (typeof coachHistoryHasValidLoad==='function')?coachHistoryHasValidLoad(r,label,ctx):false;
+    });
+    var scaled=programNum;
+    var scaleDetail=null;
+    if(programNum!==null&&typeof coachScaleProgramLoad==='function'){
+      scaleDetail=coachScaleProgramLoad(label,programNum,histHasReal);
+      scaled=scaleDetail.load;
+    }else if(programNum!==null&&typeof coachApplyUserLoadScale==='function'){
+      scaled=coachApplyUserLoadScale(label,programNum);
+    }
     return {
       mouvement:label,
       nomPrescrit:String(nameOrLabel||''),
@@ -165,8 +180,17 @@
       programme:{
         chargeEcrite:String(programLoad||''),
         chargeLue:programNum,
-        chargeMiseAEchelle:(programNum!==null&&typeof coachApplyUserLoadScale==='function')?coachApplyUserLoadScale(label,programNum):programNum,
-        format:opts.format||'', note:opts.note||'', repsCibles:target
+        chargeMiseAEchelle:scaled,
+        echelle:scaleDetail?{
+          ratioApplique:scaleDetail.ratio,
+          ratioBrut:scaleDetail.rawRatio,
+          emprunte:scaleDetail.borrowed,
+          borne:scaleDetail.clamped,
+          source:scaleDetail.source
+        }:null,
+        format:opts.format||'', note:opts.note||'', repsCibles:target,
+        repsCiblesMin:(opts.targetMin||opts.targetMin===0)?opts.targetMin:target,
+        repsCiblesMax:(opts.targetMax||opts.targetMax===0)?opts.targetMax:target
       },
       contexteDuJour:{
         intentions:intentsOf(ctx),
@@ -227,6 +251,10 @@
           kind:b.kind, blockTitle:b.title, format:ex.format, note:ex.note, text:b.text,
           load:ex.load, pctOf1RM:ex.pctOf1RM, programLoad:ex.load,
           targetReps:parsed.min||parsed.max||8, day:day, week:week,
+          // La FOURCHETTE, pas seulement sa borne basse : « 15-20 » ne demande
+          // pas 15 reps, il en demande entre 15 et 20. Sans les deux bornes, un
+          // ecart de reps ne peut pas etre mesure honnetement.
+          targetMin:parsed.min||parsed.max||8, targetMax:parsed.max||parsed.min||8,
           skipReplay:already
         }));
       });
