@@ -1,5 +1,5 @@
-// Racine V4.6.10 — un bloc léger n'est pas une semaine de deload
-var APP_VERSION = "V4.6.10";
+// Racine V5.0.0 — le moteur lit les reps, pas seulement la charge
+var APP_VERSION = "V5.0.0";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 212,
+    "ACTIF": 213,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -1674,6 +1674,22 @@
       "size": 284415,
       "lines": 11845,
       "role": "Trace de cycle produite par le moteur AVANT les correctifs (commit d'audit), sur la fixture de replay. Reference de comparaison.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/audit/2026-08-28-trace-diff.md",
+      "size": 7794,
+      "lines": 163,
+      "role": "Lecture commentee du diff avant/apres du moteur de charge : ce qui change, les six indicateurs, le cas de reference Power Clean, et les quatre attendus non tenus.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [
