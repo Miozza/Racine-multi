@@ -1110,6 +1110,46 @@ try {
     resetState();
   }
 
+  // ── La rampe ecrite est un plancher MOBILE, pas un decor ────────────────
+  // Une fois l'ancre historique posee, plus rien ne relit la progression du
+  // programme. Au dernier barreau du RPE (RPE 8 = zero cran), l'athlete reste
+  // immobile pendant que la rampe monte, et l'ecran n'en dit rien.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0, _upperPush:1.0}};
+    const pressCtx = ctx.coachBuildMovementContext('Strict Press', {kind:'main', blockTitle:'A. Strict Press', format:'5x5', load:'160 lb'});
+    const stagne = (d, load, rpe) => ({date:d, load:load, reps:5, rpe:rpe, status:'success',
+      context:pressCtx, planned:{load:load, reps:5, targetMin:5, context:pressCtx}});
+    ctx.state.athleteState.movements['Strict Press'] = {ranges:{}, status:'ok', history:[
+      stagne('2026-06-01', 115, 8), stagne('2026-06-08', 115, 8), stagne('2026-06-15', 115, 8)
+    ]};
+
+    const retard = ctx.guardedSuggestedLoadDecision('Strict Press', '160 lb', 5, pressCtx);
+    assert(retard.severity === 'warning',
+      'Trois seances sous la progression ecrite sans motif RPE lèvent un avertissement (obtenu ' + retard.severity + ').');
+    assert(/Retard sur la progression ecrite/.test(String(retard.reason)),
+      'L\'avertissement NOMME l\'ecart avec la charge du programme.');
+    assert(retard.loadNum <= 125,
+      'Le signal ne fait PAS monter la charge : le moteur reste consultatif (obtenu ' + retard.loadNum + ' lb).');
+
+    // Un motif RPE est deja une explication : on n'en empile pas une seconde.
+    ctx.state.athleteState.movements['Strict Press'].history = [
+      stagne('2026-06-01', 115, 8), stagne('2026-06-08', 115, 9), stagne('2026-06-15', 115, 9)
+    ];
+    const freine = ctx.guardedSuggestedLoadDecision('Strict Press', '160 lb', 5, pressCtx);
+    assert(!/Retard sur la progression ecrite/.test(String(freine.reason)),
+      'Un athlete freine par un RPE eleve n\'est pas averti une seconde fois.');
+
+    // Deux seances ne suffisent pas : un creux isole n'est pas un retard.
+    ctx.state.athleteState.movements['Strict Press'].history = [
+      stagne('2026-06-08', 115, 8), stagne('2026-06-15', 115, 8)
+    ];
+    const court = ctx.guardedSuggestedLoadDecision('Strict Press', '160 lb', 5, pressCtx);
+    assert(!/Retard sur la progression ecrite/.test(String(court.reason)),
+      'Deux seances sous la rampe ne declenchent pas encore l\'avertissement.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

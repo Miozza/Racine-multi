@@ -458,6 +458,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleDeloadCap(ctx);
   coachRuleRoundingAndMovementCap(ctx);
   coachRuleContextLimitedRounding(ctx);
+  coachRuleProgramRampFloor(ctx);
 
   return coachFinalizeSuggestionDecision(ctx);
 }
@@ -1303,6 +1304,63 @@ function coachRuleContextLimitedRounding(ctx){
     ctx.reason=ctx.contextLimitReason||ctx.reason;
     ctx.brainAdjusted=true;
   }
+}
+
+// ── La rampe ecrite est un plancher MOBILE, pas un decor ───────────────────
+// Le programme ecrit une progression semaine apres semaine. Une fois l'ancre
+// historique posee, plus rien ne la relit : `programNum` ne sert qu'a des
+// comparaisons de severite et au re-clamp des contextes limites. Aucune regle
+// ne dit « ne reste pas sous la progression ecrite ». Au dernier barreau du
+// RPE (RPE 8 = zero cran), un athlete regulier reste donc immobile pendant que
+// la rampe monte, et l'ecran n'en dit rien.
+//
+// Ce signal ne TOUCHE PAS la charge, volontairement. Faire monter un poids
+// parce qu'un calendrier le demande — et non parce qu'une seance l'a merite —
+// est exactement ce que le contrat de progression interdit. Il leve une
+// surveillance et nomme l'ecart : la decision reste a l'athlete.
+//
+// Place apres l'arrondi pour juger le nombre REELLEMENT affiche, et il
+// n'ecrase jamais une raison existante — il s'y ajoute. Un frein dur
+// ('warning'/'critical') a deja son explication : on n'en empile pas une
+// seconde.
+function coachRuleProgramRampFloor(ctx){
+  if(ctx.contextLimited||ctx.isDeload||!ctx.hasRealHistory)return;
+  if(ctx.severity==='warning'||ctx.severity==='critical')return;
+  if(isTechnicalMovementInContext(ctx.label,ctx.moveContext))return;
+  var T=(window.COACH_MOVEMENT_TUNING&&window.COACH_MOVEMENT_TUNING.programRampFloor)
+    ||{minSessions:3,maxRpe:8,minShortfallPct:0.05};
+  var shown=(ctx.rounded||ctx.rounded===0)?ctx.rounded:ctx.suggested;
+  if(!(ctx.programNum>0)||!(shown>0)||shown>=ctx.programNum)return;
+  var shortfall=(ctx.programNum-shown)/ctx.programNum;
+  if(!(shortfall>=(Number(T.minShortfallPct)||0.05)))return;
+
+  // Combien de seances recentes se sont deja tenues sous ce que le programme
+  // demande aujourd'hui, SANS motif RPE ? Un RPE eleve, un echec ou un
+  // recalibrage sont des raisons legitimes de rester dessous : ils portent
+  // deja leur explication, l'athlete n'a pas besoin d'un second avertissement.
+  var need=Math.max(1,Number(T.minSessions)||3);
+  var maxRpe=Number(T.maxRpe)||8;
+  var bad=['recalibrating','watch','failed','major_fail','context_logged'];
+  var rows=Array.isArray(ctx.hist)?ctx.hist:[];
+  var streak=0;
+  for(var i=rows.length-1;i>=0&&streak<need;i--){
+    var row=rows[i];
+    if(!coachHistoryHasValidLoad(row,ctx.label,ctx.moveContext))continue;
+    if(row.status&&bad.indexOf(row.status)!==-1)return;
+    if(coachHistoryRpeNumber(row)>maxRpe)return;
+    if(coachHistoryLoadNumber(row)>=ctx.programNum)return;
+    streak++;
+  }
+  if(streak<need)return;
+
+  ctx.severity='warning';
+  ctx.reason=(ctx.reason?ctx.reason+' ':'')
+    +'Retard sur la progression ecrite : le programme demande '+Math.round(ctx.programNum)
+    +' lb et la suggestion tient '+Math.round(shown)+' lb, apres '+streak
+    +' seances sous ce niveau sans motif RPE (dernier RPE '+ctx.lastRpe
+    +'). Le moteur ne monte pas tout seul — a toi de decider si tu tentes la charge du programme.';
+  ctx.brainAdjusted=true;
+  ctx.programRampLag={program:ctx.programNum,shown:shown,sessions:streak};
 }
 
 function coachFinalizeSuggestionDecision(ctx){

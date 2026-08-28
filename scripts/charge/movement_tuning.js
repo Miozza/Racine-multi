@@ -190,6 +190,35 @@
       // plancher de validation).
       blockingStatuses: ['recalibrating', 'watch', 'failed', 'major_fail']
     },
+    // coachRuleProgramRampFloor() — suggestion.js
+    //
+    // Le programme ECRIT une progression. Le moteur, lui, ancre sur
+    // l'historique et peut rester dessous indefiniment sans jamais le dire :
+    // au dernier barreau du RPE (RPE 8 = zero cran), un athlete regulier reste
+    // immobile pendant que la rampe monte, et rien a l'ecran ne signale
+    // l'ecart. Mesure sur phase2_fable5 : DB RDL a 85 lb pendant que le
+    // programme passe de 55 a 60 lb — six occurrences, aucune alerte.
+    //
+    // Le signal ne CHANGE PAS la charge : le moteur reste consultatif, et une
+    // hausse decidee par un calendrier plutot que par une seance serait
+    // exactement ce que le contrat de progression interdit. Il leve une
+    // surveillance et NOMME l'ecart, pour que la decision revienne a
+    // l'athlete.
+    //
+    // « Sans motif RPE » est la condition qui compte : un athlete freine par
+    // un RPE eleve a deja son explication, et l'avertir une seconde fois
+    // n'ajoute rien. minSessions compte des SEANCES loggees, pas des semaines
+    // du calendrier — l'historique ne stocke pas la charge ecrite au
+    // programme le jour de la seance (planned.load y garde la SUGGESTION),
+    // donc la rampe passee n'est pas reconstituable. Sur un mouvement fait une
+    // fois par semaine, les deux coincident.
+    programRampFloor: {
+      minSessions: 3,
+      maxRpe: 8,
+      // En deca, l'ecart tient dans l'arrondi d'equipement : ce n'est pas un
+      // retard, c'est un cran.
+      minShortfallPct: 0.05
+    },
     // coachSpeedStimulusBand() / coachExtractMovementIntent() — mouvements.js + suggestion.js
     //
     // Un bloc VITESSE (effort dynamique) n'est pas un drill technique : c'est
