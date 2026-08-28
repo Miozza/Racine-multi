@@ -324,7 +324,30 @@ function coachExtractMovementIntent(parts, declaredPct, kind){
   var n=coachNormalizeMoveText(raw);
   var intents=[];
   function add(x){if(x&&intents.indexOf(x)===-1)intents.push(x);}
-  if(/amrap|emom|for time|wod|cap|time cap/.test(n))add('wod');
+  // ── « EMOM » dans un format n'est pas une declaration de WOD ─────────────
+  // Le texte teste inclut le FORMAT de l'exercice (coachBuildMovementContext).
+  // Un bloc principal dont le format s'ecrit « EMOM 8 : 2 Power Clean » se
+  // declarait donc contexte WOD, et coachRuleContextLimited coupait toute
+  // auto-progression : Power Clean figé a 125 lb sur les 8 semaines de
+  // phase2_fable5, sans aucun rapport avec les reps ou le RPE.
+  //
+  // Le `kind` du bloc tranche, parce qu'il est la seule declaration EXPLICITE
+  // de ce qu'est le bloc. Un vrai metcon porte kind:"wod" — et n'a d'ailleurs
+  // pas d'exercices charges : les quatre blocs kind:"wod" de phase2_fable5
+  // sont du texte, donc aucune charge n'y est jamais suggeree. Le mot EMOM
+  // ecrit dans le format d'un bloc de travail charge (main, secondary,
+  // strength, hypertrophy, accessory, technique, core) decrit la MISE EN
+  // FORME de la serie, pas sa nature.
+  //
+  // Meme raisonnement que le mot « vitesse » traite plus bas, et meme
+  // contrainte d'emplacement : cette regle vit ICI et pas dans
+  // coachBuildMovementContext(), parce que coachRederiveStoredContext()
+  // (historique.js) relit les lignes DEJA LOGGEES avec ce meme detecteur. Les
+  // deux cotes de la comparaison de contexte bougent donc ensemble, et
+  // l'historique deja stocke beneficie retroactivement du correctif.
+  var kindDeclared=coachNormalizeMoveText(kind||'');
+  var loadedBlockKind=/^(main|secondary|strength|hypertrophy|accessory|technique|core)$/.test(kindDeclared);
+  if(/amrap|emom|for time|wod|cap|time cap/.test(n)&&!loadedBlockKind)add('wod');
   // Mots qui declarent VRAIMENT une intention technique, quel que soit le reste
   // de la phrase.
   if(/technique|qualite|quality|drill|skill|primer|ramp up|rampup/.test(n))add('technique');
@@ -387,10 +410,9 @@ function coachExtractMovementIntent(parts, declaredPct, kind){
   // dans le constructeur de contexte, elle changerait la cle du jour sans
   // changer celle des lignes stockees : les 28 Power Clean d'un bloc principal
   // perdraient tout leur historique, exactement le bug « vitesse » de V4.6.1.
-  var k=coachNormalizeMoveText(kind||'');
   if(intents.indexOf('strength')===-1&&intents.indexOf('hypertrophy')===-1){
-    if(k==='main')add('strength');
-    else if(k==='hypertrophy')add('hypertrophy');
+    if(kindDeclared==='main')add('strength');
+    else if(kindDeclared==='hypertrophy')add('hypertrophy');
   }
   return intents;
 }

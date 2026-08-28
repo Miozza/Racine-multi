@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 202,
+    "ACTIF": 208,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -1599,6 +1599,22 @@
         },
         {
           "path": "CLAUDE.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/audit/2026-08-28-moteur-charge-audit.md",
+      "size": 17501,
+      "lines": 371,
+      "role": "Rapport date (Phase 1) : verification des 5 constats de la trace du moteur de charge contre le code reel, plus trois defauts non listes. Contexte perissable, jamais un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
           "vector": "doc-reference",
           "line": 0
         }

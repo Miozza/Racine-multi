@@ -127,6 +127,7 @@ node dev/strict_muscle_up_checks.js
 - `docs/CATALOGUE_MATRICE.md`
 - `docs/IDEES_FUTURES.md`
 - `docs/PROMPT_REFONTE_SYSTEM.md`
+- `docs/audit/2026-08-28-moteur-charge-audit.md`
 - `docs/superpowers/specs/2026-07-08-la-saison-design.md`
 - `docs/superpowers/plans/2026-07-08-la-saison-etapes-1-4.md`
 

@@ -1017,6 +1017,34 @@ try {
     resetState();
   }
 
+  // ── « EMOM » dans un format ne declare pas un WOD ────────────────────────
+  // Le texte lu par coachExtractMovementIntent inclut le FORMAT de l'exercice.
+  // Un bloc principal ecrit « EMOM 8 : 2 Power Clean » se declarait donc
+  // contexte WOD, et coachRuleContextLimited coupait toute auto-progression :
+  // Power Clean fige a 125 lb sur les 8 semaines de phase2_fable5, sans aucun
+  // rapport avec les reps ou le RPE. Le `kind` du bloc tranche, parce qu'il
+  // est la seule declaration explicite de ce qu'est le bloc.
+  {
+    const emomMain = ctx.coachExtractMovementIntent(
+      ['Power Clean', 'A. Power Clean vitesse', 'EMOM 8 : 2 Power Clean'], null, 'main');
+    assert(notIncludes(emomMain, 'wod'),
+      'EMOM ecrit dans le format d\'un bloc kind:"main" ne declare pas un contexte WOD.');
+    assert(includes(emomMain, 'strength'),
+      'Le bloc principal garde son intention de force.');
+
+    // Un vrai metcon, lui, reste un WOD — c'est le kind qui le dit.
+    assert(includes(ctx.coachExtractMovementIntent(['Thruster', 'C. Metcon', 'AMRAP 10'], null, 'wod'), 'wod'),
+      'Un bloc kind:"wod" reste un contexte WOD.');
+    // Et sans kind declare, le mot garde sa valeur : rien n'est perdu pour les
+    // appels qui ne portent pas le bloc.
+    assert(includes(ctx.coachExtractMovementIntent(['Thruster', 'AMRAP 10'], null, ''), 'wod'),
+      'Sans kind declare, « AMRAP » continue de declarer un contexte WOD.');
+    // Les autres blocs charges du contrat de forme sont couverts de la meme
+    // maniere : un accessoire chronometre n'est pas un metcon.
+    assert(notIncludes(ctx.coachExtractMovementIntent(['Face Pull', 'C. Posture', 'EMOM 6 : 12 Face Pull'], null, 'accessory'), 'wod'),
+      'EMOM dans un bloc kind:"accessory" ne declare pas un contexte WOD.');
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }
