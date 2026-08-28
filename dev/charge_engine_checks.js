@@ -1150,6 +1150,51 @@ try {
     resetState();
   }
 
+  // ── Ponderation du filtre de contexte ───────────────────────────────────
+  // Le filtre etait binaire. Une semaine legere ou technique se coupait donc
+  // integralement des semaines normales : un mouvement pouvait afficher 0
+  // ligne retenue alors que sept etaient stockees, et le deload repartait de
+  // zero. C'est la cause du « le Brain n'apprend pas assez vite » — pas un
+  // probleme d'algorithme, un probleme de donnees admises.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0}};
+    const normal = ctx.coachBuildMovementContext('Front Squat', {kind:'main', blockTitle:'A. Front Squat', format:'5x5', load:'200 lb'});
+    const leger  = ctx.coachBuildMovementContext('Front Squat', {kind:'main', blockTitle:'A. Front Squat', format:'5x5', load:'135 lb', note:'Semaine legere, technique.'});
+    const seance = (d, load) => ({date:d, load:load, reps:5, rpe:7, status:'success',
+      context:normal, planned:{load:load, reps:5, targetMin:5, context:normal}});
+    const stock = [seance('2026-06-01',185), seance('2026-06-08',190), seance('2026-06-15',195)];
+
+    // Meme nature : rien ne change, tout pese une seance pleine.
+    const memeNature = ctx.coachFilterHistoryForProgression(stock, normal);
+    assert(memeNature.length === 3, 'Meme nature de contexte : les trois seances comptent.');
+    assert(ctx.coachHistoryConfirmationWeight(memeNature) === 3,
+      'Et chacune pese une seance pleine (obtenu ' + ctx.coachHistoryConfirmationWeight(memeNature) + ').');
+
+    // Nature differente : admises, mais a poids reduit.
+    const autreNature = ctx.coachFilterHistoryForProgression(stock, leger);
+    assert(autreNature.length === 3,
+      'Un jour leger ne se coupe plus de son passe (obtenu ' + autreNature.length + '/3 retenues).');
+    const poids = ctx.coachHistoryConfirmationWeight(autreNature);
+    assert(poids > 0 && poids < 3,
+      'Mais ces seances ne pesent pas une confirmation pleine (poids cumule ' + poids + ').');
+
+    // La ligne STOCKEE n'est jamais modifiee : le poids vit sur une copie.
+    assert(stock.every(r => !Object.prototype.hasOwnProperty.call(r, '__coachWeight')),
+      'La ponderation ne touche pas la donnee de l\'athlete.');
+
+    // Le contrat § 3.2 tient : tant qu'une ligne de meme nature existe, elle
+    // garde l'exclusivite. Un resultat WOD ne remplace JAMAIS une capacite
+    // principale — la ponderation est un repli, pas un melange.
+    const wodCtx = ctx.coachBuildMovementContext('Front Squat', {kind:'wod', blockTitle:'C. Metcon', format:'AMRAP 10', load:'135 lb'});
+    const melange = stock.concat([{date:'2026-06-20', load:135, reps:10, rpe:7, status:'success',
+      context:wodCtx, planned:{load:135, reps:10, targetMin:10, context:wodCtx}}]);
+    const principal = ctx.coachFilterHistoryForProgression(melange, normal);
+    assert(principal.length === 3 && principal.every(r => r.load >= 185),
+      'Une ligne WOD ne rejoint pas l\'historique principal quand des lignes principales existent.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

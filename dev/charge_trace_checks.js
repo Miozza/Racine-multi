@@ -121,18 +121,30 @@ assert(t.contexteDuJour.limite === false, 'La trace dit si le contexte du jour e
 
 // ─── 2. Le cas qui a motive ce fichier ─────────────────────────────────────
 // Les seances sont bien dans l'historique, mais leur contexte n'a pas la meme
-// NATURE que celui du jour : le filtre de progression les ecarte toutes.
+// NATURE que celui du jour. Le filtre les ecartait TOUTES : un mouvement
+// pouvait se retrouver a 0 ligne retenue alors que sept etaient stockees, et
+// le moteur repartait de zero un jour de deload. Elles sont desormais admises
+// A POIDS REDUIT — mieux que d'etre aveugle, moins bien qu'une reference
+// propre — et la trace doit dire les deux : qu'elles comptent, et pourquoi
+// elles comptent moins.
 t = T.movement('Pause Back Squat', {context:techCtx, targetReps:3, programLoad:'135 lb', note:'Travail technique.', format:'5x3'});
 assert(t.contexteDuJour.limite === true, 'Un contexte technique est signale comme limite.');
-assert(t.historique.retenues === 0, 'Aucune seance normale ne compte dans un contexte limite.');
-assert(t.historique.ecartees === 2, 'Les deux seances sont comptees comme ecartees.');
-const motifs = Object.keys(t.historique.motifsDEcart);
-assert(motifs.length === 1, 'Un motif d\'ecart unique et nomme.');
+assert(t.historique.retenues === 2,
+  'Une seance de nature differente est admise plutot qu\'ecartee (obtenu ' + t.historique.retenues + '/2).');
+assert(t.historique.ecartees === 0, 'Plus aucune seance n\'est perdue pour cause de nature de contexte.');
+assert(t.historique.poidsCumule < 2,
+  'Mais elle ne pese pas une seance pleine : poids cumule ' + t.historique.poidsCumule + ' pour 2 lignes.');
+assert(t.historique.lignes.every(l => l.poids < 1),
+  'Chaque ligne porte son poids reel, pas un booleen.');
+const motifs = t.historique.lignes.map(l => l.pourquoiPoidsReduit).filter(Boolean);
+assert(motifs.length === 2, 'Chaque ligne admise a poids reduit porte son explication.');
 assert(/Nature de contexte differente/.test(motifs[0]), 'Le motif nomme la nature de contexte : ' + motifs[0]);
 assert(/limitee/.test(motifs[0]) && /normale/.test(motifs[0]),
   'Le motif dit laquelle des deux est limitee — sans ca, il n\'aide personne.');
-assert(t.historique.lignes.every(l => l.retenue === false && l.pourquoiEcartee),
-  'Chaque ligne ecartee porte sa propre explication.');
+// Et le moteur le DIT dans sa raison : une suggestion assise sur des seances
+// d'un autre contexte n'est pas une capacite mesuree.
+assert(/poids reduit/.test(String(t.suggestion.raison)),
+  'La suggestion annonce qu\'elle travaille sur un historique pondere.');
 
 // ─── 3. Les autres motifs sont distingues ──────────────────────────────────
 ctx.state.athleteState.movements['Pause Back Squat'] = {history:[

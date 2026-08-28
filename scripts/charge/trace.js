@@ -57,6 +57,30 @@
     return (n||n===0)?Number(n):null;
   }
 
+  // Ce que le moteur RETIENT vraiment, demande au moteur lui-meme.
+  //
+  // rowVerdict ci-dessous re-implemente les regles d'ecart pour pouvoir les
+  // NOMMER — c'est la raison d'etre de la trace. Mais deux implementations
+  // d'une meme regle derivent : depuis que le filtre admet les lignes d'un
+  // autre contexte a poids reduit quand aucune ligne de meme nature n'existe,
+  // la copie locale annoncait encore « 0 ligne retenue » la ou le moteur en
+  // lisait six. Le verdict de retenue vient donc desormais du filtre reel, et
+  // rowVerdict ne sert plus qu'a expliquer POURQUOI une ligne pese moins.
+  function keptSetFor(hist,label,ctx){
+    var set=(typeof Set==='function')?new Set():null;
+    var weights=(typeof Map==='function')?new Map():null;
+    if(typeof coachFilterHistoryForProgression!=='function')return {set:null,weights:null};
+    var kept=coachFilterHistoryForProgression(hist,ctx)||[];
+    kept.forEach(function(r){
+      // Une ligne admise a poids reduit est une COPIE (Object.create) : la
+      // ligne stockee est son prototype.
+      var origin=(r&&Object.prototype.hasOwnProperty.call(r,'__coachWeight'))?Object.getPrototypeOf(r):r;
+      if(set)set.add(origin);
+      if(weights)weights.set(origin,(typeof coachHistoryWeight==='function')?coachHistoryWeight(r):1);
+    });
+    return {set:set,weights:weights};
+  }
+
   // Le coeur : pourquoi cette ligne est-elle retenue, ou ecartee ?
   function rowVerdict(row,label,currentCtx,targetReps){
     if(row&&row.implausible)return {kept:false,reason:'Ligne marquee invraisemblable a la sauvegarde.'};
@@ -125,11 +149,16 @@
     var start=Math.max(0,hist.length-MAX_ROWS);
 
     var rows=[], kept=0, drops={};
+    var real=keptSetFor(hist,label,ctx);
     var hintsBefore=snapshotHints();
     for(var i=start;i<hist.length;i++){
       var row=hist[i];
       var v=rowVerdict(row,label,ctx,target);
-      if(v.kept)kept++;
+      // Le filtre reel a le dernier mot sur la RETENUE ; rowVerdict garde le
+      // dernier mot sur l'EXPLICATION.
+      var reallyKept=real.set?real.set.has(row):v.kept;
+      var rowWeight=(real.weights&&real.weights.has(row))?real.weights.get(row):(reallyKept?1:0);
+      if(reallyKept)kept++;
       else drops[v.reason]=(drops[v.reason]||0)+1;
       var rCtx=rowContext(row);
       rows.push({
@@ -140,8 +169,10 @@
         statut:(row&&row.status)||'',
         source:(row&&row.planned&&row.planned.source)||'',
         contexteLigne:{intentions:intentsOf(rCtx), limite:rCtx?limited(rCtx):null, equipement:(rCtx&&rCtx.equipment)||''},
-        retenue:v.kept,
-        pourquoiEcartee:v.reason,
+        retenue:reallyKept,
+        poids:rowWeight,
+        pourquoiEcartee:reallyKept?'':v.reason,
+        pourquoiPoidsReduit:(reallyKept&&rowWeight<1)?v.reason:'',
         reconstitutionAvantCetteSeance:opts.skipReplay?null:replayAt(mv,i,label,ctx,target,programLoad)
       });
     }
@@ -205,6 +236,7 @@
         lignesTracees:rows.length,
         retenues:kept,
         ecartees:rows.length-kept,
+        poidsCumule:Math.round(rows.reduce(function(a,r){return a+(r.poids||0);},0)*100)/100,
         motifsDEcart:drops,
         lignes:rows
       }

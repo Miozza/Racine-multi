@@ -279,17 +279,85 @@ function resetManualChargeOverridesFromAthleteState(){
   return removed;
 }
 
+// ── Poids d'une ligne d'historique face au contexte du jour ────────────────
+// Le filtre etait binaire : une ligne y etait, ou elle n'y etait pas. Une
+// semaine legere ou technique se coupait donc integralement des semaines
+// normales, et reciproquement — au point qu'un mouvement pouvait se retrouver
+// a 0 ligne retenue alors que sept etaient stockees. C'est la cause du « le
+// Brain n'apprend pas assez vite » : pas un probleme d'algorithme, un probleme
+// de donnees admises.
+//
+// Le poids dit la CONFIANCE qu'on accorde a la ligne comme evidence, jamais la
+// charge qu'elle porte : un 100 lb sorti un jour leger reste un 100 lb sorti.
+// Une ligne de faible poids compte donc moins comme CONFIRMATION avant une
+// hausse, et ne devient utilisable comme ancre que faute de mieux.
+var COACH_CONTEXT_WEIGHTS = {same:1, light:0.5, technique:0.5, wod:0.3, other:0.5};
+
+function coachHistoryContextWeight(rowCtx, currentCtx, label){
+  if(!rowCtx||!currentCtx)return COACH_CONTEXT_WEIGHTS.same;
+  if(coachContextMatches(rowCtx,currentCtx,label))return COACH_CONTEXT_WEIGHTS.same;
+  var W=COACH_CONTEXT_WEIGHTS;
+  // Le contexte le plus eloigne des deux decide : une ligne WOD lue un jour
+  // technique vaut le poids WOD, pas le poids technique.
+  var weight=W.other;
+  [rowCtx,currentCtx].forEach(function(c){
+    if(!c)return;
+    if(c.isWod||coachContextHasIntent(c,'wod'))weight=Math.min(weight,W.wod);
+    else if(c.isTechnical||coachContextHasIntent(c,'technique'))weight=Math.min(weight,W.technique);
+    else if(c.isLight||coachContextHasIntent(c,'light'))weight=Math.min(weight,W.light);
+  });
+  return weight;
+}
+
+function coachHistoryWeight(row){
+  var w=row&&row.__coachWeight;
+  return (typeof w==='number'&&w>0)?w:1;
+}
+
+// Somme des poids : « deux seances de confirmation » veut dire deux seances
+// qui valent chacune une seance, pas deux lignes de WOD. Vaut exactement
+// hist.length quand tout est de meme nature — le chemin normal ne bouge pas.
+function coachHistoryConfirmationWeight(rows){
+  var total=0;
+  (Array.isArray(rows)?rows:[]).forEach(function(r){total+=coachHistoryWeight(r);});
+  return total;
+}
+
+// Copie a poids : la ligne stockee n'est JAMAIS modifiee. Object.create garde
+// toutes ses proprietes lisibles par delegation, et le marqueur ne vit que sur
+// la copie — rien ne part dans le localStorage.
+function coachWeightedHistoryRow(row, weight){
+  var copy=Object.create(row);
+  copy.__coachWeight=weight;
+  return copy;
+}
+
 function coachFilterHistoryForProgression(history, context){
   var rows=(Array.isArray(history)?history:[]).filter(function(row){return !(row&&row.implausible)&&!coachIsNonPerformanceSeed(row);});
   if(!context || typeof coachIsLimitedProgressionContext!=='function')return rows;
   var label=context&&context.label?context.label:'';
   var limited=coachIsLimitedProgressionContext(context);
-  return rows.filter(function(row){
+  var kept=rows.filter(function(row){
     var rowCtx=coachHistoryContext(row);
     if(!rowCtx)return true;
     var rowLimited=coachIsLimitedProgressionContext(rowCtx);
     if(limited!==rowLimited)return false;
     return coachContextMatches(rowCtx,context,label);
+  });
+  if(kept.length||!rows.length)return kept;
+
+  // Aucune ligne de meme nature, mais des seances existent : plutot que de
+  // rendre le moteur aveugle, on les admet AVEC leur poids. C'est le cas de la
+  // semaine de deload qui se coupait de tout son passe.
+  //
+  // POURQUOI CE REPLI N'EST PAS UNE PONDERATION GENERALE : tant qu'une ligne de
+  // meme nature existe, elle garde l'exclusivite. « Un resultat WOD ou
+  // technique ne remplace JAMAIS automatiquement une capacite principale »
+  // (CLAUDE.md § 3.2) reste vrai — admettre les lignes WOD a cote des lignes
+  // principales laisserait une serie de metcon ancrer un bloc de force, ce que
+  // le contrat interdit et que progression_contract_checks epingle.
+  return rows.map(function(row){
+    return coachWeightedHistoryRow(row, coachHistoryContextWeight(coachHistoryContext(row), context, label));
   });
 }
 

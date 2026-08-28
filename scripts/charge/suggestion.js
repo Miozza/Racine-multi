@@ -459,6 +459,11 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleRoundingAndMovementCap(ctx);
   coachRuleContextLimitedRounding(ctx);
   coachRuleProgramRampFloor(ctx);
+  // En dernier, et c'est le point : cette regle AJOUTE une phrase a la raison
+  // finale. Placee en tete, elle etait effacee par la premiere regle qui
+  // reecrivait `reason` — coachRuleContextLimited, justement le cas ou
+  // l'historique pondere est le plus frequent.
+  coachRuleWeightedHistoryWatch(ctx);
 
   return coachFinalizeSuggestionDecision(ctx);
 }
@@ -592,6 +597,9 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     // Provenance de la mise a l'echelle : emprunt ou mesure, bornee ou non.
     // Nul quand l'historique reel a decide — c'est justement l'information.
     scaleInfo:scaleInfo, hasRealHistory:hasRealHistoryForScale,
+    // Vrai quand aucune ligne de meme nature n'existait et que le moteur
+    // travaille sur des seances admises a poids reduit.
+    historyWeighted:hist.some(function(r){return coachHistoryWeight(r)<1;}),
     // brainAdjusted — Trace explicite : passe a true chaque fois qu'une regle
     // depassant le simple arrondi equipement intervient (historique, RPE,
     // deload, cap contextuel). Remplace la detection par mots-cles sur
@@ -612,6 +620,19 @@ function coachRuleUnprovenScaleWatch(ctx){
     ctx.severity="watch";
     ctx.brainAdjusted=true;
   }
+}
+
+// Historique admis par PONDERATION : aucune ligne de meme nature n'existait, et
+// le moteur travaille sur des seances d'un autre contexte. Mieux que d'etre
+// aveugle, moins bien qu'une reference propre — et l'athlete doit le savoir.
+function coachRuleWeightedHistoryWatch(ctx){
+  if(!ctx.historyWeighted)return;
+  ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  ctx.reason=(ctx.reason?ctx.reason+" ":"")
+    +"Aucune seance de meme nature que celle du jour : le moteur s'appuie sur "
+    +ctx.hist.length+" seance"+(ctx.hist.length>1?"s":"")
+    +" d'un autre contexte, comptee"+(ctx.hist.length>1?"s":"")+" a poids reduit.";
+  ctx.brainAdjusted=true;
 }
 
 // ── Le programme propose, l'evidence de l'athlete dispose ──────────────────
@@ -635,7 +656,7 @@ function coachRuleUnprovenScaleWatch(ctx){
 function coachRuleProgramScaleGuard(ctx){
   if(!ctx.hasRealHistory||ctx.contextLimited||ctx.isDeload)return;
   if(!ctx.lastHasValidLoad||!(ctx.lastLoad>0))return;
-  if(!ctx.hist||ctx.hist.length<2)return;
+  if(!ctx.hist||coachHistoryConfirmationWeight(ctx.hist)<2)return;
   // Ne vise QUE l'inflation par le ratio. Un ratio de 1 n'a rien invente : la
   // charge est celle que le programme a ecrite, et c'est aux regles de
   // progression — et au portail Brain — de la traiter, avec leur propre
@@ -703,7 +724,7 @@ function coachLiftFromHistoryThreshold(label){
 // n'est pas encore une "reference prouvee" — il ne doit pas a lui seul justifier de suggerer
 // plus que ce que l'utilisateur vient juste d'etablir comme sa propre charge de depart.
 function coachRuleLiftFromControlledHistory(ctx){
-  if(!ctx.contextLimited && !ctx.isDeload && ctx.bestControlled&&ctx.bestControlled.load>ctx.suggested&&ctx.hist.length>=2){
+  if(!ctx.contextLimited && !ctx.isDeload && ctx.bestControlled&&ctx.bestControlled.load>ctx.suggested&&coachHistoryConfirmationWeight(ctx.hist)>=2){
     var gap=ctx.bestControlled.load-ctx.suggested;
     var thr=coachLiftFromHistoryThreshold(ctx.label);
     var allowLiftFromHistory=gap>=thr.gap
@@ -731,7 +752,7 @@ function coachRuleLiftFromControlledHistory(ctx){
 }
 
 function coachRuleReferenceReelleValidee(ctx){
-  if(!ctx.contextLimited && !ctx.isDeload && ctx.bestControlled&&ctx.bestControlled.load>ctx.suggested&&ctx.bestControlled.rpe<=8&&ctx.hist.length>=2){
+  if(!ctx.contextLimited && !ctx.isDeload && ctx.bestControlled&&ctx.bestControlled.load>ctx.suggested&&ctx.bestControlled.rpe<=8&&coachHistoryConfirmationWeight(ctx.hist)>=2){
     var bestReps=Number(ctx.bestControlled.reps)||0;
     if(!ctx.target||!bestReps||bestReps>=ctx.target||repRange(bestReps)===repRange(ctx.target)){
       ctx.suggested=ctx.bestControlled.load;
@@ -776,7 +797,7 @@ function coachRpeEarnedLoad(ctx){
   var badStatuses=['recalibrating','watch','failed','major_fail','context_logged'];
   if(ctx.last.status&&badStatuses.indexOf(ctx.last.status)!==-1)return ctx.lastLoad;
   if(ctx.cap&&ctx.cap.status&&badStatuses.indexOf(ctx.cap.status)!==-1)return ctx.lastLoad;
-  if(!ctx.hist||ctx.hist.length<2)return ctx.lastLoad;
+  if(!ctx.hist||coachHistoryConfirmationWeight(ctx.hist)<2)return ctx.lastLoad;
   if(isTechnicalMovementInContext(ctx.label,ctx.moveContext))return ctx.lastLoad;
   var react=coachRpeReactivityShift(ctx.hist,ctx.lastLoad,lastReps,ctx.target);
   var steps=Math.max(0,rung.steps+react.shift);
@@ -810,7 +831,7 @@ function coachRuleLastSetGuards(ctx){
     ctx.reason="Progression limitee : derniere reference "+ctx.lastLoad+" lb @RPE "+ctx.lastRpe+". Saut maximal prudent jusqu'a "+maxAllowed+" lb.";
     ctx.brainAdjusted=true;
   }
-  if(ctx.lastHasValidLoad&&ctx.lastRpe>0&&rung&&repsReached&&!ctx.contextLimited&&!isTechnicalMovementInContext(ctx.label,ctx.moveContext)&&!ctx.isDeload&&ctx.hist.length>=2){
+  if(ctx.lastHasValidLoad&&ctx.lastRpe>0&&rung&&repsReached&&!ctx.contextLimited&&!isTechnicalMovementInContext(ctx.label,ctx.moveContext)&&!ctx.isDeload&&coachHistoryConfirmationWeight(ctx.hist)>=2){
     // Un plafond prudent plus petit que le plus petit cran disponible sur le
     // rack n'est pas de la prudence : il interdit la seule progression
     // possible. Cas reel (anterieur a V4.5.56) : Lateral Raise DB a 20 lb,
@@ -937,7 +958,7 @@ function coachRuleRepSurplusLift(ctx){
   // technique ne merite pas de charge parce qu'il a fait des reps en plus.
   if(ctx.contextLimited||ctx.isDeload)return;
   if(isTechnicalMovementInContext(ctx.label,ctx.moveContext))return;
-  if(!ctx.hist||ctx.hist.length<2)return;
+  if(!ctx.hist||coachHistoryConfirmationWeight(ctx.hist)<2)return;
   var proj=coachRepSurplusProjection(ctx);
   if(!proj)return;
   // Meme plafond que la hausse ordinaire : le saut maximal prudent, elargi au
