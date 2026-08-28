@@ -458,6 +458,7 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleDeloadCap(ctx);
   coachRuleRoundingAndMovementCap(ctx);
   coachRuleContextLimitedRounding(ctx);
+  coachRuleWrittenCeilingCap(ctx);
   coachRuleProgramRampFloor(ctx);
   // En dernier, et c'est le point : cette regle AJOUTE une phrase a la raison
   // finale. Placee en tete, elle etait effacee par la premiere regle qui
@@ -518,6 +519,9 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     : null;
   var percentAnchor=null;
   var programNum;
+  // Plafond pose par le TEXTE du programme (« bande ou cable leger »). Zero
+  // quand le programme ecrit un nombre : ce nombre EST la prescription.
+  var writtenLoadCeiling=0;
   // L'historique reel decide, le ratio ne fait que combler son absence. Un
   // mouvement deja travaille n'a pas besoin d'un emprunt a ses voisins pour
   // savoir ce que l'athlete souleve : il le sait. Un mouvement vierge, lui,
@@ -581,6 +585,23 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
         : ((bestControlled&&(bestControlled.load||bestControlled.load===0))
           ? "Charge de programme non numerique : suggestion basee sur l'historique controle."
           : "Charge de programme non numerique : suggestion basee sur les reperes d'equipement, ajustee a ton profil.");
+      // Le programme n'a pas ecrit un nombre, mais il a ecrit quelque chose :
+      // « bande ou cable leger ». Rien ne le lisait, et le moteur retombait sur
+      // la derniere charge loggee — 70 lb pour un Pallof Press decrit comme
+      // leger. Le plafond vient de l'EQUIPEMENT ECRIT, pas du profil : un
+      // athlete fort ne rend pas une bande plus lourde, et une consigne
+      // « leger » reste une consigne meme quand l'historique dit plus.
+      var writtenCeiling=(typeof coachWrittenLoadCeiling==='function')
+        ? coachWrittenLoadCeiling(label,currentLoad,moveContext&&moveContext.note)
+        : null;
+      if(writtenCeiling>0&&programNum>writtenCeiling){
+        seedReason="Charge de programme non numerique et declaree legere : plafonnee a "
+          +writtenCeiling+" lb par le repere d'equipement ecrit ("
+          +(displayLoadForEquipment(label,currentLoad)||String(currentLoad||'').trim())
+          +"), pas par ton profil.";
+        programNum=roundLoadForExercise(label,writtenCeiling,'down',currentLoad)||writtenCeiling;
+      }
+      if(writtenCeiling>0)writtenLoadCeiling=writtenCeiling;
     }else{
       storeLoadDecisionHint(label,originalText,"Charge non numerique et aucun historique/repere fiable trouve.","watch",hist,moveContext,'reperes');
       return {early:true,decision:{label:label,loadText:originalText,loadNum:null,severity:"watch",reason:"Charge non numerique et aucun historique/repere fiable trouve.",last:last,cap:cap}};
@@ -597,6 +618,9 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
     // Provenance de la mise a l'echelle : emprunt ou mesure, bornee ou non.
     // Nul quand l'historique reel a decide — c'est justement l'information.
     scaleInfo:scaleInfo, hasRealHistory:hasRealHistoryForScale,
+    // Plafond pose par le TEXTE du programme (« bande ou cable leger »), pas
+    // par le profil : une consigne ecrite reste une consigne.
+    writtenLoadCeiling:writtenLoadCeiling,
     // Vrai quand aucune ligne de meme nature n'existait et que le moteur
     // travaille sur des seances admises a poids reduit.
     historyWeighted:hist.some(function(r){return coachHistoryWeight(r)<1;}),
@@ -1312,6 +1336,30 @@ function coachRuleRoundingAndMovementCap(ctx){
     ctx.rounded=roundLoadForExercise(ctx.label,ctx.lastLoad,"down",ctx.currentLoad)||ctx.lastLoad;
     ctx.brainAdjusted=true;
   }
+}
+
+// ── Une consigne ecrite tient jusqu'au nombre affiche ──────────────────────
+// Plafonner la seule GRAINE ne servait a rien : les regles d'historique
+// passent au-dessus. Mesure sur le cas Pallof Press — graine ramenee a 40 lb
+// par le repere d'equipement, puis « Progression prete : dernier 70 lb x 10
+// @RPE 7 » la remontait a 80 lb, soit le double de ce que le programme decrit
+// comme leger.
+//
+// « Leger » est une prescription du jour, pas un plafond de capacite : le
+// mouvement est la pour le gainage, pas pour la charge. L'historique a donc
+// raison sur ce que l'athlete PEUT faire, et tort sur ce qu'on lui demande
+// aujourd'hui. Placee apres l'arrondi, comme le re-clamp des contextes
+// limites, dont c'est le meme raisonnement.
+function coachRuleWrittenCeilingCap(ctx){
+  if(!(ctx.writtenLoadCeiling>0))return;
+  var shown=(ctx.rounded||ctx.rounded===0)?ctx.rounded:ctx.suggested;
+  if(!(shown>ctx.writtenLoadCeiling))return;
+  ctx.rounded=roundLoadForExercise(ctx.label,ctx.writtenLoadCeiling,'down',ctx.currentLoad)||ctx.writtenLoadCeiling;
+  ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  ctx.reason="Consigne ecrite « leger » : plafonne a "+ctx.rounded
+    +" lb par le repere d'equipement du programme, pas par ton profil ni par ton historique ("
+    +Math.round(shown)+" lb sinon). Ce bloc cherche le gainage, pas la charge.";
+  ctx.brainAdjusted=true;
 }
 
 function coachRuleContextLimitedRounding(ctx){

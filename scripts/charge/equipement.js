@@ -27,7 +27,10 @@ function defaultEquipmentLoadRules(){
     },
     barbell: {
       match:["barbell","bench","squat","strict press","push press","deadlift","clean","row","hip thrust"],
-      step:5
+      step:5,
+      // Poids de la barre vide : le plancher physique de la famille. Une barre
+      // ne descend pas en dessous, quel que soit le qualificatif ecrit.
+      barWeight:45
     }
   };
 }
@@ -55,6 +58,58 @@ function equipmentRuleForExercise(nameOrKey, loadText){
   if(has(rules.dumbbell))return rules.dumbbell;
   if(has(rules.barbell))return rules.barbell;
   return null;
+}
+
+// ── Le qualificatif ECRIT est une consigne, pas une decoration ─────────────
+// « bande ou cable leger », « bande legere », « 15-25 lb total » : quand le
+// programme n'ecrit pas un nombre, il ecrit quand meme quelque chose. Rien ne
+// le lisait. Le moteur retombait alors sur la derniere charge loggee — ou, a
+// defaut, sur un repere generique multiplie par le ratio de l'athlete — et
+// proposait 70 lb pour un Pallof Press decrit comme leger.
+//
+// Le plafond vient de l'EQUIPEMENT ECRIT, jamais du profil de l'athlete : un
+// athlete fort ne rend pas une bande plus lourde. Les valeurs sont derivees de
+// RACINE_EQUIPMENT — le bas de la pile reellement disponible — et non ecrites
+// a la main : un nombre invente ici serait le « leger » du createur.
+function coachWrittenLoadIsLight(loadText, note){
+  var t=normalizeChargeText(String(loadText||"")+" "+String(note||""));
+  return /\bleger\b|\blegere\b|\blight\b|\bfacile\b/.test(t);
+}
+
+// Repere bas d'une famille d'equipement. Pour une liste de tailles reelles :
+// le premier tiers du rack. Pour un equipement a pas constant (cable) :
+// quatre crans, soit la premiere zone utile de la pile.
+function coachLightCeilingForEquipment(rule){
+  if(!rule)return null;
+  if(Array.isArray(rule.available)&&rule.available.length){
+    var nums=rule.available.filter(function(v){return typeof v==='number'&&v>0;});
+    if(!nums.length)return null; // bandes : aucune valeur numerique, rien a plafonner
+    var idx=Math.max(0,Math.floor((nums.length-1)/3));
+    return nums[idx];
+  }
+  if(!(rule.step>0))return null;
+  var ceiling=rule.step*4;
+  // Un plafond ne descend jamais sous le materiel lui-meme. Une « barre
+  // legere » reste une barre : quatre crans de 5 lb donnaient 20 lb, un poids
+  // qui n'existe pas — la barre vide en pese deja 45.
+  var bar=Number(rule.barWeight)||0;
+  if(!bar){
+    var floors=(typeof window!=='undefined'&&window.RACINE_EQUIPMENT)?window.RACINE_EQUIPMENT:null;
+    var rules=effectiveEquipmentLoadRules();
+    if(rules&&rule===rules.barbell&&floors&&floors.barbells&&Array.isArray(floors.barbells.values)&&floors.barbells.values.length){
+      bar=Math.min.apply(Math, floors.barbells.values);
+    }
+  }
+  if(bar>0)ceiling=Math.max(ceiling, bar);
+  return ceiling;
+}
+
+// Plafond ecrit pour un mouvement, ou null quand le texte ne dit rien d'utile.
+function coachWrittenLoadCeiling(nameOrKey, loadText, note){
+  if(!coachWrittenLoadIsLight(loadText, note))return null;
+  var rule=equipmentRuleForExercise(nameOrKey, loadText);
+  var ceiling=coachLightCeilingForEquipment(rule);
+  return (ceiling>0)?ceiling:null;
 }
 
 function roundToStep(n, step, mode){

@@ -1195,6 +1195,48 @@ try {
     resetState();
   }
 
+  // ── Charge de programme non numerique : le TEXTE ecrit est une consigne ──
+  // « bande ou cable leger » n'etait lu par personne. Le moteur retombait sur
+  // la derniere charge loggee et proposait 70 lb pour un Pallof Press decrit
+  // comme leger — puis 80 lb une fois la hausse RPE appliquee, soit le double.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.3, _upperPull:1.6}};
+    const pallofCtx = ctx.coachBuildMovementContext('Pallof Press', {kind:'accessory', blockTitle:'B. Chaine posterieure', format:'3x10', note:'Anti-rotation.', load:'bande ou câble léger'});
+    const serie = (d) => ({date:d, load:70, reps:10, rpe:7, status:'success',
+      context:pallofCtx, planned:{load:70, reps:10, targetMin:10, context:pallofCtx}});
+    ctx.state.athleteState.movements['Pallof Press'] = {ranges:{}, status:'ok', history:[serie('2026-06-01'), serie('2026-06-08')]};
+
+    const pallof = ctx.guardedSuggestedLoadDecision('Pallof Press', 'bande ou câble léger', 10, pallofCtx);
+    assert(pallof.loadNum <= 40,
+      'Une consigne « leger » plafonne la charge au repere d\'equipement (obtenu ' + pallof.loadNum + ' lb).');
+    assert(/repere d'equipement/.test(String(pallof.reason)),
+      'La suggestion dit que le plafond vient du programme, pas du profil.');
+    assert(pallof.severity !== 'ok', 'Un plafond ecrit n\'est jamais un « ok » silencieux.');
+
+    // Le plafond vient de l'EQUIPEMENT, jamais du profil : un athlete fort ne
+    // rend pas une bande plus lourde.
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.6, _upperPull:1.6}};
+    const fort = ctx.guardedSuggestedLoadDecision('Pallof Press', 'bande ou câble léger', 10, pallofCtx);
+    assert(fort.loadNum === pallof.loadNum,
+      'Le plafond ecrit ne bouge pas avec le ratio de l\'athlete (' + fort.loadNum + ' vs ' + pallof.loadNum + ').');
+    resetState();
+  }
+
+  // ── Les reperes bas viennent du materiel, pas d'un chiffre invente ───────
+  {
+    // Une bande n'a aucune valeur numerique : on n'invente pas un nombre.
+    assert(ctx.coachWrittenLoadCeiling('Band Pull-Apart', 'bande légère', '') === null,
+      'Un equipement sans echelle numerique ne recoit pas de plafond invente.');
+    // Une barre reste une barre : quatre crans de 5 lb donnaient 20 lb, un
+    // poids qui n'existe pas.
+    assert(ctx.coachWrittenLoadCeiling('Back Squat', 'barre légère', '') >= 45,
+      'Une « barre legere » ne descend jamais sous la barre vide.');
+    // Et un texte qui ne dit rien ne plafonne rien.
+    assert(ctx.coachWrittenLoadCeiling('Face Pull', '60-70 lb', '') === null,
+      'Une charge chiffree n\'est pas concernee : le nombre EST la prescription.');
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }
