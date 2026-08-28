@@ -1,5 +1,5 @@
-// Racine V4.6.9 — le kind d'un bloc déclare enfin son intention
-var APP_VERSION = "V4.6.9";
+// Racine V4.6.10 — un bloc léger n'est pas une semaine de deload
+var APP_VERSION = "V4.6.10";
 
 // Architecture stable
 // programs/*.js = plan prévu
