@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 208,
+    "ACTIF": 212,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -573,6 +573,22 @@
       "consumes": []
     },
     {
+      "path": "dev/charge_replay_phase2.js",
+      "size": 14797,
+      "lines": 296,
+      "role": "Replay du moteur de charges sur un cycle complet de phase2_fable5, plus une simulation sequentielle semaine apres semaine. Rend reproductible la comparaison avant/apres de l'audit du 28 aout 2026 : la trace reelle de l'athlete n'a jamais ete fournie. Epingle les six symptomes de l'audit.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "dev/charge_suggestion_golden_master.js",
       "size": 8776,
       "lines": 166,
@@ -690,6 +706,22 @@
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "dev/fixtures/charge_replay_athlete.json",
+      "size": 2430,
+      "lines": 30,
+      "role": "Athlete deterministe du replay : ratios reconstitues depuis les rapports chargeMiseAEchelle/chargeLue de la trace d'audit, historique reproduisant les charges/reps/RPE qu'elle resume. Aucune donnee reelle.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
       "consumes": []
     },
     {
@@ -1610,6 +1642,38 @@
       "size": 17501,
       "lines": 371,
       "role": "Rapport date (Phase 1) : verification des 5 constats de la trace du moteur de charge contre le code reel, plus trois defauts non listes. Contexte perissable, jamais un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/audit/2026-08-28-trace-apres.json",
+      "size": 380855,
+      "lines": 15726,
+      "role": "Trace de cycle produite par le moteur APRES les correctifs, sur la meme fixture. A comparer a la trace avant.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/audit/2026-08-28-trace-avant.json",
+      "size": 284415,
+      "lines": 11845,
+      "role": "Trace de cycle produite par le moteur AVANT les correctifs (commit d'audit), sur la fixture de replay. Reference de comparaison.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [
