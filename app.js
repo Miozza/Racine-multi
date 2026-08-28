@@ -794,8 +794,41 @@ function setupRestBar(){
 // Extrait la plage de reps cible depuis le format (ex: "4 x 15-20" → {min:15,max:20})
 // ou depuis un nombre simple (ex: "5 x 8" → {min:8,max:8})
 function parseTargetReps(format, repsHint){
+  var raw = String(format||"");
+  // « EMOM 8 : 2 Power Clean » — un format d'INTERVALLE porte deux nombres, et
+  // le premier est une DUREE. Sans cette lecture, aucune regle ne matchait et
+  // la cible retombait sur repsHint : 8 ou 10 reps pour un EMOM qui en demande
+  // 2. Le signe de l'ecart de reps s'en trouvait inverse — l'athlete qui sort
+  // 4 reps sur 2 demandees etait lu comme quelqu'un qui en rate 4 sur 8, et le
+  // moteur projetait Epley VERS LE BAS. Mesure sur phase2_fable5 : Power Clean
+  // figé a 125 lb sur les 8 semaines pendant que le programme ecrivait
+  // 160 -> 185 lb.
+  //
+  // Les reps se lisent APRES le separateur, jamais avant : « EMOM 8 » seul ne
+  // declare aucune cible (les 8 sont des minutes) et garde le repli, comme
+  // « AMRAP 20 » ou « AMRAP @ 205 lb ». Un compte d'unites — minutes,
+  // calories, secondes, tours — n'est pas non plus une cible de reps.
+  if(/^\s*(?:e\d*mom|emom|amrap|tabata)\b/i.test(raw)){
+    var tail = raw.split(/[:—–]/).slice(1).join(" ");
+    // Un EMOM à plusieurs stations (« min 1 = … ; min 2 = … ») ne prescrit PAS
+    // une cible de reps : chaque minute a la sienne, et rien ne dit laquelle
+    // appartient au mouvement chargé. Le repli est la bonne réponse.
+    var multiStation = /\bmin(?:ute)?s?\s*\d|\bimpair|\bpair\b/i.test(tail);
+    var unitOnly = /^(min|mn|minutes?|sec|secondes?|s|cal|calories|rounds?|tours?|kg|lb)$/i;
+    var word = "([a-zà-öø-ÿ][a-zà-öø-ÿ'’\\-]*)";
+    var tailRange = multiStation ? null : tail.match(new RegExp("(\\d+)\\s*[–\\-]\\s*(\\d+)\\s*" + word, "i"));
+    if(tailRange && !unitOnly.test(tailRange[3])){
+      return {min:Number(tailRange[1]), max:Number(tailRange[2])};
+    }
+    var tailSingle = multiStation ? null : tail.match(new RegExp("(\\d+)\\s*" + word, "i"));
+    if(tailSingle && !unitOnly.test(tailSingle[2])){
+      return {min:Number(tailSingle[1]), max:Number(tailSingle[1])};
+    }
+    var ri = Number(repsHint)||8;
+    return {min:ri, max:ri};
+  }
   // Chercher une plage "X-Y" dans le format
-  var rangeMatch = String(format||"").match(/(\d+)\s*[–\-]\s*(\d+)/);
+  var rangeMatch = raw.match(/(\d+)\s*[–\-]\s*(\d+)/);
   if(rangeMatch) return {min:Number(rangeMatch[1]), max:Number(rangeMatch[2])};
   // Chercher un nombre simple après "x" ou "×"
   var singleMatch = String(format||"").match(/[x×]\s*(\d+)/i);
@@ -816,6 +849,12 @@ function parseTargetReps(format, repsHint){
   if(repMaxMatch && String(format||"").indexOf("%") === -1){
     return {min:Number(repMaxMatch[1]), max:Number(repMaxMatch[1])};
   }
+  // « top set de 2 » : un top set EST une cible de répétitions, écrite en
+  // toutes lettres sans « × » ni « RM ». Même défaut, même conséquence que
+  // l'EMOM ci-dessus — la cible retombait sur repsHint, donc 10 reps pour un
+  // top set de 2 (Push Press, shoulders3d_press225_phase2).
+  var topSetMatch = raw.match(/top\s*set\s*(?:de|of)?\s*(\d+)/i);
+  if(topSetMatch) return {min:Number(topSetMatch[1]), max:Number(topSetMatch[1])};
   // Un compte écrit en toutes lettres, sans « × » : « cumul 100 reps »,
   // « Validation : 1 rep propre ». Sans cette lecture, la cible retombait sur
   // repsHint (10) et l'écran proposait 10 répétitions pour un objectif de 100 —

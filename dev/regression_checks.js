@@ -271,6 +271,28 @@ if(parseTargetRepsSrc){
   assert(target('à 80% du 1RM') === '10-10', 'Un pourcentage de 1RM ne déclare aucune cible de reps.');
   // Et le schéma de séries garde la priorité sur le rep-max cité après lui.
   assert(target('5×3 @ 85% du 1RM') === '3-3', 'Un format N×M reste prioritaire sur un 1RM cité en pourcentage.');
+  // Un format d'INTERVALLE porte deux nombres et le premier est une durée.
+  // « EMOM 8 : 2 Power Clean » ne matchait aucune règle : la cible retombait
+  // sur repsHint, donc 8 ou 10 reps pour un EMOM qui en demande 2. Le signe de
+  // l'écart de reps s'en trouvait inversé — 4 reps sorties étaient lues comme
+  // 4 sur 8 manquées, pas 4 sur 2 dépassées, et le moteur projetait vers le
+  // BAS. Power Clean figé à 125 lb sur 8 semaines (phase2_fable5).
+  assert(target('EMOM 8 : 2 Power Clean') === '2-2', '« EMOM 8 : 2 Power Clean » demande 2 reps, pas 8.');
+  assert(target('EMOM 6 : 2 Power Clean technique') === '2-2', 'Un suffixe après le mouvement n’efface pas la cible.');
+  assert(target('EMOM 10 : 8-10 Ring Row') === '8-10', 'Une plage écrite après le séparateur reste une plage.');
+  // Les minutes ne sont JAMAIS des reps : sans séparateur, rien n'est déclaré.
+  assert(target('EMOM 8') === '10-10', '« EMOM 8 » ne déclare aucune cible : les 8 sont des minutes.');
+  assert(target('EMOM 8 lourd') === '10-10', 'Un qualificatif ne transforme pas des minutes en reps.');
+  assert(target('AMRAP 20') === '10-10', '« AMRAP 20 » ne déclare aucune cible de reps.');
+  assert(target('AMRAP @ 205 lb') === '10-10', 'Une charge citée dans un AMRAP n’est pas une cible de reps.');
+  // Un EMOM à plusieurs stations n'a pas UNE cible : rien ne dit laquelle
+  // appartient au mouvement chargé.
+  assert(target('EMOM 10 : min 1 = 12 cal Row ; min 2 = 6 Pull-Up') === '10-10',
+    'Un EMOM multi-stations ne déclare aucune cible de reps pour le mouvement chargé.');
+  assert(target('EMOM 12 : 30 sec de travail') === '10-10', 'Des secondes ne sont pas des répétitions.');
+  // Un top set est une cible de reps écrite en toutes lettres.
+  assert(target('top set de 2') === '2-2', '« top set de 2 » déclare une cible de 2 reps.');
+  assert(target('top set de 6') === '6-6', '« top set de 6 » déclare une cible de 6 reps.');
 }
 
 // 2. Deux exercices ne se compressent pas comme quatre. Le palier de densité
