@@ -67,15 +67,22 @@ const ctx = {
   buildWeekInfo: function(){ return {6:{label:'S6', goal:'Deload facile'}}; },
   weekIdx: function(){ return 2; },
   collectSessionExercises: function(){ return []; },
-  parseTargetReps: function(format, fallback){
-    const nums = String(format || '').match(/\d+/g) || [];
-    if(!nums.length)return {min:fallback || 8, max:fallback || 8};
-    const last = Number(nums[nums.length - 1]) || fallback || 8;
-    return {min:last, max:last};
-  }
+  // parseTargetReps est injecte plus bas depuis app.js : le VRAI parseur, pas
+  // une approximation. Le signal d'ecart de reps se mesure contre la
+  // fourchette prescrite, donc un stub qui ne sait pas rendre de plage
+  // testerait le stub au lieu du contrat (« 3x15-20 » y valait 20-20).
+  parseTargetReps: null
 };
 ctx.window = ctx;
 ctx.globalThis = ctx;
+
+// Le vrai parseur de format, lu dans app.js — meme source que regression_checks.
+{
+  const appSrc = read('app.js');
+  const src = (appSrc.match(/function parseTargetReps[\s\S]*?\n}/) || [''])[0];
+  if(!src) fail('parseTargetReps introuvable dans app.js.');
+  else ctx.parseTargetReps = new Function('return (' + src + ')')();
+}
 
 const loadOrder = [
   'scripts/app_helpers.js',
@@ -1235,6 +1242,97 @@ try {
     // Et un texte qui ne dit rien ne plafonne rien.
     assert(ctx.coachWrittenLoadCeiling('Face Pull', '60-70 lb', '') === null,
       'Une charge chiffree n\'est pas concernee : le nombre EST la prescription.');
+  }
+
+  // ── Signal d'ecart de reps : les quatre combinaisons de la regle (c) ─────
+  // « Je fais 4 reps au lieu de 2 et le moteur ne monte pas. » Le RPE decide
+  // de ce que l'ecart VEUT DIRE, dans les deux sens.
+  {
+    const gapScenario = (reps, rpes, target, format) => {
+      resetState();
+      ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0, _olympic:1.0}};
+      const c = ctx.coachBuildMovementContext('Power Clean', {kind:'main', blockTitle:'A. Power Clean', format:format, note:'Effort dynamique.', load:'160 lb'});
+      ctx.state.athleteState.movements['Power Clean'] = {ranges:{}, status:'ok', history: reps.map((r, i) => ({
+        date:'2026-0' + (i + 1) + '-01', load:125, reps:r, rpe:rpes[i], status:'success', context:c,
+        planned:{load:125, reps:target, targetMin:target, targetMax:target, format:format, context:c}
+      }))};
+      return ctx.guardedSuggestedLoadDecision('Power Clean', '160 lb', target, c);
+    };
+    const EMOM = 'EMOM 8 : 2 Power Clean';
+
+    // 1. Reps en plus + RPE <= 8 : reserve reelle, la reference monte.
+    const hausse = gapScenario([2,2,4,4], [7,7,7,7], 2, EMOM);
+    assert(hausse.loadNum > 125,
+      'Reps au-dessus de la cible a RPE 7, deux seances de suite : la charge monte (obtenu ' + hausse.loadNum + ' lb).');
+    assert(/Reps au-dessus de la cible/.test(String(hausse.reason)),
+      'Et la raison NOMME le signal : l\'athlete doit lire que ses reps ont ete vues.');
+
+    // 2. Reps en plus + RPE >= 9 : serie menee a l'echec, on ne monte pas.
+    const dur = gapScenario([2,2,4,4], [7,7,9,9], 2, EMOM);
+    assert(dur.loadNum <= 125,
+      'Reps au-dessus de la cible mais RPE 9 : aucune hausse (obtenu ' + dur.loadNum + ' lb).');
+    assert(/RPE 9|echec/.test(String(dur.reason)), 'Et le moteur DIT pourquoi il ne monte pas.');
+
+    // 3. Persistance : un depassement isole ne bouge rien de plus que d'habitude.
+    const isole = gapScenario([2,2,2,4], [7,7,7,7], 2, EMOM);
+    assert(/il en faut 2 de suite/.test(String(isole.reason)),
+      'Une seule seance hors cible est nommee comme insuffisante.');
+    assert(isole.loadNum <= hausse.loadNum,
+      'Et elle ne fait pas monter plus qu\'un signal confirme.');
+
+    // 4. Reps en moins + RPE >= 9 : charge trop lourde, la reference descend.
+    const baisse = gapScenario([5,5,3,3], [7,7,9,9], 5, '5x5');
+    assert(baisse.loadNum < 125,
+      'Reps sous la cible a RPE 9, deux seances de suite : la charge descend (obtenu ' + baisse.loadNum + ' lb).');
+    assert(/Reps sous la cible/.test(String(baisse.reason)), 'Et la raison le nomme.');
+
+    // 5. Reps en moins + RPE <= 7 : seance ecourtee, AUCUNE conclusion.
+    // C'est le cas qui manquait le plus : la projection Epley vers le bas se
+    // declenchait sur le seul ecart de reps, sans regarder le RPE.
+    const ecourtee = gapScenario([5,5,2,2], [6,6,6,6], 5, '5x5');
+    assert(ecourtee.loadNum >= 125,
+      'Une seance ecourtee a RPE 6 ne fait PAS baisser la charge (obtenu ' + ecourtee.loadNum + ' lb).');
+    assert(!/Charge trop lourde/.test(String(ecourtee.reason)),
+      'Et le moteur n\'en conclut rien : ce n\'est pas un signal de charge.');
+  }
+
+  // ── La FOURCHETTE, pas la borne basse (regle a) ──────────────────────────
+  // « 3x15-20 » ne demande pas 15 reps mais entre 15 et 20 : faire 18 n'est pas
+  // un depassement. Le moteur ne recevait qu'UN nombre et lisait donc chaque
+  // serie normale comme un surplus de 3 reps.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0, _upperPull:1.0}};
+    const fpCtx = ctx.coachBuildMovementContext('Face Pull', {kind:'accessory', blockTitle:'C. Posture', format:'3×15-20', load:'60 lb'});
+    assert(fpCtx.targetMin === 15 && fpCtx.targetMax === 20,
+      'Le contexte porte les DEUX bornes de la fourchette (' + fpCtx.targetMin + '-' + fpCtx.targetMax + ').');
+    ctx.state.athleteState.movements['Face Pull'] = {ranges:{}, status:'ok', history:[18,20,18].map((r, i) => ({
+      date:'2026-0' + (i + 1) + '-01', load:80, reps:r, rpe:7, status:'success', context:fpCtx,
+      planned:{load:80, reps:15, targetMin:15, targetMax:20, format:'3×15-20', context:fpCtx}
+    }))};
+    const dansLaCible = ctx.guardedSuggestedLoadDecision('Face Pull', '60 lb', 15, fpCtx);
+    assert(!/Reps au-dessus de la cible/.test(String(dansLaCible.reason)),
+      '18 et 20 reps sur une cible 15-20 sont DANS la cible, pas au-dessus.');
+    resetState();
+  }
+
+  // ── Une cible stockee fausse est relue, jamais crue sur parole ───────────
+  // Les lignes loggees sous « EMOM 8 : 2 Power Clean » portent targetMin:10 —
+  // le parseur de l'epoque ne savait pas lire un intervalle. Les lire telles
+  // quelles garderait le mouvement casse pour tout l'historique deja ecrit.
+  {
+    const menteuse = {date:'2026-06-01', load:125, reps:4, rpe:7, status:'success',
+      planned:{load:125, reps:10, targetMin:10, targetMax:10, format:'EMOM 8 : 2 Power Clean'}};
+    const relue = ctx.coachRowOwnTargetRange(menteuse);
+    assert(relue && relue.min === 2 && relue.max === 2,
+      'Le format stocke est relu avec le parseur d\'aujourd\'hui (obtenu ' + JSON.stringify(relue) + ').');
+    // Une ligne sans format n'est pas relisible : elle garde ce qu'elle porte.
+    const muette = {date:'2026-06-01', load:125, reps:4, rpe:7, planned:{targetMin:8, targetMax:8}};
+    const gardee = ctx.coachRowOwnTargetRange(muette);
+    assert(gardee && gardee.min === 8, 'Une ligne sans format stocke garde sa cible telle quelle.');
+    // Et une ligne qui ne dit rien du tout ne fait pas semblant.
+    assert(ctx.coachRowOwnTargetRange({load:100, reps:5}) === null,
+      'Une ligne sans aucune prescription retourne null, pas une cible inventee.');
   }
 
 } catch (err) {

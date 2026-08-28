@@ -181,6 +181,31 @@
     // et c'est la suggestion REELLE ci-dessous qui l'ecrira.
     restoreHints(hintsBefore);
 
+    // ── Ecart de reps, expose tel que le moteur le lit ────────────────────
+    // Sans ce bloc, impossible de mesurer si la correction fonctionne : la
+    // trace montrait la charge proposee et les reps de chaque ligne, mais
+    // jamais le RAISONNEMENT qui relie les deux.
+    var gap=null;
+    try{
+      if(typeof coachRepGapSignal==='function'&&typeof coachBuildSuggestionContext==='function'){
+        var built=coachBuildSuggestionContext(nameOrLabel,programLoad,target,ctx);
+        if(built&&!built.early&&built.ctx){
+          var sig=coachRepGapSignal(built.ctx);
+          gap={
+            repsPrescrites:sig.fourchette.min,
+            fourchette:{min:sig.fourchette.min,max:sig.fourchette.max},
+            seances:sig.seances,
+            sens:sig.direction,
+            seancesConsecutives:sig.sessions,
+            seancesRequises:sig.requises,
+            rpeDernier:sig.rpe,
+            effet:sig.effet,
+            pourquoi:sig.pourquoi
+          };
+        }
+      }
+    }catch(e){ gap={effet:'illisible',pourquoi:String(e&&e.message)}; }
+
     var decision=null;
     try{
       var d=guardedSuggestedLoadDecision(label,programLoad,target,ctx);
@@ -230,6 +255,7 @@
         equipement:(ctx&&ctx.equipment)||''
       },
       suggestion:decision,
+      ecartReps:gap,
       capacites:(mv&&mv.ranges)?mv.ranges:null,
       historique:{
         lignesStockees:hist.length,

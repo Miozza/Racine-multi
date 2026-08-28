@@ -434,9 +434,24 @@ function coachBuildMovementContext(nameOrKey, opts){
   // elle sert a resoudre la charge, meme quand le bloc n'est pas un bloc
   // vitesse (voir coachBuildSuggestionContext).
   var percentTarget=coachPercentTargetFromText(opts.load);
+  // ── La FOURCHETTE de reps, pas seulement sa borne basse ──────────────────
+  // « 3×15-20 » ne demande pas 15 reps, il en demande entre 15 et 20 : faire
+  // 18 n'est pas un depassement, c'est la cible. Tout le moteur ne recevait
+  // pourtant qu'UN nombre — `parsed.min` — et lisait donc 18 comme un surplus
+  // de 3 reps. Les deux bornes voyagent desormais avec le contexte, pour que
+  // l'ecart de reps se mesure contre la bonne.
+  var repsRange=null;
+  if(opts.targetMin||opts.targetMax){
+    repsRange={min:Number(opts.targetMin)||Number(opts.targetMax)||0, max:Number(opts.targetMax)||Number(opts.targetMin)||0};
+  }else if(typeof parseTargetReps==='function'&&opts.format){
+    var p=parseTargetReps(opts.format, Number(opts.targetReps)||0);
+    if(p&&(p.min||p.max))repsRange={min:Number(p.min)||Number(p.max)||0, max:Number(p.max)||Number(p.min)||0};
+  }
   return {
     rawName:raw,
     label:label,
+    targetMin:repsRange?repsRange.min:null,
+    targetMax:repsRange?repsRange.max:null,
     equipment:equipment,
     intents:intents,
     speedBand:speedBand,

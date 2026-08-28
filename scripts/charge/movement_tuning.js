@@ -185,7 +185,26 @@
       },
       fallback: {converge: 0.40, maxRpe: 8},
       // En dessous de ce ratio reps/cible, aucun surplus n'est affirme.
+      // Compare aux reps EXCEDENTAIRES au-dela de targetMax, pas aux reps
+      // totales : sur une cible « 15-20 », faire 20 n'est pas un depassement.
       minRatio: 1.25,
+      // ── Persistance avant reaction ────────────────────────────────────────
+      // Un depassement isole ne bouge rien : une bonne journee n'est pas une
+      // capacite. Deux seances CONSECUTIVES hors fourchette dans le meme sens
+      // declenchent l'ajustement — la meme logique de confirmation que le
+      // moteur applique deja avant une hausse.
+      minConsecutive: 2,
+      // ── Asymetrie assumee (regle c) ───────────────────────────────────────
+      // Le RPE decide de ce que l'ecart VEUT DIRE, dans les deux sens :
+      //   reps en plus  + RPE <= surplusMaxRpe  -> reserve reelle, la reference monte
+      //   reps en plus  + RPE >= hardRpe        -> serie menee a l'echec, on ne monte pas
+      //   reps en moins + RPE >= hardRpe        -> charge trop lourde, la reference descend
+      //   reps en moins + RPE <= shortSessionRpe-> seance ecourtee, AUCUNE conclusion
+      // Ce dernier cas est le plus important : la projection Epley vers le bas
+      // se declenchait sur le seul ecart de reps, sans regarder le RPE. Une
+      // seance ecourtee a RPE 6 faisait donc BAISSER la charge comme un echec.
+      hardRpe: 9,
+      shortSessionRpe: 7,
       // Statuts qui interdisent tout credit de surplus (meme liste que le
       // plancher de validation).
       blockingStatuses: ['recalibrating', 'watch', 'failed', 'major_fail']
