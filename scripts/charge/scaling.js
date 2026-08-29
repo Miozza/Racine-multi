@@ -82,7 +82,41 @@ function coachUncalibratedLevelRatio(){
   return (ratio > 0) ? ratio : 0;
 }
 
-function coachUserLoadRatio(label){
+// Bande resserrée des ratios NON PROUVÉS : un mouvement que l'athlète n'a
+// jamais fait, dont le ratio est EMPRUNTÉ (moyenne de famille, `_overall`,
+// repère de niveau) et non mesuré sur lui.
+//
+// La bande large [0,25 – 1,60] ci-dessus protège contre une saisie à la
+// mauvaise échelle. Elle ne protège pas contre un emprunt légitime mais
+// inadapté : `_upperPull` est la moyenne de row8RM, chestRow8RM et
+// latPulldown10RM, et cette dernière a une référence de 20 — un numéro de
+// plaque machine, pas des livres comparables. Une valeur d'athlète de 40 y
+// vaut un ratio composant de 2,0, tout juste sous le garde-fou
+// RATIO_COMPONENT_MAX de l'onboarding, donc il ENTRE dans la moyenne et tire
+// toute la famille. Mesuré sur phase2_fable5 : Pendlay Row 155 lb écrits →
+// 250 lb suggérés en 5×5, Face Pull 60 → 100 lb en 3×15-20, sans une seule
+// séance loggée pour les contredire.
+//
+// Un ratio MESURÉ sur le mouvement lui-même n'est pas concerné : s'il dit que
+// l'athlète fait 1,4× la référence au Back Squat, c'est une mesure, pas un
+// emprunt. Et dès qu'un mouvement a de l'historique réel, c'est l'historique
+// qui décide — cette bande ne sert qu'aux mouvements encore vierges.
+//
+// SEULE LA BORNE HAUTE EST APPLIQUÉE, et c'est délibéré. Une borne basse
+// REMONTERAIT la charge d'un athlète que le ratio juge plus faible que la
+// référence — exactement la direction dangereuse, et sur le mouvement dont on
+// sait le moins de choses. Mesuré : le repère de niveau « débutant » vaut 0,45,
+// et le ramener à 0,85 doublait presque les charges d'un profil non calibré.
+// Sous-suggérer sur un mouvement vierge coûte une série trop légère ; en
+// sur-suggérer coûte une blessure. COACH_UNPROVEN_RATIO_MIN reste écrit ici
+// comme repère de lecture, il n'est pas appliqué.
+var COACH_UNPROVEN_RATIO_MIN = 0.85;
+var COACH_UNPROVEN_RATIO_MAX = 1.20;
+
+// Ratio personnel AVEC sa provenance. `borrowed` distingue une mesure faite
+// sur ce mouvement d'un emprunt à ses voisins — c'est cette distinction que la
+// suggestion doit pouvoir nommer à l'athlète.
+function coachUserLoadRatioSource(label){
   var profile = (typeof state !== 'undefined' && state) ? state.profile : null;
   var ratios = profile && profile.scaleRatios;
   // Pas de ratios de test : on descend au repère de niveau plutôt que de
@@ -90,7 +124,9 @@ function coachUserLoadRatio(label){
   // de bande s'applique comme partout ailleurs.
   if(!ratios){
     var lvlRatio = (typeof coachUncalibratedLevelRatio === 'function') ? coachUncalibratedLevelRatio() : 0;
-    return (lvlRatio > 0) ? coachClampScaleRatio(lvlRatio, label, 'niveau') : 1;
+    return (lvlRatio > 0)
+      ? {ratio: coachClampScaleRatio(lvlRatio, label, 'niveau'), source:'niveau', borrowed:true}
+      : {ratio:1, source:'', borrowed:false};
   }
 
   // 1. Correspondance directe avec l'un des 12 mouvements de référence
@@ -104,7 +140,7 @@ function coachUserLoadRatio(label){
         // direct > 0 : un ratio 0 stocké (donnée corrompue d'une version
         // antérieure) n'est pas « ne pas scaler » — on le traite comme absent
         // et on retombe sur la famille puis _overall.
-        if(direct > 0) return coachClampScaleRatio(direct, label, cfg.profile);
+        if(direct > 0) return {ratio: coachClampScaleRatio(direct, label, cfg.profile), source: cfg.profile, borrowed:false};
         break;
       }
     }
@@ -113,14 +149,59 @@ function coachUserLoadRatio(label){
   // 2. Repli par famille de mouvement pour tout ce qui n'est pas un des 12
   //    mouvements de référence (accessoires, variantes, isolation...).
   var n = coachNormalizeMoveText(label);
-  var fam = null;
-  if(/clean|snatch|jerk/.test(n)) fam = ratios._olympic;
-  else if(/rdl|romanian|deadlift|hip thrust|good morning|hyperextension|hip abduction|pull through/.test(n)) fam = ratios._hinge;
-  else if(/squat|lunge|step up|leg press|calf|bulgarian/.test(n)) fam = ratios._lowerBody;
-  else if(/row|pull up|pulldown|curl|face pull|rear delt|lat |shrug/.test(n)) fam = ratios._upperPull;
-  else if(/press|push up|pushup|dip|fly|chest/.test(n)) fam = ratios._upperPush;
-  if(fam > 0) return coachClampScaleRatio(fam, label, 'famille');
-  return (ratios._overall > 0) ? coachClampScaleRatio(ratios._overall, label, '_overall') : 1;
+  var fam = null, famName = '';
+  if(/clean|snatch|jerk/.test(n)){ fam = ratios._olympic; famName = 'haltérophilie'; }
+  else if(/rdl|romanian|deadlift|hip thrust|good morning|hyperextension|hip abduction|pull through/.test(n)){ fam = ratios._hinge; famName = 'charnière de hanche'; }
+  else if(/squat|lunge|step up|leg press|calf|bulgarian/.test(n)){ fam = ratios._lowerBody; famName = 'bas du corps'; }
+  else if(/row|pull up|pulldown|curl|face pull|rear delt|lat |shrug/.test(n)){ fam = ratios._upperPull; famName = 'tirage'; }
+  else if(/press|push up|pushup|dip|fly|chest/.test(n)){ fam = ratios._upperPush; famName = 'poussée'; }
+  if(fam > 0) return {ratio: coachClampScaleRatio(fam, label, 'famille'), source: famName, borrowed:true};
+  return (ratios._overall > 0)
+    ? {ratio: coachClampScaleRatio(ratios._overall, label, '_overall'), source:'moyenne générale', borrowed:true}
+    : {ratio:1, source:'', borrowed:false};
+}
+
+function coachUserLoadRatio(label){
+  return coachUserLoadRatioSource(label).ratio;
+}
+
+// Mise à l'échelle d'une charge de programme pour un mouvement SANS historique
+// réel : le ratio emprunté est resserré dans la bande non prouvée avant d'être
+// appliqué. Retourne aussi de quoi l'expliquer — sans ça, une charge bornée
+// serait indiscernable d'une charge normale dans le panneau (!).
+// Porte unique de la mise a l'echelle d'une charge de PROGRAMME. Le moteur et
+// la trace doivent passer par la meme : tant que la trace appelait
+// coachApplyUserLoadScale en direct, elle affichait 250 lb la ou le moteur en
+// proposait 185 — elle decrivait un calcul que personne ne faisait.
+function coachScaleProgramLoad(label, value, hasRealHistory){
+  if(hasRealHistory){
+    return {load: coachApplyUserLoadScale(label, value), ratio: coachUserLoadRatio(label),
+            rawRatio: coachUserLoadRatio(label), borrowed:false, clamped:false, source:'historique'};
+  }
+  return coachApplyUnprovenLoadScale(label, value);
+}
+
+function coachApplyUnprovenLoadScale(label, value){
+  var num = Number(value);
+  if(isNaN(num)) return {load:value, ratio:1, borrowed:false, clamped:false, source:'', rawRatio:1};
+  var info = coachUserLoadRatioSource(label);
+  var ratio = info.ratio, clamped = false;
+  if(info.borrowed && ratio > COACH_UNPROVEN_RATIO_MAX){
+    ratio = COACH_UNPROVEN_RATIO_MAX;
+    clamped = true;
+    try{
+      if(typeof window !== 'undefined' && window.CoachLog && CoachLog.warn){
+        CoachLog.warn('unproven_scale_clamped', {movement:String(label||''), source:String(info.source||''), ratio:info.ratio, clamped:ratio});
+      }
+    }catch(e){}
+  }
+  var scaled = num * ratio;
+  var rounded = (typeof roundLoadForExercise === 'function') ? roundLoadForExercise(label, scaled, 'nearest') : Math.round(scaled);
+  return {
+    load: (rounded || rounded === 0) ? rounded : Math.round(scaled),
+    ratio: ratio, rawRatio: info.ratio, borrowed: info.borrowed,
+    clamped: clamped, source: info.source
+  };
 }
 
 // Applique le ratio personnel à une charge générique (programme ou repère

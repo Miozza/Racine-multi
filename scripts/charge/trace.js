@@ -57,6 +57,30 @@
     return (n||n===0)?Number(n):null;
   }
 
+  // Ce que le moteur RETIENT vraiment, demande au moteur lui-meme.
+  //
+  // rowVerdict ci-dessous re-implemente les regles d'ecart pour pouvoir les
+  // NOMMER — c'est la raison d'etre de la trace. Mais deux implementations
+  // d'une meme regle derivent : depuis que le filtre admet les lignes d'un
+  // autre contexte a poids reduit quand aucune ligne de meme nature n'existe,
+  // la copie locale annoncait encore « 0 ligne retenue » la ou le moteur en
+  // lisait six. Le verdict de retenue vient donc desormais du filtre reel, et
+  // rowVerdict ne sert plus qu'a expliquer POURQUOI une ligne pese moins.
+  function keptSetFor(hist,label,ctx){
+    var set=(typeof Set==='function')?new Set():null;
+    var weights=(typeof Map==='function')?new Map():null;
+    if(typeof coachFilterHistoryForProgression!=='function')return {set:null,weights:null};
+    var kept=coachFilterHistoryForProgression(hist,ctx)||[];
+    kept.forEach(function(r){
+      // Une ligne admise a poids reduit est une COPIE (Object.create) : la
+      // ligne stockee est son prototype.
+      var origin=(r&&Object.prototype.hasOwnProperty.call(r,'__coachWeight'))?Object.getPrototypeOf(r):r;
+      if(set)set.add(origin);
+      if(weights)weights.set(origin,(typeof coachHistoryWeight==='function')?coachHistoryWeight(r):1);
+    });
+    return {set:set,weights:weights};
+  }
+
   // Le coeur : pourquoi cette ligne est-elle retenue, ou ecartee ?
   function rowVerdict(row,label,currentCtx,targetReps){
     if(row&&row.implausible)return {kept:false,reason:'Ligne marquee invraisemblable a la sauvegarde.'};
@@ -125,11 +149,16 @@
     var start=Math.max(0,hist.length-MAX_ROWS);
 
     var rows=[], kept=0, drops={};
+    var real=keptSetFor(hist,label,ctx);
     var hintsBefore=snapshotHints();
     for(var i=start;i<hist.length;i++){
       var row=hist[i];
       var v=rowVerdict(row,label,ctx,target);
-      if(v.kept)kept++;
+      // Le filtre reel a le dernier mot sur la RETENUE ; rowVerdict garde le
+      // dernier mot sur l'EXPLICATION.
+      var reallyKept=real.set?real.set.has(row):v.kept;
+      var rowWeight=(real.weights&&real.weights.has(row))?real.weights.get(row):(reallyKept?1:0);
+      if(reallyKept)kept++;
       else drops[v.reason]=(drops[v.reason]||0)+1;
       var rCtx=rowContext(row);
       rows.push({
@@ -140,8 +169,10 @@
         statut:(row&&row.status)||'',
         source:(row&&row.planned&&row.planned.source)||'',
         contexteLigne:{intentions:intentsOf(rCtx), limite:rCtx?limited(rCtx):null, equipement:(rCtx&&rCtx.equipment)||''},
-        retenue:v.kept,
-        pourquoiEcartee:v.reason,
+        retenue:reallyKept,
+        poids:rowWeight,
+        pourquoiEcartee:reallyKept?'':v.reason,
+        pourquoiPoidsReduit:(reallyKept&&rowWeight<1)?v.reason:'',
         reconstitutionAvantCetteSeance:opts.skipReplay?null:replayAt(mv,i,label,ctx,target,programLoad)
       });
     }
@@ -150,6 +181,31 @@
     // et c'est la suggestion REELLE ci-dessous qui l'ecrira.
     restoreHints(hintsBefore);
 
+    // ── Ecart de reps, expose tel que le moteur le lit ────────────────────
+    // Sans ce bloc, impossible de mesurer si la correction fonctionne : la
+    // trace montrait la charge proposee et les reps de chaque ligne, mais
+    // jamais le RAISONNEMENT qui relie les deux.
+    var gap=null;
+    try{
+      if(typeof coachRepGapSignal==='function'&&typeof coachBuildSuggestionContext==='function'){
+        var built=coachBuildSuggestionContext(nameOrLabel,programLoad,target,ctx);
+        if(built&&!built.early&&built.ctx){
+          var sig=coachRepGapSignal(built.ctx);
+          gap={
+            repsPrescrites:sig.fourchette.min,
+            fourchette:{min:sig.fourchette.min,max:sig.fourchette.max},
+            seances:sig.seances,
+            sens:sig.direction,
+            seancesConsecutives:sig.sessions,
+            seancesRequises:sig.requises,
+            rpeDernier:sig.rpe,
+            effet:sig.effet,
+            pourquoi:sig.pourquoi
+          };
+        }
+      }
+    }catch(e){ gap={effet:'illisible',pourquoi:String(e&&e.message)}; }
+
     var decision=null;
     try{
       var d=guardedSuggestedLoadDecision(label,programLoad,target,ctx);
@@ -157,6 +213,21 @@
     }catch(e){ decision={propose:null,texte:'',severite:'',raison:'Suggestion impossible : '+(e&&e.message)}; }
 
     var programNum=num(programLoad);
+    // La trace passe par la MEME porte que le moteur. Tant qu'elle appelait
+    // coachApplyUserLoadScale en direct, elle affichait 250 lb la ou le moteur
+    // en proposait 185 : elle decrivait un calcul que personne ne faisait, et
+    // c'est precisement ce qu'une trace ne doit jamais faire.
+    var histHasReal=hist.some(function(r){
+      return (typeof coachHistoryHasValidLoad==='function')?coachHistoryHasValidLoad(r,label,ctx):false;
+    });
+    var scaled=programNum;
+    var scaleDetail=null;
+    if(programNum!==null&&typeof coachScaleProgramLoad==='function'){
+      scaleDetail=coachScaleProgramLoad(label,programNum,histHasReal);
+      scaled=scaleDetail.load;
+    }else if(programNum!==null&&typeof coachApplyUserLoadScale==='function'){
+      scaled=coachApplyUserLoadScale(label,programNum);
+    }
     return {
       mouvement:label,
       nomPrescrit:String(nameOrLabel||''),
@@ -165,8 +236,17 @@
       programme:{
         chargeEcrite:String(programLoad||''),
         chargeLue:programNum,
-        chargeMiseAEchelle:(programNum!==null&&typeof coachApplyUserLoadScale==='function')?coachApplyUserLoadScale(label,programNum):programNum,
-        format:opts.format||'', note:opts.note||'', repsCibles:target
+        chargeMiseAEchelle:scaled,
+        echelle:scaleDetail?{
+          ratioApplique:scaleDetail.ratio,
+          ratioBrut:scaleDetail.rawRatio,
+          emprunte:scaleDetail.borrowed,
+          borne:scaleDetail.clamped,
+          source:scaleDetail.source
+        }:null,
+        format:opts.format||'', note:opts.note||'', repsCibles:target,
+        repsCiblesMin:(opts.targetMin||opts.targetMin===0)?opts.targetMin:target,
+        repsCiblesMax:(opts.targetMax||opts.targetMax===0)?opts.targetMax:target
       },
       contexteDuJour:{
         intentions:intentsOf(ctx),
@@ -175,12 +255,14 @@
         equipement:(ctx&&ctx.equipment)||''
       },
       suggestion:decision,
+      ecartReps:gap,
       capacites:(mv&&mv.ranges)?mv.ranges:null,
       historique:{
         lignesStockees:hist.length,
         lignesTracees:rows.length,
         retenues:kept,
         ecartees:rows.length-kept,
+        poidsCumule:Math.round(rows.reduce(function(a,r){return a+(r.poids||0);},0)*100)/100,
         motifsDEcart:drops,
         lignes:rows
       }
@@ -227,6 +309,10 @@
           kind:b.kind, blockTitle:b.title, format:ex.format, note:ex.note, text:b.text,
           load:ex.load, pctOf1RM:ex.pctOf1RM, programLoad:ex.load,
           targetReps:parsed.min||parsed.max||8, day:day, week:week,
+          // La FOURCHETTE, pas seulement sa borne basse : « 15-20 » ne demande
+          // pas 15 reps, il en demande entre 15 et 20. Sans les deux bornes, un
+          // ecart de reps ne peut pas etre mesure honnetement.
+          targetMin:parsed.min||parsed.max||8, targetMax:parsed.max||parsed.min||8,
           skipReplay:already
         }));
       });

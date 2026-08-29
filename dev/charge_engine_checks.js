@@ -67,15 +67,22 @@ const ctx = {
   buildWeekInfo: function(){ return {6:{label:'S6', goal:'Deload facile'}}; },
   weekIdx: function(){ return 2; },
   collectSessionExercises: function(){ return []; },
-  parseTargetReps: function(format, fallback){
-    const nums = String(format || '').match(/\d+/g) || [];
-    if(!nums.length)return {min:fallback || 8, max:fallback || 8};
-    const last = Number(nums[nums.length - 1]) || fallback || 8;
-    return {min:last, max:last};
-  }
+  // parseTargetReps est injecte plus bas depuis app.js : le VRAI parseur, pas
+  // une approximation. Le signal d'ecart de reps se mesure contre la
+  // fourchette prescrite, donc un stub qui ne sait pas rendre de plage
+  // testerait le stub au lieu du contrat (« 3x15-20 » y valait 20-20).
+  parseTargetReps: null
 };
 ctx.window = ctx;
 ctx.globalThis = ctx;
+
+// Le vrai parseur de format, lu dans app.js — meme source que regression_checks.
+{
+  const appSrc = read('app.js');
+  const src = (appSrc.match(/function parseTargetReps[\s\S]*?\n}/) || [''])[0];
+  if(!src) fail('parseTargetReps introuvable dans app.js.');
+  else ctx.parseTargetReps = new Function('return (' + src + ')')();
+}
 
 const loadOrder = [
   'scripts/app_helpers.js',
@@ -1015,6 +1022,317 @@ try {
     assert(gardees.length === 3,
       'Les trois seances reelles comptent a nouveau dans la progression (' + gardees.length + '/3).');
     resetState();
+  }
+
+  // ── « EMOM » dans un format ne declare pas un WOD ────────────────────────
+  // Le texte lu par coachExtractMovementIntent inclut le FORMAT de l'exercice.
+  // Un bloc principal ecrit « EMOM 8 : 2 Power Clean » se declarait donc
+  // contexte WOD, et coachRuleContextLimited coupait toute auto-progression :
+  // Power Clean fige a 125 lb sur les 8 semaines de phase2_fable5, sans aucun
+  // rapport avec les reps ou le RPE. Le `kind` du bloc tranche, parce qu'il
+  // est la seule declaration explicite de ce qu'est le bloc.
+  {
+    const emomMain = ctx.coachExtractMovementIntent(
+      ['Power Clean', 'A. Power Clean vitesse', 'EMOM 8 : 2 Power Clean'], null, 'main');
+    assert(notIncludes(emomMain, 'wod'),
+      'EMOM ecrit dans le format d\'un bloc kind:"main" ne declare pas un contexte WOD.');
+    assert(includes(emomMain, 'strength'),
+      'Le bloc principal garde son intention de force.');
+
+    // Un vrai metcon, lui, reste un WOD — c'est le kind qui le dit.
+    assert(includes(ctx.coachExtractMovementIntent(['Thruster', 'C. Metcon', 'AMRAP 10'], null, 'wod'), 'wod'),
+      'Un bloc kind:"wod" reste un contexte WOD.');
+    // Et sans kind declare, le mot garde sa valeur : rien n'est perdu pour les
+    // appels qui ne portent pas le bloc.
+    assert(includes(ctx.coachExtractMovementIntent(['Thruster', 'AMRAP 10'], null, ''), 'wod'),
+      'Sans kind declare, « AMRAP » continue de declarer un contexte WOD.');
+    // Les autres blocs charges du contrat de forme sont couverts de la meme
+    // maniere : un accessoire chronometre n'est pas un metcon.
+    assert(notIncludes(ctx.coachExtractMovementIntent(['Face Pull', 'C. Posture', 'EMOM 6 : 12 Face Pull'], null, 'accessory'), 'wod'),
+      'EMOM dans un bloc kind:"accessory" ne declare pas un contexte WOD.');
+  }
+
+  // ── Bornes du facteur d'echelle : l'emprunt n'a pas les droits de la mesure ─
+  // Le ratio de famille _upperPull est la moyenne de row8RM, chestRow8RM et
+  // latPulldown10RM — cette derniere a une reference de 20, un numero de plaque
+  // machine. Un athlete a 40 y vaut un ratio composant de 2,0, sous le garde-fou
+  // de l'onboarding, donc il ENTRE dans la moyenne et tire toute la famille.
+  // Mesure : Pendlay Row 155 lb ecrits -> 250 lb suggeres en 5x5, sans une seule
+  // seance loggee pour le contredire.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{
+      row8RM:1.6, chestRow8RM:1.6, latPulldown10RM:1.6, _upperPull:1.6,
+      backSquat5RM:0.5, frontSquat:0.5, _lowerBody:0.5, _overall:1.0
+    }};
+
+    const vierge = ctx.coachApplyUnprovenLoadScale('Pendlay Row', 155);
+    assert(vierge.borrowed === true, 'Un mouvement hors des 12 references emprunte le ratio de sa famille.');
+    assert(vierge.clamped === true, 'Un ratio emprunte au-dela de la bande de confiance est borne.');
+    assert(vierge.rawRatio === 1.6 && vierge.ratio === 1.2,
+      'Le ratio emprunte 1,60 est ramene a 1,20 (obtenu ' + vierge.ratio + ').');
+    assert(vierge.load < 200,
+      'Pendlay Row ne sort plus a 250 lb sur un ratio emprunte (obtenu ' + vierge.load + ' lb).');
+    assert(/tirage/.test(String(vierge.source)),
+      'L\'emprunt nomme la famille dont il vient, pour que la suggestion puisse le dire.');
+
+    // SEULE la borne haute s'applique. Une borne basse REMONTERAIT la charge
+    // d'un athlete que le ratio juge plus faible — la direction dangereuse, et
+    // sur le mouvement dont on sait le moins de choses.
+    const faible = ctx.coachApplyUnprovenLoadScale('Leg Press', 200);
+    assert(faible.clamped === false && faible.ratio === 0.5,
+      'Un ratio emprunte BAS n\'est jamais remonte : sous-suggerer est la direction sure (obtenu ' + faible.ratio + ').');
+
+    // La provenance est toujours nommee : sans elle, une charge bornee serait
+    // indiscernable d'une charge normale dans le panneau (!). (Le chemin des 12
+    // mouvements de reference passe par PR_FIELD_MAP, defini dans app.js et
+    // absent de ce bac a sable : ici tout retombe sur la famille, ce qui est
+    // exactement le chemin que ces bornes protegent.)
+    assert(/bas du corps/.test(String(ctx.coachUserLoadRatioSource('Back Squat').source)),
+      'Le ratio nomme la famille dont il vient.');
+    resetState();
+  }
+
+  // ── L'historique reel prime sur le ratio ────────────────────────────────
+  // Le moteur n'avait aucun moyen de distinguer « il a merite 100 » de « le
+  // ratio a invente 100 » : la charge de programme, gonflee par un ratio,
+  // passait sans qu'aucune regle ne se declenche.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_upperPull:1.6, _overall:1.0}};
+    const rowCtx = ctx.coachBuildMovementContext('Barbell Row', {kind:'accessory', blockTitle:'B. Volume dorsal', format:'4x8', load:'100 lb'});
+    ctx.state.athleteState.movements['Barbell Row'] = {ranges:{}, status:'ok', history:[
+      {date:'2026-06-01', load:95, reps:8, rpe:7, status:'success', context:rowCtx, planned:{load:95, reps:8, targetMin:8, context:rowCtx}},
+      {date:'2026-06-08', load:100, reps:8, rpe:7, status:'success', context:rowCtx, planned:{load:100, reps:8, targetMin:8, context:rowCtx}}
+    ]};
+    // 100 lb ecrits x 1,6 = 160 lb. L'athlete vient de sortir 100 lb @ RPE 7 :
+    // son evidence merite un cran, pas soixante livres.
+    const d = ctx.guardedSuggestedLoadDecision('Barbell Row', '100 lb', 8, rowCtx);
+    assert(d.loadNum < 160,
+      'Le ratio de programme ne depasse pas l\'evidence loggee (obtenu ' + d.loadNum + ' lb pour 160 lb demandes).');
+    assert(d.loadNum >= 100,
+      'Le plafond ne descend jamais sous la derniere seance reussie (obtenu ' + d.loadNum + ' lb).');
+    assert(/evidence reelle|merite/.test(String(d.reason)),
+      'La suggestion dit POURQUOI elle ne suit pas le nombre du programme.');
+    resetState();
+  }
+
+  // ── La rampe ecrite est un plancher MOBILE, pas un decor ────────────────
+  // Une fois l'ancre historique posee, plus rien ne relit la progression du
+  // programme. Au dernier barreau du RPE (RPE 8 = zero cran), l'athlete reste
+  // immobile pendant que la rampe monte, et l'ecran n'en dit rien.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0, _upperPush:1.0}};
+    const pressCtx = ctx.coachBuildMovementContext('Strict Press', {kind:'main', blockTitle:'A. Strict Press', format:'5x5', load:'160 lb'});
+    const stagne = (d, load, rpe) => ({date:d, load:load, reps:5, rpe:rpe, status:'success',
+      context:pressCtx, planned:{load:load, reps:5, targetMin:5, context:pressCtx}});
+    ctx.state.athleteState.movements['Strict Press'] = {ranges:{}, status:'ok', history:[
+      stagne('2026-06-01', 115, 8), stagne('2026-06-08', 115, 8), stagne('2026-06-15', 115, 8)
+    ]};
+
+    const retard = ctx.guardedSuggestedLoadDecision('Strict Press', '160 lb', 5, pressCtx);
+    assert(retard.severity === 'warning',
+      'Trois seances sous la progression ecrite sans motif RPE lèvent un avertissement (obtenu ' + retard.severity + ').');
+    assert(/Retard sur la progression ecrite/.test(String(retard.reason)),
+      'L\'avertissement NOMME l\'ecart avec la charge du programme.');
+    assert(retard.loadNum <= 125,
+      'Le signal ne fait PAS monter la charge : le moteur reste consultatif (obtenu ' + retard.loadNum + ' lb).');
+
+    // Un motif RPE est deja une explication : on n'en empile pas une seconde.
+    ctx.state.athleteState.movements['Strict Press'].history = [
+      stagne('2026-06-01', 115, 8), stagne('2026-06-08', 115, 9), stagne('2026-06-15', 115, 9)
+    ];
+    const freine = ctx.guardedSuggestedLoadDecision('Strict Press', '160 lb', 5, pressCtx);
+    assert(!/Retard sur la progression ecrite/.test(String(freine.reason)),
+      'Un athlete freine par un RPE eleve n\'est pas averti une seconde fois.');
+
+    // Deux seances ne suffisent pas : un creux isole n'est pas un retard.
+    ctx.state.athleteState.movements['Strict Press'].history = [
+      stagne('2026-06-08', 115, 8), stagne('2026-06-15', 115, 8)
+    ];
+    const court = ctx.guardedSuggestedLoadDecision('Strict Press', '160 lb', 5, pressCtx);
+    assert(!/Retard sur la progression ecrite/.test(String(court.reason)),
+      'Deux seances sous la rampe ne declenchent pas encore l\'avertissement.');
+    resetState();
+  }
+
+  // ── Ponderation du filtre de contexte ───────────────────────────────────
+  // Le filtre etait binaire. Une semaine legere ou technique se coupait donc
+  // integralement des semaines normales : un mouvement pouvait afficher 0
+  // ligne retenue alors que sept etaient stockees, et le deload repartait de
+  // zero. C'est la cause du « le Brain n'apprend pas assez vite » — pas un
+  // probleme d'algorithme, un probleme de donnees admises.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0}};
+    const normal = ctx.coachBuildMovementContext('Front Squat', {kind:'main', blockTitle:'A. Front Squat', format:'5x5', load:'200 lb'});
+    const leger  = ctx.coachBuildMovementContext('Front Squat', {kind:'main', blockTitle:'A. Front Squat', format:'5x5', load:'135 lb', note:'Semaine legere, technique.'});
+    const seance = (d, load) => ({date:d, load:load, reps:5, rpe:7, status:'success',
+      context:normal, planned:{load:load, reps:5, targetMin:5, context:normal}});
+    const stock = [seance('2026-06-01',185), seance('2026-06-08',190), seance('2026-06-15',195)];
+
+    // Meme nature : rien ne change, tout pese une seance pleine.
+    const memeNature = ctx.coachFilterHistoryForProgression(stock, normal);
+    assert(memeNature.length === 3, 'Meme nature de contexte : les trois seances comptent.');
+    assert(ctx.coachHistoryConfirmationWeight(memeNature) === 3,
+      'Et chacune pese une seance pleine (obtenu ' + ctx.coachHistoryConfirmationWeight(memeNature) + ').');
+
+    // Nature differente : admises, mais a poids reduit.
+    const autreNature = ctx.coachFilterHistoryForProgression(stock, leger);
+    assert(autreNature.length === 3,
+      'Un jour leger ne se coupe plus de son passe (obtenu ' + autreNature.length + '/3 retenues).');
+    const poids = ctx.coachHistoryConfirmationWeight(autreNature);
+    assert(poids > 0 && poids < 3,
+      'Mais ces seances ne pesent pas une confirmation pleine (poids cumule ' + poids + ').');
+
+    // La ligne STOCKEE n'est jamais modifiee : le poids vit sur une copie.
+    assert(stock.every(r => !Object.prototype.hasOwnProperty.call(r, '__coachWeight')),
+      'La ponderation ne touche pas la donnee de l\'athlete.');
+
+    // Le contrat § 3.2 tient : tant qu'une ligne de meme nature existe, elle
+    // garde l'exclusivite. Un resultat WOD ne remplace JAMAIS une capacite
+    // principale — la ponderation est un repli, pas un melange.
+    const wodCtx = ctx.coachBuildMovementContext('Front Squat', {kind:'wod', blockTitle:'C. Metcon', format:'AMRAP 10', load:'135 lb'});
+    const melange = stock.concat([{date:'2026-06-20', load:135, reps:10, rpe:7, status:'success',
+      context:wodCtx, planned:{load:135, reps:10, targetMin:10, context:wodCtx}}]);
+    const principal = ctx.coachFilterHistoryForProgression(melange, normal);
+    assert(principal.length === 3 && principal.every(r => r.load >= 185),
+      'Une ligne WOD ne rejoint pas l\'historique principal quand des lignes principales existent.');
+    resetState();
+  }
+
+  // ── Charge de programme non numerique : le TEXTE ecrit est une consigne ──
+  // « bande ou cable leger » n'etait lu par personne. Le moteur retombait sur
+  // la derniere charge loggee et proposait 70 lb pour un Pallof Press decrit
+  // comme leger — puis 80 lb une fois la hausse RPE appliquee, soit le double.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.3, _upperPull:1.6}};
+    const pallofCtx = ctx.coachBuildMovementContext('Pallof Press', {kind:'accessory', blockTitle:'B. Chaine posterieure', format:'3x10', note:'Anti-rotation.', load:'bande ou câble léger'});
+    const serie = (d) => ({date:d, load:70, reps:10, rpe:7, status:'success',
+      context:pallofCtx, planned:{load:70, reps:10, targetMin:10, context:pallofCtx}});
+    ctx.state.athleteState.movements['Pallof Press'] = {ranges:{}, status:'ok', history:[serie('2026-06-01'), serie('2026-06-08')]};
+
+    const pallof = ctx.guardedSuggestedLoadDecision('Pallof Press', 'bande ou câble léger', 10, pallofCtx);
+    assert(pallof.loadNum <= 40,
+      'Une consigne « leger » plafonne la charge au repere d\'equipement (obtenu ' + pallof.loadNum + ' lb).');
+    assert(/repere d'equipement/.test(String(pallof.reason)),
+      'La suggestion dit que le plafond vient du programme, pas du profil.');
+    assert(pallof.severity !== 'ok', 'Un plafond ecrit n\'est jamais un « ok » silencieux.');
+
+    // Le plafond vient de l'EQUIPEMENT, jamais du profil : un athlete fort ne
+    // rend pas une bande plus lourde.
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.6, _upperPull:1.6}};
+    const fort = ctx.guardedSuggestedLoadDecision('Pallof Press', 'bande ou câble léger', 10, pallofCtx);
+    assert(fort.loadNum === pallof.loadNum,
+      'Le plafond ecrit ne bouge pas avec le ratio de l\'athlete (' + fort.loadNum + ' vs ' + pallof.loadNum + ').');
+    resetState();
+  }
+
+  // ── Les reperes bas viennent du materiel, pas d'un chiffre invente ───────
+  {
+    // Une bande n'a aucune valeur numerique : on n'invente pas un nombre.
+    assert(ctx.coachWrittenLoadCeiling('Band Pull-Apart', 'bande légère', '') === null,
+      'Un equipement sans echelle numerique ne recoit pas de plafond invente.');
+    // Une barre reste une barre : quatre crans de 5 lb donnaient 20 lb, un
+    // poids qui n'existe pas.
+    assert(ctx.coachWrittenLoadCeiling('Back Squat', 'barre légère', '') >= 45,
+      'Une « barre legere » ne descend jamais sous la barre vide.');
+    // Et un texte qui ne dit rien ne plafonne rien.
+    assert(ctx.coachWrittenLoadCeiling('Face Pull', '60-70 lb', '') === null,
+      'Une charge chiffree n\'est pas concernee : le nombre EST la prescription.');
+  }
+
+  // ── Signal d'ecart de reps : les quatre combinaisons de la regle (c) ─────
+  // « Je fais 4 reps au lieu de 2 et le moteur ne monte pas. » Le RPE decide
+  // de ce que l'ecart VEUT DIRE, dans les deux sens.
+  {
+    const gapScenario = (reps, rpes, target, format) => {
+      resetState();
+      ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0, _olympic:1.0}};
+      const c = ctx.coachBuildMovementContext('Power Clean', {kind:'main', blockTitle:'A. Power Clean', format:format, note:'Effort dynamique.', load:'160 lb'});
+      ctx.state.athleteState.movements['Power Clean'] = {ranges:{}, status:'ok', history: reps.map((r, i) => ({
+        date:'2026-0' + (i + 1) + '-01', load:125, reps:r, rpe:rpes[i], status:'success', context:c,
+        planned:{load:125, reps:target, targetMin:target, targetMax:target, format:format, context:c}
+      }))};
+      return ctx.guardedSuggestedLoadDecision('Power Clean', '160 lb', target, c);
+    };
+    const EMOM = 'EMOM 8 : 2 Power Clean';
+
+    // 1. Reps en plus + RPE <= 8 : reserve reelle, la reference monte.
+    const hausse = gapScenario([2,2,4,4], [7,7,7,7], 2, EMOM);
+    assert(hausse.loadNum > 125,
+      'Reps au-dessus de la cible a RPE 7, deux seances de suite : la charge monte (obtenu ' + hausse.loadNum + ' lb).');
+    assert(/Reps au-dessus de la cible/.test(String(hausse.reason)),
+      'Et la raison NOMME le signal : l\'athlete doit lire que ses reps ont ete vues.');
+
+    // 2. Reps en plus + RPE >= 9 : serie menee a l'echec, on ne monte pas.
+    const dur = gapScenario([2,2,4,4], [7,7,9,9], 2, EMOM);
+    assert(dur.loadNum <= 125,
+      'Reps au-dessus de la cible mais RPE 9 : aucune hausse (obtenu ' + dur.loadNum + ' lb).');
+    assert(/RPE 9|echec/.test(String(dur.reason)), 'Et le moteur DIT pourquoi il ne monte pas.');
+
+    // 3. Persistance : un depassement isole ne bouge rien de plus que d'habitude.
+    const isole = gapScenario([2,2,2,4], [7,7,7,7], 2, EMOM);
+    assert(/il en faut 2 de suite/.test(String(isole.reason)),
+      'Une seule seance hors cible est nommee comme insuffisante.');
+    assert(isole.loadNum <= hausse.loadNum,
+      'Et elle ne fait pas monter plus qu\'un signal confirme.');
+
+    // 4. Reps en moins + RPE >= 9 : charge trop lourde, la reference descend.
+    const baisse = gapScenario([5,5,3,3], [7,7,9,9], 5, '5x5');
+    assert(baisse.loadNum < 125,
+      'Reps sous la cible a RPE 9, deux seances de suite : la charge descend (obtenu ' + baisse.loadNum + ' lb).');
+    assert(/Reps sous la cible/.test(String(baisse.reason)), 'Et la raison le nomme.');
+
+    // 5. Reps en moins + RPE <= 7 : seance ecourtee, AUCUNE conclusion.
+    // C'est le cas qui manquait le plus : la projection Epley vers le bas se
+    // declenchait sur le seul ecart de reps, sans regarder le RPE.
+    const ecourtee = gapScenario([5,5,2,2], [6,6,6,6], 5, '5x5');
+    assert(ecourtee.loadNum >= 125,
+      'Une seance ecourtee a RPE 6 ne fait PAS baisser la charge (obtenu ' + ecourtee.loadNum + ' lb).');
+    assert(!/Charge trop lourde/.test(String(ecourtee.reason)),
+      'Et le moteur n\'en conclut rien : ce n\'est pas un signal de charge.');
+  }
+
+  // ── La FOURCHETTE, pas la borne basse (regle a) ──────────────────────────
+  // « 3x15-20 » ne demande pas 15 reps mais entre 15 et 20 : faire 18 n'est pas
+  // un depassement. Le moteur ne recevait qu'UN nombre et lisait donc chaque
+  // serie normale comme un surplus de 3 reps.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{_overall:1.0, _upperPull:1.0}};
+    const fpCtx = ctx.coachBuildMovementContext('Face Pull', {kind:'accessory', blockTitle:'C. Posture', format:'3×15-20', load:'60 lb'});
+    assert(fpCtx.targetMin === 15 && fpCtx.targetMax === 20,
+      'Le contexte porte les DEUX bornes de la fourchette (' + fpCtx.targetMin + '-' + fpCtx.targetMax + ').');
+    ctx.state.athleteState.movements['Face Pull'] = {ranges:{}, status:'ok', history:[18,20,18].map((r, i) => ({
+      date:'2026-0' + (i + 1) + '-01', load:80, reps:r, rpe:7, status:'success', context:fpCtx,
+      planned:{load:80, reps:15, targetMin:15, targetMax:20, format:'3×15-20', context:fpCtx}
+    }))};
+    const dansLaCible = ctx.guardedSuggestedLoadDecision('Face Pull', '60 lb', 15, fpCtx);
+    assert(!/Reps au-dessus de la cible/.test(String(dansLaCible.reason)),
+      '18 et 20 reps sur une cible 15-20 sont DANS la cible, pas au-dessus.');
+    resetState();
+  }
+
+  // ── Une cible stockee fausse est relue, jamais crue sur parole ───────────
+  // Les lignes loggees sous « EMOM 8 : 2 Power Clean » portent targetMin:10 —
+  // le parseur de l'epoque ne savait pas lire un intervalle. Les lire telles
+  // quelles garderait le mouvement casse pour tout l'historique deja ecrit.
+  {
+    const menteuse = {date:'2026-06-01', load:125, reps:4, rpe:7, status:'success',
+      planned:{load:125, reps:10, targetMin:10, targetMax:10, format:'EMOM 8 : 2 Power Clean'}};
+    const relue = ctx.coachRowOwnTargetRange(menteuse);
+    assert(relue && relue.min === 2 && relue.max === 2,
+      'Le format stocke est relu avec le parseur d\'aujourd\'hui (obtenu ' + JSON.stringify(relue) + ').');
+    // Une ligne sans format n'est pas relisible : elle garde ce qu'elle porte.
+    const muette = {date:'2026-06-01', load:125, reps:4, rpe:7, planned:{targetMin:8, targetMax:8}};
+    const gardee = ctx.coachRowOwnTargetRange(muette);
+    assert(gardee && gardee.min === 8, 'Une ligne sans format stocke garde sa cible telle quelle.');
+    // Et une ligne qui ne dit rien du tout ne fait pas semblant.
+    assert(ctx.coachRowOwnTargetRange({load:100, reps:5}) === null,
+      'Une ligne sans aucune prescription retourne null, pas une cible inventee.');
   }
 
 } catch (err) {

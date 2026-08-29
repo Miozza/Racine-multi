@@ -1,3 +1,27 @@
+## V5.0.0 — Le moteur lit les reps, pas seulement la charge
+
+Refonte de la logique de progression, partie de cinq constats tirés d'une trace
+complète de `phase2_fable5`. Audit de vérification : `docs/audit/2026-08-28-moteur-charge-audit.md`.
+Diff avant/après mesuré : `docs/audit/2026-08-28-trace-diff.md`.
+
+**Ce que l'athlète voit changer**
+
+- **Les reps comptent.** Faire 4 répétitions là où le programme en demande 2, deux séances de suite à RPE ≤ 8, relève la référence de travail — par projection Epley, pas par un bonus arbitraire. Et le RPE décide du sens : reps en plus à RPE ≥ 9 = série menée à l'échec, on ne monte pas ; reps en moins à RPE ≤ 7 = séance écourtée, le moteur n'en conclut rien. Ce dernier cas manquait entièrement : la projection vers le bas se déclenchait sur le seul écart de reps, et une séance écourtée à RPE 6 faisait baisser la charge comme un échec.
+- **La fourchette est une fourchette.** « 3×15-20 » ne demande pas 15 reps : faire 18 n'est plus lu comme un dépassement de 3.
+- **Un jour léger ne se coupe plus de son passé.** Le filtre de contexte pondère (même nature 1 · light/technique 0,5 · wod 0,3) au lieu d'exclure. Un mouvement à 0 ligne retenue alors que des séances sont stockées est devenu impossible — c'était la cause du « le Brain n'apprend pas assez vite » : pas un problème d'algorithme, un problème de données admises.
+- **Le programme ne parle plus plus fort que ton historique.** Sur un mouvement déjà travaillé, une charge gonflée par un ratio ne dépasse plus ce que tes séances méritent. Sur un mouvement jamais fait, le ratio emprunté à une famille voisine est borné à 1,20 et l'emprunt est nommé dans l'explication.
+- **Le retard sur la rampe écrite se dit.** Trois séances sous la progression du programme sans motif RPE lèvent un avertissement qui nomme l'écart. La charge, elle, ne bouge pas : le moteur reste consultatif.
+- **« bande ou câble léger » est enfin lu.** Une consigne écrite plafonne par le repère d'équipement, pas par le profil ni par l'historique.
+
+**Deux bugs de lecture, en amont de tout le reste**
+
+- `parseTargetReps` ne reconnaissait aucun format d'intervalle : « EMOM 8 : 2 Power Clean » retombait sur le repli, soit **8 ou 10 reps pour un EMOM qui en demande 2**. Le signe de l'écart de reps s'en trouvait inversé — 4 reps sorties étaient lues comme 4 sur 8 manquées.
+- Le mot `EMOM` écrit dans un **format** déclarait un contexte WOD, y compris sur un bloc `kind:"main"`. Power Clean était figé à 125 lb sur les 8 semaines du cycle, sans aucun rapport avec les reps ou le RPE.
+
+**Mesuré sur le replay** (`dev/charge_replay_phase2.js`, fixture déterministe) : 19 occurrences sur 112 changent de suggestion ; 0 mouvement à 0 ligne retenue contre 3 ; 16 écarts de reps détectés contre 0 ; Pendlay Row passe de 250 à 185 lb en 5×5. Cas de référence, l'athlète gardant sa charge à 125 lb en dépassant les reps : la suggestion tenait 135 lb une semaine puis retombait à 125 indéfiniment — elle tient désormais 135.
+
+**Non tenu, et assumé** : la proportion de suggestions dans la fourchette écrite baisse (33/58 → 30/58) et la MAPE du backtest ne bouge pas (13,0 %). Les deux indicateurs mesurent la conformité à la rampe écrite et à la charge historiquement mise — précisément ce dont le moteur s'écarte maintenant, avec une raison nommée à chaque fois. Aucun seuil n'a été ajusté pour les faire passer. Détail dans `docs/audit/2026-08-28-trace-diff.md`.
+
 ## V4.6.10 — Un bloc léger n'est pas une semaine de deload
 
 - **Le moteur amputait des charges sans raison.** `coachIsDeloadWeekOrContext()` retournait vrai dès que le contexte portait `isLight` : un mouvement étiqueté léger était traité comme une semaine de deload et sa charge réduite à 80 % de la dernière référence, à chaque séance, indéfiniment.

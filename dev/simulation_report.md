@@ -108,9 +108,9 @@ heuristique de test.
 |---|---:|---:|---:|---|
 | Back Squat | 220×6 | 175×5 | 8.6 | baisse suspecte (-22.7%) |
 | Bench Press | 260×5 | 260×5 | 8.7 | stable (0%) |
-| Deadlift | 390×5 | 360×4 | 9.2 | baisse assumée (RPE élevé) (-10.3%) |
+| Deadlift | 320×6 | 315×5 | 8.8 | baisse assumée (RPE élevé) (-4.3%) |
 | Strict Press | 165×5 | 165×5 | 8.8 | stable lourd (0%) |
-| Barbell Row | 230×8 | 230×8 | 9 | stable lourd (0%) |
+| Barbell Row | 210×8 | 210×8 | 8.8 | stable lourd (0%) |
 
 **Alertes**
 - Back Squat: baisse suspecte non attendue
@@ -128,7 +128,7 @@ heuristique de test.
 | Power Clean | 100×3 | 100×4 | 8.2 | stable (3%) |
 | Front Squat | 140×7 | 140×5 | 8.4 | stable (reps variables) (-5.4%) |
 | Push Press | 100×6 | 100×5 | 8.4 | stable (-2.8%) |
-| Deadlift | 260×4 | 250×5 | 9.2 | stable lourd (-1%) |
+| Deadlift | 235×4 | 225×6 | 8.9 | stable lourd (1.4%) |
 | Pull-Up | 6 reps | 7 reps | 7.9 | stable (16.7%) |
 
 ### PASS — Préparation Metcon 3j

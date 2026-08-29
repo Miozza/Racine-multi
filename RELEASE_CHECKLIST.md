@@ -22,6 +22,7 @@ node dev/simulate_multi_users.js
 node dev/simulate_users.js
 node dev/charge_engine_checks.js
 node dev/charge_trace_checks.js
+node dev/charge_replay_phase2.js
 node dev/charge_suggestion_golden_master.js
 node dev/movement_tuning_boundary_checks.js
 node dev/ceiling_checks.js

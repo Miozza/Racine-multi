@@ -45,7 +45,11 @@ window.EQUIPMENT_LOAD_RULES.dumbbell = {
 };
 window.EQUIPMENT_LOAD_RULES.barbell = {
   match:["barbell","bench","squat","strict press","push press","deadlift","clean","row","hip thrust"],
-  step: window.RACINE_EQUIPMENT.barbells.step
+  step: window.RACINE_EQUIPMENT.barbells.step,
+  // Poids de la barre vide : le plancher physique de la famille. Lu par
+  // coachLightCeilingForEquipment (scripts/charge/equipement.js) pour qu'une
+  // consigne « barre légère » ne descende pas sous une barre.
+  barWeight: window.RACINE_EQUIPMENT.barbells.values[0]
 };
 // Seule famille en kg (convention : KB = kg, tout le reste = lb). Un mouvement
 // nommé KB est traité en kg même sans unité dans le texte ; seul un « lb »
