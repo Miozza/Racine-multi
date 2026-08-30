@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 213,
+    "ACTIF": 215,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -710,15 +710,31 @@
     },
     {
       "path": "dev/fixtures/charge_replay_athlete.json",
-      "size": 2430,
-      "lines": 30,
-      "role": "Athlete deterministe du replay : ratios reconstitues depuis les rapports chargeMiseAEchelle/chargeLue de la trace d'audit, historique reproduisant les charges/reps/RPE qu'elle resume. Aucune donnee reelle.",
+      "size": 45330,
+      "lines": 2174,
+      "role": "Athlete du replay : DONNEES REELLES extraites de la trace racine_charge_trace exportee le 2026-08-27 (V4.6.9, cycle, phase2_fable5, profil Bertin). 109 seances reelles sur 16 mouvements. Les scaleRatios reproduisent a l'identique les 46 couples chargeLue -> chargeMiseAEchelle de cette trace.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [
         {
           "path": "ETAT_ACTUEL.md",
           "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/fixtures/charge_replay_echelle.json",
+      "size": 3191,
+      "lines": 231,
+      "role": "Couples chargeLue -> chargeMiseAEchelle releves dans la trace reelle. Garde-fou de fidelite du replay : s'il ne les reproduit pas tous, il ne parle pas du meme athlete.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "dev/charge_replay_phase2.js",
+          "vector": "fixture",
           "line": 0
         }
       ],
@@ -1655,8 +1671,8 @@
     },
     {
       "path": "docs/audit/2026-08-28-trace-apres.json",
-      "size": 380855,
-      "lines": 15726,
+      "size": 631255,
+      "lines": 25889,
       "role": "Trace de cycle produite par le moteur APRES les correctifs, sur la meme fixture. A comparer a la trace avant.",
       "category": "ACTIF",
       "exposes": [],
@@ -1671,8 +1687,8 @@
     },
     {
       "path": "docs/audit/2026-08-28-trace-avant.json",
-      "size": 284415,
-      "lines": 11845,
+      "size": 524227,
+      "lines": 21335,
       "role": "Trace de cycle produite par le moteur AVANT les correctifs (commit d'audit), sur la fixture de replay. Reference de comparaison.",
       "category": "ACTIF",
       "exposes": [],
@@ -1687,14 +1703,30 @@
     },
     {
       "path": "docs/audit/2026-08-28-trace-diff.md",
-      "size": 7794,
-      "lines": 163,
+      "size": 6540,
+      "lines": 155,
       "role": "Lecture commentee du diff avant/apres du moteur de charge : ce qui change, les six indicateurs, le cas de reference Power Clean, et les quatre attendus non tenus.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [
         {
           "path": "ETAT_ACTUEL.md",
+          "vector": "doc-reference",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "docs/fixtures/racine-trace-charges-phase2_fable5-cycle-complet.json",
+      "size": 665545,
+      "lines": 21291,
+      "role": "Trace racine_charge_trace REELLE exportee de l'app le 2026-08-27 (V4.6.9, portee cycle, phase2_fable5, profil Bertin, 112 occurrences). Piece source de l'audit du moteur de charge : c'est elle qui a servi a verifier les 5 constats et a construire la fixture de replay. Lecture seule, jamais rechargee par l'app.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "docs/audit/2026-08-28-trace-diff.md",
           "vector": "doc-reference",
           "line": 0
         }

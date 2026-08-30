@@ -1,0 +1,232 @@
+[
+ {
+  "mouvement": "Pause Back Squat",
+  "lue": 165,
+  "echelle": 145
+ },
+ {
+  "mouvement": "DB RDL",
+  "lue": 65,
+  "echelle": 65
+ },
+ {
+  "mouvement": "Weighted Pull-up",
+  "lue": 20,
+  "echelle": 30
+ },
+ {
+  "mouvement": "One-Arm DB Row",
+  "lue": 70,
+  "echelle": 85
+ },
+ {
+  "mouvement": "Rear Delt Fly câble",
+  "lue": 15,
+  "echelle": 20
+ },
+ {
+  "mouvement": "Face Pull",
+  "lue": 60,
+  "echelle": 100
+ },
+ {
+  "mouvement": "Strict Press",
+  "lue": 140,
+  "echelle": 165
+ },
+ {
+  "mouvement": "DB Shoulder Press",
+  "lue": 40,
+  "echelle": 45
+ },
+ {
+  "mouvement": "Cuban Press",
+  "lue": 15,
+  "echelle": 20
+ },
+ {
+  "mouvement": "Lateral Raise DB",
+  "lue": 20,
+  "echelle": 30
+ },
+ {
+  "mouvement": "Power Clean",
+  "lue": 160,
+  "echelle": 175
+ },
+ {
+  "mouvement": "Back Squat",
+  "lue": 145,
+  "echelle": 125
+ },
+ {
+  "mouvement": "Pause Back Squat",
+  "lue": 180,
+  "echelle": 155
+ },
+ {
+  "mouvement": "DB RDL",
+  "lue": 70,
+  "echelle": 70
+ },
+ {
+  "mouvement": "Weighted Pull-up",
+  "lue": 25,
+  "echelle": 40
+ },
+ {
+  "mouvement": "One-Arm DB Row",
+  "lue": 75,
+  "echelle": 85
+ },
+ {
+  "mouvement": "Rear Delt Fly câble",
+  "lue": 20,
+  "echelle": 30
+ },
+ {
+  "mouvement": "Strict Press",
+  "lue": 150,
+  "echelle": 180
+ },
+ {
+  "mouvement": "Incline DB Press",
+  "lue": 55,
+  "echelle": 60
+ },
+ {
+  "mouvement": "Power Clean",
+  "lue": 165,
+  "echelle": 180
+ },
+ {
+  "mouvement": "Back Squat",
+  "lue": 150,
+  "echelle": 130
+ },
+ {
+  "mouvement": "Pause Back Squat",
+  "lue": 190,
+  "echelle": 165
+ },
+ {
+  "mouvement": "Weighted Pull-up",
+  "lue": 30,
+  "echelle": 50
+ },
+ {
+  "mouvement": "Strict Press",
+  "lue": 155,
+  "echelle": 185
+ },
+ {
+  "mouvement": "Power Clean",
+  "lue": 170,
+  "echelle": 185
+ },
+ {
+  "mouvement": "Box Squat",
+  "lue": 185,
+  "echelle": 160
+ },
+ {
+  "mouvement": "Pendlay Row",
+  "lue": 155,
+  "echelle": 250
+ },
+ {
+  "mouvement": "Close-Grip Bench Press",
+  "lue": 205,
+  "echelle": 240
+ },
+ {
+  "mouvement": "Strict Press",
+  "lue": 120,
+  "echelle": 145
+ },
+ {
+  "mouvement": "Box Squat",
+  "lue": 195,
+  "echelle": 170
+ },
+ {
+  "mouvement": "Pendlay Row",
+  "lue": 165,
+  "echelle": 265
+ },
+ {
+  "mouvement": "Close-Grip Bench Press",
+  "lue": 215,
+  "echelle": 250
+ },
+ {
+  "mouvement": "Strict Press",
+  "lue": 125,
+  "echelle": 150
+ },
+ {
+  "mouvement": "Back Squat",
+  "lue": 155,
+  "echelle": 135
+ },
+ {
+  "mouvement": "Box Squat",
+  "lue": 205,
+  "echelle": 175
+ },
+ {
+  "mouvement": "Pendlay Row",
+  "lue": 175,
+  "echelle": 280
+ },
+ {
+  "mouvement": "Close-Grip Bench Press",
+  "lue": 225,
+  "echelle": 265
+ },
+ {
+  "mouvement": "Front Squat",
+  "lue": 135,
+  "echelle": 110
+ },
+ {
+  "mouvement": "DB RDL",
+  "lue": 50,
+  "echelle": 50
+ },
+ {
+  "mouvement": "One-Arm DB Row",
+  "lue": 55,
+  "echelle": 85
+ },
+ {
+  "mouvement": "DB Shoulder Press",
+  "lue": 35,
+  "echelle": 40
+ },
+ {
+  "mouvement": "Lateral Raise DB",
+  "lue": 15,
+  "echelle": 22.5
+ },
+ {
+  "mouvement": "Power Clean",
+  "lue": 115,
+  "echelle": 125
+ },
+ {
+  "mouvement": "Back Squat",
+  "lue": 115,
+  "echelle": 100
+ },
+ {
+  "mouvement": "Back Squat",
+  "lue": 205,
+  "echelle": 180
+ },
+ {
+  "mouvement": "Power Clean",
+  "lue": 185,
+  "echelle": 205
+ }
+]

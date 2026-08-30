@@ -1,163 +1,155 @@
-# Trace avant / après — 28 août 2026
+# Trace avant / après — données réelles
 
-Comparaison des deux traces de cycle produites par `dev/charge_replay_phase2.js`
-sur **la même fixture** (`dev/fixtures/charge_replay_athlete.json`), programme
-`phase2_fable5`, 8 semaines, 112 occurrences :
+**La trace réelle a été fournie le 30 août** et remplace la reconstitution
+utilisée jusque-là. Tout ce document repose désormais sur les données de
+l'athlète.
 
-- `docs/audit/2026-08-28-trace-avant.json` — moteur au commit d'audit `0c1a268`
-- `docs/audit/2026-08-28-trace-apres.json` — moteur après les Phases 2 et 3
+Source : `racine_charge_trace`, V4.6.9, portée `cycle`, programme
+`phase2_fable5`, 8 semaines, 112 occurrences, profil Bertin, exportée le
+2026-08-27. Extraite dans `dev/fixtures/charge_replay_athlete.json` —
+109 séances réelles sur 16 mouvements, avec leurs dates, charges, reps, RPE,
+statuts et sources.
 
-Le script est le même des deux côtés (copié dans un worktree du commit de base).
-Il **échoue** sur le moteur d'avant, il **passe** sur celui d'après.
+## Fidélité du replay
 
-> **Rappel de méthode.** La trace réelle de Bertin n'a jamais été fournie à la
-> session (introuvable sur tout le disque). Les ratios de la fixture sont
-> **reconstitués** depuis les rapports `chargeMiseAEchelle / chargeLue` cités
-> dans les constats, et l'historique reproduit les charges, reps et RPE que ces
-> constats résument. Les chiffres ci-dessous valent **pour cette fixture**, pas
-> pour les données de l'athlète.
+Le replay **reproduit à l'identique les 46 couples `chargeLue → chargeMiseAEchelle`**
+de la trace réelle (46/46), et retrouve sa MAPE de backtest au dixième près
+(**16,7 % mesuré sur la trace, 16,7 % au replay avant correction**). Il parle
+donc bien du même athlète.
+
+**Ce qui ne peut pas être reproduit** : la trace exporte les intentions et
+l'équipement du contexte de chaque ligne, mais pas son `blockTitle`, son `kind`
+ni son `day` — or `coachMovementContextKey` les utilise. Les contextes sont
+reconstruits depuis les blocs réels du programme, comme le fait l'app le jour
+de la séance. Les 54 écarts « clé de contexte différente » ne sont donc pas
+reproduits un pour un.
 
 ---
 
-## 1. Ce qui change
+## 1. L'audit se vérifie sur les vraies données
 
-**19 occurrences sur 112** voient leur suggestion changer.
+| Constat (Phase 1) | Annoncé | Mesuré sur la trace réelle |
+|---|---|---|
+| Facteur d'échelle | 0,81 → 1,67 | **0,815 → 1,667** |
+| Face Pull | 1,67 | **1,667** (60 → 100 lb) |
+| Pendlay Row en 5×5 | 250 lb | **250 lb** |
+| « clé de contexte différente » | 55 | **54** |
+| « seed manuel » | 43 | **43** |
+| « nature limitée [wod] » | 32 | **32** |
+| Front Squat retenu | 0/7 | **0/7** |
+| Close-Grip Bench retenu | 0/4 | **0/4** |
 
-| Mouvement | Occ. | Avant → après | Pourquoi |
-|---|---|---|---|
-| Power Clean | 6 | **125 → 135** | `EMOM` ne déclare plus un contexte WOD ; la cible passe de 8 à 2 reps |
-| Pendlay Row | 3 | **250 → 185** (S6 : 210) | ratio emprunté 1,60 borné à 1,20 |
-| Close-Grip Bench Press | 3 | **215 → 185** | plafonné par l'évidence loggée |
-| Weighted Pull-up | 4 | **30 → 25** (S8 : 35) | ratio emprunté borné |
-| One-Arm DB Row | 2 | **85 → 65** | ratio emprunté borné |
-| Strict Press | 1 | **165 → 120** | plafonné par l'évidence loggée |
+Les cinq constats sont confirmés sur les données réelles, aux arrondis près.
 
-Aucune de ces baisses n'est silencieuse : chacune sort en sévérité `watch` ou
-`warning` avec une raison qui nomme l'emprunt ou l'évidence.
+---
 
-## 2. Les six indicateurs
+## 2. Avant / après, mesuré
+
+Même fixture des deux côtés ; le moteur « avant » est celui du commit d'audit
+`0c1a268`, exécuté dans un worktree.
 
 | Indicateur | Avant | Après |
 |---|---|---|
-| Figés sur le cycle | 5 mouvements, **dont Power Clean = 125 lb** | 4, **Power Clean n'y est plus** |
-| 0 ligne retenue malgré un historique stocké | **3 / 64** | **0 / 64** |
-| Écart de reps détecté et exposé | **0** | **16 occurrences** |
+| 0 ligne retenue malgré un historique stocké | **4 / 94** | **0 / 94** |
+| Écart de reps détecté et exposé | **0** | **36 occurrences** |
 | Deux bornes de fourchette dans la trace | absentes | présentes |
-| Face Pull 18-20 reps sur cible 15-20 | lu comme un dépassement | **lu « dans la cible »** |
-| Pendlay Row en 5×5 | **250 lb** | **185 lb** |
+| Mouvements figés sur le cycle | 9 | 8 |
+| MAPE du backtest | 16,7 % | **16,5 %** |
+| Médiane | 11,1 % | 11,1 % |
+| Dans la fourchette écrite | 22 / 58 | 20 / 58 |
 
-## 3. Le cas de référence — Power Clean
+**19 occurrences sur 112** changent de suggestion :
 
-Simulation **séquentielle** (`dev/charge_replay_phase2.js`), 4 reps @ RPE 7 là
-où le programme en demande 2 :
+| Mouvement | Occ. | Avant → après | Pourquoi |
+|---|---|---|---|
+| **Pallof Press** | 6 | **70 → 40 lb** | consigne écrite « léger » enfin lue |
+| **Pendlay Row** | 3 | **250 → 185**, 265 → 200, 280 → 210 | ratio emprunté 1,60 borné à 1,20 |
+| One-Arm DB Row | 5 | 85 → 75 (S8 : 65) | plafonné par l'évidence loggée |
+| Strict Press | 4 | 140 → 145/150, S8 185 → 155 | cible de reps corrigée, évidence |
+| Back Squat | 1 | S8 180 → 170 | rampe de référence de travail |
 
-```
-                          S1     S2     S3     S4     S5     S6
-il SUIT la suggestion    135 -> 145 -> 155 -> 165 -> 175 -> 185     (identique avant/après)
-il GARDE ses 125 lb
-   AVANT                 135 -> 125 -> 125 -> 125 -> 125 -> 125
-   APRÈS                 135 -> 135 -> 135 -> 135 -> 135 -> 135
-```
-
-**C'est la ligne du bas qui compte, et c'est la seule qui sépare les deux
-moteurs.** Quand l'athlète suit la suggestion, l'échelon RPE suffisait déjà : les
-deux versions montent pareil, et prétendre le contraire serait malhonnête.
-
-Le vrai défaut était ailleurs : quand l'athlète **garde sa charge** — le cas
-réel — l'ancien moteur proposait 135 une fois, puis **retombait à 125 et y
-restait**. Le nouveau tient sa proposition semaine après semaine.
-
-Il plafonne à 135 et n'ira pas à 145 : le saut maximal prudent depuis 125 vaut
-un cran, et l'athlète n'a jamais validé 135. C'est le contrat de progression, et
-c'est voulu — la suggestion est une invitation, pas une extrapolation.
+Le cas Pallof Press est exactement celui de la consigne : « bande ou câble
+léger » produisait **70 lb**. Il produit maintenant **40 lb**, et la raison le
+dit : *« plafonné à 40 lb par le repère d'équipement du programme, pas par ton
+profil ni par ton historique (70 lb sinon) »*.
 
 ---
 
-## 4. Les attendus NON tenus
+## 3. Power Clean — corrigé à moitié, et il faut le dire
 
-Quatre attendus de la Phase 4 ne sont pas atteints. Aucun seuil n'a été ajusté
-pour les faire passer.
+C'est le cas qui a ouvert le chantier. Voici l'état exact.
 
-### 4.1 « Pause Back Squat, Back Squat, DB RDL ne restent plus figés » — **NON, et c'est structurel**
+**Ce qui est réparé :**
 
-Mesuré : Pause Back Squat reste figé ; Back Squat et DB RDL ne « varient » qu'à
-la semaine 8, parce que leur contexte change (test / deload), pas parce que la
-suggestion progresse.
+| | Trace réelle (V4.6.9) | Après |
+|---|---|---|
+| Contexte | `[wod, technique, strength]` | `[technique, strength]` — **le WOD a disparu** |
+| Cible de reps | **8** (repli) | **2** (la vraie) |
+| Écart de reps | invisible | **surplus, 5 séances de suite, RPE 8, effet « hausse »** |
 
-**Une trace de cycle ne peut pas montrer ça.** Elle rejoue le même historique
-pour les 8 semaines (`trace.js:210-235`) : la seule chose qui y varie est la
-charge écrite et le contexte. Une suggestion qui grimpe semaine après semaine
-demande que les séances soient **loggées** — c'est ce que montre la simulation
-séquentielle du § 3, et c'est là qu'il faut regarder.
+**Ce qui ne l'est pas :** la charge du cycle **ne bouge pas** (115 lb avant et
+après).
 
-L'attendu était donc formulé contre un artefact de la trace. Je ne l'ai pas
-contourné en changeant la mesure : je le signale.
+Le bloc reste étiqueté `technique`, parce que sa note dit « **Vitesse** maximale
+à charge sous-maximale ». Or un contexte limité coupe `coachRuleRepSurplusLift` :
+le signal est **détecté et affiché, mais pas appliqué**.
 
-### 4.2 « La proportion dans la fourchette écrite dépasse nettement 29/90 » — **NON : 33/58 → 30/58, en baisse**
+C'est la même famille de piège que celui déjà documenté dans
+`movement_tuning.js` pour le mot « vitesse ». Le détecteur de bloc vitesse est
+volontairement étroit — il exige un pourcentage cible écrit, que ce bloc n'a
+pas. La table de réglage porte pourtant déjà une entrée
+`repsSurplus.byIntent.speed` (converge 0,25) qui est aujourd'hui **inatteignable**,
+signe que l'intention d'origine était bien de créditer lentement un bloc
+d'effort dynamique.
 
-Elle a **baissé**, et c'est cohérent avec ce qui a été corrigé.
+**Je n'ai pas élargi ce détecteur de ma propre initiative** : le fichier
+avertit qu'il « changerait le comportement de la moitié des programmes ».
+C'est une décision de programmation, elle revient à l'athlète.
 
-Les 28 occurrences hors fourchette portent toutes une raison nommée. Elles se
-répartissent en deux familles, et **aucune n'est un défaut** :
+En revanche, la trajectoire séquentielle bouge, parce que la cible de reps est
+maintenant juste :
 
-- **l'historique de l'athlète est au-dessus de la fourchette** — Pause Back Squat
-  175 lb contre une bande 140-148, DB RDL 85 contre 55-59, Back Squat 160 contre
-  125-134. Le suivre ferait *baisser* des charges qu'il sort déjà proprement ;
-- **le moteur refuse un ratio gonflé** — Strict Press 130 contre 145-155,
-  Close-Grip Bench 185 contre 215-225. C'est exactement
-  `coachRuleProgramScaleGuard`, et c'est la correction demandée.
+```
+tu gardes tes 125 lb, 4 reps là où 2 sont demandées
+  AVANT   155 -> 135 -> 135 -> 125 -> 125 -> 125
+  APRÈS   155 -> 135 -> 135 -> 135 -> 135 -> 135
+```
 
-Cet indicateur mesure la **conformité à la rampe écrite**. Ce n'est pas
-l'objectif : sur un athlète dont les charges réelles sont loin de la rampe, une
-proportion plus haute signifierait un moteur *moins* fidèle à ses données. Je le
-laisse dans le rapport parce qu'il était demandé, mais je ne le considère pas
-comme un critère de qualité, et je ne l'ai pas optimisé.
+Avant, le moteur retombait à 125 et y restait. Il tient maintenant sa
+proposition.
 
-Le retard sur la rampe, lui, est désormais **signalé** (§ Phase 2.2) : 8
-occurrences passent en `warning` avec l'écart nommé.
+---
 
-### 4.3 « MAPE du backtest inférieur à 18,1 % » — **non évaluable, et non améliorée ici**
+## 4. Les attendus, honnêtement
 
-Le 18,1 % vient de la trace absente. Sur cette fixture : **13,0 % avant, 13,0 %
-après**, médiane 6,7 % → 8,0 %.
+**Atteints :**
 
-La MAPE n'a donc **pas bougé**, et la médiane s'est légèrement dégradée. Deux
-raisons, et je n'en tire pas de victoire :
+- aucun mouvement à 0 ligne retenue alors que des lignes sont stockées : **4 → 0** ;
+- MAPE du backtest **sous 18,1 %** : 16,5 % (mais le point de départ réel était
+  déjà 16,7 % — le gain est de **0,2 point**, pas une transformation) ;
+- Pendlay Row et Pallof Press corrigés, écart de reps lu et exposé.
 
-- le backtest compare la suggestion reconstituée à **la charge que l'athlète a
-  effectivement mise**. Or plusieurs corrections font délibérément diverger le
-  moteur de cette charge — quand la fixture logge 70 lb sur un Pallof Press
-  décrit comme léger, proposer 40 lb *augmente* l'erreur du backtest tout en
-  étant le bon comportement ;
-- 66 points sur une fixture reconstituée ne suffisent pas à départager deux
-  moteurs à 1 point de MAPE près.
+**Non atteints :**
 
-**Conclusion honnête : cette métrique ne mesure pas ce qu'on veut ici.** Pour la
-juger, il faut rejouer la vraie trace de Bertin — `dev/charge_replay_phase2.js`
-est prêt à le faire dès que le fichier existe.
+- **« Pause Back Squat, Back Squat, DB RDL ne restent plus figés »** — Pause
+  Back Squat reste figé ; les deux autres ne varient qu'aux semaines de test et
+  de deload. Une trace de cycle rejoue le même historique 8 fois : elle ne peut
+  pas montrer une progression semaine après semaine. C'est la simulation
+  séquentielle qu'il faut lire.
+- **« La proportion dans la fourchette écrite dépasse nettement 29/90 »** — elle
+  **baisse** (22/58 → 20/58). Les occurrences hors fourchette portent toutes une
+  raison nommée : soit l'historique de l'athlète est au-dessus de la bande, soit
+  le moteur refuse un ratio gonflé. Cet indicateur mesure la conformité à la
+  rampe écrite, pas la qualité de la suggestion. Non optimisé.
+- **Power Clean** — corrigé à moitié, voir § 3.
 
-### 4.4 Le libellé exact attendu par la consigne
-
-La consigne donnait comme raison attendue :
-
-> « Reps au-dessus de la cible : 4 reps pour 2 demandées à 125 lb @RPE 7, deux
-> séances de suite. Référence de travail relevée à 145 lb. »
-
-Le moteur produit la même phrase, **mais relève à 135 lb, pas 145**. Le saut
-maximal prudent depuis 125 lb vaut un cran de barre. Le contrat existant est
-explicite : un surplus de reps rend le moteur *plus prompt à utiliser la marge
-existante, il ne l'élargit pas*. Je ne l'ai pas élargi pour atteindre le chiffre
-de l'exemple.
+Aucun seuil n'a été ajusté pour faire passer un chiffre.
 
 ---
 
 ## 5. Reproduire
 
 ```bash
-node dev/charge_replay_phase2.js                    # vérifie les six attendus
+node dev/charge_replay_phase2.js                    # vérifie tous les attendus
 node dev/charge_replay_phase2.js --out trace.json   # écrit la trace complète
 ```
-
-Pour rejouer contre la vraie trace exportée de l'app, quand elle sera
-disponible : la déposer dans `docs/fixtures/` et comparer mouvement par
-mouvement les champs `suggestion.propose`, `programme.echelle` et `ecartReps`.

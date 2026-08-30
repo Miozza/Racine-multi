@@ -11,38 +11,45 @@ code n'accompagne ce document.
 
 ## 0. Deux réserves de méthode, à lire avant les constats
 
-### 0.1 La fixture n'a jamais été fournie
+### 0.1 La fixture — absente à l'audit, fournie depuis
 
-`racine-trace-charges-phase2_fable5-cycle-complet.json` **n'est présent nulle
-part** — ni dans le dépôt, ni dans la session, ni sur le disque
-(`find / -iname '*racine-trace*'` → vide). `docs/fixtures/` n'existait pas.
+> **Mise à jour du 30 août.** La trace réelle a été fournie et se trouve
+> désormais dans `docs/fixtures/racine-trace-charges-phase2_fable5-cycle-complet.json`.
+> **Tous les constats ci-dessous ont été revérifiés contre elle** — ils tiennent,
+> aux arrondis près. Le détail chiffré est dans
+> `docs/audit/2026-08-28-trace-diff.md` § 1.
+>
+> | Constat | Annoncé ici | Mesuré sur la trace réelle |
+> |---|---|---|
+> | Facteur d'échelle | 0,81 → 1,67 | **0,815 → 1,667** |
+> | « clé de contexte différente » | 55 | **54** |
+> | « seed manuel » | 43 | **43** |
+> | « nature limitée [wod] » | 32 | **32** |
+> | Front Squat retenu | 0/7 | **0/7** |
+> | Close-Grip Bench retenu | 0/4 | **0/4** |
+> | Pendlay Row en 5×5 | 250 lb | **250 lb** |
+>
+> Ce qui suit décrit l'état de la session au moment de l'audit, et pourquoi un
+> replay a été construit. Il reste utile : c'est lui qui rend la comparaison
+> avant/après exécutable, et il est aujourd'hui alimenté par les vraies données.
 
-Conséquence : je ne peux pas comparer ligne à ligne contre *la* trace de
-Bertin. J'ai donc construit un **replay reproductible** du moteur réel
-(`dev/charge_replay_phase2.js`, ajouté en Phase 4) : moteur `scripts/charge/`
-non modifié, programme `programs/phase2_fable5.js` non modifié,
-`CoachChargeTrace.report('cycle')` réel, sur un athlète dont les ratios sont
-**reconstitués depuis les rapports `chargeMiseAEchelle / chargeLue` cités dans
-les constats**.
+Au moment de l'audit, `racine-trace-charges-phase2_fable5-cycle-complet.json`
+n'était présent nulle part — ni dans le dépôt, ni dans la session, ni sur le
+disque (`find / -iname '*racine-trace*'` → vide). `docs/fixtures/` n'existait
+pas.
 
-Le replay reproduit les symptômes signalés avec une fidélité qui vaut
-validation croisée :
+Impossible, donc, de comparer ligne à ligne contre *la* trace de Bertin. D'où un
+**replay reproductible** du moteur réel (`dev/charge_replay_phase2.js`, ajouté
+en Phase 4) : moteur `scripts/charge/` non modifié, programme
+`programs/phase2_fable5.js` non modifié, `CoachChargeTrace.report('cycle')` réel,
+sur un athlète dont les ratios étaient alors **reconstitués depuis les rapports
+`chargeMiseAEchelle / chargeLue` cités dans les constats**.
 
-| Symptôme signalé | Replay mesuré |
-|---|---|
-| Facteur d'échelle 0,81 → 1,67 | **0,846 → 1,667** |
-| Face Pull 100 lb en 3×15-20 | **100 lb** |
-| Pendlay Row 250 lb en 5×5 | **250 lb** |
-| Power Clean figé à 125 lb | **125 lb sur 8/8 semaines** |
-| Back Squat figé à 160 lb | **160 lb sur 9/9 occurrences** |
-| DB RDL figé à 85 lb | **85 lb sur 7/8 occurrences** |
-
-Ce que le replay **ne peut pas** reproduire : les motifs d'écart exacts
-(55 « clé de contexte », 43 « seed manuel », 32 « nature limitée ») et les
-signes par mouvement du constat 5. Ils dépendent de l'historique réel de
-Bertin — contextes hérités d'avant les correctifs de détecteur d'intention,
-seeds manuels, PR. Les mécanismes sont confirmés dans le code ; **les
-comptages, eux, restent ceux du rapport d'origine, non revérifiés.**
+Ce replay reproduisait déjà les symptômes signalés — facteur d'échelle
+0,846 → 1,667, Face Pull 100 lb, Pendlay Row 250 lb, Power Clean figé — ce qui
+valait validation croisée. **Il est désormais alimenté par les 109 séances
+réelles de la trace**, et reproduit à l'identique ses 46 couples
+`chargeLue → chargeMiseAEchelle` ainsi que sa MAPE de backtest (16,7 %).
 
 ### 0.2 Une trace de cycle rejoue le même historique 8 fois
 
@@ -264,12 +271,13 @@ important pour l'ordre des corrections :
   l'historique passe, l'ancre le fige sous la rampe écrite (constat 1).
   **Corriger le constat 4 corrige cette moitié ; le constat 2 n'y peut rien.**
 
-**Non vérifié :** les chiffres eux-mêmes (MAPE 18,1 %, médiane 9,1 %, 29/90
-dans la fourchette, Cuban Press +33 %, Front Squat −45,8 %). Ils viennent de
-la trace absente. Mon replay donne, sur son propre athlète, **MAPE 13,0 %,
-médiane 6,7 %, 33/58 dans la fourchette, 24 au-dessus / 23 en dessous** — même
-ordre de grandeur, mais ce n'est **pas** la même mesure et je ne la présente
-pas comme telle.
+**Mesuré depuis, sur la trace réelle :** MAPE **16,7 %**, médiane **8,3 %**,
+**13/63** dans la fourchette écrite, **29 au-dessus / 39 en dessous** sur
+108 points de backtest. Les chiffres du prompt (18,1 %, médiane 9,1 %, 29/90)
+sont du même ordre sans être identiques — dénominateurs et version du moteur
+diffèrent (la trace est en V4.6.9). Le **sens** du biais est confirmé : plus de
+sous-estimations que de sur-estimations, et les deux familles de causes
+identifiées ci-dessus se retrouvent telles quelles.
 
 ---
 
