@@ -125,7 +125,7 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Power Clean | 100×3 | 100×4 | 8.2 | stable (3%) |
+| Power Clean | 100×3 | 110×4 | 8.2 | progression propre (13.3%) |
 | Front Squat | 140×7 | 140×5 | 8.4 | stable (reps variables) (-5.4%) |
 | Push Press | 100×6 | 100×5 | 8.4 | stable (-2.8%) |
 | Deadlift | 235×4 | 225×6 | 8.9 | stable lourd (1.4%) |
@@ -141,7 +141,7 @@ heuristique de test.
 
 | Mouvement | Début | Fin | RPE moy. | Tendance |
 |---|---:|---:|---:|---|
-| Power Clean | 50×5 | 50×3 | 7.5 | stable (reps variables) (-5.7%) |
+| Power Clean | 50×5 | 65×3 | 7.6 | progression propre (22.6%) |
 | Front Squat | 70×6 | 80×6 | 7.8 | progression propre (14.3%) |
 | Push Press | 55×6 | 70×6 | 7.8 | progression propre (27.3%) |
 | Deadlift | 145×6 | 150×6 | 8.6 | stable (3.4%) |
@@ -175,7 +175,7 @@ heuristique de test.
 |---|---:|---:|---:|---|
 | Front Squat | 60×7 | 70×5 | 8.3 | progression propre (10.4%) |
 | Push Press | 55×5 | 65×4 | 8.6 | progression propre (14.8%) |
-| Power Clean | 50×4 | 50×4 | 7.9 | stable (0%) |
+| Power Clean | 50×4 | 60×4 | 8.1 | progression propre (20%) |
 | Barbell Row | 90×8 | 85×8 | 8.9 | baisse assumée (RPE élevé) (-5.6%) |
 | Weighted Pull-up | 7 reps | 5 reps | 9.1 | stable (reps variables) (-28.6%) |
 

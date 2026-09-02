@@ -1,8 +1,45 @@
-# ETAT ACTUEL — V5.0.0
+# ETAT ACTUEL — V5.0.1
 
-Version actuelle : V5.0.0
+Version actuelle : V5.0.1
 
 ## État courant
+
+### V5.0.1 — la mémoire ne dépend plus du titre d'un bloc
+
+Trois corrections, toutes parties d'une trace de cycle réelle de `phase2_fable5`
+(112 entrées, 8 semaines, générée le 2026-09-02).
+
+**La clé de contexte lisait le titre du bloc et le jour.** `coachMovementContextKey()`
+mélangeait deux choses : l'identité d'exécution d'un mouvement (nom, équipement,
+intention, kind) et son emballage de programmation (titre du bloc, jour). Renommer
+une section du programme suffisait donc à effacer le passé d'un mouvement. Mesuré
+sur la trace : 9 des 12 séances de Face Pull écartées — même nom, même câble, même
+intention, même kind, seul le titre différait (« C. Rear delt / posture » contre
+« C. Posture + coiffe »). Deux mois de progression 60 → 90 lb invisibles, sur le
+motif d'écart le plus fréquent de tout le fichier (80 occurrences cumulées). Le
+titre et le jour restent lus par `coachExtractMovementIntent()` : c'est leur bon
+usage — l'intention extraite entre dans la clé, le texte brut n'y entre plus.
+
+**Les charges de Fable 5 étaient écrites à l'échelle d'un athlète réel.** Une charge
+chiffrée dans un programme est un %1RM de l'athlète de référence ; `scaling.js` la
+ramène ensuite au niveau du profil actif. Le fichier portait les charges de travail
+d'un athlète, qui passaient donc deux fois à l'échelle. Le sens de l'erreur suit le
+ratio : il écrase le bas du corps et gonfle le haut. Mesuré, en % du 1RM estimé de
+l'athlète — Strict Press 96 / 105 / 108 % pour un 5×3, un 4×3 et un 3RM ; Weighted
+Pull-up 77 / 103 / 128 % ; et à l'inverse Box Squat 57 / 60 / 62 % là où la vague
+RPE 7→8→9 demande 76 / 83 / 92 %. Les huit semaines sont réécrites à l'échelle de
+référence. Les trois tests d'ancre de S8, le Weighted Pull-up et le squat vitesse
+passent en pourcentage : un pourcentage se résout sur la capacité mesurée et ne
+traverse pas le ratio de profil.
+
+**Deux trous de volume comblés dans Fable 5.** Sur trois mois d'historique réel :
+15 répétitions lourdes de quadriceps par semaine, et aucun travail direct de bras.
+Un Bulgarian Split Squat le lundi, un Cable Curl le mardi, une Overhead Rope
+Extension le jeudi — en accessoires, à 1-2 reps de l'échec. Les mouvements A et les
+tests de S8 ne bougent pas. Ce qui n'a **pas** été ajouté : de la poussée horizontale
+en rotation A, parce que l'historique dit que le Close-Grip Bench est le meilleur
+lift de cet athlète (e1RM 275 lb contre 235 au Back Squat) — c'est le quadriceps qui
+manque de volume, pas le pectoral.
 
 Racine est un prototype multi-utilisateur local. Cette version corrige un défaut remonté par une trace de cycle réelle : le moteur amputait des charges qu'il n'avait aucune raison de toucher.
 

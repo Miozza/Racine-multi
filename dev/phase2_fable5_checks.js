@@ -305,6 +305,118 @@ try {
   assert(nonResolus.length === 0,
     'Aucune charge en pourcentage ne retombe sur parseLoad() : ' + (nonResolus.slice(0, 5).join(' | ') || 'catalogue propre') + '.');
 
+  // ─── 12. Les charges ecrites sont a l'echelle de l'ATHLETE DE REFERENCE ──
+  // Le defaut corrige ici : la V1 du fichier portait les charges de travail
+  // d'un athlete reel. scaling.js les remultipliait par son ratio de test, si
+  // bien qu'un 5x3 de Strict Press sortait a 96 % de son 1RM et un 5x3 de Box
+  // Squat a 57 %. Le sens de l'erreur suit le ratio — il ecrase le bas du
+  // corps et gonfle le haut. Ce test tient la convention : chaque mouvement A
+  // reste dans la bande de % du 1RM de reference que son format demande.
+  const REF_1RM = {
+    'Pause Back Squat': 277,   // 0,88 x back squat 315
+    'Box Squat': 315,
+    'Back Squat': 315,
+    'Strict Press': 155,
+    'Close-Grip Bench Press': 225, // 0,92 x bench 245
+    'Pendlay Row': 195
+  };
+  // Bande attendue par format, en % du 1RM de reference.
+  const BANDE = [
+    {re: /^5×3$/,               min: 0.72, max: 0.80, quoi: '5x3 a RPE 7'},
+    {re: /^4×3$/,               min: 0.79, max: 0.87, quoi: '4x3 a RPE 8'},
+    {re: /montée vers 3RM/,     min: 0.88, max: 0.95, quoi: 'montee vers 3RM'},
+    {re: /^5×5$/,               min: 0.66, max: 0.79, quoi: '5x5'},
+    {re: /montée vers 5RM/,     min: 0.82, max: 0.90, quoi: 'montee vers 5RM'}
+  ];
+  const fable5 = tousProgrammes.phase2_fable5;
+  assert(!!fable5, 'Le programme phase2_fable5 est charge.');
+
+  const horsBande = [];
+  let mainsVerifies = 0;
+  (fable5.days || []).forEach(day => {
+    for (let w = 1; w <= 8; w++) {
+      (fable5.getBlocks(day, w) || []).forEach(b => {
+        if (b.kind !== 'main') return;
+        (b.exercises || []).forEach(ex => {
+          const ref = REF_1RM[ex.name];
+          const bande = BANDE.filter(x => x.re.test(String(ex.format || '')))[0];
+          if (!ref || !bande) return;
+          const lu = ctx.parseLoad(String(ex.load || ''));
+          if (!(lu > 0)) return; // charge en pourcentage : voir le test 13
+          mainsVerifies++;
+          const pct = lu / ref;
+          if (pct < bande.min || pct > bande.max) {
+            horsBande.push(day + ' S' + w + ' ' + ex.name + ' ' + bande.quoi +
+              ' : ' + lu + ' lb = ' + Math.round(pct * 100) + '% (attendu ' +
+              Math.round(bande.min * 100) + '-' + Math.round(bande.max * 100) + '%)');
+          }
+        });
+      });
+    }
+  });
+  assert(mainsVerifies >= 12, 'Les mouvements A en livres sont bien verifies (' + mainsVerifies + ').');
+  assert(horsBande.length === 0,
+    'Chaque mouvement A reste dans sa bande de % du 1RM de reference : ' +
+    (horsBande.slice(0, 4).join(' | ') || 'toutes les semaines sont a l\'echelle') + '.');
+
+  // ─── 13. Les tests d'ancre de S8 ne sont JAMAIS un nombre de livres ──────
+  // Une ancre ecrite « AMRAP @ 205 lb » est le 1RM d'UN athlete fige dans un
+  // fichier partage. Un pourcentage se resout sur la capacite mesuree et ne
+  // traverse pas le ratio de profil : c'est la seule forme qui reste juste
+  // pour l'athlete suivant.
+  const ancres = [];
+  (fable5.days || []).forEach(day => {
+    (fable5.getBlocks(day, 8) || []).forEach(b => {
+      if (b.kind !== 'main') return;
+      (b.exercises || []).forEach(ex => {
+        if (!/TEST ANCRE/.test(String(ex.note || ''))) return;
+        ancres.push(ex.name + ' : "' + ex.load + '"');
+        assert(!!ctx.coachPercentTargetFromText(String(ex.load || '')),
+          'Ancre S8 ' + ex.name + ' prescrite en pourcentage, pas en livres (lu "' + ex.load + '").');
+      });
+    });
+  });
+  assert(ancres.length === 3, 'Les 3 ancres de S8 sont bien presentes (' + ancres.length + ').');
+
+  // ─── 14. Le volume quadriceps et bras est la toutes les semaines ─────────
+  // Deux trous mesures sur l'historique reel : 15 reps lourdes de quadriceps
+  // par semaine, et zero travail direct de bras. Ils sont combles par des
+  // accessoires — le mouvement A ne bouge pas. Ce test empeche qu'une future
+  // retouche les fasse disparaitre en silence sans decision explicite.
+  const manquants = [];
+  for (let w = 1; w <= 8; w++) {
+    const noms = [];
+    (fable5.days || []).forEach(day => {
+      (fable5.getBlocks(day, w) || []).forEach(b =>
+        (b.exercises || []).forEach(ex => noms.push(String(ex.name))));
+    });
+    [['Bulgarian Split Squat', 'quadriceps'],
+     ['Cable Curl', 'biceps'],
+     ['Overhead Rope Extension', 'triceps']].forEach(pair => {
+      if (noms.indexOf(pair[0]) < 0) manquants.push('S' + w + ' : ' + pair[1] + ' (' + pair[0] + ')');
+    });
+  }
+  assert(manquants.length === 0,
+    'Quadriceps, biceps et triceps sont travailles chaque semaine : ' +
+    (manquants.slice(0, 5).join(' | ') || 'les 8 semaines sont couvertes') + '.');
+
+  // Et ils restent des accessoires : jamais un second test a cote du bloc A.
+  const enMain = [];
+  for (let w = 1; w <= 8; w++) {
+    (fable5.days || []).forEach(day => {
+      (fable5.getBlocks(day, w) || []).forEach(b => {
+        if (b.kind !== 'main') return;
+        (b.exercises || []).forEach(ex => {
+          if (['Bulgarian Split Squat', 'Cable Curl', 'Overhead Rope Extension'].indexOf(ex.name) >= 0) {
+            enMain.push('S' + w + ' ' + day + ' ' + ex.name);
+          }
+        });
+      });
+    });
+  }
+  assert(enMain.length === 0,
+    'Le volume ajoute reste en accessoire : ' + (enMain.join(' | ') || 'aucun bloc kind:"main" detourne') + '.');
+
 } catch (err) {
   fail('Erreur pendant les tests phase2_fable5 : ' + (err && err.stack ? err.stack : err));
 }
