@@ -1,3 +1,59 @@
+## V5.0.1 — La mémoire ne dépend plus du titre d'un bloc
+
+Trois corrections tirées d'une trace de cycle réelle de `phase2_fable5`
+(112 entrées, 8 semaines, 2026-09-02).
+
+**Ce que l'athlète voit changer**
+
+- **Renommer un bloc n'efface plus l'historique d'un mouvement.** La clé de contexte
+  (`coachMovementContextKey`) portait le titre du bloc et le jour de la semaine, à côté
+  du nom, de l'équipement, de l'intention et du kind. Un titre réécrit d'un programme à
+  l'autre suffisait donc à rendre le passé d'un mouvement invisible. Mesuré : 9 des
+  12 séances de Face Pull écartées pour « clé de contexte différente », alors que seul
+  le libellé du bloc différait — deux mois de progression 60 → 90 lb perdus, sur le motif
+  d'écart le plus fréquent de la trace (80 occurrences). Le titre et le jour restent lus
+  pour DÉCLARER une intention ; c'est l'intention extraite qui entre dans la clé, plus le
+  texte brut.
+- **Les charges de « Phase 2 — Fable 5 » reviennent à l'échelle de référence.** Une charge
+  chiffrée dans un programme est un %1RM de l'athlète de référence, que `scaling.js` ramène
+  ensuite au niveau du profil. Le fichier portait les charges de travail d'un athlète réel :
+  elles passaient deux fois à l'échelle, dans le sens du ratio — écrasées en bas du corps,
+  gonflées en haut. En % du 1RM estimé : Strict Press 96 / 105 / 108 % sur un 5×3, un 4×3
+  et un 3RM ; Weighted Pull-up 77 / 103 / 128 % ; Box Squat 57 / 60 / 62 % là où la vague
+  RPE 7→8→9 demande 76 / 83 / 92 %. Les huit semaines sont réécrites.
+- **Les tests d'ancre de S8 sont prescrits en pourcentage.** « AMRAP @ 205 lb » était le 1RM
+  d'un athlète figé dans un fichier partagé. `85%` se résout sur la capacité mesurée et ne
+  traverse pas le ratio de profil. Même traitement pour le Weighted Pull-up, où l'échelle en
+  livres du lest ne veut rien dire face à un ratio de famille, et pour le squat vitesse du
+  vendredi, dont « 55-60% » est la vraie prescription.
+- **Volume quadriceps et bras dans Fable 5.** Sur trois mois d'historique : 15 répétitions
+  lourdes de quadriceps par semaine et aucun travail direct de bras. Ajoutés en accessoires,
+  à 1-2 reps de l'échec — Bulgarian Split Squat le lundi, Cable Curl le mardi, Overhead Rope
+  Extension le jeudi. Les mouvements A et les tests de S8 ne bougent pas.
+
+**Ce qui n'a pas été fait, et pourquoi**
+
+- **Pas de poussée horizontale ajoutée en rotation A.** C'était le premier réflexe, jusqu'à
+  ce que l'historique le contredise : le Close-Grip Bench est le meilleur lift de cet athlète
+  (e1RM 275 lb contre 235 au Back Squat). Le pectoral n'a pas besoin de volume ; le quadriceps
+  si.
+- **Pas de consigne de RIR ajoutée sur les accessoires.** Prévue, puis abandonnée : les
+  63 séries d'accessoires loggées sortent déjà à RPE 8,2 de moyenne. La consigne aurait
+  décrit ce que l'athlète fait déjà.
+- **Aucune donnée de profil réécrite.** Deux ratios de calibration sont contredits par
+  l'historique — `_lowerBody` (0,87 contre 0,76 mesuré au Back Squat) et surtout le ratio de
+  tirage appliqué au Weighted Pull-up (1,60, borne haute du clamp, contre ~0,43 réel : le lest
+  ajouté et une charge totale ne sont pas la même échelle). C'est de la donnée d'athlète : elle
+  se recalibre depuis l'app, elle ne se corrige pas dans un commit.
+
+**Garde-fous**
+
+- `dev/charge_engine_checks.js` : un titre de bloc réécrit et un jour déplacé donnent la même
+  clé, tandis que câble ≠ haltère et technique ≠ force restent deux clés distinctes.
+- `dev/phase2_fable5_checks.js` : chaque mouvement A reste dans sa bande de % du 1RM de
+  référence, les 3 ancres de S8 sont en pourcentage, et le volume quadriceps/bras est présent
+  les 8 semaines sans jamais devenir un bloc `kind:"main"`.
+
 ## V5.0.0 — Le moteur lit les reps, pas seulement la charge
 
 Refonte de la logique de progression, partie de cinq constats tirés d'une trace

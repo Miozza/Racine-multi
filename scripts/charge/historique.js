@@ -198,15 +198,35 @@ function coachHistoryRepsNumber(row){return Number(row&&(row.reps||row.actualRep
 
 function coachHistoryRpeNumber(row){return Number(row&&row.rpe||0)||0;}
 
+// ── Cle d'identite d'execution ─────────────────────────────────────────────
+// Ce que la cle doit dire : « est-ce la MEME facon de faire ce mouvement ? ».
+// Quatre champs y repondent — le mouvement, l'equipement qui change la charge,
+// l'intention deja resolue, et le kind du bloc.
+//
+// POURQUOI blockTitle ET day N'Y SONT PLUS : ce sont des etiquettes de
+// programmation, pas des faits d'execution. Les y laisser faisait dependre la
+// memoire de l'athlete du TEXTE d'un titre de bloc — renommer une section, ou
+// deplacer une seance du mardi au jeudi, effacait son passe sans rien changer
+// a ce qu'il souleve.
+//
+// Cas reel (trace du cycle phase2_fable5, 2026-09-02) : 9 des 12 seances de
+// Face Pull ecartees. Meme label, meme equipement (cable), meme intention
+// (aucune), meme kind (accessory) — seul le titre du bloc differait,
+// « C. Rear delt / posture » d'un cote, « C. Posture + coiffe » de l'autre.
+// Deux mois de progression 60 -> 90 lb invisibles pour le moteur, sur le motif
+// d'ecart le plus frequent de toute la trace (80 occurrences).
+//
+// Les deux champs restent captes par coachBuildMovementContext et lus par
+// coachExtractMovementIntent : le titre d'un bloc CONTINUE de declarer une
+// intention. C'est le bon usage — l'intention extraite entre dans la cle par
+// primaryIntent. C'est le texte brut qui n'a rien a y faire.
 function coachMovementContextKey(ctx){
   if(!ctx)return '';
   var bits=[
     ctx.label||'',
     ctx.equipment||'',
     ctx.primaryIntent||'',
-    ctx.kind||'',
-    ctx.blockTitle||'',
-    ctx.day||''
+    ctx.kind||''
   ];
   return bits.map(coachNormalizeMoveText).join('|');
 }

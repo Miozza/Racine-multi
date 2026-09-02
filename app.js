@@ -1,5 +1,5 @@
-// Racine V5.0.0 — le moteur lit les reps, pas seulement la charge
-var APP_VERSION = "V5.0.0";
+// Racine V5.0.1 — la mémoire ne dépend plus du titre d'un bloc
+var APP_VERSION = "V5.0.1";
 
 // Architecture stable
 // programs/*.js = plan prévu

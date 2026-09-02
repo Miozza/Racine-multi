@@ -1335,6 +1335,49 @@ try {
       'Une ligne sans aucune prescription retourne null, pas une cible inventee.');
   }
 
+  // ── Renommer un bloc n'efface pas l'historique ───────────────────────────
+  // La cle de contexte dit « est-ce la meme facon de faire ce mouvement ? ».
+  // Elle portait aussi blockTitle et day : deux etiquettes de programmation.
+  // Consequence mesuree sur la trace du cycle phase2_fable5 (2026-09-02) :
+  // 9 seances de Face Pull sur 12 ecartees pour « cle de contexte differente »,
+  // alors que seul le titre du bloc avait change d'un programme a l'autre.
+  {
+    resetState();
+    const communs = {kind:'accessory', format:'3×15-20', load:'60 lb'};
+    const ancien = ctx.coachBuildMovementContext('Face Pull',
+      Object.assign({}, communs, {blockTitle:'C. Rear delt / posture', day:'mardi', week:5}));
+    const aujourdhui = ctx.coachBuildMovementContext('Face Pull',
+      Object.assign({}, communs, {blockTitle:'C. Posture + coiffe', day:'jeudi', week:2}));
+
+    assert(ctx.coachShouldPreferContextMatch('Face Pull', aujourdhui) === true,
+      'Face Pull compare bien les contextes a l\'identique (sinon ce test ne prouve rien).');
+    assert(ctx.coachMovementContextKey(ancien) === ctx.coachMovementContextKey(aujourdhui),
+      'Un titre de bloc reecrit et un jour deplace donnent la MEME cle.');
+    assert(ctx.coachContextMatches(ancien, aujourdhui, 'Face Pull') === true,
+      'LA SEANCE DEJA LOGGEE COMPTE TOUJOURS apres un renommage de bloc.');
+
+    // Ce que la cle doit toujours separer : l'equipement et l'intention.
+    const cable = ctx.coachBuildMovementContext('Rear Delt Fly câble', communs);
+    const halteres = ctx.coachBuildMovementContext('Rear Delt Fly DB', communs);
+    assert(ctx.coachMovementContextKey(cable) !== ctx.coachMovementContextKey(halteres),
+      'Cable et haltere restent deux cles distinctes : les charges ne sont pas comparables.');
+
+    const technique = ctx.coachBuildMovementContext('Power Clean',
+      {kind:'main', blockTitle:'A. Power Clean', note:'technique, leger', format:'5x3'});
+    const force = ctx.coachBuildMovementContext('Power Clean',
+      {kind:'main', blockTitle:'A. Power Clean', format:'5x3'});
+    assert(ctx.coachMovementContextKey(technique) !== ctx.coachMovementContextKey(force),
+      'Une seance technique et une seance de force gardent deux cles distinctes.');
+
+    // Et la cle ne lit plus le texte brut, verifie sur le source.
+    const src = read('scripts/charge/historique.js');
+    const corps = src.slice(src.indexOf('function coachMovementContextKey'),
+                            src.indexOf('function coachShouldPreferContextMatch'));
+    assert(!/ctx\.blockTitle/.test(corps) && !/ctx\.day/.test(corps),
+      'coachMovementContextKey ne lit ni blockTitle ni day.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }
