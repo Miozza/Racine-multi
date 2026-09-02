@@ -1378,6 +1378,72 @@ try {
     resetState();
   }
 
+  // ── Un qualificatif en plus est un AUTRE mouvement ───────────────────────
+  // athleteMovementRecord() a un dernier recours pour les variantes d'ECRITURE.
+  // Il comparait des sous-chaines dans les deux sens, avec une longueur minimale
+  // sur le seul nom demande : « close grip bench press » contient donc « bench
+  // press », et un mouvement jamais travaille heritait en silence de l'historique
+  // du voisin — presente comme le sien (« RPE 8 sur la derniere serie »). Mesure
+  // sur le catalogue : 137 paires se lisaient l'une pour l'autre.
+  {
+    resetState();
+    const memeNom = [
+      ['Band Pull-Apart', 'Band Pull Apart', 'ponctuation'],
+      ['Push-Up', 'Push-up', 'casse'],
+      ['Hammer Curl', 'Hammer Curls', 'pluriel'],
+      ['False Grip Ring Row', 'Ring Row False Grip', 'ordre des mots']
+    ];
+    memeNom.forEach(pair => {
+      assert(ctx.coachSameMovementSpelling(pair[0], pair[1]) === true,
+        'Meme mouvement, ' + pair[2] + ' differente : « ' + pair[0] + ' » et « ' + pair[1] + ' » restent liees.');
+    });
+
+    const autreMouvement = [
+      ['Bench Press', 'Close-Grip Bench Press'],
+      ['Bench Press', 'Decline Bench Press'],
+      ['Back Squat', 'Pause Back Squat'],
+      ['Deadlift', 'Romanian Deadlift'],
+      ['Row', 'Pendlay Row'],
+      ['Pull-Up', 'Weighted Pull-up'],
+      ['Dips', 'Weighted Dips']
+    ];
+    autreMouvement.forEach(pair => {
+      assert(ctx.coachSameMovementSpelling(pair[0], pair[1]) === false,
+        'Un qualificatif en plus : « ' + pair[1] + ' » n\'est pas « ' + pair[0] + ' ».');
+    });
+
+    // Et par le chemin que le moteur emprunte vraiment : un Close-Grip Bench
+    // jamais travaille ne doit PAS lire l'historique du Bench Press.
+    const benchCtx = ctx.coachBuildMovementContext('Bench Press',
+      {kind:'main', blockTitle:'A. Bench Press', format:'5×3', load:'200 lb'});
+    ctx.state.athleteState.movements['Bench Press'] = {
+      ranges:{strength:{currentLoad:245, currentReps:3, actualLoad:245, actualReps:3, rpe:8,
+        confidence:0.9, status:'success', estimated1RM:270, lastUpdated:'2026-08-24'}},
+      status:'ok',
+      history:[245, 245].map((l, i) => ({date:'2026-08-1' + i, load:l, reps:3, rpe:8,
+        status:'success', context:benchCtx, planned:{load:l, reps:3, format:'5×3', context:benchCtx}}))
+    };
+    assert(ctx.athleteMovementRecord('Close-Grip Bench Press') === null,
+      'Un Close-Grip Bench jamais travaille ne trouve PAS l\'enregistrement du Bench Press.');
+    assert(ctx.athleteMovementRecord('Bench Press') !== null,
+      'Et le Bench Press trouve toujours le sien (le repli n\'est pas casse).');
+
+    const cgCtx = ctx.coachBuildMovementContext('Close-Grip Bench Press',
+      {kind:'main', blockTitle:'A. Close-Grip Bench Press', format:'5×3', load:'170-180 lb'});
+    const cg = ctx.guardedSuggestedLoadDecision('Close-Grip Bench Press', '170-180 lb', 3, cgCtx);
+    assert(cg.loadNum < 220,
+      'La suggestion part de la charge du programme, pas des 245 lb du Bench Press (obtenu ' + cg.loadNum + ' lb).');
+
+    // Le sens inverse compte autant : un poids du corps ne doit pas heriter
+    // d'un lest ajoute. docs/CHARGE_PROGRESSION_CONTRACT.md § 2.
+    resetState();
+    ctx.state.athleteState.movements['Weighted Pull-up'] = {ranges:{}, status:'ok',
+      history:[{date:'2026-08-01', load:45, reps:3, rpe:8, status:'success'}]};
+    assert(ctx.athleteMovementRecord('Pull-Up') === null,
+      'Un Pull-Up au poids du corps ne lit pas l\'historique d\'un Weighted Pull-up.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

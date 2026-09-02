@@ -2,6 +2,52 @@
 // Coach Beurt - historique et signaux du moteur de charges.
 // Script global volontaire : pas de ES modules.
 
+// ── Deux ecritures du MEME nom, ou deux mouvements differents ? ───────────
+// Dernier recours de athleteMovementRecord() : quand un mouvement n'a aucun
+// enregistrement a son nom, faut-il lire celui d'un nom voisin ? Le repli
+// existe pour rattraper une variante d'ECRITURE (tiret, casse, pluriel, ordre
+// des mots), jamais une variante de MOUVEMENT.
+//
+// Il comparait des sous-chaines, dans les deux sens, avec pour seul garde-fou
+// une longueur minimale sur le nom DEMANDE. Le nom STOCKE, lui, pouvait etre
+// aussi court qu'on veut — et « close grip bench press » contient « bench
+// press ». Mesure sur le catalogue (188 mouvements) : 137 paires se lisaient
+// l'une pour l'autre, dont Bench Press -> Close-Grip Bench Press, Deadlift ->
+// Romanian / Stiff-Leg / Sumo, Row -> Pendlay / Barbell / Seated Cable, et
+// Pull-Up -> Weighted Pull-up — ce dernier en contradiction directe avec
+// docs/CHARGE_PROGRESSION_CONTRACT.md § 2 (« poids du corps ≠ charge ajoutee »).
+//
+// Effet mesure bout en bout : un historique de Bench Press a 245 lb x 3 @ RPE 8
+// faisait proposer 245 lb pour un Close-Grip Bench Press jamais travaille, avec
+// une raison qui disait « RPE 8 sur la derniere serie » comme si la seance
+// etait la sienne. Un prise serree vaut ~10 % de moins qu'un couche large : la
+// confusion partait du mauvais cote.
+//
+// La regle est maintenant : MEMES MOTS, quel que soit leur ordre et leur
+// ponctuation. Un mot en plus est un mouvement different. Ce qui reste couvert
+// — « Band Pull-Apart » / « Band Pull Apart », « Hammer Curl » / « Hammer
+// Curls », « False Grip Ring Row » / « Ring Row False Grip ». Ce qui ne l'est
+// plus — tout ce qui AJOUTE un qualificatif.
+//
+// Les ponts d'historique voulus (« Power Clean technique », « Lateral Raise
+// cable bas »...) ne passent pas par ici : ils sont declares un par un dans
+// canonicalMovementLabel(), qui pose comme regle « aucun mapping partiel entre
+// deux options ». Ce repli n'avait pas a en refaire un, en plus large.
+function coachMovementNameTokens(text){
+  var n=coachNormalizeMoveText(text);
+  if(!n)return '';
+  var words=n.split(/\s+/).filter(Boolean).map(function(w){
+    // Pluriel simple. Un mot deja termine par « ss » (press, cross) n'en a pas.
+    return (w.length>3&&w.charAt(w.length-1)==='s'&&w.slice(-2)!=='ss')?w.slice(0,-1):w;
+  });
+  return words.length?words.sort().join(' '):'';
+}
+
+function coachSameMovementSpelling(a,b){
+  var ta=coachMovementNameTokens(a);
+  return !!ta&&ta===coachMovementNameTokens(b);
+}
+
 function ensureAthleteState(){
   if(!state.athleteState)state.athleteState={movements:{},updatedAt:null,version:null};
   if(!state.athleteState.movements)state.athleteState.movements={};
@@ -31,12 +77,10 @@ function athleteMovementRecord(label){
     }
   }
   for(var k=0;k<keys.length;k++){
-    var keyNorm=coachNormalizeMoveText(keys[k]);
     for(var w=0;w<wantedList.length;w++){
-      var want=wantedList[w];
-      if(want.length<8)continue;
+      if(!coachSameMovementSpelling(keys[k],wantedList[w]))continue;
       if(!coachEquipmentCompatibleForAlias(label,keys[k]))continue;
-      if(keyNorm.indexOf(want)>=0 || want.indexOf(keyNorm)>=0)return map[keys[k]];
+      return map[keys[k]];
     }
   }
   return null;

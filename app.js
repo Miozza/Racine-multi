@@ -1,5 +1,5 @@
-// Racine V5.0.1 — la mémoire ne dépend plus du titre d'un bloc
-var APP_VERSION = "V5.0.1";
+// Racine V5.0.2 — un qualificatif en plus est un autre mouvement
+var APP_VERSION = "V5.0.2";
 
 // Architecture stable
 // programs/*.js = plan prévu

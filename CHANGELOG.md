@@ -1,3 +1,50 @@
+## V5.0.2 — Un qualificatif en plus est un autre mouvement
+
+**Ce que l'athlète voit changer**
+
+- **Un mouvement jamais travaillé n'hérite plus de l'historique d'un nom voisin.**
+  `athleteMovementRecord()` cherche un nom proche quand un mouvement n'a aucun
+  enregistrement à lui. Ce repli sert à rattraper une variante d'écriture — tiret, casse,
+  pluriel, ordre des mots. Il comparait des sous-chaînes dans les deux sens, avec pour seul
+  garde-fou une longueur minimale sur le nom *demandé* ; le nom *stocké* pouvait être aussi
+  court qu'on veut. « close grip bench press » contient « bench press ».
+- **Mesuré sur le catalogue (188 mouvements) : 137 paires se lisaient l'une pour l'autre.**
+  `Bench Press` → `Close-Grip Bench Press` et `Decline Bench Press` ; `Deadlift` →
+  `Romanian / Stiff-Leg / Clean / Sumo Deadlift High Pull` ; `Row` → `Pendlay Row`,
+  `Barbell Row`, `Seated Cable Row`, `One-Arm DB Row` ; `Back Squat` → `Pause Back Squat` ;
+  `Pull-Up` → `Weighted Pull-up`, en contradiction directe avec
+  `docs/CHARGE_PROGRESSION_CONTRACT.md` § 2 (« poids du corps ≠ charge ajoutée »).
+- **Effet mesuré bout en bout.** Un historique de Bench Press à 245 lb × 3 @ RPE 8 faisait
+  proposer 245 lb pour un Close-Grip Bench Press jamais travaillé, avec une raison qui disait
+  « RPE 8 sur la dernière série » comme si la séance était la sienne. Un prise serrée vaut
+  ~10 % de moins qu'un couché large : la confusion partait du mauvais côté.
+
+**La règle**
+
+Mêmes mots, quel que soit leur ordre et leur ponctuation. Un mot en plus est un mouvement
+différent. Restent couverts : `Band Pull-Apart` / `Band Pull Apart`, `Push-Up` / `Push-up`,
+`Hammer Curl` / `Hammer Curls`, `False Grip Ring Row` / `Ring Row False Grip`.
+
+Le repli ne se déclenche de toute façon que si le mouvement demandé n'a **aucun** historique
+propre. Une seule séance loggée, et il lit la sienne — dans les deux sens, vérifié.
+
+**Ce qui n'a pas été touché**
+
+36 rapprochements subsistent, tous **déclarés explicitement** dans
+`coachMovementLookupLabels()` et `canonicalMovementLabel()` : `Step-Up` ≡ `DB Step-up`,
+`Ring Row` ≡ `Ring Row Strict`, `Transitions` ≡ `Wall Ball to Burpee Transitions`, `Wall Slide`
+≡ `Wall Slide Lift-off`… Ce sont des ponts d'historique écrits à la main, sur décision.
+Certains mériteraient d'être rediscutés — `Step-Up` ≡ `DB Step-up` mêle poids du corps et
+haltère — mais les modifier déplacerait de l'historique déjà stocké. Ça se décide, ça ne se
+corrige pas au passage.
+
+**Garde-fous**
+
+`dev/charge_engine_checks.js` : les quatre familles de variantes d'écriture restent liées ;
+sept paires à qualificatif (`Close-Grip`, `Decline`, `Pause`, `Romanian`, `Pendlay`,
+`Weighted Pull-up`, `Weighted Dips`) sont séparées ; et le chemin réel du moteur est vérifié —
+un Close-Grip jamais travaillé part de la charge du programme, pas des 245 lb du Bench Press.
+
 ## V5.0.1 — La mémoire ne dépend plus du titre d'un bloc
 
 Trois corrections tirées d'une trace de cycle réelle de `phase2_fable5`
