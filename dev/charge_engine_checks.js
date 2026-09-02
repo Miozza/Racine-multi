@@ -1444,6 +1444,40 @@ try {
     resetState();
   }
 
+  // ── Barbell RDL : un TOTAL a la barre, pas une charge par main ───────────
+  // Ajout demande par l'athlete : la charniere du lundi passe des halteres a la
+  // barre. Le piege est le repere de charge — coachDefaultLoadSeedForMovement()
+  // ne teste pas le nom, il CONCATENE tous les alias du mouvement et cherche
+  // dans la chaine. Les alias de « DB RDL » contiennent l'ancien nom ambigu
+  // « DB RDL ou Barbell RDL » : un motif /barbell rdl/ place trop haut donnait
+  // donc 170 lb PAR MAIN au DB RDL. L'ordre dans defaultLoadSeeds est le
+  // correctif, ce test est ce qui l'empeche de repartir.
+  {
+    resetState();
+    assert(ctx.canonicalMovementLabel('Barbell RDL') === 'Barbell RDL',
+      'Barbell RDL est un mouvement a part entiere, pas un alias.');
+    assert(ctx.canonicalMovementLabel('DB RDL ou Barbell RDL') === 'DB RDL',
+      'L\'ancien nom ambigu reste rattache au DB RDL : son historique ne bouge pas.');
+    assert(ctx.coachMovementEquipmentFamily('Barbell RDL') === 'barbell'
+        && ctx.coachMovementEquipmentFamily('DB RDL') === 'db',
+      'Deux familles d\'equipement distinctes : l\'arrondi et l\'echelle ne sont pas les memes.');
+
+    const seedBarre = ctx.coachDefaultLoadSeedForMovement('Barbell RDL', 10);
+    const seedDb = ctx.coachDefaultLoadSeedForMovement('DB RDL', 10);
+    assert(seedBarre === 170, 'Le repere du Barbell RDL est 170 lb, un total a la barre (obtenu ' + seedBarre + ').');
+    assert(seedDb === 60, 'Et le DB RDL garde son repere par main : 60 lb (obtenu ' + seedDb + ').');
+
+    assert(ctx.coachSameMovementSpelling('Barbell RDL', 'DB RDL') === false,
+      'Barbell RDL et DB RDL ne sont pas deux ecritures du meme nom.');
+    ctx.state.athleteState.movements['DB RDL'] = {ranges:{}, status:'ok',
+      history:[{date:'2026-08-17', load:85, reps:10, rpe:8, status:'success'}]};
+    assert(ctx.athleteMovementRecord('Barbell RDL') === null,
+      'Un Barbell RDL n\'herite pas des 85 lb PAR MAIN du DB RDL : 85 a la barre serait absurde.');
+    assert(ctx.athleteMovementRecord('DB RDL') !== null,
+      'Et le DB RDL garde tout son historique.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

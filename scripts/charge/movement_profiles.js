@@ -150,6 +150,31 @@
       }
     },
     {
+      // AVANT la ligne DB RDL. Une charniere a la barre ne progresse pas comme
+      // une charniere aux halteres : le pas de 5 lb est libre, la ou les
+      // halteres imposent des sauts de 5 a 10 lb PAR MAIN. Le vocabulaire de
+      // l'entree DB parle de « progression limitee par les halteres
+      // disponibles » — sur une barre, c'est faux.
+      match:/barbell\s*rdl/i,
+      profile:{
+        family:'hinge_barbell',
+        sensitivity:'medium',
+        progressionStyle:'confirm_then_step',
+        confidenceBias:0,
+        ambitionBias:-3,
+        defaultDecision:'validate',
+        vocabulary:{
+          base:'charnière hanche à la barre',
+          progression:'validation avant hausse, par paliers de barre',
+          risk:'le bas du dos paie une charge montée trop vite'
+        },
+        explain:{
+          validation:'Une charge de charnière lourde doit être confirmée avant de monter.',
+          next:'Je veux voir la charnière tenue dos neutre avant de proposer plus.'
+        }
+      }
+    },
+    {
       match:/db\s*rdl|romanian/i,
       profile:{
         family:'hinge_db',

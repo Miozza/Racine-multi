@@ -101,6 +101,7 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   // ── Fort trafic catalogue client ─────────────────────────────────────────
   "Hip Thrust": "hg9MMvd-MY8",                // Functional Bodybuilding (Barbell Hip Thrust)
   "DB RDL": "UsOjCcxSJaI",                    // Functional Bodybuilding (Dumbbell Romanian Deadlift)
+  "Barbell RDL": "_U9KjljQyd0",               // Catalyst Athletics (fallback) — même geste que "Romanian Deadlift", à la barre
   "Push Press": "yklSQG1_Ovc",                // Catalyst Athletics (Exercise Library)
   "KB Swing": "KkYOW3jDhoM",                  // Marcus Filly (Russian Kettlebell Swing)
   "Hanging Knee Raise": "RD_A-Z15ER4",        // Renaissance Periodization (fallback)

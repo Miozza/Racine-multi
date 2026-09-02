@@ -1,8 +1,33 @@
-# ETAT ACTUEL — V5.0.2
+# ETAT ACTUEL — V5.0.3
 
-Version actuelle : V5.0.2
+Version actuelle : V5.0.3
 
 ## État courant
+
+### Barbell RDL dans la bibliothèque
+
+La charnière postérieure du lundi de `Phase 2 — Fable 5` passe des haltères à la
+barre, à la demande de l'athlète : plus de charge disponible, et plus pratique à
+charger. `Barbell RDL` est un **mouvement à part entière**, pas un alias du
+`DB RDL` — un total à la barre et une charge par main ne sont pas la même échelle,
+et les lier ferait exactement ce que `docs/CHARGE_PROGRESSION_CONTRACT.md` § 2
+interdit. L'historique du DB RDL reste intact sous son nom ; le Barbell RDL part
+de son propre repère, **170 lb**, l'équivalent des 2 × 85 lb travaillés aux
+haltères.
+
+Le mouvement est déclaré partout où le moteur en a besoin : repère de charge
+(`defaultLoadSeeds`), libellé canonique, famille d'équipement `barbell` (pas de
+pas de 5 lb par main), profil Brain `hinge_barbell` — la charnière aux haltères
+porte un vocabulaire de « progression limitée par les haltères disponibles » qui
+est faux sur une barre —, sensibilité, export IA et lien vidéo.
+
+Un piège mérite d'être noté, parce qu'il se re-tendra :
+`coachDefaultLoadSeedForMovement()` ne teste pas le nom du mouvement, il
+**concatène tous ses alias** et cherche dans la chaîne entière. Les alias de
+`DB RDL` contiennent l'ancien nom ambigu `DB RDL ou Barbell RDL`. Un motif
+`/barbell rdl/` placé au-dessus de `/db rdl/` capturait donc le DB RDL et lui
+donnait 170 lb **par main** au lieu de 60. L'ordre dans `defaultLoadSeeds` est le
+correctif ; un test le tient.
 
 ### La mémoire d'un mouvement ne se confond plus avec celle d'un voisin
 

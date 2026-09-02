@@ -72,7 +72,11 @@ function canonicalMovementLabel(nameOrKey){
   if(n.indexOf("trap 3 raise")>=0)return "Trap-3 Raise";
   if(n.indexOf("cable band hip abduction")>=0 || n.indexOf("cable band abduction")>=0 || n.indexOf("cable ou band hip abduction")>=0 || n.indexOf("cable hip abduction")>=0)return "Cable Hip Abduction";
   if(n.indexOf("db reverse lunge ou step up")>=0 || n.indexOf("db reverse lunge")>=0)return "DB Reverse Lunge";
+  // L'ancien nom ambigu « DB RDL ou Barbell RDL » se resout AVANT « barbell
+  // rdl » : il contient les deux, et l'historique deja logge dessous est du
+  // travail aux halteres. Inverser ces deux lignes deplacerait ces seances.
   if(n.indexOf("db rdl ou barbell rdl")>=0 || n.indexOf("db rdl")>=0)return "DB RDL";
+  if(n.indexOf("barbell rdl")>=0)return "Barbell RDL";
   if(n.indexOf("bulgarian split squat")>=0)return "Bulgarian Split Squat";
   if(n.indexOf("hip thrust leger")>=0 || n.indexOf("hip thrust pump")>=0 || n.indexOf("hip thrust tempo")>=0)return "Hip Thrust";
   if(n.indexOf("hip thrust")>=0)return "Hip Thrust";
@@ -172,6 +176,11 @@ function coachMovementLookupLabels(nameOrKey){
     add("DB RDL");
     add("DB RDL ou Barbell RDL");
   }
+  // Barbell RDL : mouvement a part entiere, pas un alias du DB RDL. Un total a
+  // la barre et une charge par main ne sont pas la meme echelle — les lier
+  // ferait exactement ce que le contrat de progression interdit (§ 2,
+  // « DB ≠ barre »). Aucun add() vers "DB RDL" ici, volontairement.
+  if(/barbell rdl/.test(n))add("Barbell RDL");
   if(/hip thrust/.test(n)){
     add("Hip Thrust");
     add("Hip Thrust Pump");

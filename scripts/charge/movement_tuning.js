@@ -480,6 +480,17 @@
       {pattern:/single leg hip thrust/, load:95},
       {pattern:/hip thrust/, load:225},
       {pattern:/db rdl|romanian deadlift|stiff leg deadlift/, load:60},
+      // Barbell RDL APRES la ligne haltere, et ce n'est pas cosmetique.
+      // coachDefaultLoadSeedForMovement() ne teste pas le nom : il CONCATENE
+      // tous les alias du mouvement et cherche dans la chaine entiere. Or les
+      // alias de « DB RDL » contiennent l'ancien nom ambigu « DB RDL ou
+      // Barbell RDL ». Place au-dessus, ce motif capturait donc le DB RDL et
+      // lui donnait 170 lb PAR MAIN au lieu de 60. En dessous, /db rdl/ gagne
+      // pour le mouvement aux halteres, et « Barbell RDL » — dont les alias ne
+      // portent aucun « db rdl » — tombe bien ici.
+      // 170 lb est un TOTAL a la barre, pas une charge par main : c'est toute
+      // la raison d'etre d'un nom distinct.
+      {pattern:/barbell rdl/, load:170},
       {pattern:/goblet/, load:70},
       {pattern:/front foot elevated|split squat|bulgarian/, load:40},
       {pattern:/pull through/, load:70},

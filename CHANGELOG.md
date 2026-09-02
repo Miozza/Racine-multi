@@ -1,3 +1,38 @@
+## V5.0.3 — Barbell RDL entre dans la bibliothèque
+
+**Ce que l'athlète voit changer**
+
+- **La charnière du lundi passe à la barre.** Dans `Phase 2 — Fable 5`, le `DB RDL`
+  devient `Barbell RDL` : plus de charge disponible, et plus pratique à charger. Les huit
+  semaines suivent la même forme qu'avant (allégée la semaine du RM), ancrées sur 170 lb —
+  170-180 · 180 · 165 · 170-180 · 180 · 165 · 120 (deload) · 120 (tests).
+- **C'est un mouvement à part entière, pas un alias.** Un total à la barre et une charge
+  par main ne sont pas la même échelle : les lier ferait exactement ce que
+  `docs/CHARGE_PROGRESSION_CONTRACT.md` § 2 interdit (« DB ≠ barre »). L'historique du
+  DB RDL reste intact sous son nom et ne part pas dans le nouveau ; le Barbell RDL démarre
+  de son propre repère, **170 lb**, l'équivalent des 2 × 85 lb réellement travaillés.
+- **Déclaré partout où le moteur en a besoin** : repère de charge (`defaultLoadSeeds`),
+  libellé canonique, alias de recherche, famille d'équipement `barbell` (arrondi au pas de
+  barre, pas au cran d'haltère), profil Brain `hinge_barbell`, sensibilité, export IA et
+  lien vidéo.
+
+**Un piège documenté, parce qu'il se re-tendra**
+
+`coachDefaultLoadSeedForMovement()` ne teste pas le nom du mouvement : il **concatène tous
+ses alias** et cherche dans la chaîne entière. Or les alias de `DB RDL` contiennent
+l'ancien nom ambigu `DB RDL ou Barbell RDL`. Un motif `/barbell rdl/` placé au-dessus de
+`/db rdl/` capturait donc le DB RDL et lui donnait 170 lb **par main** au lieu de 60.
+L'ordre dans `defaultLoadSeeds` est le correctif. Même logique dans
+`canonicalMovementLabel()` : l'ancien nom ambigu se résout avant `barbell rdl`, sans quoi
+les séances déjà loggées dessous changeraient de mouvement.
+
+**Garde-fous**
+
+`dev/charge_engine_checks.js` : les deux repères restent séparés (170 à la barre, 60 par
+main), les deux familles d'équipement aussi, l'ancien nom ambigu reste rattaché au DB RDL,
+et un Barbell RDL n'hérite jamais des 85 lb par main du DB RDL — 85 lb à la barre serait
+absurde.
+
 ## V5.0.2 — Un qualificatif en plus est un autre mouvement
 
 **Ce que l'athlète voit changer**
