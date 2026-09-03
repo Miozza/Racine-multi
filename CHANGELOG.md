@@ -1,3 +1,58 @@
+## V5.0.5 — Le conditionnement non fait entre dans le journal
+
+**Ce que l'athlète voit changer**
+
+- **Le metcon de fin peut être déclaré non fait, avec son motif.** Un lien discret en bas de la
+  carte WOD de l'écran Résultats — « Conditionnement non fait » — déplie trois motifs : manque de
+  temps, chaleur extrême, blessure. Réversible d'un tap (« Finalement je l'ai fait »).
+- **Pourquoi ça manquait.** Il n'y avait que deux issues, et les deux mentent au journal : écrire
+  « pas fait » dans la note, qui est du texte libre que rien ne relit, ou ne rien saisir, ce qui
+  est indistinguable d'une séance jamais ouverte. L'historique ne *savait* pas.
+- **Discret volontairement**, parce que c'est une porte de sortie rare : un lien texte en retrait,
+  aucune chrome de bouton, aucune couleur d'alerte, et les motifs ne se déplient qu'après une
+  première intention. La carte annulée passe en retrait — les champs restent visibles, pour que
+  l'athlète voie ce qu'il annule, mais ne sont plus saisissables.
+- **Aucun jugement.** Trois motifs, aucun classement, aucune alerte, aucun effet sur la
+  progression. Sauter un metcon parce qu'il fait 34 °C est une décision d'athlète.
+- **L'historique et le résumé de séance le disent** — même libellé dans les deux, « Non fait —
+  <motif> ».
+
+**La règle qui compte**
+
+Une ligne annulée ne porte **aucune donnée de performance** : ni RPE, ni rounds, ni temps, ni
+splits. C'est ce qui la rend inoffensive pour le reste du moteur — les moyennes de fatigue
+(`scripts/season/suggest.js`, la collecte ML de `scripts/session/save.js`) lisent le champ `rpe`
+de **chaque** ligne sans distinction de nature. Un RPE laissé sur un metcon non fait entrerait
+dans la moyenne avec l'effort d'une séance qui n'a pas eu lieu.
+
+Le nettoyage est fait à la **collecte**, et après le cache de séance : l'athlète peut avoir saisi
+un RPE avant de changer d'avis, et c'est ce cache qui gagne partout ailleurs.
+
+La note, elle, survit : « genou droit, arrêté après 2 rounds » est exactement ce qu'un motif de
+trois mots ne peut pas dire.
+
+**Données**
+
+Deux champs **ajoutés** à la ligne de résultat, `skipped` et `skipReason`, en texte ordinaire
+comme le reste du journal — donc exportables et réimportables. Aucune clé renommée, aucun format
+changé, aucune migration. Un export d'une version antérieure reste importable ; une version
+antérieure qui relirait un export récent ignore deux clés qu'elle ne connaît pas. Une ligne
+annulée sans motif (import partiel) se lit encore, et le dit, sans motif inventé.
+
+**Domaine**
+
+`scripts/session/wod_skip.js`, porte publique `window.CoachWodSkip`. Même patron que
+`scripts/session/amrap_rounds.js` : état en mémoire vive le temps d'une séance, aucune clé de
+stockage créée, et ce qui survit part par la ligne du WOD.
+
+**Garde-fous**
+
+`dev/wod_skip_checks.js` : les trois motifs et le refus d'un motif inventé, la réversibilité, la
+règle « aucune donnée de performance » champ par champ, la survie de la note, le refus d'un
+marqueur vide ou « 0 », la relecture depuis le journal seul (le chemin de l'historique après un
+import), la compatibilité ascendante, la discrétion de la surface vérifiée sur le CSS, et l'ordre
+du nettoyage après le cache.
+
 ## V5.0.4 — Un lest sur le poids du corps n'emprunte le ratio de personne
 
 **Ce que l'athlète voit changer**

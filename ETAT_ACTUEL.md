@@ -1,8 +1,47 @@
-# ETAT ACTUEL — V5.0.4
+# ETAT ACTUEL — V5.0.5
 
-Version actuelle : V5.0.4
+Version actuelle : V5.0.5
 
 ## État courant
+
+### Le conditionnement non fait entre dans le journal
+
+Le metcon de fin sauté est un cas réel et récurrent : il manque du temps, il fait
+trop chaud, quelque chose fait mal. L'athlète n'avait que deux issues, et les deux
+mentent au journal — écrire « pas fait » dans la note, qui est du texte libre que
+rien ne relit, ou ne rien saisir, ce qui est indistinguable d'une séance jamais
+ouverte. Dans les deux cas l'historique ne **savait** pas.
+
+Un lien discret en bas de la carte WOD de l'écran Résultats — « Conditionnement
+non fait » — déplie trois motifs : **manque de temps**, **chaleur extrême**,
+**blessure**. La ligne de résultat existe alors, dit qu'elle n'a pas été faite,
+et dit pourquoi. Réversible : « Finalement je l'ai fait » remet tout en place.
+
+Volontairement discret, parce que c'est une porte de sortie rare : un lien texte
+en retrait, aucune chrome de bouton, aucune couleur d'alerte, et les motifs ne se
+déplient qu'après une première intention. Aucun jugement non plus — sauter un
+metcon parce qu'il fait 34 °C est une décision d'athlète, pas un échec à
+signaler.
+
+**La règle qui compte : une ligne annulée ne porte aucune donnée de
+performance.** Pas de RPE, pas de rounds, pas de temps, pas de splits. C'est ce
+qui la rend inoffensive pour le reste du moteur : les moyennes de fatigue
+(`scripts/season/suggest.js`, la collecte ML de `scripts/session/save.js`) lisent
+le champ `rpe` de **chaque** ligne sans distinction de nature. Un RPE laissé sur
+un metcon non fait entrerait donc dans la moyenne avec l'effort d'une séance qui
+n'a pas eu lieu. Le nettoyage est fait à la **collecte**, après le cache de
+séance : l'athlète peut avoir saisi un RPE avant de changer d'avis.
+
+La note, elle, survit — « genou droit, arrêté après 2 rounds » est exactement ce
+qu'un motif de trois mots ne peut pas dire.
+
+Deux champs **ajoutés** à la ligne de résultat, `skipped` et `skipReason`, en
+texte ordinaire comme le reste du journal : donc exportables et réimportables,
+sans clé renommée et sans migration. Un export d'une version antérieure reste
+importable ; une version antérieure qui relirait un export récent ignore deux
+clés qu'elle ne connaît pas.
+
+Domaine : `scripts/session/wod_skip.js`, porte publique `window.CoachWodSkip`.
 
 ### Un lest sur le poids du corps n'emprunte le ratio de personne
 

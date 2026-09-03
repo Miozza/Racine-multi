@@ -76,6 +76,12 @@
 
     Object.keys(ownResults(results)).forEach(function(key){
       var r = results[key];
+      // Conditionnement annulé : dit avant tout le reste, et sans RPE — la
+      // ligne n'en porte pas, par construction (scripts/session/wod_skip.js).
+      if(r && window.CoachWodSkip && CoachWodSkip.rowIsSkipped(r)){
+        summary.lines.push(movementName(key, helpers) + ' : ' + CoachWodSkip.rowLabel(r));
+        return;
+      }
       if(r && r.isWod){
         var wodResult = r.result || r.note || '';
         if(wodResult) summary.lines.push(movementName(key, helpers) + ' : ' + wodResult + (r.rpe ? ' | RPE ' + r.rpe : ''));

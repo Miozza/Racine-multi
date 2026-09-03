@@ -294,6 +294,10 @@ function renderSessionEntry(){
       }
 
       wodInner += '<div class="wod-result-preview" id="wod_preview_'+item.key+'">Résultat prêt</div>';
+      // Porte de sortie rare : le conditionnement non fait, avec son motif.
+      // Toute la logique vit dans scripts/session/wod_skip.js ; si le module
+      // manque, la carte WOD reste saisissable exactement comme avant.
+      try{ if(window.CoachWodSkip) wodInner += CoachWodSkip.controlHtml(item.key); }catch(e){}
       card.innerHTML += wodInner;
 
       (function(it){
@@ -468,6 +472,22 @@ function renderSessionEntry(){
           });
         }
 
+        // Annulation du conditionnement. L'apercu devient l'etat d'annulation
+        // et les champs de performance passent hors saisie — ils restent
+        // visibles pour que l'athlete voie ce qu'il annule.
+        try{
+          if(window.CoachWodSkip){
+            CoachWodSkip.bind(it.key, card, function(off){
+              var preview = document.getElementById('wod_preview_'+it.key);
+              if(off){
+                if(preview) preview.innerHTML = '<strong style="color:var(--muted)">NON FAIT</strong> · '+CoachWodSkip.reasonLabel(it.key);
+              }else{
+                updatePreview();
+              }
+            });
+          }
+        }catch(e){ /* la carte WOD reste saisissable */ }
+
         updatePreview();
       })(item);
 
@@ -526,6 +546,14 @@ function collectSessionResults(){
       results[key][field]=val;
     });
   });
+
+  // Conditionnement annulé : la ligne existe et dit pourquoi, mais ne porte
+  // AUCUNE donnée de performance. En dernier, après le cache : l'athlète peut
+  // avoir saisi un RPE puis changé d'avis, et c'est ce cache-là qui gagne
+  // partout ailleurs. Un RPE laissé sur un metcon non fait entrerait dans les
+  // moyennes de fatigue (scripts/season/suggest.js, la collecte ML de
+  // scripts/session/save.js) qui lisent `rpe` sans distinction de nature.
+  try{ if(window.CoachWodSkip) CoachWodSkip.stripPerformanceFields(results); }catch(e){}
 
   return results;
 }
