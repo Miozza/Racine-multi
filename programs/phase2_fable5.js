@@ -59,7 +59,7 @@ function fable5Plan(week){
     1: {
       label:"S1 Rotation A", note:"RPE 7. Installer les variations proprement.", wodNote:"modéré et propre",
       monMain:"Pause Back Squat", monMainFormat:"5×3", monMainLoad:"205-215 lb", monMainNote:"Pause 2 sec au fond, remontée explosive. Zéro rebond, dos verrouillé.",
-      monHinge:"3×10", monHingeLoad:"65-70 lb / main", monCore:"3×8", monWod:"AMRAP 8 : 10 cal Bike + 10 Goblet Squat + 8 KB Swing.",
+      monHinge:"3×10", monHingeLoad:"170-180 lb", monCore:"3×8", monWod:"AMRAP 8 : 10 cal Bike + 10 Goblet Squat + 8 KB Swing.",
       tueMain:"Weighted Pull-up", tueMainFormat:"5×3", tueMainLoad:"75%", tueRow:"4×10/côté", tueRowLoad:"70-75 lb", tueRear:"4×15-20", tueRearLoad:"15-20 lb", tueFace:"3×15-20", tueFaceLoad:"60-70 lb", tueWod:"EMOM 8 : min 1 = 12 cal Row ; min 2 = 10 Ring Row.",
       thuMain:"Strict Press", thuMainFormat:"5×3", thuMainLoad:"115-125 lb", thuSecond:"DB Shoulder Press", thuSecondFormat:"3×10", thuSecondLoad:"40-45 lb / main", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 Push-Up + 10 cal Ski + 12 Sit-Up.",
       friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"145-155 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 Wall Ball + 10 cal Row + 8 Burpees."
@@ -67,7 +67,7 @@ function fable5Plan(week){
     2: {
       label:"S2 Rotation A+", note:"RPE 8. Mêmes variations, plus lourd.", wodNote:"contrôlé",
       monMain:"Pause Back Squat", monMainFormat:"4×3", monMainLoad:"225-235 lb", monMainNote:"Pause 2 sec. Si le dos arrondit à la remontée, la charge est trop haute.",
-      monHinge:"3×10", monHingeLoad:"70 lb / main", monCore:"3×8", monWod:"AMRAP 8 : 12 cal Row + 10 Box Step-Up.",
+      monHinge:"3×10", monHingeLoad:"180 lb", monCore:"3×8", monWod:"AMRAP 8 : 12 cal Row + 10 Box Step-Up.",
       tueMain:"Weighted Pull-up", tueMainFormat:"4×3", tueMainLoad:"83%", tueRow:"4×10/côté", tueRowLoad:"75-80 lb", tueRear:"4×15-20", tueRearLoad:"20 lb", tueFace:"4×15-20", tueFaceLoad:"70 lb", tueWod:"EMOM 8 : min 1 = 10 cal Ski ; min 2 = 8 Ring Row + 5 Scap Pull-Up.",
       thuMain:"Strict Press", thuMainFormat:"4×3", thuMainLoad:"125-135 lb", thuSecond:"Incline DB Press", thuSecondFormat:"3×10", thuSecondLoad:"55-60 lb / main", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 DB Push Press + 10 cal Bike.",
       friClean:"EMOM 9 : 2 Power Clean", friCleanLoad:"150-160 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 KB Swing + 10 cal Bike + 10 Walking Lunge."
@@ -75,7 +75,7 @@ function fable5Plan(week){
     3: {
       label:"S3 Rotation A max", note:"3RM propres. RPE 9 max, jamais d'échec.", wodNote:"court et propre",
       monMain:"Pause Back Squat", monMainFormat:"montée vers 3RM", monMainLoad:"250-260 lb", monMainNote:"3RM avec pause. Aucune bataille : si la vitesse meurt, c'est fini. Ce chiffre devient ta référence de variation.",
-      monHinge:"2×10", monHingeLoad:"65 lb / main", monCore:"3×8", monWod:"AMRAP 6 : 10 cal Bike + 10 Air Squat.",
+      monHinge:"2×10", monHingeLoad:"165 lb", monCore:"3×8", monWod:"AMRAP 6 : 10 cal Bike + 10 Air Squat.",
       tueMain:"Weighted Pull-up", tueMainFormat:"montée vers 3RM", tueMainLoad:"92%", tueRow:"3×10/côté", tueRowLoad:"75 lb", tueRear:"3×20", tueRearLoad:"20 lb", tueFace:"3×20", tueFaceLoad:"70 lb", tueWod:"EMOM 6 : min 1 = 10 cal Row ; min 2 = 8 Ring Row.",
       thuMain:"Strict Press", thuMainFormat:"montée vers 3RM", thuMainLoad:"140-150 lb", thuSecond:"DB Shoulder Press", thuSecondFormat:"2×10", thuSecondLoad:"40 lb / main", thuLat:"3×15", thuLatLoad:"20 lb", thuWod:"AMRAP 6 : 6 Push-Up + 10 cal Ski.",
       friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"155-165 lb", friSpeed:"5×2", friSpeedLoad:"55-60%", friWod:"AMRAP 8 : 8 Wall Ball + 10 cal Row."
@@ -83,7 +83,7 @@ function fable5Plan(week){
     4: {
       label:"S4 Rotation B", note:"Nouvelles variations. RPE 7, réapprendre proprement.", wodNote:"modéré",
       monMain:"Box Squat", monMainFormat:"5×3", monMainLoad:"235-245 lb", monMainNote:"Box à hauteur parallèle. Assis contrôlé, tibias verticaux, remontée explosive. Protège le dos en limitant la profondeur sous fatigue.",
-      monHinge:"3×10", monHingeLoad:"65-70 lb / main", monCore:"3×8", monWod:"AMRAP 8 : 10 cal Row + 8 Box Jump.",
+      monHinge:"3×10", monHingeLoad:"170-180 lb", monCore:"3×8", monWod:"AMRAP 8 : 10 cal Row + 8 Box Jump.",
       tueMain:"Pendlay Row", tueMainFormat:"5×5", tueMainLoad:"135-145 lb", tueRow:"4×8", tueRowLoad:"poids du corps", tueRear:"4×15-20", tueRearLoad:"15-20 lb", tueFace:"3×15-20", tueFaceLoad:"60-70 lb", tueWod:"EMOM 8 : min 1 = 12 cal Row ; min 2 = 6 Pull-Up.",
       thuMain:"Close-Grip Bench Press", thuMainFormat:"5×3", thuMainLoad:"170-180 lb", thuSecond:"Strict Press", thuSecondFormat:"3×6", thuSecondLoad:"105-115 lb", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 DB Bench Press + 10 KB Swing.",
       friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"145-155 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 cal Bike + 10 Goblet Squat + 8 Burpees."
@@ -91,7 +91,7 @@ function fable5Plan(week){
     5: {
       label:"S5 Rotation B+", note:"RPE 8. Vitesse de barre comme juge.", wodNote:"contrôlé",
       monMain:"Box Squat", monMainFormat:"4×3", monMainLoad:"255-265 lb", monMainNote:"Pas d'affaissement sur la box. Si tu t'écrases, réduis.",
-      monHinge:"3×10", monHingeLoad:"70 lb / main", monCore:"3×8", monWod:"AMRAP 8 : 12 cal Bike + 8 Walking Lunge/jambe.",
+      monHinge:"3×10", monHingeLoad:"180 lb", monCore:"3×8", monWod:"AMRAP 8 : 12 cal Bike + 8 Walking Lunge/jambe.",
       tueMain:"Pendlay Row", tueMainFormat:"5×5", tueMainLoad:"145-155 lb", tueRow:"4×8", tueRowLoad:"0-10 lb", tueRear:"4×15-20", tueRearLoad:"20 lb", tueFace:"4×15-20", tueFaceLoad:"70 lb", tueWod:"EMOM 8 : min 1 = 10 cal Ski ; min 2 = 10 Ring Row.",
       thuMain:"Close-Grip Bench Press", thuMainFormat:"4×3", thuMainLoad:"185-195 lb", thuSecond:"Strict Press", thuSecondFormat:"3×6", thuSecondLoad:"110-120 lb", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 DB Push Press + 10 cal Row.",
       friClean:"EMOM 9 : 2 Power Clean", friCleanLoad:"150-160 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 5 Power Clean léger + 10 cal Row + 10 Sit-Up."
@@ -99,7 +99,7 @@ function fable5Plan(week){
     6: {
       label:"S6 Rotation B max", note:"3RM/5RM propres. RPE 9 max, 1 rep en réserve.", wodNote:"court et solide",
       monMain:"Box Squat", monMainFormat:"montée vers 3RM", monMainLoad:"285-295 lb", monMainNote:"3RM box squat. Référence de variation, pas un ego lift.",
-      monHinge:"2×10", monHingeLoad:"65 lb / main", monCore:"3×8", monWod:"AMRAP 6 : 10 cal Row + 10 Air Squat.",
+      monHinge:"2×10", monHingeLoad:"165 lb", monCore:"3×8", monWod:"AMRAP 6 : 10 cal Row + 10 Air Squat.",
       tueMain:"Pendlay Row", tueMainFormat:"montée vers 5RM", tueMainLoad:"165-175 lb", tueRow:"3×8", tueRowLoad:"poids du corps", tueRear:"3×20", tueRearLoad:"20 lb", tueFace:"3×20", tueFaceLoad:"70 lb", tueWod:"EMOM 6 : min 1 = 10 cal Row ; min 2 = 8 Ring Row.",
       thuMain:"Close-Grip Bench Press", thuMainFormat:"montée vers 3RM", thuMainLoad:"205-215 lb", thuSecond:"Strict Press", thuSecondFormat:"2×6", thuSecondLoad:"105-115 lb", thuLat:"3×15", thuLatLoad:"20 lb", thuWod:"AMRAP 6 : 6 Push-Up + 10 cal Bike.",
       friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"155-165 lb", friSpeed:"5×2", friSpeedLoad:"55-60%", friWod:"AMRAP 8 : 8 Wall Ball + 8 cal Row."
@@ -107,7 +107,7 @@ function fable5Plan(week){
     7: {
       label:"S7 Deload", note:"Volume divisé par deux. Mobilité et posture en priorité.", wodNote:"facile, zone 2",
       monMain:"Front Squat", monMainFormat:"3×5", monMainLoad:"135-145 lb", monMainNote:"Léger et propre. Le but est de bouger, pas de charger.",
-      monHinge:"2×10", monHingeLoad:"50 lb / main", monCore:"2×8", monWod:"10 min Bike zone 2, conversation possible.",
+      monHinge:"2×10", monHingeLoad:"120 lb", monCore:"2×8", monWod:"10 min Bike zone 2, conversation possible.",
       tueMain:"Pull-Up", tueMainFormat:"3 séries faciles", tueMainLoad:"poids du corps", tueRow:"2×10/côté", tueRowLoad:"55-60 lb", tueRear:"3×15", tueRearLoad:"15 lb", tueFace:"3×15", tueFaceLoad:"50-60 lb", tueWod:"10 min Row zone 2 + 5 min mobilité thoracique.",
       thuMain:"DB Shoulder Press", thuMainFormat:"3×10", thuMainLoad:"35-40 lb / main", thuSecond:"Push-Up", thuSecondFormat:"3×10", thuSecondLoad:"poids du corps", thuLat:"3×15", thuLatLoad:"15 lb", thuWod:"AMRAP facile 8 : 8 cal Ski + 8 Air Squat + 8 Ring Row.",
       friClean:"EMOM 6 : 2 Power Clean technique", friCleanLoad:"110-120 lb", friSpeed:"4×2", friSpeedLoad:"40-45%", friWod:"10 min pacing facile : Bike + Step-Up + Ring Row."
@@ -115,7 +115,7 @@ function fable5Plan(week){
     8: {
       label:"S8 Tests", note:"Tests des 3 ancres. AMRAP contrôlé, arrêt dès que la technique casse.", wodNote:"aucun metcon lourd",
       monMain:"Back Squat", monMainFormat:"AMRAP @ 85%", monMainLoad:"85%", monMainNote:"TEST ANCRE 1. Échauffement long, puis une seule série AMRAP à 85% de ta capacité mesurée. Stop dès que le dos compense. Le moteur calcule le e1RM.",
-      monHinge:"2×8 léger", monHingeLoad:"50 lb / main", monCore:"2×8", monWod:"8 min Bike zone 2, récupération.",
+      monHinge:"2×8 léger", monHingeLoad:"120 lb", monCore:"2×8", monWod:"8 min Bike zone 2, récupération.",
       tueMain:"Weighted Pull-up", tueMainFormat:"montée vers 3RM test", tueMainLoad:"92%", tueRow:"2×10/côté léger", tueRowLoad:"55 lb", tueRear:"2×15", tueRearLoad:"15 lb", tueFace:"2×15", tueFaceLoad:"50 lb", tueWod:"8 min Row zone 2.",
       thuMain:"Strict Press", thuMainFormat:"AMRAP @ 85%", thuMainLoad:"85%", thuSecond:"Lateral Raise DB", thuSecondFormat:"2×15", thuSecondLoad:"15 lb", thuLat:"2×15", thuLatLoad:"15 lb", thuWod:"8 min Ski ou Bike zone 2.",
       friClean:"Montée optionnelle : Power Clean lourd simple", friCleanLoad:"175-195 lb", friSpeed:"—", friSpeedLoad:"—", friWod:"WOD célébration au choix, 10-12 min, intensité libre. Fin de bloc."
@@ -178,7 +178,7 @@ function fable5Blocks(day, week){
         : "Genou avant qui voyage loin, torse un peu penché. Dernière série à 1-2 reps de l'échec — c'est là que la masse se prend, pas dans le 5×3.")
     ]},
     {time:"10 min", title:"C. Chaîne postérieure", tag:"Protection lombaire", kind:"accessory", exercises:[
-      fable5ExFixed("DB RDL", p.monHinge, p.monHingeLoad, "0:30 avant B2", "Charnière propre, dos neutre, ischios chargés. Le socle de la protection du dos."),
+      fable5ExFixed("Barbell RDL", p.monHinge, p.monHingeLoad, "0:30 avant C2", "Charnière propre, dos neutre, ischios chargés. Barre proche des tibias, genoux à peine fléchis. Le socle de la protection du dos."),
       fable5ExFixed(isDeload || isTest ? "Dead Bug" : "Pallof Press", p.monCore, "bande ou câble léger", "1:00 après B2", "Anti-rotation et anti-extension. Côtes basses, souffle contrôlé.")
     ]},
     {time:isDeload || isTest ? "10 min" : "8 min", title:"D. Metcon", tag:"WOD", kind:"wod", text:p.monWod + " " + p.wodNote + "."},
@@ -245,20 +245,20 @@ window.COACH_BERTIN_PROGRAMS.phase2_fable5.cycleRules = [
   "Vague intra-rotation : RPE 7 → 8 → 9. La semaine 3 de chaque rotation monte vers un RM propre, jamais un échec.",
   "S7 deload obligatoire, S8 tests des 3 ancres : Back Squat, Weighted Pull-up, Strict Press (AMRAP/3RM → e1RM Epley).",
   "Ratio tirage:poussée 2:1 chaque semaine. Le Cuban Press et les Band Pull-Apart ne tournent jamais : socle santé d'épaules.",
-  "Protection lombaire systématique : pause/box squat pour contrôler la profondeur, DB RDL et anti-rotation chaque lundi.",
+  "Protection lombaire systématique : pause/box squat pour contrôler la profondeur, Barbell RDL et anti-rotation chaque lundi.",
   "Chaque variation garde son propre historique de charges. Ne jamais comparer un 3RM pause squat à un 3RM back squat.",
   "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Les tests d'ancre, le Weighted Pull-up et le squat vitesse sont en pourcentage, résolus sur la capacité mesurée.",
   "60 minutes max par séance : warm-up, principal, accessoires utiles, metcon court. Les blocs quadriceps et bras tiennent dans cette enveloppe, en superset.",
   "Volume quadriceps et bras direct : ce sont les deux trous mesurés du bloc. Le mouvement A ne bouge pas — la masse se prend dans les accessoires, à 1-2 reps de l'échec, pas dans le 5×3."
 ];
 window.COACH_BERTIN_PROGRAMS.phase2_fable5.dayIntentions = {
-  lundi: "Effort maximal bas du corps : variation de squat en rotation, volume quadriceps, chaîne postérieure, gainage anti-rotation, metcon court.",
+  lundi: "Effort maximal bas du corps : variation de squat en rotation, volume quadriceps, chaîne postérieure à la barre, gainage anti-rotation, metcon court.",
   mardi: "Tirage lourd + posture : variation de tirage en rotation, volume dorsal 2:1, face pull, 100 band pull-aparts, biceps, metcon court.",
   jeudi: "Effort maximal poussée : variation de press en rotation, poussée support, socle fixe santé d'épaules (Cuban Press), triceps, metcon court.",
   vendredi: "Effort dynamique : Power Clean vitesse en EMOM, squat vitesse, metcon moteur vers janvier 2027."
 };
 window.COACH_BERTIN_PROGRAMS.phase2_fable5.dayMeta = {
-  lundi:   {label:"Lundi",   base:"Squat max effort",  focus:"Pause Back Squat / Box Squat en rotation, Bulgarian Split Squat, DB RDL, Pallof Press, metcon."},
+  lundi:   {label:"Lundi",   base:"Squat max effort",  focus:"Pause Back Squat / Box Squat en rotation, Bulgarian Split Squat, Barbell RDL, Pallof Press, metcon."},
   mardi:   {label:"Mardi",   base:"Tirage + posture",  focus:"Weighted Pull-up / Pendlay Row en rotation, One-Arm DB Row, Face Pull, Band Pull-Apart, Cable Curl, metcon."},
   jeudi:   {label:"Jeudi",   base:"Press max effort",  focus:"Strict Press / Close-Grip Bench en rotation, press support, Cuban Press, Lateral Raise, Overhead Rope Extension, metcon."},
   vendredi:{label:"Vendredi",base:"Effort dynamique",  focus:"Power Clean EMOM vitesse, Back Squat vitesse, metcon moteur."}

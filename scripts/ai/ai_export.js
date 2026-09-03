@@ -262,7 +262,7 @@
   function compactContextReport(text, scope){
     text = str(text);
     var lines = text.split(/\r?\n/);
-    var wanted = /front squat|hip thrust|barbell row|weighted pull|strict press|db shoulder press|db rdl|cable curl|face pull|overhead rope extension|lateral raise|rear delt|power clean/i;
+    var wanted = /front squat|hip thrust|barbell row|weighted pull|strict press|db shoulder press|barbell rdl|db rdl|cable curl|face pull|overhead rope extension|lateral raise|rear delt|power clean/i;
     var byMove = {};
     function addMove(name, load, reps, rpe, suggested){
       name = str(name).replace(/^•\s*/,'').trim();

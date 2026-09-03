@@ -1,5 +1,5 @@
-// Racine V5.0.1 — la mémoire ne dépend plus du titre d'un bloc
-var APP_VERSION = "V5.0.1";
+// Racine V5.0.3 — Barbell RDL entre dans la bibliothèque
+var APP_VERSION = "V5.0.3";
 
 // Architecture stable
 // programs/*.js = plan prévu

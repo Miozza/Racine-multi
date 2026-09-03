@@ -1,3 +1,85 @@
+## V5.0.3 — Barbell RDL entre dans la bibliothèque
+
+**Ce que l'athlète voit changer**
+
+- **La charnière du lundi passe à la barre.** Dans `Phase 2 — Fable 5`, le `DB RDL`
+  devient `Barbell RDL` : plus de charge disponible, et plus pratique à charger. Les huit
+  semaines suivent la même forme qu'avant (allégée la semaine du RM), ancrées sur 170 lb —
+  170-180 · 180 · 165 · 170-180 · 180 · 165 · 120 (deload) · 120 (tests).
+- **C'est un mouvement à part entière, pas un alias.** Un total à la barre et une charge
+  par main ne sont pas la même échelle : les lier ferait exactement ce que
+  `docs/CHARGE_PROGRESSION_CONTRACT.md` § 2 interdit (« DB ≠ barre »). L'historique du
+  DB RDL reste intact sous son nom et ne part pas dans le nouveau ; le Barbell RDL démarre
+  de son propre repère, **170 lb**, l'équivalent des 2 × 85 lb réellement travaillés.
+- **Déclaré partout où le moteur en a besoin** : repère de charge (`defaultLoadSeeds`),
+  libellé canonique, alias de recherche, famille d'équipement `barbell` (arrondi au pas de
+  barre, pas au cran d'haltère), profil Brain `hinge_barbell`, sensibilité, export IA et
+  lien vidéo.
+
+**Un piège documenté, parce qu'il se re-tendra**
+
+`coachDefaultLoadSeedForMovement()` ne teste pas le nom du mouvement : il **concatène tous
+ses alias** et cherche dans la chaîne entière. Or les alias de `DB RDL` contiennent
+l'ancien nom ambigu `DB RDL ou Barbell RDL`. Un motif `/barbell rdl/` placé au-dessus de
+`/db rdl/` capturait donc le DB RDL et lui donnait 170 lb **par main** au lieu de 60.
+L'ordre dans `defaultLoadSeeds` est le correctif. Même logique dans
+`canonicalMovementLabel()` : l'ancien nom ambigu se résout avant `barbell rdl`, sans quoi
+les séances déjà loggées dessous changeraient de mouvement.
+
+**Garde-fous**
+
+`dev/charge_engine_checks.js` : les deux repères restent séparés (170 à la barre, 60 par
+main), les deux familles d'équipement aussi, l'ancien nom ambigu reste rattaché au DB RDL,
+et un Barbell RDL n'hérite jamais des 85 lb par main du DB RDL — 85 lb à la barre serait
+absurde.
+
+## V5.0.2 — Un qualificatif en plus est un autre mouvement
+
+**Ce que l'athlète voit changer**
+
+- **Un mouvement jamais travaillé n'hérite plus de l'historique d'un nom voisin.**
+  `athleteMovementRecord()` cherche un nom proche quand un mouvement n'a aucun
+  enregistrement à lui. Ce repli sert à rattraper une variante d'écriture — tiret, casse,
+  pluriel, ordre des mots. Il comparait des sous-chaînes dans les deux sens, avec pour seul
+  garde-fou une longueur minimale sur le nom *demandé* ; le nom *stocké* pouvait être aussi
+  court qu'on veut. « close grip bench press » contient « bench press ».
+- **Mesuré sur le catalogue (188 mouvements) : 137 paires se lisaient l'une pour l'autre.**
+  `Bench Press` → `Close-Grip Bench Press` et `Decline Bench Press` ; `Deadlift` →
+  `Romanian / Stiff-Leg / Clean / Sumo Deadlift High Pull` ; `Row` → `Pendlay Row`,
+  `Barbell Row`, `Seated Cable Row`, `One-Arm DB Row` ; `Back Squat` → `Pause Back Squat` ;
+  `Pull-Up` → `Weighted Pull-up`, en contradiction directe avec
+  `docs/CHARGE_PROGRESSION_CONTRACT.md` § 2 (« poids du corps ≠ charge ajoutée »).
+- **Effet mesuré bout en bout.** Un historique de Bench Press à 245 lb × 3 @ RPE 8 faisait
+  proposer 245 lb pour un Close-Grip Bench Press jamais travaillé, avec une raison qui disait
+  « RPE 8 sur la dernière série » comme si la séance était la sienne. Un prise serrée vaut
+  ~10 % de moins qu'un couché large : la confusion partait du mauvais côté.
+
+**La règle**
+
+Mêmes mots, quel que soit leur ordre et leur ponctuation. Un mot en plus est un mouvement
+différent. Restent couverts : `Band Pull-Apart` / `Band Pull Apart`, `Push-Up` / `Push-up`,
+`Hammer Curl` / `Hammer Curls`, `False Grip Ring Row` / `Ring Row False Grip`.
+
+Le repli ne se déclenche de toute façon que si le mouvement demandé n'a **aucun** historique
+propre. Une seule séance loggée, et il lit la sienne — dans les deux sens, vérifié.
+
+**Ce qui n'a pas été touché**
+
+36 rapprochements subsistent, tous **déclarés explicitement** dans
+`coachMovementLookupLabels()` et `canonicalMovementLabel()` : `Step-Up` ≡ `DB Step-up`,
+`Ring Row` ≡ `Ring Row Strict`, `Transitions` ≡ `Wall Ball to Burpee Transitions`, `Wall Slide`
+≡ `Wall Slide Lift-off`… Ce sont des ponts d'historique écrits à la main, sur décision.
+Certains mériteraient d'être rediscutés — `Step-Up` ≡ `DB Step-up` mêle poids du corps et
+haltère — mais les modifier déplacerait de l'historique déjà stocké. Ça se décide, ça ne se
+corrige pas au passage.
+
+**Garde-fous**
+
+`dev/charge_engine_checks.js` : les quatre familles de variantes d'écriture restent liées ;
+sept paires à qualificatif (`Close-Grip`, `Decline`, `Pause`, `Romanian`, `Pendlay`,
+`Weighted Pull-up`, `Weighted Dips`) sont séparées ; et le chemin réel du moteur est vérifié —
+un Close-Grip jamais travaillé part de la charge du programme, pas des 245 lb du Bench Press.
+
 ## V5.0.1 — La mémoire ne dépend plus du titre d'un bloc
 
 Trois corrections tirées d'une trace de cycle réelle de `phase2_fable5`

@@ -32,7 +32,7 @@ function coachBrainSensitivity(label,context){
   try{ bodyweight=!!(typeof coachIsBodyweightExternalLoadMovement==='function'&&coachIsBodyweightExternalLoadMovement(label,ctx)); }catch(e){}
   if(bodyweight||/pull up|pull-up|chin up|chin-up|ring dip|weighted dip|muscle up|muscle-up|hspu|handstand push/.test(n))return 'high';
   if(/strict press|bench press|front squat|back squat|deadlift|power clean|clean|snatch/.test(n))return 'high';
-  if(/barbell row|db rdl|bulgarian split squat|hip thrust/.test(n))return 'medium';
+  if(/barbell row|barbell rdl|db rdl|bulgarian split squat|hip thrust/.test(n))return 'medium';
   if(typeof isIsolationMovement==='function'&&isIsolationMovement(label))return 'low';
   return 'medium';
 }

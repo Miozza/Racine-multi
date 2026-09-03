@@ -1,10 +1,71 @@
-# ETAT ACTUEL — V5.0.1
+# ETAT ACTUEL — V5.0.3
 
-Version actuelle : V5.0.1
+Version actuelle : V5.0.3
 
 ## État courant
 
-### V5.0.1 — la mémoire ne dépend plus du titre d'un bloc
+### Barbell RDL dans la bibliothèque
+
+La charnière postérieure du lundi de `Phase 2 — Fable 5` passe des haltères à la
+barre, à la demande de l'athlète : plus de charge disponible, et plus pratique à
+charger. `Barbell RDL` est un **mouvement à part entière**, pas un alias du
+`DB RDL` — un total à la barre et une charge par main ne sont pas la même échelle,
+et les lier ferait exactement ce que `docs/CHARGE_PROGRESSION_CONTRACT.md` § 2
+interdit. L'historique du DB RDL reste intact sous son nom ; le Barbell RDL part
+de son propre repère, **170 lb**, l'équivalent des 2 × 85 lb travaillés aux
+haltères.
+
+Le mouvement est déclaré partout où le moteur en a besoin : repère de charge
+(`defaultLoadSeeds`), libellé canonique, famille d'équipement `barbell` (pas de
+pas de 5 lb par main), profil Brain `hinge_barbell` — la charnière aux haltères
+porte un vocabulaire de « progression limitée par les haltères disponibles » qui
+est faux sur une barre —, sensibilité, export IA et lien vidéo.
+
+Un piège mérite d'être noté, parce qu'il se re-tendra :
+`coachDefaultLoadSeedForMovement()` ne teste pas le nom du mouvement, il
+**concatène tous ses alias** et cherche dans la chaîne entière. Les alias de
+`DB RDL` contiennent l'ancien nom ambigu `DB RDL ou Barbell RDL`. Un motif
+`/barbell rdl/` placé au-dessus de `/db rdl/` capturait donc le DB RDL et lui
+donnait 170 lb **par main** au lieu de 60. L'ordre dans `defaultLoadSeeds` est le
+correctif ; un test le tient.
+
+### La mémoire d'un mouvement ne se confond plus avec celle d'un voisin
+
+`athleteMovementRecord()` a un dernier recours : quand un mouvement n'a aucun
+enregistrement à son nom, il cherche un nom voisin. Ce repli existe pour rattraper
+une variante d'**écriture** — tiret, casse, pluriel, ordre des mots. Il comparait
+des sous-chaînes, dans les deux sens, avec pour seul garde-fou une longueur
+minimale sur le nom *demandé* ; le nom *stocké*, lui, pouvait être aussi court
+qu'on veut. Or « close grip bench press » contient « bench press ».
+
+Mesuré sur le catalogue (188 mouvements) : **137 paires se lisaient l'une pour
+l'autre**, dont `Bench Press` → `Close-Grip Bench Press`, `Deadlift` →
+`Romanian / Stiff-Leg / Sumo`, `Row` → `Pendlay / Barbell / Seated Cable`, et
+`Pull-Up` → `Weighted Pull-up` — ce dernier en contradiction directe avec
+`docs/CHARGE_PROGRESSION_CONTRACT.md` § 2 (« poids du corps ≠ charge ajoutée »).
+
+Effet mesuré bout en bout : un historique de Bench Press à 245 lb × 3 @ RPE 8
+faisait proposer **245 lb pour un Close-Grip Bench Press jamais travaillé**, avec
+une raison qui disait « RPE 8 sur la dernière série » comme si la séance était la
+sienne. Un prise serrée vaut ~10 % de moins qu'un couché large : la confusion
+partait du mauvais côté.
+
+La règle est maintenant : **mêmes mots, quel que soit leur ordre et leur
+ponctuation**. Un mot en plus est un mouvement différent. Restent couverts —
+`Band Pull-Apart` / `Band Pull Apart`, `Hammer Curl` / `Hammer Curls`,
+`False Grip Ring Row` / `Ring Row False Grip`. Le déclenchement n'a de toute façon
+lieu que si le mouvement demandé n'a **aucun** historique propre : une seule séance
+loggée, et il lit la sienne.
+
+Restent 36 rapprochements, tous **déclarés explicitement** dans
+`coachMovementLookupLabels()` et `canonicalMovementLabel()` — `Step-Up` ≡
+`DB Step-up`, `Ring Row` ≡ `Ring Row Strict`, `Transitions` ≡
+`Wall Ball to Burpee Transitions`… Ce sont des ponts d'historique voulus, écrits à
+la main. Certains mériteraient d'être rediscutés (`Step-Up` ≡ `DB Step-up` mêle
+poids du corps et haltère), mais les modifier déplacerait de l'historique déjà
+stocké : ça se décide, ça ne se corrige pas au passage.
+
+### La mémoire ne dépend plus du titre d'un bloc
 
 Trois corrections, toutes parties d'une trace de cycle réelle de `phase2_fable5`
 (112 entrées, 8 semaines, générée le 2026-09-02).
