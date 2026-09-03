@@ -1,30 +1,2175 @@
 {
-  "_pourquoi": "Athlete deterministe du replay du moteur de charge (dev/charge_replay_phase2.js). Aucune donnee reelle : les ratios sont RECONSTITUES depuis les rapports chargeMiseAEchelle/chargeLue observes dans la trace exportee du 28 aout 2026, et l'historique reproduit les charges, reps et RPE que cette trace resume. Il sert de reference AVANT/APRES : la vraie trace de l'athlete n'a jamais ete fournie a la session d'audit.",
-  "profil": {
-    "onboarded": true,
-    "name": "Replay",
-    "experienceLevel": "intermediaire",
-    "aggressiveness": 1,
-    "scaleRatios": {
-      "backSquat5RM": 0.88, "frontSquat": 0.81, "bench": 1.00, "strictPress": 0.95,
-      "powerClean": 1.09, "hipThrust8RM": 0.90, "bulgarianDb": 0.90, "dbRdl": 0.85,
-      "row8RM": 1.30, "chestRow8RM": 1.30, "latPulldown10RM": 2.00, "inclineDb10RM": 1.10,
-      "_upperPush": 1.05, "_upperPull": 1.60, "_lowerBody": 0.86, "_hinge": 0.88,
-      "_olympic": 1.09, "_overall": 1.05
-    }
-  },
-  "_format": "chaque entree : [charge lb, reps sorties, RPE]",
-  "historique": {
-    "Power Clean":       {"format":"EMOM 8 : 2 Power Clean", "seances":[[125,2,7],[125,2,7],[125,3,7],[125,3,7],[125,5,7],[125,5,7.5],[125,4,7],[125,4,7]]},
-    "Pause Back Squat":  {"format":"5×3",     "seances":[[155,3,8],[165,3,8],[170,3,8],[170,3,8.5],[170,3,8],[170,3,8]]},
-    "Back Squat":        {"format":"6×2",     "seances":[[150,2,7],[155,2,7],[160,2,7],[160,2,7.5],[160,2,7],[160,2,7]]},
-    "DB RDL":            {"format":"3×10",    "seances":[[75,10,8],[80,10,8],[85,10,8],[85,10,8],[85,10,8.5],[85,10,8]]},
-    "Front Squat":       {"format":"5×5",     "seances":[[185,5,8],[190,5,8],[195,5,8],[200,4,8.5],[200,5,8],[205,3,8],[205,3,8.5]]},
-    "Face Pull":         {"format":"3×15-20", "seances":[[70,18,7],[75,18,7],[75,20,7],[80,18,7.5],[80,18,7],[80,20,7],[85,18,7],[85,18,7.5],[85,20,7],[90,18,7],[90,18,7],[90,20,7]]},
-    "Strict Press":      {"format":"5×3",     "seances":[[110,8,8],[110,9,8],[115,8,8],[115,10,7.5],[115,8,8],[120,8,8]]},
-    "Close-Grip Bench":  {"format":"4×8",     "seances":[[175,8,8],[180,8,8],[185,8,8],[185,8,8.5]]},
-    "Cuban Press":       {"format":"3×10",    "seances":[[20,10,7],[20,10,7],[25,10,7.5],[25,10,7]]},
-    "Rear Delt Fly":     {"format":"4×15-20", "seances":[[25,18,7],[25,20,7],[30,18,7.5],[30,18,7]]},
-    "Incline DB Press":  {"format":"3×8-10",  "seances":[[55,10,8],[60,10,8],[60,8,8.5]]}
+ "_pourquoi": "Athlete du replay du moteur de charge : DONNEES REELLES extraites de la trace 'racine_charge_trace' exportee le 2026-08-27 (V4.6.9, portee cycle, programme phase2_fable5, profil Bertin). Les scaleRatios sont ajustes pour reproduire a l'identique les 90 valeurs chargeMiseAEchelle de cette trace (100 %). Les seances sont celles de l'athlete : dates, charges, reps, RPE, statuts et sources d'origine.",
+ "_source": {
+  "fichier": "racine-trace-charges-phase2_fable5-cycle-complet.json",
+  "type": "racine_charge_trace",
+  "version": "V4.6.9",
+  "genereLe": "2026-08-27T22:39:44.097Z",
+  "portee": "cycle",
+  "semaines": 8,
+  "profil": "Bertin",
+  "occurrences": 112
+ },
+ "profil": {
+  "onboarded": true,
+  "name": "Bertin",
+  "experienceLevel": "avance",
+  "aggressiveness": 1,
+  "scaleRatios": {
+   "frontSquat": 0.815,
+   "backSquat5RM": 0.87,
+   "powerClean": 1.095,
+   "strictPress": 1.19,
+   "dbRdl": 1,
+   "bench": 1.171,
+   "inclineDb10RM": 1.091,
+   "bulgarianDb": 0.88,
+   "hipThrust8RM": 0.9,
+   "row8RM": 1.6,
+   "chestRow8RM": 1.6,
+   "latPulldown10RM": 1.6,
+   "_upperPush": 1.171,
+   "_upperPull": 1.6,
+   "_lowerBody": 0.86,
+   "_hinge": 1,
+   "_olympic": 1.105,
+   "_overall": 1.5
   }
+ },
+ "historique": {
+  "Back Squat": {
+   "lignesStockees": 6,
+   "seances": [
+    {
+     "date": "2026-08-03",
+     "charge": 155,
+     "reps": 5,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-14",
+     "charge": 135,
+     "reps": 4,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "speed"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-21",
+     "charge": 160,
+     "reps": 2,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "speed"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 205,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 185,
+     "reps": 8,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 150,
+     "reps": 15,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    }
+   ],
+   "capacites": {
+    "strength": {
+     "currentLoad": 205,
+     "currentReps": 5,
+     "actualLoad": 205,
+     "actualReps": 5,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 239,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "source": "manual_recalibration"
+     }
+    },
+    "hypertrophy": {
+     "currentLoad": 185,
+     "currentReps": 8,
+     "actualLoad": 185,
+     "actualReps": 8,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 234,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "source": "manual_recalibration"
+     }
+    },
+    "endurance": {
+     "currentLoad": 150,
+     "currentReps": 15,
+     "actualLoad": 150,
+     "actualReps": 15,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 225,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "source": "manual_recalibration"
+     }
+    }
+   }
+  },
+  "Close-Grip Bench Press": {
+   "lignesStockees": 4,
+   "seances": [
+    {
+     "date": "2026-08-03",
+     "charge": 155,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 235,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 215,
+     "reps": 8,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 185,
+     "reps": 15,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    }
+   ],
+   "capacites": {
+    "strength": {
+     "currentLoad": 235,
+     "currentReps": 5,
+     "actualLoad": 235,
+     "actualReps": 5,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 274,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "source": "manual_recalibration"
+     }
+    },
+    "hypertrophy": {
+     "currentLoad": 215,
+     "currentReps": 8,
+     "actualLoad": 215,
+     "actualReps": 8,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 272,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "source": "manual_recalibration"
+     }
+    },
+    "endurance": {
+     "currentLoad": 185,
+     "currentReps": 15,
+     "actualLoad": 185,
+     "actualReps": 15,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 278,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "source": "manual_recalibration"
+     }
+    }
+   }
+  },
+  "Cuban Press": {
+   "lignesStockees": 3,
+   "seances": [
+    {
+     "date": "2026-08-13",
+     "charge": 15,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "light"
+     ],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-20",
+     "charge": 15,
+     "reps": 10,
+     "rpe": 7.5,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "light"
+     ],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-27",
+     "charge": 15,
+     "reps": 10,
+     "rpe": 7.5,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "light"
+     ],
+     "equipement": ""
+    }
+   ],
+   "capacites": {}
+  },
+  "DB RDL": {
+   "lignesStockees": 9,
+   "seances": [
+    {
+     "date": "2026-06-04",
+     "charge": 60,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-11",
+     "charge": 60,
+     "reps": 10,
+     "rpe": 7,
+     "statut": "upgrade_ready",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-18",
+     "charge": 70,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-25",
+     "charge": 70,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-02",
+     "charge": 75,
+     "reps": 11,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-09",
+     "charge": 85,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-10",
+     "charge": 85,
+     "reps": 10,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-17",
+     "charge": 85,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 85,
+     "reps": 10,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 85,
+     "currentReps": 10,
+     "actualLoad": 85,
+     "actualReps": 10,
+     "externalLoad": 85,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8.5,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 113,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "load": 85,
+      "reps": 10,
+      "targetMin": 10,
+      "targetMax": 10,
+      "format": "2×10",
+      "kind": "accessory",
+      "context": {
+       "rawName": "DB RDL",
+       "label": "DB RDL",
+       "equipment": "db",
+       "intents": [],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "",
+       "kind": "accessory",
+       "blockTitle": "B. Chaîne postérieure",
+       "note": "Charnière propre, dos neutre, ischios chargés. Le socle de la protection du dos.",
+       "text": "",
+       "format": "2×10",
+       "day": "lundi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "DB Shoulder Press": {
+   "lignesStockees": 8,
+   "seances": [
+    {
+     "date": "2026-06-05",
+     "charge": 30,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-12",
+     "charge": 40,
+     "reps": 10,
+     "rpe": 7.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-19",
+     "charge": 50,
+     "reps": 10,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-26",
+     "charge": 50,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-03",
+     "charge": 60,
+     "reps": 8,
+     "rpe": 9,
+     "statut": "hard",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-10",
+     "charge": 60,
+     "reps": 7,
+     "rpe": 9.5,
+     "statut": "watch",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-13",
+     "charge": 55,
+     "reps": 10,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-27",
+     "charge": 60,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 60,
+     "currentReps": 10,
+     "actualLoad": 60,
+     "actualReps": 10,
+     "externalLoad": 60,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 80,
+     "lastUpdated": "2026-08-27",
+     "planned": {
+      "load": 55,
+      "reps": 10,
+      "targetMin": 10,
+      "targetMax": 10,
+      "format": "2×10",
+      "kind": "secondary",
+      "context": {
+       "rawName": "DB Shoulder Press",
+       "label": "DB Shoulder Press",
+       "equipment": "db",
+       "intents": [
+        "hypertrophy"
+       ],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "hypertrophy",
+       "kind": "secondary",
+       "blockTitle": "B. Poussée support",
+       "note": "Volume utile, jamais un deuxième test.",
+       "text": "",
+       "format": "2×10",
+       "day": "jeudi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": true,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Face Pull": {
+   "lignesStockees": 12,
+   "seances": [
+    {
+     "date": "2026-06-12",
+     "charge": 60,
+     "reps": 18,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-16",
+     "charge": 60,
+     "reps": 20,
+     "rpe": 7.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-19",
+     "charge": 60,
+     "reps": 18,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "wod"
+     ],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-23",
+     "charge": 70,
+     "reps": 20,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-26",
+     "charge": 70,
+     "reps": 20,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "wod"
+     ],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-30",
+     "charge": 80,
+     "reps": 16,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-07-03",
+     "charge": 80,
+     "reps": 16,
+     "rpe": 8.5,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "wod"
+     ],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-07-07",
+     "charge": 90,
+     "reps": 18,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-07-10",
+     "charge": 80,
+     "reps": 18,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "wod"
+     ],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-08-11",
+     "charge": 80,
+     "reps": 16,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-08-18",
+     "charge": 80,
+     "reps": 20,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-08-25",
+     "charge": 80,
+     "reps": 20,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    }
+   ],
+   "capacites": {
+    "endurance": {
+     "currentLoad": 90,
+     "currentReps": 15,
+     "actualLoad": 90,
+     "actualReps": 18,
+     "externalLoad": 90,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 144,
+     "lastUpdated": "2026-07-07",
+     "planned": {
+      "load": 90,
+      "reps": 15,
+      "targetMin": 15,
+      "targetMax": 20,
+      "format": "2×15-20",
+      "kind": "accessory",
+      "context": {
+       "rawName": "Face Pull",
+       "label": "Face Pull",
+       "equipment": "cable",
+       "intents": [],
+       "primaryIntent": "",
+       "kind": "accessory",
+       "blockTitle": "C. Rear delt / posture",
+       "note": "Rotation externe, cou relâché.",
+       "text": "",
+       "format": "2×15-20",
+       "day": "mardi",
+       "week": 5,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Front Squat": {
+   "lignesStockees": 7,
+   "seances": [
+    {
+     "date": "2026-06-04",
+     "charge": 165,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-11",
+     "charge": 180,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-18",
+     "charge": 185,
+     "reps": 4,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-25",
+     "charge": 190,
+     "reps": 4,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-07-02",
+     "charge": 195,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-07-09",
+     "charge": 195,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-06",
+     "charge": 135,
+     "reps": 8,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "strength"
+     ],
+     "equipement": "barbell"
+    }
+   ],
+   "capacites": {
+    "strength": {
+     "currentLoad": 195,
+     "currentReps": 3,
+     "actualLoad": 195,
+     "actualReps": 3,
+     "externalLoad": 195,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 215,
+     "lastUpdated": "2026-07-09",
+     "planned": {
+      "load": 195,
+      "reps": 3,
+      "targetMin": 3,
+      "targetMax": 3,
+      "format": "5×3",
+      "kind": "main",
+      "context": {
+       "rawName": "Front Squat",
+       "label": "Front Squat",
+       "equipment": "barbell",
+       "intents": [],
+       "primaryIntent": "",
+       "kind": "main",
+       "blockTitle": "A. Front Squat",
+       "note": "Priorité jambes. RPE 7-8, dos protégé.",
+       "text": "",
+       "format": "5×3",
+       "day": "jeudi",
+       "week": 5,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Incline DB Press": {
+   "lignesStockees": 7,
+   "seances": [
+    {
+     "date": "2026-06-02",
+     "charge": 55,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-08",
+     "charge": 55,
+     "reps": 8,
+     "rpe": 9,
+     "statut": "hard",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-15",
+     "charge": 60,
+     "reps": 8,
+     "rpe": 9,
+     "statut": "hard",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-22",
+     "charge": 60,
+     "reps": 8,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-06",
+     "charge": 60,
+     "reps": 9,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-07",
+     "charge": 50,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-20",
+     "charge": 55,
+     "reps": 10,
+     "rpe": 7.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 60,
+     "currentReps": 8,
+     "actualLoad": 60,
+     "actualReps": 9,
+     "externalLoad": 60,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8.5,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 78,
+     "lastUpdated": "2026-07-06",
+     "planned": {
+      "load": 60,
+      "reps": 8,
+      "targetMin": 8,
+      "targetMax": 8,
+      "format": "3×8",
+      "kind": "hypertrophy",
+      "context": {
+       "rawName": "Incline DB Press",
+       "label": "Incline DB Press",
+       "equipment": "db",
+       "intents": [
+        "hypertrophy"
+       ],
+       "primaryIntent": "hypertrophy",
+       "kind": "hypertrophy",
+       "blockTitle": "B. Superset support",
+       "note": "Haut de pec + deltoïde antérieur. Pas d'échec.",
+       "text": "Un seul bloc support : poussée secondaire + deltoïde latéral. Peu de transition, beaucoup de travail utile.",
+       "format": "3×8",
+       "day": "lundi",
+       "week": 5,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": true,
+       "isRecovery": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Lateral Raise DB": {
+   "lignesStockees": 10,
+   "seances": [
+    {
+     "date": "2026-06-05",
+     "charge": 15,
+     "reps": 15,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-12",
+     "charge": 20,
+     "reps": 16,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-19",
+     "charge": 20,
+     "reps": 16,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-06-26",
+     "charge": 20,
+     "reps": 20,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-03",
+     "charge": 22.5,
+     "reps": 15,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-07-10",
+     "charge": 22.5,
+     "reps": 12,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-07",
+     "charge": 20,
+     "reps": 12,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "light"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-13",
+     "charge": 20,
+     "reps": 15,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-20",
+     "charge": 20,
+     "reps": 17,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-27",
+     "charge": 22.5,
+     "reps": 15,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "db"
+    }
+   ],
+   "capacites": {
+    "endurance": {
+     "currentLoad": 22.5,
+     "currentReps": 15,
+     "actualLoad": 22.5,
+     "actualReps": 15,
+     "externalLoad": 22.5,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8.5,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 34,
+     "lastUpdated": "2026-08-27",
+     "planned": {
+      "load": 22.5,
+      "reps": 15,
+      "targetMin": 15,
+      "targetMax": 15,
+      "format": "3×15",
+      "kind": "accessory",
+      "context": {
+       "rawName": "Lateral Raise DB",
+       "label": "Lateral Raise DB",
+       "equipment": "db",
+       "intents": [],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "",
+       "kind": "accessory",
+       "blockTitle": "C. Santé d'épaules — socle fixe",
+       "note": "Deltoïde latéral, aucun élan, épaules basses.",
+       "text": "",
+       "format": "3×15",
+       "day": "jeudi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    },
+    "hypertrophy": {
+     "currentLoad": 22.5,
+     "currentReps": 12,
+     "actualLoad": 22.5,
+     "actualReps": 12,
+     "externalLoad": 22.5,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8.5,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 31,
+     "lastUpdated": "2026-07-10",
+     "planned": {
+      "load": 22.5,
+      "reps": 12,
+      "targetMin": 12,
+      "targetMax": 18,
+      "format": "3×12-18",
+      "kind": "accessory",
+      "context": {
+       "rawName": "Lateral Raise DB",
+       "label": "Lateral Raise DB",
+       "equipment": "db",
+       "intents": [],
+       "primaryIntent": "",
+       "kind": "accessory",
+       "blockTitle": "B. Giant set épaules",
+       "note": "Deltoïde latéral. Aucun élan.",
+       "text": "Angle différent du lundi : DB plutôt que câble pour le deltoïde latéral et arrière d'épaule.",
+       "format": "3×12-18",
+       "day": "vendredi",
+       "week": 5,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "One-Arm DB Row": {
+   "lignesStockees": 3,
+   "seances": [
+    {
+     "date": "2026-08-11",
+     "charge": 75,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-18",
+     "charge": 75,
+     "reps": 10,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    },
+    {
+     "date": "2026-08-25",
+     "charge": 75,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "db"
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 75,
+     "currentReps": 10,
+     "actualLoad": 75,
+     "actualReps": 10,
+     "externalLoad": 75,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 100,
+     "lastUpdated": "2026-08-25",
+     "planned": {
+      "load": 75,
+      "reps": 10,
+      "targetMin": 10,
+      "targetMax": 10,
+      "format": "3×10/côté",
+      "kind": "accessory",
+      "context": {
+       "rawName": "One-Arm DB Row",
+       "label": "One-Arm DB Row",
+       "equipment": "db",
+       "intents": [
+        "hypertrophy"
+       ],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "hypertrophy",
+       "kind": "accessory",
+       "blockTitle": "B. Volume dorsal",
+       "note": "Amplitude complète, coude vers la hanche, zéro rotation du tronc.",
+       "text": "",
+       "format": "3×10/côté",
+       "day": "mardi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": true,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Pallof Press": {
+   "lignesStockees": 3,
+   "seances": [
+    {
+     "date": "2026-08-10",
+     "charge": 40,
+     "reps": 8,
+     "rpe": 6,
+     "statut": "upgrade_ready",
+     "source": "",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-17",
+     "charge": 45,
+     "reps": 8,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 60,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": ""
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 60,
+     "currentReps": 8,
+     "actualLoad": 60,
+     "actualReps": 10,
+     "externalLoad": 60,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 80,
+     "lastUpdated": "2026-08-24",
+     "planned": {
+      "load": 45,
+      "reps": 8,
+      "targetMin": 8,
+      "targetMax": 8,
+      "format": "3×8",
+      "kind": "accessory",
+      "context": {
+       "rawName": "Pallof Press",
+       "label": "Pallof Press",
+       "equipment": "",
+       "intents": [],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "",
+       "kind": "accessory",
+       "blockTitle": "B. Chaîne postérieure",
+       "note": "Anti-rotation et anti-extension. Côtes basses, souffle contrôlé.",
+       "text": "",
+       "format": "3×8",
+       "day": "lundi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Pause Back Squat": {
+   "lignesStockees": 3,
+   "seances": [
+    {
+     "date": "2026-08-10",
+     "charge": 160,
+     "reps": 3,
+     "rpe": 7,
+     "statut": "upgrade_ready",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-17",
+     "charge": 170,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 170,
+     "reps": 3,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    }
+   ],
+   "capacites": {
+    "strength": {
+     "currentLoad": 170,
+     "currentReps": 3,
+     "actualLoad": 170,
+     "actualReps": 3,
+     "externalLoad": 170,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 187,
+     "lastUpdated": "2026-08-17",
+     "planned": {
+      "load": 160,
+      "reps": 3,
+      "targetMin": 3,
+      "targetMax": 3,
+      "format": "4×3",
+      "kind": "main",
+      "context": {
+       "rawName": "Pause Back Squat",
+       "label": "Pause Back Squat",
+       "equipment": "barbell",
+       "intents": [],
+       "primaryIntent": "",
+       "kind": "main",
+       "blockTitle": "A. Pause Back Squat",
+       "note": "Pause 2 sec. Si le dos arrondit à la remontée, la charge est trop haute.",
+       "text": "",
+       "format": "4×3",
+       "day": "lundi",
+       "week": 2,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Power Clean": {
+   "lignesStockees": 7,
+   "seances": [
+    {
+     "date": "2026-06-19",
+     "charge": 135,
+     "reps": 2,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-26",
+     "charge": 145,
+     "reps": 2,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-07-03",
+     "charge": 155,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-07-10",
+     "charge": 145,
+     "reps": 3,
+     "rpe": 6.5,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-04",
+     "charge": 95,
+     "reps": 5,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "light",
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-14",
+     "charge": 100,
+     "reps": 5,
+     "rpe": 7,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "wod",
+      "technique",
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-21",
+     "charge": 105,
+     "reps": 4,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "wod",
+      "technique",
+      "strength"
+     ],
+     "equipement": "barbell"
+    }
+   ],
+   "capacites": {}
+  },
+  "Rear Delt Fly câble": {
+   "lignesStockees": 10,
+   "seances": [
+    {
+     "date": "2026-06-02",
+     "charge": 15,
+     "reps": 15,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-04",
+     "charge": 15,
+     "reps": 18,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-09",
+     "charge": 10,
+     "reps": 16,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-16",
+     "charge": 20,
+     "reps": 15,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-23",
+     "charge": 20,
+     "reps": 19,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-06-30",
+     "charge": 30,
+     "reps": 15,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-07-07",
+     "charge": 30,
+     "reps": 16,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-08-11",
+     "charge": 30,
+     "reps": 15,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-08-18",
+     "charge": 40,
+     "reps": 13,
+     "rpe": 9,
+     "statut": "watch",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "cable"
+    },
+    {
+     "date": "2026-08-25",
+     "charge": 40,
+     "reps": 15,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "hypertrophy"
+     ],
+     "equipement": "cable"
+    }
+   ],
+   "capacites": {
+    "endurance": {
+     "currentLoad": 40,
+     "currentReps": 20,
+     "actualLoad": 40,
+     "actualReps": 15,
+     "externalLoad": 40,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8.5,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 60,
+     "lastUpdated": "2026-08-25",
+     "planned": {
+      "load": 40,
+      "reps": 20,
+      "targetMin": 20,
+      "targetMax": 20,
+      "format": "3×20",
+      "kind": "accessory",
+      "context": {
+       "rawName": "Rear Delt Fly câble",
+       "label": "Rear Delt Fly câble",
+       "equipment": "cable",
+       "intents": [
+        "hypertrophy"
+       ],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "hypertrophy",
+       "kind": "accessory",
+       "blockTitle": "B. Volume dorsal",
+       "note": "Arrière d'épaule pur. Ne pas transformer en rowing.",
+       "text": "",
+       "format": "3×20",
+       "day": "mardi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": true,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Strict Press": {
+   "lignesStockees": 11,
+   "seances": [
+    {
+     "date": "2026-06-02",
+     "charge": 110,
+     "reps": 9,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-08",
+     "charge": 115,
+     "reps": 8,
+     "rpe": 9,
+     "statut": "hard",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-15",
+     "charge": 115,
+     "reps": 8,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-06-22",
+     "charge": 125,
+     "reps": 8,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-07-06",
+     "charge": 130,
+     "reps": 8,
+     "rpe": 9,
+     "statut": "hard",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-04",
+     "charge": 95,
+     "reps": 10,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-07",
+     "charge": 125,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "technique",
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-13",
+     "charge": 150,
+     "reps": 3,
+     "rpe": 9,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-20",
+     "charge": 150,
+     "reps": 3,
+     "rpe": 8.5,
+     "statut": "context_logged",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    },
+    {
+     "date": "2026-08-24",
+     "charge": 150,
+     "reps": 5,
+     "rpe": 8,
+     "statut": "success",
+     "source": "manual_recalibration",
+     "intentions": [],
+     "equipement": ""
+    },
+    {
+     "date": "2026-08-27",
+     "charge": 155,
+     "reps": 3,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "barbell"
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 130,
+     "currentReps": 8,
+     "actualLoad": 130,
+     "actualReps": 8,
+     "externalLoad": 130,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 9,
+     "confidence": 0.7,
+     "status": "hard",
+     "estimated1RM": 165,
+     "lastUpdated": "2026-07-06",
+     "planned": {
+      "load": 125,
+      "reps": 8,
+      "targetMin": 8,
+      "targetMax": 8,
+      "format": "3×8",
+      "kind": "main",
+      "context": {
+       "rawName": "Strict Press",
+       "label": "Strict Press",
+       "equipment": "barbell",
+       "intents": [],
+       "primaryIntent": "",
+       "kind": "main",
+       "blockTitle": "A. Strict Press",
+       "note": "Priorité du jour. RPE 7-8. Stop si compensation lombaire.",
+       "text": "",
+       "format": "3×8",
+       "day": "lundi",
+       "week": 5,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false
+      },
+      "bodyweightMovement": false
+     }
+    },
+    "strength": {
+     "currentLoad": 155,
+     "currentReps": 3,
+     "actualLoad": 155,
+     "actualReps": 3,
+     "externalLoad": 155,
+     "bodyweightMovement": false,
+     "hasValidLoad": true,
+     "rpe": 8.5,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 171,
+     "lastUpdated": "2026-08-27",
+     "planned": {
+      "load": 150,
+      "reps": 3,
+      "targetMin": 3,
+      "targetMax": 3,
+      "format": "montée vers 3RM",
+      "kind": "main",
+      "context": {
+       "rawName": "Strict Press",
+       "label": "Strict Press",
+       "equipment": "barbell",
+       "intents": [
+        "strength"
+       ],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "strength",
+       "kind": "main",
+       "blockTitle": "A. Strict Press",
+       "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+       "text": "",
+       "format": "montée vers 3RM",
+       "day": "jeudi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": true,
+       "isHypertrophy": false,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": false
+     }
+    }
+   }
+  },
+  "Weighted Pull-up": {
+   "lignesStockees": 6,
+   "seances": [
+    {
+     "date": "2026-06-23",
+     "charge": 20,
+     "reps": 6,
+     "rpe": 8.5,
+     "statut": "success",
+     "source": "",
+     "intentions": [],
+     "equipement": "bodyweight"
+    },
+    {
+     "date": "2026-06-30",
+     "charge": 25,
+     "reps": 5,
+     "rpe": 9.5,
+     "statut": "hard",
+     "source": "",
+     "intentions": [],
+     "equipement": "bodyweight"
+    },
+    {
+     "date": "2026-07-07",
+     "charge": 25,
+     "reps": 6,
+     "rpe": 9,
+     "statut": "hard",
+     "source": "",
+     "intentions": [],
+     "equipement": "bodyweight"
+    },
+    {
+     "date": "2026-08-11",
+     "charge": 25,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "bodyweight"
+    },
+    {
+     "date": "2026-08-18",
+     "charge": 30,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "bodyweight"
+    },
+    {
+     "date": "2026-08-25",
+     "charge": 35,
+     "reps": 3,
+     "rpe": 8,
+     "statut": "success",
+     "source": "",
+     "intentions": [
+      "strength"
+     ],
+     "equipement": "bodyweight"
+    }
+   ],
+   "capacites": {
+    "hypertrophy": {
+     "currentLoad": 25,
+     "currentReps": 5,
+     "actualLoad": 25,
+     "actualReps": 6,
+     "externalLoad": 25,
+     "bodyweightMovement": true,
+     "hasValidLoad": true,
+     "rpe": 9,
+     "confidence": 0.7,
+     "status": "hard",
+     "estimated1RM": 30,
+     "lastUpdated": "2026-07-07",
+     "planned": {
+      "load": 25,
+      "reps": 5,
+      "targetMin": 5,
+      "targetMax": 6,
+      "format": "4×5-6",
+      "kind": "accessory",
+      "context": {
+       "rawName": "Weighted Pull-up",
+       "label": "Weighted Pull-up",
+       "equipment": "bodyweight",
+       "intents": [],
+       "primaryIntent": "",
+       "kind": "accessory",
+       "blockTitle": "B. Superset dos + biceps",
+       "note": "Si remplacé par Ring Row, inscrire Ring Row comme mouvement distinct.",
+       "text": "",
+       "format": "4×5-6",
+       "day": "mardi",
+       "week": 5,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": false,
+       "isHypertrophy": false,
+       "isRecovery": false
+      },
+      "bodyweightMovement": true
+     }
+    },
+    "strength": {
+     "currentLoad": 35,
+     "currentReps": 3,
+     "actualLoad": 35,
+     "actualReps": 3,
+     "externalLoad": 35,
+     "bodyweightMovement": true,
+     "hasValidLoad": true,
+     "rpe": 8,
+     "confidence": 0.65,
+     "status": "success",
+     "estimated1RM": 39,
+     "lastUpdated": "2026-08-25",
+     "planned": {
+      "load": 30,
+      "reps": 3,
+      "targetMin": 3,
+      "targetMax": 3,
+      "format": "montée vers 3RM",
+      "kind": "main",
+      "context": {
+       "rawName": "Weighted Pull-up",
+       "label": "Weighted Pull-up",
+       "equipment": "bodyweight",
+       "intents": [
+        "strength"
+       ],
+       "speedBand": null,
+       "percentTarget": null,
+       "primaryIntent": "strength",
+       "kind": "main",
+       "blockTitle": "A. Weighted Pull-up",
+       "note": "Tirage strict et lourd. Le dos porte le bloc : c'est lui qui rend les épaules durables.",
+       "text": "",
+       "format": "montée vers 3RM",
+       "day": "mardi",
+       "week": 3,
+       "isWod": false,
+       "isTechnical": false,
+       "isLight": false,
+       "isProgression": false,
+       "isRecall": false,
+       "isStrength": true,
+       "isHypertrophy": false,
+       "isRecovery": false,
+       "isSpeed": false
+      },
+      "bodyweightMovement": true
+     }
+    }
+   }
+  }
+ }
 }

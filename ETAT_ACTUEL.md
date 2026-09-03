@@ -303,6 +303,7 @@ node dev/strict_muscle_up_checks.js
 - `docs/PROMPT_REFONTE_SYSTEM.md`
 - `docs/audit/2026-08-28-moteur-charge-audit.md`
 - `docs/audit/2026-08-28-trace-diff.md` (+ traces `-avant.json` / `-apres.json`)
+- `docs/fixtures/racine-trace-charges-phase2_fable5-cycle-complet.json` (trace réelle, pièce source de l'audit)
 - `docs/superpowers/specs/2026-07-08-la-saison-design.md`
 - `docs/superpowers/plans/2026-07-08-la-saison-etapes-1-4.md`
 
