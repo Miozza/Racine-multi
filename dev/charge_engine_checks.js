@@ -1478,6 +1478,46 @@ try {
     resetState();
   }
 
+  // ── Un lest sur le poids du corps n'emprunte le ratio de personne ────────
+  // Le ratio d'une famille dit « cet athlete souleve X fois la reference » sur
+  // une charge TOTALE. Un Weighted Pull-up et un Weighted Dip portent le
+  // supplement pose sur un corps qui pese deja : deux echelles sans commune
+  // mesure. L'onboarding le dit deja — le test de tractions est « reps
+  // seulement » parce qu'« une traction lestee ne s'estime pas au 1RM a partir
+  // d'un autre mouvement » — et le ratio emprunte contredisait cette decision
+  // juste apres. Mesure sur un profil reel : ratio de tirage 1,60 (borne du
+  // clamp) applique a un lest dont le rapport reel a la reference vaut ~0,43.
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{
+      _overall:1.2, _upperPull:1.60, _upperPush:1.18, _lowerBody:0.87, _hinge:1.0}};
+
+    ['Weighted Pull-up', 'Weighted Dips'].forEach(m => {
+      const src = ctx.coachUserLoadRatioSource(m);
+      assert(src.ratio === 1 && src.borrowed === false,
+        '« ' + m +' » n\'emprunte aucun ratio de famille (obtenu ' + src.ratio + ', source « ' + src.source + ' »).');
+    });
+
+    // Et le peritmetre s'arrete la : tout le reste garde son emprunt.
+    const inchanges = [
+      ['Pull-Up', 1.60], ['Barbell Row', 1.60], ['Cable Curl', 1.60],
+      ['Face Pull', 1.60], ['Lat Pulldown', 1.60],
+      ['Bench Press', 1.18], ['Ring Dip', 1.18], ['Push-Up', 1.18],
+      ['Back Squat', 0.87]
+    ];
+    inchanges.forEach(pair => {
+      const src = ctx.coachUserLoadRatioSource(pair[0]);
+      assert(Math.abs(src.ratio - pair[1]) < 0.005 && src.borrowed === true,
+        '« ' + pair[0] + ' » garde son ratio de famille ' + pair[1] + ' (obtenu ' + src.ratio.toFixed(2) + ').');
+    });
+
+    // Une traction au poids du corps SANS lest n'est pas concernee : c'est la
+    // presence d'une charge ajoutee qui declenche la regle, pas le mot pull-up.
+    assert(ctx.coachUserLoadRatioSource('Pull-Up').source === 'tirage',
+      'Un Pull-Up sans lest reste dans la famille tirage : la regle vise le LEST, pas le mouvement.');
+    resetState();
+  }
+
 } catch (err) {
   fail('Erreur pendant les tests moteur : ' + (err && err.stack ? err.stack : err));
 }

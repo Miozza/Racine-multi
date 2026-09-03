@@ -1,3 +1,43 @@
+## V5.0.4 — Un lest sur le poids du corps n'emprunte le ratio de personne
+
+**Ce que l'athlète voit changer**
+
+- **Les tractions et les dips lestés ne reçoivent plus un ratio d'échelle qui ne les concerne
+  pas.** Le ratio d'une famille dit « cet athlète soulève X fois la référence » sur une charge
+  **totale**. Un `Weighted Pull-up` et un `Weighted Dip` portent le supplément posé sur un corps
+  qui pèse déjà : deux échelles sans commune mesure.
+- **L'onboarding l'avait déjà tranché.** Son test de tractions est « reps seulement », justement
+  parce qu'« une traction lestée ne s'estime pas au 1RM à partir d'un autre mouvement ». Le repli
+  par famille de `scaling.js` contredisait cette décision juste après.
+- **Mesuré sur un profil réel** : ratio de tirage 1,60 — la borne haute du clamp — appliqué à un
+  lest de traction, alors que le rapport entre le lest mesuré de l'athlète et celui de la
+  référence vaut environ 0,43. Un 30 lb écrit sortait à 48 lb, sur le mouvement où la marge
+  d'erreur est la plus faible.
+- Sans emprunt, la charge écrite passe telle quelle et l'historique reprend la main dès la
+  première séance loggée. Direction sûre, conforme au commentaire déjà en place dans
+  `scaling.js` : sous-suggérer coûte une série trop légère, sur-suggérer coûte une épaule.
+
+**Le périmètre, et rien de plus**
+
+La règle vise le **lest**, pas le nom du mouvement : elle s'arrête aux deux entrées de
+`COACH_MOVEMENT_TUNING.bodyweightExternalLoadPatterns`. Un `Pull-Up` sans lest, un `Barbell Row`,
+un `Cable Curl`, un `Face Pull`, un `Lat Pulldown`, un `Bench Press`, un `Ring Dip`, un `Push-Up`
+et un `Back Squat` gardent tous leur ratio de famille — vérifié un par un.
+
+**Ce qui n'a pas été fait, et pourquoi**
+
+Le double comptage de `chestRow8RM` dans `_upperPull` reste en place. Le test de rowing écrit la
+même mesure dans deux clés aux références différentes (155 et 135) : une seule série compte donc
+deux fois, la seconde 15 % plus haut. Le corriger déplacerait le ratio de tirage de **sept**
+mouvements sur tous les profils déjà calibrés, et ne toucherait **pas** les dips lestés, qui sont
+dans la famille poussée. Hors du périmètre demandé — c'est une décision séparée.
+
+**Garde-fous**
+
+`dev/charge_engine_checks.js` : les deux mouvements lestés sortent à ratio 1 non emprunté, les
+neuf autres gardent le leur au centième près, et un `Pull-Up` sans lest reste dans la famille
+tirage.
+
 ## V5.0.3 — Barbell RDL entre dans la bibliothèque
 
 **Ce que l'athlète voit changer**
