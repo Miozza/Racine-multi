@@ -54,6 +54,7 @@ node dev/profile_backup_ui_checks.js
 node dev/history_progress_checks.js
 node dev/history_edit_checks.js
 node dev/amrap_rounds_checks.js
+node dev/wod_skip_checks.js
 node dev/mini_timer_checks.js
 node dev/sound_checks.js
 node dev/wod_moves_checks.js

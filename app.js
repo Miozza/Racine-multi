@@ -1,5 +1,5 @@
-// Racine V5.0.4 — un lest sur le poids du corps n'emprunte le ratio de personne
-var APP_VERSION = "V5.0.4";
+// Racine V5.0.5 — le conditionnement non fait entre dans le journal
+var APP_VERSION = "V5.0.5";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2127,6 +2127,17 @@ function renderHistory(){
     if(res){
       Object.keys(res).forEach(function(k){
         var r=res[k];
+        // Conditionnement annulé : une ligne sans charge, sans RPE et sans
+        // résultat — donc invisible pour la condition ci-dessous. C'était tout
+        // l'enjeu : que l'historique DISE que le metcon n'a pas eu lieu, au
+        // lieu de laisser un trou indistinguable d'une séance jamais ouverte.
+        var _skipped=(window.CoachWodSkip&&CoachWodSkip.rowIsSkipped(r))||false;
+        if(_skipped){
+          var _lbl=CoachWodSkip.rowLabel(r);
+          var _sn=r.note?'<span class="history-note">'+escHtml(r.note)+'</span>':"";
+          rows+='<div class="history-row is-skipped"><span class="mv">'+escHtml(k)+'</span><span class="val">'+escHtml(_lbl)+_sn+'</span></div>';
+          return;
+        }
         if(r.load||r.result||r.note||r.rpe||r.roundSplits){
           var _mv=r.load
             ?escHtml(r.load+" lb"+(r.reps?" × "+r.reps:"")+(r.rpe?" RPE "+r.rpe:""))

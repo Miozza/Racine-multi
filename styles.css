@@ -3370,6 +3370,74 @@ body.racine-modal-lock {
   font-size: 18px;
   line-height: 1.2;
 }
+/* ── Conditionnement non fait ─────────────────────────────────────────────
+   Porte de sortie RARE : aucune chrome de bouton, aucun accent, aucune
+   couleur d'alerte. Un lien texte en retrait qui ne se dispute pas
+   l'attention avec la saisie du résultat. Les motifs ne se déplient qu'après
+   une première intention. Voir scripts/session/wod_skip.js. */
+.wod-skip {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wod-skip-open {
+  background: none;
+  border: none;
+  padding: 0;
+  align-self: flex-start;
+  color: var(--muted);
+  font-family: var(--font-main);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: .01em;
+  text-decoration: underline;
+  text-decoration-color: rgba(168,196,224,.35);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  opacity: .72;
+}
+.wod-skip-open:active { opacity: 1; }
+.wod-skip-reasons { display: flex; flex-direction: column; gap: 6px; }
+.wod-skip-ask {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .1em;
+}
+.wod-skip-reasons .sf-chips { flex-wrap: wrap; overflow-x: visible; }
+.wod-skip-done { display: flex; flex-direction: column; gap: 6px; }
+.wod-skip-state {
+  font-family: var(--font-hud);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+/* La carte annulée passe en retrait : les champs restent VISIBLES — l'athlète
+   voit ce qu'il annule — mais ne sont plus saisissables. */
+.sf-card.is-skipped .sf-chips,
+.sf-card.is-skipped .sf-input,
+.sf-card.is-skipped .sf-label,
+.sf-card.is-skipped .wod-expected,
+.sf-card.is-skipped .wod-mv-label,
+.sf-card.is-skipped .wod-mv-hint,
+.sf-card.is-skipped .sf-divider {
+  opacity: .3;
+  pointer-events: none;
+}
+.sf-card.is-skipped .wod-skip,
+.sf-card.is-skipped .wod-skip * {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sf-card.is-skipped .wod-result-preview { opacity: .6; }
+/* Historique : même retrait, pour que l'absence se lise comme une absence. */
+.history-row.is-skipped .val { color: var(--muted); font-style: italic; }
+
 #phoneView .wod-result-preview {
   scroll-margin-bottom: calc(180px + var(--safe-bot));
 }

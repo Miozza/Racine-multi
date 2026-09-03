@@ -1286,6 +1286,16 @@
       "consumes": []
     },
     {
+      "path": "dev/wod_skip_checks.js",
+      "size": 12604,
+      "lines": 238,
+      "role": "Garde-fous du conditionnement non fait : les trois motifs, la réversibilité, la règle « aucune donnée de performance sur une ligne annulée », la survie de la note, le refus d'un marqueur vide, la relecture depuis le journal seul, la compatibilité ascendante et la discrétion de la surface, et la contre-épreuve chiffrée sur le consommateur réel : la moyenne de RPE de La Saison passe de 8,5 à 8,0 quand la ligne est nettoyée.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "docs/ARCHITECTURE.md",
       "size": 11094,
       "lines": 195,
@@ -3717,6 +3727,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 362
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/wod_skip.js",
+      "size": 11173,
+      "lines": 238,
+      "role": "Conditionnement de fin non fait, avec son motif (manque de temps, chaleur extrême, blessure) : surface discrète sur la carte WOD, et règle centrale — une ligne annulée existe dans le journal mais ne porte aucune donnée de performance, pour ne pas entrer dans les moyennes de RPE.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachWodSkip"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 365
         }
       ],
       "consumes": []
