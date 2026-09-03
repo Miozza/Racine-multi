@@ -1,3 +1,39 @@
+## V5.0.6 — L'annulation du conditionnement s'affiche repliée
+
+**Le défaut**
+
+La surface livrée en V5.0.5 s'ouvrait **dépliée** : le lien, la question « Pourquoi ? », les trois
+motifs, « Laisser tomber » et « Finalement je l'ai fait » affichés d'un bloc, avant la moindre
+intention — et « Finalement je l'ai fait » visible alors que rien n'était annulé. Ça ne
+ressemblait pas à un bouton. Signalé par l'athlète : « je ne trouve pas où annuler un
+conditionnement ».
+
+**La cause**
+
+`display` posé sur une **classe** bat le `display:none` que l'attribut `[hidden]` tient de la
+feuille de style du navigateur : sa spécificité est plus faible. `.wod-skip-reasons { display:
+flex }` gagnait donc sur le `hidden` que le module posait pourtant correctement.
+
+Les règles des éléments repliables sont maintenant gardées par `:not([hidden])`, et un filet
+générique `[hidden] { display: none !important }` attrape les prochaines. Le lien porte un `✕`
+pour se lire comme une action.
+
+**Ce que le garde-fou ne voyait pas**
+
+`dev/wod_skip_checks.js` vérifiait que le mot `hidden` était présent dans le HTML produit — la
+chaîne de caractères, pas l'affichage. Un test sans navigateur ne pouvait pas attraper ça.
+
+Deux réponses. Le garde-fou node vérifie désormais la **règle CSS** : aucun `display` nu sur un
+élément que le module replie, et le filet générique en place. Et `tests/racine.spec.ts` monte
+l'écran dans un **vrai navigateur** — replié (un seul lien visible), déplié (trois motifs, le
+lien s'efface), annulé (l'état s'affiche, la carte passe en retrait, la ligne collectée ne porte
+ni `rpe` ni `result` ni `rounds`), puis retour en arrière (le résultat du WOD revient).
+
+**Où c'est**
+
+Tout en bas de la carte WOD de l'écran Résultats, sous l'aperçu, séparé par un filet :
+`✕ Conditionnement non fait`.
+
 ## V5.0.5 — Le conditionnement non fait entre dans le journal
 
 **Ce que l'athlète voit changer**

@@ -165,6 +165,28 @@ try {
       'Les motifs ne sont pas dépliés d\'emblée : ils attendent une intention.');
 
     const css = read('styles.css');
+
+    // CE QUE CE TEST NE VOYAIT PAS, et qui est arrivé : l'attribut `hidden`
+    // était bien dans le HTML, et la surface s'ouvrait quand même dépliée —
+    // motifs, « Laisser tomber » et « Finalement je l'ai fait » d'un bloc.
+    // `display` posé sur une CLASSE bat le `display:none` que [hidden] tient
+    // de la feuille de style du navigateur : sa spécificité est plus faible.
+    // Vérifier la présence de l'attribut dans une chaîne ne prouve donc rien
+    // sur ce qui s'affiche. Ces deux assertions regardent la règle CSS.
+    // Les seules classes que le module replie (bind() pose `.hidden` dessus).
+    // `.wod-skip` — le conteneur — n'est jamais replié : il est hors sujet.
+    const REPLIABLES = ['.wod-skip-reasons', '.wod-skip-done'];
+    const jsSrc = read('scripts/session/wod_skip.js');
+    assert(/reasons\.hidden\s*=/.test(jsSrc) && /done\.hidden\s*=/.test(jsSrc),
+      'Le module replie bien ces éléments par l\'attribut hidden (sinon cette liste est périmée).');
+    REPLIABLES.forEach(sel => {
+      const rules = css.match(new RegExp('\\' + sel + '[^{,]*\\{[^}]*\\}', 'g')) || [];
+      const nue = rules.filter(r => /display\s*:/.test(r) && !/:not\(\[hidden\]\)/.test(r.split('{')[0]));
+      assert(nue.length === 0,
+        'La règle de « ' + sel + ' » ne pose pas `display` sans garde :not([hidden]).');
+    });
+    assert(/\[hidden\]\s*\{\s*display:\s*none\s*!important/.test(css),
+      'Le filet générique [hidden]{display:none!important} est en place pour les prochaines.');
     assert(/\.wod-skip-open\s*\{[^}]*background:\s*none/.test(css),
       'Le lien d\'annulation n\'a aucun fond : rien qui ressemble à un bouton.');
     assert(/\.sf-card\.is-skipped[^{]*\{[^}]*pointer-events:\s*none/.test(css),

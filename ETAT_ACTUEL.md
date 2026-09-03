@@ -1,8 +1,30 @@
-# ETAT ACTUEL — V5.0.5
+# ETAT ACTUEL — V5.0.6
 
-Version actuelle : V5.0.5
+Version actuelle : V5.0.6
 
 ## État courant
+
+### L'annulation du conditionnement s'affiche repliée
+
+La surface d'annulation s'ouvrait **dépliée** : le lien, la question, les
+trois motifs, « Laisser tomber » et « Finalement je l'ai fait » affichés d'un
+bloc, avant la moindre intention. Ça ne ressemblait pas à un bouton — l'athlète
+ne l'a pas reconnue.
+
+Cause : `display` posé sur une **classe** bat le `display:none` que l'attribut
+`[hidden]` tient de la feuille de style du navigateur, dont la spécificité est
+plus faible. `.wod-skip-reasons { display: flex }` gagnait donc sur le `hidden`
+que le module posait correctement. Les règles sont maintenant gardées par
+`:not([hidden])`, et un filet générique `[hidden] { display: none !important }`
+attrape les prochaines.
+
+**Ce que le garde-fou ne voyait pas.** `dev/wod_skip_checks.js` vérifiait que le
+mot `hidden` était présent dans le HTML produit — la chaîne de caractères, pas
+l'affichage. Aucun test sans navigateur ne pouvait attraper ça. Deux réponses :
+le garde-fou node vérifie désormais la **règle CSS** (aucun `display` nu sur un
+élément repliable, filet générique en place), et `tests/racine.spec.ts` monte
+l'écran dans un vrai navigateur pour vérifier les trois états — replié, déplié,
+annulé — plus la ligne collectée et le retour en arrière.
 
 ### Le conditionnement non fait entre dans le journal
 

@@ -153,7 +153,7 @@
       '<input class="sf-input" id="wod_skipped_'+esc(key)+'" data-key="'+esc(key)+'" data-field="skipped" type="hidden" value=""/>' +
       '<input class="sf-input" id="wod_skipreason_'+esc(key)+'" data-key="'+esc(key)+'" data-field="skipReason" type="hidden" value=""/>' +
       '<div class="wod-skip" id="wod_skip_'+esc(key)+'">' +
-        '<button type="button" class="wod-skip-open" data-skip-open="1">Conditionnement non fait</button>' +
+        '<button type="button" class="wod-skip-open" data-skip-open="1">✕ Conditionnement non fait</button>' +
         '<div class="wod-skip-reasons" hidden>' +
           '<span class="wod-skip-ask">Pourquoi ?</span>' +
           '<div class="sf-chips">'+chips+'</div>' +
