@@ -146,6 +146,29 @@ function coachUserLoadRatioSource(label){
     }
   }
 
+  // 1 bis. Un LEST sur le poids du corps n'emprunte à personne.
+  //
+  // Le ratio d'une famille dit « cet athlète soulève X fois la référence » sur
+  // une charge TOTALE. Un Weighted Pull-up ou un Weighted Dip ne portent pas une
+  // charge totale : ils portent le supplément posé sur un corps qui pèse déjà.
+  // Les deux échelles n'ont aucune commune mesure, et l'onboarding le dit déjà —
+  // le test de tractions est « reps seulement », justement parce qu'« une
+  // traction lestée ne s'estime pas au 1RM à partir d'un autre mouvement ».
+  // Le ratio emprunté contredisait cette décision juste après.
+  //
+  // Mesuré sur un profil réel : ratio de tirage 1,60 (borne haute du clamp)
+  // appliqué à un lest de traction, alors que le rapport réel entre son lest
+  // mesuré et celui de la référence est d'environ 0,43. Un 30 lb écrit sortait
+  // à 48 lb — sur le mouvement où il a le moins de marge d'erreur.
+  //
+  // Sans emprunt, la charge écrite passe telle quelle et l'historique reprend la
+  // main dès la première séance loggée. Direction sûre : sous-suggérer coûte une
+  // série trop légère, sur-suggérer coûte une épaule.
+  if(typeof coachIsBodyweightExternalLoadMovement === 'function'
+     && coachIsBodyweightExternalLoadMovement(label, null)){
+    return {ratio:1, source:'lest sur poids du corps', borrowed:false};
+  }
+
   // 2. Repli par famille de mouvement pour tout ce qui n'est pas un des 12
   //    mouvements de référence (accessoires, variantes, isolation...).
   var n = coachNormalizeMoveText(label);

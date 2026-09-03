@@ -1,5 +1,5 @@
-// Racine V5.0.3 — Barbell RDL entre dans la bibliothèque
-var APP_VERSION = "V5.0.3";
+// Racine V5.0.4 — un lest sur le poids du corps n'emprunte le ratio de personne
+var APP_VERSION = "V5.0.4";
 
 // Architecture stable
 // programs/*.js = plan prévu

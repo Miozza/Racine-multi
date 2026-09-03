@@ -1,8 +1,45 @@
-# ETAT ACTUEL — V5.0.3
+# ETAT ACTUEL — V5.0.4
 
-Version actuelle : V5.0.3
+Version actuelle : V5.0.4
 
 ## État courant
+
+### Un lest sur le poids du corps n'emprunte le ratio de personne
+
+Le ratio d'une famille dit « cet athlète soulève X fois la référence » sur une
+charge **totale**. Un `Weighted Pull-up` et un `Weighted Dip` ne portent pas une
+charge totale : ils portent le supplément posé sur un corps qui pèse déjà. Les
+deux échelles n'ont aucune commune mesure.
+
+L'onboarding le dit déjà : le test de tractions est « reps seulement », justement
+parce qu'« une traction lestée ne s'estime pas au 1RM à partir d'un autre
+mouvement ». Le repli par famille de `scaling.js` contredisait cette décision
+juste après.
+
+Mesuré sur un profil réel : ratio de tirage **1,60** (borne haute du clamp)
+appliqué à un lest de traction, alors que le rapport entre son lest mesuré et
+celui de la référence vaut environ **0,43**. Un 30 lb écrit sortait à 48 lb — sur
+le mouvement où la marge d'erreur est la plus faible.
+
+Sans emprunt, la charge écrite passe telle quelle et l'historique reprend la main
+dès la première séance loggée. Direction sûre, conforme au commentaire déjà en
+place dans `scaling.js` : sous-suggérer coûte une série trop légère, sur-suggérer
+coûte une épaule.
+
+Le périmètre s'arrête aux deux mouvements déclarés dans
+`COACH_MOVEMENT_TUNING.bodyweightExternalLoadPatterns`. Tout le reste — `Pull-Up`
+sans lest, `Barbell Row`, `Cable Curl`, `Face Pull`, `Lat Pulldown`, `Bench
+Press`, `Ring Dip`, `Push-Up`, `Back Squat` — garde son ratio de famille. C'est le
+**lest** qui déclenche la règle, pas le nom du mouvement.
+
+**Ce qui n'a pas été fait.** Le double comptage de `chestRow8RM` dans
+`_upperPull` reste en place : le test de rowing écrit la même mesure dans deux
+clés aux références différentes (155 et 135), si bien qu'une seule série compte
+deux fois, la seconde 15 % plus haut. Le corriger déplacerait le ratio de tirage
+de **sept** mouvements (rowing, curl, face pull, rear delt, lat pulldown,
+tractions non lestées…) sur tous les profils déjà calibrés — et ne toucherait pas
+du tout les dips lestés, qui sont dans la famille poussée. C'est une décision
+séparée, pas un correctif de passage.
 
 ### Barbell RDL dans la bibliothèque
 
