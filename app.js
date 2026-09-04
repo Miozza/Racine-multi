@@ -1,5 +1,5 @@
-// Racine V5.0.5 — le conditionnement non fait entre dans le journal
-var APP_VERSION = "V5.0.5";
+// Racine V5.0.6 — l'annulation du conditionnement s'affiche repliée
+var APP_VERSION = "V5.0.6";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -1,6 +1,6 @@
 # Racine — prototype multi-utilisateur
 
-- Version : `V5.0.5`
+- Version : `V5.0.6`
 
 Racine est une PWA d'entraînement en JavaScript vanilla, sans framework et sans serveur. Cette branche transforme l'ancien outil personnel en prototype multi-utilisateur local : plusieurs profils peuvent utiliser la même app sur un appareil, avec des charges calibrées à leur niveau. La version courante corrige la mémoire du moteur : renommer un titre de bloc n'efface plus l'historique d'un mouvement, un mouvement jamais travaillé n'hérite plus en silence de l'historique d'un nom voisin (un Close-Grip Bench Press lisait celui du Bench Press), et les charges de `Phase 2 — Fable 5` reviennent à l'échelle de l'athlète de référence, la seule que la mise à l'échelle par profil sait interpréter. Le conditionnement de fin peut être déclaré non fait, avec son motif, pour que l'historique le sache au lieu de laisser un trou. Un lest posé sur le poids du corps (traction ou dip lestés) n'emprunte plus le ratio d'échelle d'une famille de mouvements, dont l'échelle n'a rien à voir. Elle ajoute aussi le `Barbell RDL` à la bibliothèque de mouvements.
 

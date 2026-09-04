@@ -3370,6 +3370,13 @@ body.racine-modal-lock {
   font-size: 18px;
   line-height: 1.2;
 }
+/* `display` posé sur une classe bat le `display:none` de l'attribut [hidden],
+   dont la spécificité est plus faible. Toute la surface d'annulation s'ouvrait
+   donc dépliée — motifs, « Laisser tomber » et « Finalement je l'ai fait »
+   affichés d'un bloc, avant même la moindre intention. Les règles ci-dessous
+   sont gardées par :not([hidden]) ; ce filet attrape les prochaines. */
+[hidden] { display: none !important; }
+
 /* ── Conditionnement non fait ─────────────────────────────────────────────
    Porte de sortie RARE : aucune chrome de bouton, aucun accent, aucune
    couleur d'alerte. Un lien texte en retrait qui ne se dispute pas
@@ -3400,7 +3407,7 @@ body.racine-modal-lock {
   opacity: .72;
 }
 .wod-skip-open:active { opacity: 1; }
-.wod-skip-reasons { display: flex; flex-direction: column; gap: 6px; }
+.wod-skip-reasons:not([hidden]) { display: flex; flex-direction: column; gap: 6px; }
 .wod-skip-ask {
   font-family: var(--font-hud);
   font-size: 11px;
@@ -3409,7 +3416,7 @@ body.racine-modal-lock {
   letter-spacing: .1em;
 }
 .wod-skip-reasons .sf-chips { flex-wrap: wrap; overflow-x: visible; }
-.wod-skip-done { display: flex; flex-direction: column; gap: 6px; }
+.wod-skip-done:not([hidden]) { display: flex; flex-direction: column; gap: 6px; }
 .wod-skip-state {
   font-family: var(--font-hud);
   font-size: 12px;
