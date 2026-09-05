@@ -1,3 +1,13 @@
+## V5.0.7 — Le Power Clean vitesse suit ta capacité, pas les livres écrites
+
+- **Le bloc « A. Power Clean vitesse » déclare enfin sa bande cible.** Comme « B. Squat vitesse » le fait déjà, sa note porte le pourcentage du 1RM visé — 70-76 % en S1/S4, 73-78 % en S2/S5, 76-80 % en S3/S6, 54-59 % au deload. Ces pourcentages ne sont pas inventés : ils sont dérivés des charges déjà écrites au programme, rapportées au 1RM de l'athlète de référence (Power Clean 205 lb). Les livres restent affichées.
+- **Le pourcentage va dans la NOTE, pas dans la charge.** `coachBuildMovementContext` n'inclut pas `load` dans les textes analysés par le détecteur de bloc vitesse : un « 70-76 % » écrit dans `friCleanLoad` était lu comme une cible de charge, jamais comme une bande. C'est déjà par la note que le Squat vitesse déclare son ~60 %.
+- **Ce que ça change.** `coachRuleSpeedStimulusBand` prend le bloc en charge, et les reps en plus ACCÉLÈRENT la dérive vers la bande (`coachSpeedDriftFactor` : 4 reps pour 2 demandées = ratio 2,0 = marge complète). La trajectoire ne recule plus en milieu de cycle : les livres écrites repartent en bas à chaque vague de trois semaines (S4 = S1), un pourcentage de sa propre capacité, non. Mesuré, l'athlète suivant la suggestion : `155 → 165 → 170 → 160 → 165 → 170` devient `145 → 165 → 175 → 175 → 175 → 180`.
+- **La semaine 8 reste hors de la bande** : c'est une montée vers un simple lourd, pas de la vitesse. Elle ne déclare aucun pourcentage.
+- **Sur l'historique actuel, la suggestion descend de 115 à 105 lb et passe en `warning`** : la dernière série loggée est 105 × 4 @ RPE 8, et le seuil d'un bloc vitesse est RPE 7,5. Le moteur dit « barre plus assez rapide, aucune hausse vers la bande tant que ce n'est pas propre ». C'est le garde-fou du bloc, il fait son travail — une série à RPE ≤ 7,5 rouvre la montée.
+- **MAPE du backtest : 17,5 % → 17,9 %**, attendu et assumé. Le backtest compare la suggestion aux charges historiquement mises (95-105 lb) ; viser 70-80 % du 1RM en écarte délibérément.
+- `dev/phase2_fable5_checks.js` nomme désormais les blocs qui déclarent une bande au lieu de compter des exercices : un troisième bloc vitesse apparu sans décision explicite fait échouer le test.
+
 ## V5.0.6 — L'annulation du conditionnement s'affiche repliée
 
 **Le défaut**

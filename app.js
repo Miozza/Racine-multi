@@ -1,5 +1,5 @@
-// Racine V5.0.6 — l'annulation du conditionnement s'affiche repliée
-var APP_VERSION = "V5.0.6";
+// Racine V5.0.7 — le Power Clean vitesse suit ta capacité, pas les livres écrites
+var APP_VERSION = "V5.0.7";
 
 // Architecture stable
 // programs/*.js = plan prévu
