@@ -493,6 +493,16 @@
       {pattern:/barbell rdl/, load:170},
       {pattern:/goblet/, load:70},
       {pattern:/front foot elevated|split squat|bulgarian/, load:40},
+      // Fentes aux halteres : 40 lb PAR MAIN, aligne sur le Bulgarian Split
+      // Squat — le mouvement unilateral le plus proche — et non sur la fente
+      // marchee generique plus bas.
+      // AU-DESSUS de /step up/ et de /walking lunge|lunge/, et ce n'est pas
+      // cosmetique : coachDefaultLoadSeedForMovement() ne teste pas le nom, il
+      // CONCATENE tous les alias du mouvement et cherche dans la chaine. Les
+      // alias de « DB Reverse Lunge » contiennent l'ancien nom ambigu « DB
+      // Reverse Lunge ou Step-up » : place plus bas, ce motif laissait le
+      // repere du step-up gagner sur un mouvement qui n'en est pas un.
+      {pattern:/db reverse lunge|db lunge|dumbbell lunge/, load:40},
       {pattern:/pull through/, load:70},
       {pattern:/hip abduction/, load:25},
       {pattern:/kb swing|kettlebell swing/, load:53},

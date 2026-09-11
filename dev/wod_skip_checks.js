@@ -16,7 +16,9 @@
        import.
     7. Compatibilité ascendante : deux champs AJOUTÉS, aucune clé renommée,
        aucune migration. Une ligne annulée sans motif se lit encore.
-    8. La surface visible reste discrète : aucune chrome de bouton.
+    8. La surface visible reste discrète : aucune chrome de bouton — et
+       LISIBLE : la discrétion vit dans l'absence de chrome, pas dans une
+       taille de texte ou une opacité qui effacent le lien.
 
   Usage :
     node dev/wod_skip_checks.js
@@ -189,6 +191,25 @@ try {
       'Le filet générique [hidden]{display:none!important} est en place pour les prochaines.');
     assert(/\.wod-skip-open\s*\{[^}]*background:\s*none/.test(css),
       'Le lien d\'annulation n\'a aucun fond : rien qui ressemble à un bouton.');
+
+    // L'AUTRE MOITIÉ de la règle, et celle qui a manqué. « Discret » avait
+    // dérivé en 12px à 72 % d'opacité en couleur atténuée : sur fond sombre
+    // avec scanlines, l'athlète ne lisait plus le lien qu'il devait trouver.
+    // La discrétion est portée par l'absence de chrome (assertion ci-dessus),
+    // pas par un texte effacé. Ces deux assertions empêchent la dérive de
+    // repartir : même taille que le corps de la carte (.wod-result-preview,
+    // 13px), et aucune opacité au repos.
+    const openRule = (css.match(/\.wod-skip-open\s*\{[^}]*\}/) || [''])[0];
+    const openSize = Number((openRule.match(/font-size:\s*(\d+)px/) || [0, 0])[1]);
+    const cardSize = Number((
+      (css.match(/\.wod-result-preview\s*\{[^}]*\}/) || [''])[0]
+        .match(/font-size:\s*(\d+)px/) || [0, 0])[1]);
+    assert(cardSize >= 12,
+      'La taille du corps de la carte est lue (' + cardSize + 'px), sinon ce test ne prouverait rien.');
+    assert(openSize >= cardSize,
+      'Le lien d\'annulation se lit à la taille du reste de la carte : ' + openSize + 'px pour ' + cardSize + 'px.');
+    assert(!/opacity:\s*(0|\.\d+)/.test(openRule),
+      'Aucune opacité au repos sur le lien d\'annulation : c\'est ce qui l\'avait rendu illisible.');
     assert(/\.sf-card\.is-skipped[^{]*\{[^}]*pointer-events:\s*none/.test(css),
       'Une carte annulée n\'est plus saisissable.');
   }

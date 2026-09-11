@@ -3379,9 +3379,15 @@ body.racine-modal-lock {
 
 /* ── Conditionnement non fait ─────────────────────────────────────────────
    Porte de sortie RARE : aucune chrome de bouton, aucun accent, aucune
-   couleur d'alerte. Un lien texte en retrait qui ne se dispute pas
-   l'attention avec la saisie du résultat. Les motifs ne se déplient qu'après
-   une première intention. Voir scripts/session/wod_skip.js. */
+   couleur d'alerte. Les motifs ne se déplient qu'après une première
+   intention. Voir scripts/session/wod_skip.js.
+
+   V5.0.7 — « discret » s'était transformé en illisible : 12px à 72 %
+   d'opacité en couleur atténuée, sur fond sombre et scanlines, l'athlète ne
+   lisait plus le lien qu'il devait trouver. La surface reste un lien texte
+   sans fond (c'est ça, l'absence de chrome), mais elle se lit à la même
+   taille que le reste de la carte : 13px, comme .wod-result-preview, à
+   pleine opacité. Discrétion ≠ illisibilité. */
 .wod-skip {
   margin-top: 10px;
   padding-top: 8px;
@@ -3393,35 +3399,35 @@ body.racine-modal-lock {
 .wod-skip-open {
   background: none;
   border: none;
-  padding: 0;
+  padding: 2px 0;
   align-self: flex-start;
-  color: var(--muted);
+  color: var(--text2);
   font-family: var(--font-main);
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
   letter-spacing: .01em;
   text-decoration: underline;
-  text-decoration-color: rgba(168,196,224,.35);
+  text-decoration-color: rgba(207,225,247,.55);
   text-underline-offset: 3px;
   cursor: pointer;
-  opacity: .72;
 }
-.wod-skip-open:active { opacity: 1; }
+.wod-skip-open:active { color: var(--cyan); text-decoration-color: var(--cyan); }
 .wod-skip-reasons:not([hidden]) { display: flex; flex-direction: column; gap: 6px; }
 .wod-skip-ask {
   font-family: var(--font-hud);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text2);
   letter-spacing: .1em;
 }
 .wod-skip-reasons .sf-chips { flex-wrap: wrap; overflow-x: visible; }
 .wod-skip-done:not([hidden]) { display: flex; flex-direction: column; gap: 6px; }
 .wod-skip-state {
   font-family: var(--font-hud);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text2);
   letter-spacing: .04em;
 }
 /* La carte annulée passe en retrait : les champs restent VISIBLES — l'athlète
@@ -3441,9 +3447,12 @@ body.racine-modal-lock {
   opacity: 1;
   pointer-events: auto;
 }
-.sf-card.is-skipped .wod-result-preview { opacity: .6; }
-/* Historique : même retrait, pour que l'absence se lise comme une absence. */
-.history-row.is-skipped .val { color: var(--muted); font-style: italic; }
+/* L'aperçu est LE compte rendu de l'annulation (« NON FAIT · Blessure ») :
+   il ne se met pas en retrait avec les champs qu'il remplace. */
+.sf-card.is-skipped .wod-result-preview { opacity: 1; color: var(--text2); }
+/* Historique : l'italique dit l'absence, la couleur reste lisible. Un
+   var(--muted) sur 12px italique ne se lisait plus sur fond sombre. */
+.history-row.is-skipped .val { color: var(--text2); font-style: italic; }
 
 #phoneView .wod-result-preview {
   scroll-margin-bottom: calc(180px + var(--safe-bot));
