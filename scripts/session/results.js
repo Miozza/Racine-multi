@@ -480,7 +480,7 @@ function renderSessionEntry(){
             CoachWodSkip.bind(it.key, card, function(off){
               var preview = document.getElementById('wod_preview_'+it.key);
               if(off){
-                if(preview) preview.innerHTML = '<strong style="color:var(--muted)">NON FAIT</strong> · '+CoachWodSkip.reasonLabel(it.key);
+                if(preview) preview.innerHTML = '<strong style="color:var(--text)">NON FAIT</strong> · '+CoachWodSkip.reasonLabel(it.key);
               }else{
                 updatePreview();
               }

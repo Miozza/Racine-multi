@@ -1,8 +1,60 @@
-# ETAT ACTUEL — V5.0.6
+# ETAT ACTUEL — V5.0.7
 
-Version actuelle : V5.0.6
+Version actuelle : V5.0.7
 
 ## État courant
+
+### Deux fentes aux haltères entrent dans la bibliothèque
+
+Demande de l'athlète : `DB Reverse Lunge` (fente arrière) et `DB Lunge` (fente
+sur place, deux pieds au sol) manquaient au catalogue. Le premier existait déjà
+comme **libellé canonique** du moteur de charges — un nom que le moteur savait
+lire — mais sans fiche ni vidéo, donc invisible du catalogue que lisent le
+sélecteur de mouvement, « + Ajouter un mouvement » et les remplacements coach.
+Le second n'existait nulle part.
+
+Ce sont **trois** mouvements distincts avec la fente marchée déjà présente
+(`Walking Lunge DB`), pas trois écritures du même : l'amplitude, l'équilibre et
+la charge tenable ne sont pas les mêmes. Aucun alias croisé entre eux, donc
+aucun historique qui migre.
+
+Déclarés partout où le moteur en a besoin : libellé canonique et alias de
+recherche, famille d'équipement `db` (arrondi au cran d'haltère), repère de
+charge **40 lb par main** — aligné sur le `Bulgarian Split Squat`, le mouvement
+unilatéral le plus proche —, profil Brain `unilateral_db`, fiche technique et
+lien vidéo.
+
+**Le piège du repère de charge se re-tend, et il s'est re-tendu ici.**
+`coachDefaultLoadSeedForMovement()` ne teste pas le nom du mouvement : il
+**concatène tous ses alias** et cherche dans la chaîne entière. Les alias de
+`DB Reverse Lunge` contiennent l'ancien nom ambigu `DB Reverse Lunge ou
+Step-up`. Sans entrée dédiée placée **au-dessus** de `/step up/`, c'est le
+repère du step-up qui gagnait sur un mouvement qui n'en est pas un. Un test
+tient l'ordre ; déplacer la ligne plus bas le fait tomber, c'est vérifié.
+
+Le profil Brain exige le mot `DB` dans le motif : une `Front Rack Lunge` est un
+mouvement de **barre**, et lui coller le vocabulaire « progression limitée par
+les haltères disponibles » serait le piège du `Barbell RDL` à l'envers.
+
+### « Conditionnement non fait » se lit
+
+« Discret » avait dérivé en illisible. Le lien sortait en 12 px, à 72 %
+d'opacité, en couleur atténuée, sur fond sombre avec scanlines : l'athlète ne
+lisait plus la porte de sortie qu'il devait trouver. Même chose en aval — l'état
+« NON FAIT · Blessure » de l'aperçu passait en retrait avec les champs qu'il
+remplace, alors qu'il **est** le compte rendu, et la ligne d'historique
+correspondante s'effaçait en `--muted` sur 12 px italique.
+
+La discrétion est maintenant portée par la seule chose qui doit la porter :
+**l'absence de chrome de bouton**. Le texte, lui, se lit à la taille du reste de
+la carte — 13 px comme `.wod-result-preview`, à pleine opacité, en `--text2`.
+L'aperçu d'annulation ne se met plus en retrait, et l'historique garde l'italique
+qui dit l'absence sans la couleur qui l'efface.
+
+`dev/wod_skip_checks.js` protégeait la moitié de la règle (aucun fond, rien qui
+ressemble à un bouton) et pas l'autre. Il compare désormais la taille du lien à
+celle du corps de la carte et refuse toute opacité au repos — les deux seuls
+leviers par lesquels la dérive était passée.
 
 ### L'annulation du conditionnement s'affiche repliée
 

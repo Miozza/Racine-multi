@@ -195,6 +195,30 @@
       }
     },
     {
+      // Fentes aux halteres. Le motif exige le mot DB : une Front Rack Lunge
+      // est un mouvement de BARRE, et le vocabulaire « limite par les halteres
+      // disponibles » y serait faux — c'est exactement le piege deja documente
+      // sur le Barbell RDL, dans l'autre sens.
+      match:/\bdb\b.*lunge|dumbbell.*lunge|lunge\s*db\b/i,
+      profile:{
+        family:'unilateral_db',
+        sensitivity:'medium',
+        progressionStyle:'equipment_limited',
+        confidenceBias:0,
+        ambitionBias:-2,
+        defaultDecision:'equipment_aware',
+        vocabulary:{
+          base:'fente aux haltères',
+          progression:'progression limitée par les haltères disponibles et l’équilibre',
+          risk:'une jambe tient la charge : l’équilibre lâche avant la force'
+        },
+        explain:{
+          validation:'Je veux voir la fente tenue sans vaciller avant de proposer plus lourd.',
+          next:'Je veux confirmer que la charge par main est réellement tenue sur les deux jambes.'
+        }
+      }
+    },
+    {
       match:/curl|face\s*pull|lateral\s*raise|rear\s*delt|extension|pushdown|trap-?3/i,
       profile:{
         family:'accessory',

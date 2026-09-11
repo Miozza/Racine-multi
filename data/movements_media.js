@@ -178,6 +178,12 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   // source colle mieux à la ligne éditoriale.
   "Cable Kickback": "5jJNfIlKTmg",            // Coach Lauren (Cable Glute Kickback)
   "Reverse Lunge": "mHkPgReOqUM",             // Reverse Lunges with Dumbbells — Proper Form
+  // Fentes aux haltères (V5.0.7) — mouvements à part entière de la bibliothèque.
+  // IDs repris de lignes déjà vérifiées de ce fichier : la vidéo « Reverse
+  // Lunges with Dumbbells » montre exactement le DB Reverse Lunge, et celle de
+  // « Walking Lunge DB » exactement la fente aux haltères. Rien d'inventé.
+  "DB Reverse Lunge": "mHkPgReOqUM",          // = Reverse Lunges with Dumbbells — Proper Form
+  "DB Lunge": "eFWCn5iEbTU",                  // = Renaissance Periodization — Dumbbell Lunge
   "Slider Curl": "AlTI3igOaLw",               // Exercise Tutorial: Hamstring Curl With Slider
   "Hip Abduction": "HePuOF1v9-0",             // Exercise Tutorial: Side Lying Hip Abduction
   "Hip CARs": "zbH4XmSREoc",                  // Hip CARS Movement Breakdown

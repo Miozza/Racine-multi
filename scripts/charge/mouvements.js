@@ -72,6 +72,11 @@ function canonicalMovementLabel(nameOrKey){
   if(n.indexOf("trap 3 raise")>=0)return "Trap-3 Raise";
   if(n.indexOf("cable band hip abduction")>=0 || n.indexOf("cable band abduction")>=0 || n.indexOf("cable ou band hip abduction")>=0 || n.indexOf("cable hip abduction")>=0)return "Cable Hip Abduction";
   if(n.indexOf("db reverse lunge ou step up")>=0 || n.indexOf("db reverse lunge")>=0)return "DB Reverse Lunge";
+  // APRES la fente arriere : « db reverse lunge » ne contient pas « db
+  // lunge », mais l'ordre reste le bon reflexe sur une famille de noms qui
+  // s'emboitent. La fente marchee « Walking Lunge DB » garde son nom : elle
+  // est deja dans la bibliotheque et son historique ne doit pas migrer ici.
+  if(n.indexOf("db lunge")>=0 || n.indexOf("dumbbell lunge")>=0)return "DB Lunge";
   // L'ancien nom ambigu « DB RDL ou Barbell RDL » se resout AVANT « barbell
   // rdl » : il contient les deux, et l'historique deja logge dessous est du
   // travail aux halteres. Inverser ces deux lignes deplacerait ces seances.
@@ -172,6 +177,10 @@ function coachMovementLookupLabels(nameOrKey){
     add("DB Reverse Lunge");
     add("DB Reverse Lunge ou Step-up");
   }
+  // Fente aux halteres, deux pieds au sol : mouvement a part entiere, pas un
+  // alias de la fente arriere ni de la fente marchee. Aucun add() croise ici,
+  // volontairement — trois amplitudes et trois charges differentes.
+  if(/db lunge|dumbbell lunge/.test(n))add("DB Lunge");
   if(/db rdl/.test(n)){
     add("DB RDL");
     add("DB RDL ou Barbell RDL");

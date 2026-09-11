@@ -1,3 +1,58 @@
+## V5.0.7 — Deux fentes aux haltères, et « conditionnement non fait » se lit
+
+**Ce que l'athlète voit changer**
+
+- **`DB Reverse Lunge` et `DB Lunge` entrent dans la bibliothèque.** Les deux sont
+  sélectionnables partout où le catalogue est lu : sélecteur de mouvement, « + Ajouter un
+  mouvement », remplacements coach. La fente arrière existait déjà comme libellé canonique du
+  moteur — un nom qu'il savait lire — mais sans fiche ni vidéo, donc absente du catalogue. La
+  fente sur place n'existait nulle part.
+- **« Conditionnement non fait » se lit enfin.** Le lien passe de 12 px à 72 % d'opacité en
+  couleur atténuée à 13 px pleine opacité en `--text2` — la taille du reste de la carte. L'état
+  « NON FAIT · Blessure » de l'aperçu ne se met plus en retrait avec les champs qu'il remplace,
+  et la ligne d'historique garde l'italique qui dit l'absence sans la couleur qui l'efface.
+
+**Trois fentes, trois mouvements**
+
+`DB Reverse Lunge`, `DB Lunge` et la `Walking Lunge DB` déjà présente ne sont pas trois
+écritures du même nom : l'amplitude, l'équilibre et la charge tenable diffèrent. Aucun alias
+croisé entre eux — aucun historique ne migre de l'un à l'autre.
+
+Déclarés partout où le moteur en a besoin : libellé canonique, alias de recherche, famille
+d'équipement `db` (arrondi au cran d'haltère), repère de charge **40 lb par main** — aligné sur
+le `Bulgarian Split Squat`, le mouvement unilatéral le plus proche —, profil Brain
+`unilateral_db`, fiche technique et lien vidéo.
+
+**Le même piège que le Barbell RDL, dans les deux sens**
+
+`coachDefaultLoadSeedForMovement()` ne teste pas le nom du mouvement : il **concatène tous ses
+alias** et cherche dans la chaîne entière. Les alias de `DB Reverse Lunge` contiennent l'ancien
+nom ambigu `DB Reverse Lunge ou Step-up` : sans entrée dédiée placée **au-dessus** de
+`/step up/`, le repère du step-up gagnait sur un mouvement qui n'en est pas un.
+
+Et dans l'autre sens, sur le profil Brain : le motif exige le mot `DB`, parce qu'une
+`Front Rack Lunge` est un mouvement de **barre** et que le vocabulaire « progression limitée par
+les haltères disponibles » y serait faux.
+
+**La discrétion ne vit pas dans la taille du texte**
+
+C'est ce que la surface d'annulation avait oublié. Elle reste un lien sans fond, sans accent et
+sans couleur d'alerte — c'est **ça**, la porte de sortie rare. Ce qui change, c'est qu'on peut
+la lire.
+
+**Garde-fous**
+
+`dev/charge_engine_checks.js` : les deux fentes sortent à 40 lb par main et non aux 35 du
+step-up, en famille `db`, avec le profil Brain haltère ; la `Front Rack Lunge` ne le récupère
+pas ; l'ancien nom ambigu reste rattaché à la fente arrière ; et une fente sur place n'hérite
+jamais de l'historique de la fente arrière. Déplacer la ligne de repère sous `/step up/` fait
+tomber le test — vérifié.
+
+`dev/wod_skip_checks.js` protégeait la moitié de la règle (aucun fond, rien qui ressemble à un
+bouton) et pas l'autre. Il compare désormais la taille du lien à celle du corps de la carte et
+refuse toute opacité au repos — les deux seuls leviers par lesquels la dérive était passée.
+Réduire le lien à 11 px ou lui remettre une opacité fait tomber le test — vérifié.
+
 ## V5.0.6 — L'annulation du conditionnement s'affiche repliée
 
 **Le défaut**

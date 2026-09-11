@@ -142,8 +142,13 @@
 
   // ── Surface visible ──────────────────────────────────────────────────────
   // Discrète VOLONTAIREMENT : c'est une porte de sortie rare, pas une action
-  // de la séance. Un lien texte en retrait, aucune chrome de bouton, et les
-  // motifs ne se déplient qu'après une première intention.
+  // de la séance. Un lien texte, aucune chrome de bouton, et les motifs ne se
+  // déplient qu'après une première intention.
+  // V5.0.7 — discret, PAS illisible. La mise en retrait vivait dans la taille
+  // et l'opacité du texte (12px à 72 %), et l'athlète ne lisait plus le lien
+  // qu'il devait trouver. C'est l'ABSENCE DE CHROME qui porte la discrétion
+  // désormais ; le texte se lit à la taille du reste de la carte (styles.css,
+  // .wod-skip-open). Ne pas remettre d'opacité ici.
   function controlHtml(key){
     key = clean(key);
     var chips = REASONS.map(function(r){

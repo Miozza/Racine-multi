@@ -1478,6 +1478,68 @@ try {
     resetState();
   }
 
+  // ── Deux fentes aux halteres entrent dans la bibliotheque ───────────────
+  // Ajout demande par l'athlete : « DB Reverse Lunge » (fente arriere) et
+  // « DB Lunge » (fente sur place). Le piege est le meme que celui du Barbell
+  // RDL, dans l'autre sens : coachDefaultLoadSeedForMovement() ne teste pas le
+  // nom, il CONCATENE tous les alias et cherche dans la chaine. Les alias de
+  // « DB Reverse Lunge » contiennent l'ancien nom ambigu « DB Reverse Lunge ou
+  // Step-up » — sans une entree dediee PLACEE AU-DESSUS, c'est le repere du
+  // step-up (35) qui gagne sur un mouvement qui n'est pas un step-up.
+  {
+    resetState();
+    assert(ctx.canonicalMovementLabel('DB Reverse Lunge') === 'DB Reverse Lunge'
+        && ctx.canonicalMovementLabel('DB Lunge') === 'DB Lunge',
+      'Les deux fentes sont des mouvements a part entiere, pas des alias.');
+    assert(ctx.canonicalMovementLabel('DB Reverse Lunge ou Step-up') === 'DB Reverse Lunge',
+      'L\'ancien nom ambigu reste rattache a la fente arriere : son historique ne bouge pas.');
+    assert(ctx.canonicalMovementLabel('Walking Lunge DB') === 'Walking Lunge DB',
+      'La fente marchee, deja dans la bibliotheque, ne migre pas vers « DB Lunge ».');
+
+    ['DB Reverse Lunge', 'DB Lunge'].forEach(m => {
+      assert(ctx.coachMovementEquipmentFamily(m) === 'db',
+        '« ' + m + ' » s\'arrondit au cran d\'haltere, pas au pas de barre.');
+      const seed = ctx.coachDefaultLoadSeedForMovement(m, 10);
+      assert(seed === 40,
+        '« ' + m + ' » part de 40 lb PAR MAIN, pas des 35 du step-up ni de la fente generique (obtenu ' + seed + ').');
+    });
+
+    // Trois mouvements, trois historiques. Une fente arriere et une fente sur
+    // place n'ont ni la meme amplitude ni la meme charge : les lier ferait ce
+    // que docs/CHARGE_PROGRESSION_CONTRACT.md interdit.
+    assert(ctx.coachSameMovementSpelling('DB Lunge', 'DB Reverse Lunge') === false
+        && ctx.coachSameMovementSpelling('DB Lunge', 'Walking Lunge DB') === false,
+      'Les trois fentes ne sont pas trois ecritures du meme nom.');
+    ctx.state.athleteState.movements['DB Reverse Lunge'] = {ranges:{}, status:'ok',
+      history:[{date:'2026-09-07', load:55, reps:10, rpe:8, status:'success'}]};
+    assert(ctx.athleteMovementRecord('DB Lunge') === null,
+      'Une fente sur place n\'herite pas de l\'historique de la fente arriere.');
+    assert(ctx.athleteMovementRecord('DB Reverse Lunge') !== null,
+      'Et la fente arriere garde le sien.');
+
+    // Profil Brain : le motif exige le mot DB. Une Front Rack Lunge est un
+    // mouvement de BARRE — lui coller le vocabulaire « limite par les halteres
+    // disponibles » serait le piege du Barbell RDL a l'envers.
+    // movement_profiles.js ne fait pas partie du loadOrder de ce fichier : on le
+    // charge ici, dans son propre bac a sable. Le brancher sous un `if(P)`
+    // aurait donne un test qui ne peut pas echouer — donc qui ne protege rien.
+    {
+      const pctx = {console, Math, String, Object, RegExp};
+      pctx.window = pctx; pctx.globalThis = pctx;
+      vm.runInNewContext(read('scripts/charge/movement_profiles.js'), pctx,
+        {filename: 'movement_profiles.js'});
+      const P = pctx.window.CoachMovementProfiles;
+      assert(!!P, 'CoachMovementProfiles est charge (sinon ce test ne prouverait rien).');
+      ['DB Reverse Lunge', 'DB Lunge'].forEach(m => {
+        assert(P.get(m).family === 'unilateral_db',
+          '« ' + m + ' » porte le profil Brain des fentes aux halteres.');
+      });
+      assert(P.get('Front Rack Lunge').family !== 'unilateral_db',
+        'Une fente a la barre ne recupere pas le vocabulaire haltere.');
+    }
+    resetState();
+  }
+
   // ── Un lest sur le poids du corps n'emprunte le ratio de personne ────────
   // Le ratio d'une famille dit « cet athlete souleve X fois la reference » sur
   // une charge TOTALE. Un Weighted Pull-up et un Weighted Dip portent le
