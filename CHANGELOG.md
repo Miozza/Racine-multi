@@ -1,3 +1,18 @@
+## V5.0.8 — « Conditionnement non fait » se lit à la taille d'une action
+
+Deuxième passe sur la lisibilité livrée juste avant, après essai à l'écran : 13 px se lisait,
+mais pas comme une action.
+
+- **Le lien passe à 16 px en `--text`** — la taille des champs de saisie de la carte
+  (`.sf-input`), pas celle du texte d'aperçu.
+- **L'état « Non fait — Blessure »** suit à 15 px, la question « Pourquoi ? » à 13 px.
+- **Les trois motifs** passent à 14 px avec une zone de tap plus haute. Le sélecteur est porté
+  par `.wod-skip-reasons` : les chips RPE de la carte ne bougent pas.
+
+Ce qui ne change toujours pas : aucun fond, aucun accent, aucune couleur d'alerte. La porte de
+sortie reste rare — elle est juste lisible. `dev/wod_skip_checks.js` tient déjà la règle
+(taille ≥ celle du corps de la carte, aucune opacité au repos).
+
 ## V5.0.7 — Deux fentes aux haltères, et « conditionnement non fait » se lit
 
 **Ce que l'athlète voit changer**

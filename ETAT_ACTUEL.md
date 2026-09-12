@@ -1,6 +1,6 @@
-# ETAT ACTUEL — V5.0.7
+# ETAT ACTUEL — V5.0.8
 
-Version actuelle : V5.0.7
+Version actuelle : V5.0.8
 
 ## État courant
 
@@ -55,6 +55,14 @@ qui dit l'absence sans la couleur qui l'efface.
 ressemble à un bouton) et pas l'autre. Il compare désormais la taille du lien à
 celle du corps de la carte et refuse toute opacité au repos — les deux seuls
 leviers par lesquels la dérive était passée.
+
+**Deuxième passe, après essai à l'écran.** 13 px ne suffisait pas : le lien se
+lisait, mais pas comme une action. Il est maintenant à **16 px en `--text`**,
+la taille des champs de saisie de la carte (`.sf-input`) — pas celle du texte
+d'aperçu. L'état « Non fait — Blessure » suit à 15 px, la question « Pourquoi ? »
+à 13 px, et les trois motifs à 14 px avec une zone de tap plus haute (sélecteur
+porté par `.wod-skip-reasons`, les chips RPE de la carte ne bougent pas).
+Toujours aucun fond, aucun accent, aucune couleur d'alerte.
 
 ### L'annulation du conditionnement s'affiche repliée
 

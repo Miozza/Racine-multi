@@ -1,5 +1,5 @@
-// Racine V5.0.7 — deux fentes aux haltères, et le conditionnement non fait se lit
-var APP_VERSION = "V5.0.7";
+// Racine V5.0.8 — « conditionnement non fait » se lit à la taille d’une action
+var APP_VERSION = "V5.0.8";
 
 // Architecture stable
 // programs/*.js = plan prévu
