@@ -1,5 +1,5 @@
-// Racine V5.0.8 — « conditionnement non fait » se lit à la taille d’une action
-var APP_VERSION = "V5.0.8";
+// Racine V5.0.9 — une séance admise à poids réduit garde sa charge
+var APP_VERSION = "V5.0.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -1478,6 +1478,61 @@ try {
     resetState();
   }
 
+  // ── Une ligne admise a poids reduit garde SA CHARGE ─────────────────────
+  // Bug reel, trouve sur la trace de l'athlete. Quand aucune seance n'a la
+  // meme nature que la journee (ex. un lundi « leger » face a 7 seances
+  // normales), coachFilterHistoryForProgression() admet les lignes d'un autre
+  // contexte a poids reduit — un repli ecrit noir sur blanc « plutot que de
+  // rendre le moteur aveugle ». La copie a poids etait un Object.create(row) :
+  // `copie.load` se lisait par delegation, mais hasOwnProperty(copie,'load')
+  // valait FAUX. Or coachHistoryRawLoadValue() teste exactement ca. Resultat :
+  // 0 ligne sur 7 a charge valide, aucune meilleure serie controlee, lastLoad
+  // a 0, et le panneau (!) affichant « ? x 8 » sur chaque ligne. Le repli
+  // rendait le moteur aveugle, tres exactement.
+  {
+    resetState();
+    const L = 'Bulgarian Split Squat';
+    const normalCtx = {label:L, equipment:'db', intents:[], isTechnical:false, isLight:false};
+    const charges = [35, 45, 40, 40, 45, 50, 50];
+    ctx.state.athleteState.movements[L] = {ranges:{}, status:'upgrade_ready',
+      history: charges.map((load, i) => ({
+        date:'2026-0'+(6+(i>5?3:0))+'-0'+((i%5)+4), load:load, externalLoad:load, capacityLoad:load,
+        hasValidLoad:true, bodyweightMovement:false, reps:8, rpe:8, range:'hypertrophy',
+        status:'success', planned:{}, context:normalCtx}))};
+
+    const jour = ctx.coachBuildMovementContext(L, {kind:'hypertrophy', format:'2x10/jambe',
+      note:'Leger, amplitude complete. On entretient, on ne charge pas.', day:'lundi', week:8});
+    assert(ctx.coachIsLimitedProgressionContext(jour) === true,
+      'La journee legere est bien un contexte limite (sinon ce test ne prouverait rien).');
+
+    const hist = ctx.coachFilterHistoryForProgression(ctx.state.athleteState.movements[L].history, jour);
+    assert(hist.length === charges.length,
+      'Le repli admet les ' + charges.length + ' seances d\'un autre contexte (obtenu ' + hist.length + ').');
+
+    const lues = hist.map(r => ctx.coachHistoryRawLoadValue(r));
+    assert(lues.join(',') === charges.join(','),
+      'Chaque ligne admise a poids reduit garde sa charge : ' + lues.join(',') + '.');
+    const valides = hist.filter(r => ctx.coachHistoryHasValidLoad(r, L, jour)).length;
+    assert(valides === charges.length,
+      'Et toutes comptent comme charge valide (obtenu ' + valides + '/' + charges.length + ').');
+    const best = ctx.coachRecentBestControlledLoad(hist, 8.5, L, jour);
+    assert(!!best && best.load === 50,
+      'La meilleure serie controlee est retrouvee : 50 lb (obtenu ' + (best ? best.load : 'AUCUNE') + ').');
+    const sig = ctx.coachBuildMovementHistorySignal(L, hist, jour, 10);
+    assert(!!sig && sig.lastLoad === 50,
+      'Le signal d\'historique voit la derniere charge : 50 lb (obtenu ' + (sig ? sig.lastLoad : 'aucun') + ').');
+
+    // La raison d'etre de la copie ne doit pas disparaitre avec la correction :
+    // le poids reduit reste pose, et la ligne STOCKEE n'est jamais touchee.
+    assert(ctx.coachHistoryWeight(hist[0]) < 1,
+      'La ligne d\'un autre contexte pese toujours moins qu\'une seance de meme nature.');
+    assert(ctx.state.athleteState.movements[L].history[0].__coachWeight === undefined,
+      'Et la ligne stockee ne recoit aucun marqueur : rien de tout ca ne part dans le localStorage.');
+    assert(ctx.coachHistorySourceRow(hist[0]) === ctx.state.athleteState.movements[L].history[0],
+      'La copie sait remonter a sa ligne stockee (ce dont la trace a besoin).');
+    resetState();
+  }
+
   // ── Deux fentes aux halteres entrent dans la bibliotheque ───────────────
   // Ajout demande par l'athlete : « DB Reverse Lunge » (fente arriere) et
   // « DB Lunge » (fente sur place). Le piege est le meme que celui du Barbell

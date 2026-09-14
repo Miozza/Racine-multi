@@ -1,3 +1,51 @@
+## V5.0.9 — Une séance admise à poids réduit garde sa charge
+
+**Le symptôme**
+
+Signalé par l'athlète : « pourquoi le squat bulgare a perdu son historique ? ». Le panneau `(!)`
+affichait cinq lignes complètes — date, reps, RPE, statut — avec un `?` à la place du poids.
+
+**L'historique n'avait rien perdu**
+
+La trace de charges montrait les sept séances intactes : 35 · 45 · 40 · 40 · 45 · 50 · 50. C'est
+la **lecture** qui était aveugle — et pas seulement à l'affichage.
+
+**La cause**
+
+Quand aucune séance n'a la même nature que la journée (un lundi `léger` face à sept séances
+normales), `coachFilterHistoryForProgression()` admet les lignes d'un autre contexte à poids
+réduit, plutôt que de couper le moteur de tout son passé. Ce repli fabrique une **copie** de
+chaque ligne pour y poser le poids sans toucher la ligne stockée.
+
+La copie était un `Object.create(row)`. `copie.load` se lisait par délégation, mais
+`hasOwnProperty(copie, 'load')` valait **faux** : une propriété héritée n'est pas une propriété
+propre. Or `coachHistoryRawLoadValue()` teste exactement ça.
+
+**Ce que ça coûtait vraiment**
+
+Le `?` n'était que la partie visible. Mesuré sur les données réelles de l'athlète, un jour de
+contexte léger : **0 ligne sur 7** à charge valide, **aucune** meilleure série contrôlée,
+`lastLoad` à **0**. Le repli existe littéralement « plutôt que de rendre le moteur aveugle ». Il
+le rendait aveugle.
+
+**La correction**
+
+La copie est une vraie copie (`Object.assign({}, row)`) : toute vérification de propriété propre
+fonctionne, celle de la charge comme les prochaines. Le poids réduit reste posé, la ligne stockée
+reste intacte, rien ne part dans le `localStorage`.
+
+`scripts/charge/trace.js` remontait à la ligne d'origine par `Object.getPrototypeOf()` ; elle
+passe désormais par un lien explicite, `coachHistorySourceRow()`. Ce détour par le prototype
+expliquait d'ailleurs le symptôme : la trace lisait les charges correctement pendant que le
+moteur ne voyait rien.
+
+**Garde-fou**
+
+`dev/charge_engine_checks.js` rejoue le cas réel — sept séances normales, journée légère — et
+vérifie les quatre mesures : 7/7 lignes à charge valide, meilleure série contrôlée à 50 lb,
+`lastLoad` à 50, et la copie qui pèse toujours moins qu'une séance de même nature sans marquer la
+ligne stockée. Remettre `Object.create` fait tomber le test — vérifié.
+
 ## V5.0.8 — « Conditionnement non fait » se lit à la taille d'une action
 
 Deuxième passe sur la lisibilité livrée juste avant, après essai à l'écran : 13 px se lisait,

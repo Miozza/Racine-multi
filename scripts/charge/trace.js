@@ -72,9 +72,12 @@
     if(typeof coachFilterHistoryForProgression!=='function')return {set:null,weights:null};
     var kept=coachFilterHistoryForProgression(hist,ctx)||[];
     kept.forEach(function(r){
-      // Une ligne admise a poids reduit est une COPIE (Object.create) : la
-      // ligne stockee est son prototype.
-      var origin=(r&&Object.prototype.hasOwnProperty.call(r,'__coachWeight'))?Object.getPrototypeOf(r):r;
+      // Une ligne admise a poids reduit est une COPIE : elle porte un lien
+      // explicite vers la ligne stockee. (Avant, la copie etait un
+      // Object.create() et l'original son prototype — une delegation qui
+      // faisait echouer tous les tests de propriete PROPRE ailleurs dans le
+      // moteur, charge comprise.)
+      var origin=(typeof coachHistorySourceRow==='function')?coachHistorySourceRow(r):r;
       if(set)set.add(origin);
       if(weights)weights.set(origin,(typeof coachHistoryWeight==='function')?coachHistoryWeight(r):1);
     });

@@ -1,8 +1,51 @@
-# ETAT ACTUEL — V5.0.8
+# ETAT ACTUEL — V5.0.9
 
-Version actuelle : V5.0.8
+Version actuelle : V5.0.9
 
 ## État courant
+
+### Une séance admise à poids réduit garde sa charge
+
+Signalé par l'athlète : « pourquoi le squat bulgare a perdu son historique ? ».
+Le panneau `(!)` affichait cinq lignes complètes — date, reps, RPE, statut — avec
+un `?` à la place du poids.
+
+L'historique n'avait rien perdu. La trace de charges montrait les sept séances
+intactes, 35 · 45 · 40 · 40 · 45 · 50 · 50. C'est **la lecture** qui était
+aveugle, et pas seulement à l'affichage.
+
+**La cause.** Quand aucune séance n'a la même nature que la journée — un lundi
+`léger` face à sept séances normales —, `coachFilterHistoryForProgression()`
+admet les lignes d'un autre contexte à poids réduit plutôt que de couper le
+moteur de tout son passé. Ce repli fabrique une **copie** de chaque ligne pour y
+poser le poids sans toucher la ligne stockée. La copie était un
+`Object.create(row)` : `copie.load` se lisait par délégation, mais
+`hasOwnProperty(copie, 'load')` valait **faux** — une propriété héritée n'est pas
+une propriété propre. Or `coachHistoryRawLoadValue()` teste exactement ça.
+
+**Ce que ça coûtait vraiment.** Le `?` n'était que la partie visible. Mesuré sur
+les données réelles de l'athlète, un jour de contexte léger :
+
+| | avant | après |
+|---|---|---|
+| lignes à charge valide | 0 / 7 | 7 / 7 |
+| meilleure série contrôlée | aucune | 50 lb |
+| `lastLoad` du signal d'historique | 0 | 50 |
+
+Le repli existe littéralement « plutôt que de rendre le moteur aveugle ». Il le
+rendait aveugle.
+
+**La correction.** La copie est une vraie copie (`Object.assign({}, row)`), donc
+toute vérification de propriété propre fonctionne — celle de la charge comme les
+prochaines. Le poids réduit reste posé et la ligne stockée reste intacte : rien
+de tout ça ne part dans le `localStorage`. `scripts/charge/trace.js` remontait à
+la ligne d'origine par `Object.getPrototypeOf()` ; elle passe par un lien
+explicite, `coachHistorySourceRow()`. C'est d'ailleurs ce détour par le prototype
+qui expliquait le symptôme : la trace lisait les charges correctement pendant que
+le moteur ne voyait rien.
+
+Un test rejoue le cas réel (sept séances, journée légère) et vérifie les quatre
+mesures ci-dessus. Remettre `Object.create` le fait tomber — vérifié.
 
 ### Deux fentes aux haltères entrent dans la bibliothèque
 
