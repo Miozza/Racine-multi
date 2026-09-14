@@ -1,5 +1,5 @@
-// Racine V5.0.7 — deux fentes aux haltères, et le conditionnement non fait se lit
-var APP_VERSION = "V5.0.7";
+// Racine V5.0.9 — une séance admise à poids réduit garde sa charge
+var APP_VERSION = "V5.0.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

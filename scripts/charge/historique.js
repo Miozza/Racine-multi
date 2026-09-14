@@ -387,13 +387,32 @@ function coachHistoryConfirmationWeight(rows){
   return total;
 }
 
-// Copie a poids : la ligne stockee n'est JAMAIS modifiee. Object.create garde
-// toutes ses proprietes lisibles par delegation, et le marqueur ne vit que sur
-// la copie — rien ne part dans le localStorage.
+// Copie a poids : la ligne stockee n'est JAMAIS modifiee, et le marqueur ne vit
+// que sur la copie — rien ne part dans le localStorage.
+//
+// COPIE REELLE, PAS Object.create(row). La delegation par prototype rendait
+// bien `copie.load` lisible, mais PAS `hasOwnProperty(copie,'load')` : une
+// propriete heritee n'est pas une propriete propre. Or
+// coachHistoryRawLoadValue() teste exactement ca — donc toute ligne admise a
+// poids reduit sortait SANS CHARGE. Consequences mesurees sur un cas reel
+// (Bulgarian Split Squat, 7 seances, journee legere) : 0 ligne sur 7 a charge
+// valide, aucune meilleure serie controlee, lastLoad a 0, et le panneau (!)
+// qui affichait « ? x 8 » pour chaque ligne. Le repli qui vient juste au-dessus
+// existe precisement pour NE PAS rendre le moteur aveugle — il le rendait
+// aveugle.
+//
+// Un lien explicite vers la ligne stockee remplace Object.getPrototypeOf()
+// pour ceux qui doivent remonter a l'original (scripts/charge/trace.js).
 function coachWeightedHistoryRow(row, weight){
-  var copy=Object.create(row);
+  var copy=Object.assign({}, row);
   copy.__coachWeight=weight;
+  copy.__coachSourceRow=row;
   return copy;
+}
+
+// Ligne stockee d'ou vient une copie a poids — ou la ligne elle-meme.
+function coachHistorySourceRow(row){
+  return (row&&row.__coachSourceRow)?row.__coachSourceRow:row;
 }
 
 function coachFilterHistoryForProgression(history, context){

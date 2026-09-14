@@ -3386,8 +3386,12 @@ body.racine-modal-lock {
    d'opacité en couleur atténuée, sur fond sombre et scanlines, l'athlète ne
    lisait plus le lien qu'il devait trouver. La surface reste un lien texte
    sans fond (c'est ça, l'absence de chrome), mais elle se lit à la même
-   taille que le reste de la carte : 13px, comme .wod-result-preview, à
-   pleine opacité. Discrétion ≠ illisibilité. */
+   taille que le reste de la carte, à pleine opacité. Discrétion ≠
+   illisibilité.
+
+   V5.0.8 — toujours trop petit à l'usage : 16px, la taille des champs de
+   saisie de la carte (.sf-input), et non plus celle du texte d'aperçu. C'est
+   une ACTION, elle se lit comme les autres. */
 .wod-skip {
   margin-top: 10px;
   padding-top: 8px;
@@ -3399,16 +3403,16 @@ body.racine-modal-lock {
 .wod-skip-open {
   background: none;
   border: none;
-  padding: 2px 0;
+  padding: 4px 0;
   align-self: flex-start;
-  color: var(--text2);
+  color: var(--text);
   font-family: var(--font-main);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
   letter-spacing: .01em;
   text-decoration: underline;
-  text-decoration-color: rgba(207,225,247,.55);
+  text-decoration-color: rgba(240,246,255,.75);
   text-underline-offset: 3px;
   cursor: pointer;
 }
@@ -3416,18 +3420,21 @@ body.racine-modal-lock {
 .wod-skip-reasons:not([hidden]) { display: flex; flex-direction: column; gap: 6px; }
 .wod-skip-ask {
   font-family: var(--font-hud);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text2);
+  color: var(--text);
   letter-spacing: .1em;
 }
 .wod-skip-reasons .sf-chips { flex-wrap: wrap; overflow-x: visible; }
+/* Motifs : même lecture que le lien qui les ouvre, sans toucher aux chips
+   RPE de la carte (sélecteur volontairement porté par .wod-skip-reasons). */
+.wod-skip-reasons .sf-chip { font-size: 14px; padding-top: 7px; padding-bottom: 7px; }
 .wod-skip-done:not([hidden]) { display: flex; flex-direction: column; gap: 6px; }
 .wod-skip-state {
   font-family: var(--font-hud);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--text2);
+  color: var(--text);
   letter-spacing: .04em;
 }
 /* La carte annulée passe en retrait : les champs restent VISIBLES — l'athlète
