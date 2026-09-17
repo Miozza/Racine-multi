@@ -141,9 +141,13 @@
   // Même gabarit que le bouton note (.gvn-btn-mini) : il se pose dans la ligne
   // du kicker, n'ajoute AUCUNE rangée, donc ne reprend pas un pixel au chrono
   // (docs/UI_CONSTRAINTS.md — « Timer éditable »).
+  // Le bouton s'affiche TOUJOURS. Une premiere version le masquait quand
+  // l'historique etait vide : un bouton absent est alors indiscernable d'une
+  // fonction cassee, et c'est exactement le doute qu'on a eu en le cherchant
+  // dans l'app. Un historique vide se dit DANS la modale, pas par l'absence.
+  // Le compteur reste affiche : il annonce ce qu'on va trouver avant le tap.
   function buttonHtml(title){
     var count = rows({limit: MAX_ROWS}).length;
-    if(!count) return '';
     var label = 'Historique des conditionnements';
     return "<button type='button' class='gvn-btn-mini cwh-btn'"
       + " data-cwh-open='1'"
@@ -152,6 +156,7 @@
       + " title='" + esc(label) + "'>"
       + "<span class='gvn-mini-ico' aria-hidden='true'>≡</span>"
       + "<span class='gvn-mini-label'>Histo</span>"
+      + (count ? "<span class='gvn-mini-count'>" + count + "</span>" : "")
       + "</button>";
   }
 
@@ -190,7 +195,12 @@
   function listHtml(){
     var list = rows({format: currentFormat});
     if(!list.length){
-      return "<div class='cwh-empty'>Aucun conditionnement enregistré pour ce filtre.</div>";
+      // On distingue les deux vides : « rien du tout » n'est pas « rien de ce
+      // format ». Sans ca, un filtre trop etroit se lit comme une panne.
+      var total = rows().length;
+      return total
+        ? "<div class='cwh-empty'>Aucun conditionnement de ce format. " + total + " enregistré(s) au total.</div>"
+        : "<div class='cwh-empty'>Aucun conditionnement enregistré pour l'instant.<br/>Le texte et le score du WOD seront gardés à partir de ta prochaine séance sauvegardée.</div>";
     }
     return list.map(rowHtml).join('');
   }

@@ -7,6 +7,7 @@ Le score d'un WOD était bien sauvegardé — « 4 rounds + 6 », « 9:12 » —
 **Ce qui change**
 
 - **Un bouton « Histo » sur la carte WOD**, en séance guidée et sur l'écran Résultats. Il ouvre la liste des conditionnements passés : date, semaine/jour, **le texte du WOD**, le score, le RPE et la note. Aucune comparaison automatique — l'athlète lit et compare lui-même.
+- **Le bouton s'affiche toujours**, et porte le nombre de séances qu'il contient. Une première version le masquait quand l'historique était vide : un bouton absent est indiscernable d'une fonction cassée. Un historique vide se dit *dans* la modale, et un filtre sans résultat dit combien il en existe hors de ce format.
 - **Le texte du WOD part désormais avec le score** (`wodText`). Champ purement additif : aucune migration, un export produit avant reste importable, et une version antérieure qui relirait un export récent ignore simplement une clé qu'elle ne connaît pas.
 - **L'historique existant est lisible tout de suite.** À défaut de texte enregistré, il est reconstruit depuis (jour, semaine) — et **seulement si le programme actif est celui de la séance**, sinon on affiche « texte non retrouvé » plutôt que le WOD d'un autre programme. Une ligne reconstruite est marquée comme telle : le journal brut l'emporte toujours sur l'état reconstruit (`DATA_FLOW_CONTRACT`).
 - **Filtre AMRAP / EMOM / For Time.** On ne mélange pas un score en rounds et un temps : ce ne sont pas la même unité.

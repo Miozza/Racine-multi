@@ -150,6 +150,29 @@ const resultsSrc = read('scripts/session/results.js');
 assert(/data-field="wodText"/.test(resultsSrc),
   'La carte WOD des resultats enregistre le texte du WOD avec le score.');
 
+// ── 9. Le bouton ne disparait JAMAIS ────────────────────────────────────────
+// Une premiere version le masquait sur un historique vide. Un bouton absent est
+// indiscernable d'une fonction cassee : c'est le doute qu'on a eu en cherchant
+// le bouton dans l'app. Un historique vide se dit dans la modale.
+fakeState.history = [];
+api = load();
+let btn = api.buttonHtml('D. Finisher');
+assert(btn.indexOf('data-cwh-open') !== -1,
+  'Sur un historique VIDE, le bouton est quand meme rendu.');
+assert(btn.indexOf('gvn-mini-count') === -1,
+  'Sur un historique vide, aucun compteur n\'est affiche.');
+
+fakeState.history = [
+  {date:'2026-09-10', actualDate:'2026-09-10', week:3, day:'friday', focus:activeProgram,
+   results:{'wod_A':{result:'2 rounds', wodText:'AMRAP 8 : 10 cal Row.'}}},
+  {date:'2026-09-03', actualDate:'2026-09-03', week:2, day:'friday', focus:activeProgram,
+   results:{'wod_B':{result:'9:12', wodText:'21-15-9 Thruster, for time.'}}}
+];
+api = load();
+btn = api.buttonHtml('D. Finisher');
+assert(btn.indexOf('data-cwh-open') !== -1 && btn.indexOf('>2<') !== -1,
+  'Avec de l\'historique, le bouton annonce combien de seances il porte.');
+
 if(errors.length){
   console.error('\n✗ ' + errors.length + ' echec(s) :');
   errors.forEach(e => console.error('  - ' + e));
