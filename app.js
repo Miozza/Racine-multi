@@ -1,5 +1,5 @@
-// Racine V5.0.9 — une séance admise à poids réduit garde sa charge
-var APP_VERSION = "V5.0.9";
+// Racine V5.0.10 — le Power Clean vitesse suit ta capacité, pas les livres écrites
+var APP_VERSION = "V5.0.10";
 
 // Architecture stable
 // programs/*.js = plan prévu

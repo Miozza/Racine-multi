@@ -34,7 +34,20 @@
    "_hinge": 1,
    "_olympic": 1.105,
    "_overall": 1.5
-  }
+  },
+  "bench": 287,
+  "frontSquat": 216,
+  "strictPress": 184,
+  "powerClean": 224,
+  "backSquat5RM": 235,
+  "hipThrust8RM": 284,
+  "bulgarianDb": 48,
+  "dbRdl": 75,
+  "row8RM": 248,
+  "chestRow8RM": 216,
+  "latPulldown10RM": 32,
+  "inclineDb10RM": 55,
+  "_pourquoi_valeurs": "Capacites testees du profil, reconstituees depuis les ratios ajustes et la reference « Athlete X » (scripts/profiles/reference.js) : valeur = reference x ratio. Le vrai profil de l'athlete les porte — ce sont les 12 champs de calibration, et c'est d'eux que scaleRatios est calcule. Sans elles, coachStrengthAnchorOneRm ne trouve aucune ancre de 1RM (chemin 3, PR_FIELD_MAP) et toute regle exprimee en pourcentage du 1RM reste inerte dans le replay alors qu'elle fonctionne dans l'app."
  },
  "historique": {
   "Back Squat": {

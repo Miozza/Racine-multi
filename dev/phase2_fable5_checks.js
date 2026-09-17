@@ -212,6 +212,16 @@ try {
     'Premiere seance, aucun historique : la charge du programme est proposee telle quelle (' + premiereSeance.loadNum + ' lb).');
 
   // ─── 7. Le reste du programme n est pas devenu un bloc vitesse ───────────
+  // Le compteur seul ne disait pas GRAND-CHOSE : il montait des qu'un bloc
+  // declarait une bande, sans dire lequel. On epingle donc les blocs eux-memes.
+  // Deux, et deux seulement, declarent un pourcentage cible :
+  //   · « B. Squat vitesse »       — ~55-60 % du 1RM
+  //   · « A. Power Clean vitesse » — 70-80 % du 1RM, ajoute deliberement pour
+  //     que la charge suive la capacite reelle de l'athlete au lieu de rester
+  //     collee aux livres ecrites (qui repartent en bas a chaque vague).
+  // Si un troisieme bloc apparait ici sans decision explicite, c'est que le
+  // detecteur s'est elargi tout seul — exactement ce que ce test protege.
+  const vitesseBlocs = {};
   let vitesseCount = 0, exCount = 0;
   (PROG.days || []).forEach(day => {
     for (let w = 1; w <= (PROG.weekLabels || []).length; w++) {
@@ -222,13 +232,18 @@ try {
             kind: b.kind, blockTitle: b.title, note: ex.note, text: b.text,
             format: ex.format, day: day, week: w
           });
-          if (c.isSpeed) vitesseCount++;
+          if (c.isSpeed) { vitesseCount++; vitesseBlocs[b.title] = (vitesseBlocs[b.title] || 0) + 1; }
         });
       });
     }
   });
-  // 7 semaines de bloc vitesse : S8 le retire, la note change.
-  assert(vitesseCount > 0 && vitesseCount <= 8,
+  const titresVitesse = Object.keys(vitesseBlocs).sort();
+  assert(titresVitesse.length === 2
+      && titresVitesse.some(t => /squat vitesse/i.test(t))
+      && titresVitesse.some(t => /power clean vitesse/i.test(t)),
+    'Deux blocs declarent une bande vitesse, et seulement eux : ' + JSON.stringify(titresVitesse));
+  // Tripwire grossier par-dessus : 7 semaines de charge x 2 blocs = 14.
+  assert(vitesseCount > 0 && vitesseCount <= 16,
     'Detection etroite : ' + vitesseCount + ' exercice(s) vitesse sur ' + exCount + ' dans tout le programme.');
 
   // ─── 8. Plancher sans ancre (R3) ─────────────────────────────────────────

@@ -62,7 +62,7 @@ function fable5Plan(week){
       monHinge:"3×10", monHingeLoad:"170-180 lb", monCore:"3×8", monWod:"AMRAP 8 : 10 cal Bike + 10 Goblet Squat + 8 KB Swing.",
       tueMain:"Weighted Pull-up", tueMainFormat:"5×3", tueMainLoad:"75%", tueRow:"4×10/côté", tueRowLoad:"70-75 lb", tueRear:"4×15-20", tueRearLoad:"15-20 lb", tueFace:"3×15-20", tueFaceLoad:"60-70 lb", tueWod:"EMOM 8 : min 1 = 12 cal Row ; min 2 = 10 Ring Row.",
       thuMain:"Strict Press", thuMainFormat:"5×3", thuMainLoad:"115-125 lb", thuSecond:"DB Shoulder Press", thuSecondFormat:"3×10", thuSecondLoad:"40-45 lb / main", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 Push-Up + 10 cal Ski + 12 Sit-Up.",
-      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"145-155 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 Wall Ball + 10 cal Row + 8 Burpees."
+      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"145-155 lb", friCleanPct:"70-76 %", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 Wall Ball + 10 cal Row + 8 Burpees."
     },
     2: {
       label:"S2 Rotation A+", note:"RPE 8. Mêmes variations, plus lourd.", wodNote:"contrôlé",
@@ -70,7 +70,7 @@ function fable5Plan(week){
       monHinge:"3×10", monHingeLoad:"180 lb", monCore:"3×8", monWod:"AMRAP 8 : 12 cal Row + 10 Box Step-Up.",
       tueMain:"Weighted Pull-up", tueMainFormat:"4×3", tueMainLoad:"83%", tueRow:"4×10/côté", tueRowLoad:"75-80 lb", tueRear:"4×15-20", tueRearLoad:"20 lb", tueFace:"4×15-20", tueFaceLoad:"70 lb", tueWod:"EMOM 8 : min 1 = 10 cal Ski ; min 2 = 8 Ring Row + 5 Scap Pull-Up.",
       thuMain:"Strict Press", thuMainFormat:"4×3", thuMainLoad:"125-135 lb", thuSecond:"Incline DB Press", thuSecondFormat:"3×10", thuSecondLoad:"55-60 lb / main", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 DB Push Press + 10 cal Bike.",
-      friClean:"EMOM 9 : 2 Power Clean", friCleanLoad:"150-160 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 KB Swing + 10 cal Bike + 10 Walking Lunge."
+      friClean:"EMOM 9 : 2 Power Clean", friCleanLoad:"150-160 lb", friCleanPct:"73-78 %", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 KB Swing + 10 cal Bike + 10 Walking Lunge."
     },
     3: {
       label:"S3 Rotation A max", note:"3RM propres. RPE 9 max, jamais d'échec.", wodNote:"court et propre",
@@ -78,7 +78,7 @@ function fable5Plan(week){
       monHinge:"2×10", monHingeLoad:"165 lb", monCore:"3×8", monWod:"AMRAP 6 : 10 cal Bike + 10 Air Squat.",
       tueMain:"Weighted Pull-up", tueMainFormat:"montée vers 3RM", tueMainLoad:"92%", tueRow:"3×10/côté", tueRowLoad:"75 lb", tueRear:"3×20", tueRearLoad:"20 lb", tueFace:"3×20", tueFaceLoad:"70 lb", tueWod:"EMOM 6 : min 1 = 10 cal Row ; min 2 = 8 Ring Row.",
       thuMain:"Strict Press", thuMainFormat:"montée vers 3RM", thuMainLoad:"140-150 lb", thuSecond:"DB Shoulder Press", thuSecondFormat:"2×10", thuSecondLoad:"40 lb / main", thuLat:"3×15", thuLatLoad:"20 lb", thuWod:"AMRAP 6 : 6 Push-Up + 10 cal Ski.",
-      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"155-165 lb", friSpeed:"5×2", friSpeedLoad:"55-60%", friWod:"AMRAP 8 : 8 Wall Ball + 10 cal Row."
+      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"155-165 lb", friCleanPct:"76-80 %", friSpeed:"5×2", friSpeedLoad:"55-60%", friWod:"AMRAP 8 : 8 Wall Ball + 10 cal Row."
     },
     4: {
       label:"S4 Rotation B", note:"Nouvelles variations. RPE 7, réapprendre proprement.", wodNote:"modéré",
@@ -86,7 +86,7 @@ function fable5Plan(week){
       monHinge:"3×10", monHingeLoad:"170-180 lb", monCore:"3×8", monWod:"AMRAP 8 : 10 cal Row + 8 Box Jump.",
       tueMain:"Pendlay Row", tueMainFormat:"5×5", tueMainLoad:"135-145 lb", tueRow:"4×8", tueRowLoad:"poids du corps", tueRear:"4×15-20", tueRearLoad:"15-20 lb", tueFace:"3×15-20", tueFaceLoad:"60-70 lb", tueWod:"EMOM 8 : min 1 = 12 cal Row ; min 2 = 6 Pull-Up.",
       thuMain:"Close-Grip Bench Press", thuMainFormat:"5×3", thuMainLoad:"170-180 lb", thuSecond:"Strict Press", thuSecondFormat:"3×6", thuSecondLoad:"105-115 lb", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 DB Bench Press + 10 KB Swing.",
-      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"145-155 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 cal Bike + 10 Goblet Squat + 8 Burpees."
+      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"145-155 lb", friCleanPct:"70-76 %", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 10 cal Bike + 10 Goblet Squat + 8 Burpees."
     },
     5: {
       label:"S5 Rotation B+", note:"RPE 8. Vitesse de barre comme juge.", wodNote:"contrôlé",
@@ -94,7 +94,7 @@ function fable5Plan(week){
       monHinge:"3×10", monHingeLoad:"180 lb", monCore:"3×8", monWod:"AMRAP 8 : 12 cal Bike + 8 Walking Lunge/jambe.",
       tueMain:"Pendlay Row", tueMainFormat:"5×5", tueMainLoad:"145-155 lb", tueRow:"4×8", tueRowLoad:"0-10 lb", tueRear:"4×15-20", tueRearLoad:"20 lb", tueFace:"4×15-20", tueFaceLoad:"70 lb", tueWod:"EMOM 8 : min 1 = 10 cal Ski ; min 2 = 10 Ring Row.",
       thuMain:"Close-Grip Bench Press", thuMainFormat:"4×3", thuMainLoad:"185-195 lb", thuSecond:"Strict Press", thuSecondFormat:"3×6", thuSecondLoad:"110-120 lb", thuLat:"4×15-20", thuLatLoad:"20 lb", thuWod:"AMRAP 7 : 8 DB Push Press + 10 cal Row.",
-      friClean:"EMOM 9 : 2 Power Clean", friCleanLoad:"150-160 lb", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 5 Power Clean léger + 10 cal Row + 10 Sit-Up."
+      friClean:"EMOM 9 : 2 Power Clean", friCleanLoad:"150-160 lb", friCleanPct:"73-78 %", friSpeed:"6×2", friSpeedLoad:"55-60%", friWod:"AMRAP 10 : 5 Power Clean léger + 10 cal Row + 10 Sit-Up."
     },
     6: {
       label:"S6 Rotation B max", note:"3RM/5RM propres. RPE 9 max, 1 rep en réserve.", wodNote:"court et solide",
@@ -102,7 +102,7 @@ function fable5Plan(week){
       monHinge:"2×10", monHingeLoad:"165 lb", monCore:"3×8", monWod:"AMRAP 6 : 10 cal Row + 10 Air Squat.",
       tueMain:"Pendlay Row", tueMainFormat:"montée vers 5RM", tueMainLoad:"165-175 lb", tueRow:"3×8", tueRowLoad:"poids du corps", tueRear:"3×20", tueRearLoad:"20 lb", tueFace:"3×20", tueFaceLoad:"70 lb", tueWod:"EMOM 6 : min 1 = 10 cal Row ; min 2 = 8 Ring Row.",
       thuMain:"Close-Grip Bench Press", thuMainFormat:"montée vers 3RM", thuMainLoad:"205-215 lb", thuSecond:"Strict Press", thuSecondFormat:"2×6", thuSecondLoad:"105-115 lb", thuLat:"3×15", thuLatLoad:"20 lb", thuWod:"AMRAP 6 : 6 Push-Up + 10 cal Bike.",
-      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"155-165 lb", friSpeed:"5×2", friSpeedLoad:"55-60%", friWod:"AMRAP 8 : 8 Wall Ball + 8 cal Row."
+      friClean:"EMOM 8 : 2 Power Clean", friCleanLoad:"155-165 lb", friCleanPct:"76-80 %", friSpeed:"5×2", friSpeedLoad:"55-60%", friWod:"AMRAP 8 : 8 Wall Ball + 8 cal Row."
     },
     7: {
       label:"S7 Deload", note:"Volume divisé par deux. Mobilité et posture en priorité.", wodNote:"facile, zone 2",
@@ -110,7 +110,7 @@ function fable5Plan(week){
       monHinge:"2×10", monHingeLoad:"120 lb", monCore:"2×8", monWod:"10 min Bike zone 2, conversation possible.",
       tueMain:"Pull-Up", tueMainFormat:"3 séries faciles", tueMainLoad:"poids du corps", tueRow:"2×10/côté", tueRowLoad:"55-60 lb", tueRear:"3×15", tueRearLoad:"15 lb", tueFace:"3×15", tueFaceLoad:"50-60 lb", tueWod:"10 min Row zone 2 + 5 min mobilité thoracique.",
       thuMain:"DB Shoulder Press", thuMainFormat:"3×10", thuMainLoad:"35-40 lb / main", thuSecond:"Push-Up", thuSecondFormat:"3×10", thuSecondLoad:"poids du corps", thuLat:"3×15", thuLatLoad:"15 lb", thuWod:"AMRAP facile 8 : 8 cal Ski + 8 Air Squat + 8 Ring Row.",
-      friClean:"EMOM 6 : 2 Power Clean technique", friCleanLoad:"110-120 lb", friSpeed:"4×2", friSpeedLoad:"40-45%", friWod:"10 min pacing facile : Bike + Step-Up + Ring Row."
+      friClean:"EMOM 6 : 2 Power Clean technique", friCleanLoad:"110-120 lb", friCleanPct:"54-59 %", friSpeed:"4×2", friSpeedLoad:"40-45%", friWod:"10 min pacing facile : Bike + Step-Up + Ring Row."
     },
     8: {
       label:"S8 Tests", note:"Tests des 3 ancres. AMRAP contrôlé, arrêt dès que la technique casse.", wodNote:"aucun metcon lourd",
@@ -118,7 +118,7 @@ function fable5Plan(week){
       monHinge:"2×8 léger", monHingeLoad:"120 lb", monCore:"2×8", monWod:"8 min Bike zone 2, récupération.",
       tueMain:"Weighted Pull-up", tueMainFormat:"montée vers 3RM test", tueMainLoad:"92%", tueRow:"2×10/côté léger", tueRowLoad:"55 lb", tueRear:"2×15", tueRearLoad:"15 lb", tueFace:"2×15", tueFaceLoad:"50 lb", tueWod:"8 min Row zone 2.",
       thuMain:"Strict Press", thuMainFormat:"AMRAP @ 85%", thuMainLoad:"85%", thuSecond:"Lateral Raise DB", thuSecondFormat:"2×15", thuSecondLoad:"15 lb", thuLat:"2×15", thuLatLoad:"15 lb", thuWod:"8 min Ski ou Bike zone 2.",
-      friClean:"Montée optionnelle : Power Clean lourd simple", friCleanLoad:"175-195 lb", friSpeed:"—", friSpeedLoad:"—", friWod:"WOD célébration au choix, 10-12 min, intensité libre. Fin de bloc."
+      friClean:"Montée optionnelle : Power Clean lourd simple", friCleanLoad:"175-195 lb", friCleanPct:"", friSpeed:"—", friSpeedLoad:"—", friWod:"WOD célébration au choix, 10-12 min, intensité libre. Fin de bloc."
     }
   })[week] || fable5Plan(1);
 }
@@ -225,7 +225,7 @@ function fable5Blocks(day, week){
   return [
     {time:"8 min", title:"Échauffement dynamique", tag:"Préparation", kind:"warmup", text:"Row 2 min + mobilité hanches/épaules + ramp-up technique clean avec barre vide puis 95-135 lb."},
     {time:"12 min", title:"A. Power Clean vitesse", tag:"Effort dynamique", kind:"main", exercises:[
-      fable5ExFixed("Power Clean", p.friClean, p.friCleanLoad, "le reste de la minute", isTest ? "Option fin de bloc : montée vers un simple lourd si les jambes sont fraîches, sinon rester technique." : "Vitesse maximale à charge sous-maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.")
+      fable5ExFixed("Power Clean", p.friClean, p.friCleanLoad, "le reste de la minute", isTest ? "Option fin de bloc : montée vers un simple lourd si les jambes sont fraîches, sinon rester technique." : (p.friCleanPct ? p.friCleanPct + " du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc." : "Vitesse maximale à charge sous-maximale. Chaque rep doit claquer. Une rep lente = fin du bloc."))
     ]},
     {time:"10 min", title:"B. Squat vitesse", tag:"Effort dynamique", kind:"secondary", exercises:[
       fable5ExFixed("Back Squat", p.friSpeed, p.friSpeedLoad, "1:00", isTest ? "Retiré en semaine de tests." : "~60%, descente contrôlée, remontée explosive. Intention de vitesse, pas de charge.")
