@@ -291,8 +291,17 @@ if(report){
     'La cible de Power Clean est lue a 2 reps, plus au repli 8.');
   assert(pcAll.some(x => x.ecartReps && x.ecartReps.sens === 'surplus'),
     'Le surplus de reps de Power Clean est detecte et expose.');
-  notes.push('[reste a faire] Power Clean garde le contexte `technique` (note « Vitesse maximale ») : '
-    + 'le surplus est lu mais pas applique, la charge du cycle ne monte pas.');
+  // Le bloc declare desormais sa bande cible (« 70-76 % du 1RM » dans la note),
+  // donc coachRuleSpeedStimulusBand le prend en charge : la charge derive vers
+  // la bande, et les reps en plus ACCELERENT cette derive (coachSpeedDriftFactor
+  // — 4 reps pour 2 demandees = ratio 2,0 = marge complete). C'est la reponse a
+  // « je veux qu'il comprenne a quel point je progresse ».
+  assert(pcAll.every(x => x.semaine === 8 || x.contexteDuJour.intentions.includes('speed')),
+    'Power Clean est reconnu comme bloc vitesse sur les semaines de charge.');
+  // La semaine 8 est une montee vers un simple lourd, pas de la vitesse :
+  // elle ne declare aucun pourcentage et garde son comportement.
+  assert(pcAll.filter(x => x.semaine === 8).every(x => !x.contexteDuJour.intentions.includes('speed')),
+    'La semaine de test reste hors de la bande vitesse.');
   assert(m.ecartRepsLus > 0,
     'Le signal d\'ecart de reps est lu et expose dans la trace (' + m.ecartRepsLus + ' occurrences).');
   assert(report.mouvements.every(x => x.programme.repsCiblesMin !== undefined),
@@ -372,6 +381,13 @@ if(report){
   assert(garde.length && garde[garde.length - 1].propose > 125,
     'Un athlete qui GARDE 125 lb en depassant les reps voit quand meme la suggestion monter (obtenu '
       + (garde.length ? garde[garde.length - 1].propose : 0) + ' lb).');
+  // La trajectoire ne redescend plus en milieu de cycle. Avant, elle suivait les
+  // livres ecrites, qui repartent en bas a chaque vague de trois semaines
+  // (S4 = S1) : l'athlete voyait sa charge BAISSER apres avoir progresse. Un
+  // pourcentage de SON 1RM, lui, ne repart pas en arriere.
+  const recule = suivi.some((x, i) => i > 0 && x.propose < suivi[i - 1].propose);
+  assert(!recule,
+    'La trajectoire ne recule plus en milieu de cycle : ' + suivi.map(x => x.propose).join(' -> ') + '.');
 }
 
 if(errors.length){

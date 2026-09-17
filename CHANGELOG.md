@@ -1,3 +1,15 @@
+## V5.0.10 — Le Power Clean vitesse suit ta capacité, pas les livres écrites
+
+- **Le bloc « A. Power Clean vitesse » déclare enfin sa bande cible.** Comme « B. Squat vitesse » le fait déjà, sa note porte le pourcentage du 1RM visé — 70-76 % en S1/S4, 73-78 % en S2/S5, 76-80 % en S3/S6, 54-59 % au deload. Ces pourcentages ne sont pas inventés : ils sont dérivés des charges déjà écrites au programme, rapportées au 1RM de l'athlète de référence (Power Clean 205 lb). Les livres restent affichées.
+- **Le pourcentage va dans la NOTE, pas dans la charge.** `coachBuildMovementContext` n'inclut pas `load` dans les textes analysés par le détecteur de bloc vitesse : un « 70-76 % » écrit dans `friCleanLoad` serait lu comme une cible de charge, jamais comme une bande. C'est déjà par la note que le Squat vitesse déclare son ~60 %.
+- **Ce que ça change.** `coachRuleSpeedStimulusBand` prend le bloc en charge, et les reps en plus accélèrent la dérive vers la bande. La trajectoire ne recule plus en milieu de cycle : les livres écrites repartent en bas à chaque vague de trois semaines (S4 = S1), un pourcentage de sa propre capacité, non. Mesuré sur la fixture de replay, l'athlète suivant la suggestion : `155 → 165 → 170 → 160 → 165 → 170` devient `145 → 165 → 175 → 175 → 175 → 180`.
+- **La semaine 8 reste hors de la bande** : c'est une montée vers un simple lourd, pas de la vitesse. Elle ne déclare aucun pourcentage.
+- **Le garde-fou du bloc vitesse reste prioritaire.** Si la dernière série loggée dépasse RPE 7,5, aucune hausse vers la bande n'est proposée — « barre plus assez rapide ». Une série propre rouvre la montée. Ce seuil n'a pas été touché pour faire monter le chiffre.
+- `dev/fixtures/charge_replay_athlete.json` porte désormais les 12 capacités testées du profil. Sans elles, `coachStrengthAnchorOneRm` ne trouvait aucune ancre de 1RM et toute règle exprimée en pourcentage restait inerte dans le replay, alors qu'elle fonctionne dans l'app.
+- `dev/phase2_fable5_checks.js` nomme désormais les blocs qui déclarent une bande au lieu de compter des exercices : un troisième bloc vitesse apparu sans décision explicite fait échouer le test.
+
+**Note de récupération** — ce travail avait été écrit le 5 septembre sur une branche dont la pull request était déjà fermée. Il n'a jamais été fusionné et était absent de `main`. Il est réintégré ici tel quel, renuméroté de V5.0.7 (numéro déjà pris) vers V5.0.10.
+
 ## V5.0.9 — Une séance admise à poids réduit garde sa charge
 
 **Le symptôme**
