@@ -1,3 +1,28 @@
+## V5.0.11 — L'historique des conditionnements s'ouvre depuis la séance
+
+**Le défaut**
+
+Le score d'un WOD était bien sauvegardé — « 4 rounds + 6 », « 9:12 » — mais **rien ne disait de quel WOD il venait**. Deux trous : `plannedMapFromSessionExercises()` exclut les WOD (`if(!it||it.isWod)return;`), donc une ligne WOD ne portait aucun contexte, et le texte du conditionnement n'était jamais enregistré. Un score sans son WOD n'est pas comparable.
+
+**Ce qui change**
+
+- **Un bouton « Histo » sur la carte WOD**, en séance guidée et sur l'écran Résultats. Il ouvre la liste des conditionnements passés : date, semaine/jour, **le texte du WOD**, le score, le RPE et la note. Aucune comparaison automatique — l'athlète lit et compare lui-même.
+- **Le bouton s'affiche toujours**, et porte le nombre de séances qu'il contient. Une première version le masquait quand l'historique était vide : un bouton absent est indiscernable d'une fonction cassée. Un historique vide se dit *dans* la modale, et un filtre sans résultat dit combien il en existe hors de ce format.
+- **Le texte du WOD part désormais avec le score** (`wodText`). Champ purement additif : aucune migration, un export produit avant reste importable, et une version antérieure qui relirait un export récent ignore simplement une clé qu'elle ne connaît pas.
+- **L'historique existant est lisible tout de suite.** À défaut de texte enregistré, il est reconstruit depuis (jour, semaine) — et **seulement si le programme actif est celui de la séance**, sinon on affiche « texte non retrouvé » plutôt que le WOD d'un autre programme. Une ligne reconstruite est marquée comme telle : le journal brut l'emporte toujours sur l'état reconstruit (`DATA_FLOW_CONTRACT`).
+- **Filtre AMRAP / EMOM / For Time.** On ne mélange pas un score en rounds et un temps : ce ne sont pas la même unité.
+- **Un conditionnement non fait garde son identité.** `wodText` n'est volontairement pas un champ de performance : il survit au nettoyage de `wod_skip.js`, donc l'historique dit *lequel* n'a pas été fait au lieu d'un trou anonyme.
+
+**Ce que ça ne fait pas**
+
+Aucune correspondance par titre : les titres de blocs sont génériques et réutilisés (« D. Finisher » couvre sept WOD sans rapport), les regrouper n'aurait rien voulu dire. Et c'est de l'affichage seul — le module ne touche ni au moteur de charges ni à aucune clé de stockage. Un résultat de WOD ne remplace jamais une capacité principale.
+
+**Placement**
+
+Le bouton se pose dans la ligne du kicker, à côté du bouton note, au gabarit `.gvn-btn-mini` existant. Aucune rangée ajoutée à la carte WOD : la taille des chiffres du chrono ne bouge pas (`UI_CONSTRAINTS.md` — Timer éditable).
+
+Garde-fou : `dev/wod_history_checks.js`.
+
 ## V5.0.10 — Le Power Clean vitesse suit ta capacité, pas les livres écrites
 
 - **Le bloc « A. Power Clean vitesse » déclare enfin sa bande cible.** Comme « B. Squat vitesse » le fait déjà, sa note porte le pourcentage du 1RM visé — 70-76 % en S1/S4, 73-78 % en S2/S5, 76-80 % en S3/S6, 54-59 % au deload. Ces pourcentages ne sont pas inventés : ils sont dérivés des charges déjà écrites au programme, rapportées au 1RM de l'athlète de référence (Power Clean 205 lb). Les livres restent affichées.

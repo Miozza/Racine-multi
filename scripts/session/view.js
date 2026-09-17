@@ -597,10 +597,15 @@ function renderGuidedSession(){
     // aucune rangée ajoutée, donc la taille des chiffres du chrono ne bouge pas.
     var wodNoteBtn = (typeof guidedNoteButtonHtml==="function")
       ? guidedNoteButtonHtml({key:"wod_"+st.title, title:st.title}) : "";
+    // Historique des conditionnements passés (scripts/session/wod_history.js).
+    // Même gabarit que le bouton note et même ligne : aucune rangée ajoutee,
+    // donc la taille des chiffres du chrono ne bouge pas (UI_CONSTRAINTS).
+    var wodHistoBtn = "";
+    try{ if(window.CoachWodHistory) wodHistoBtn = CoachWodHistory.buttonHtml(st.title)||""; }catch(e){}
     html+="<div class='guided-wod-head'>"+
           "<div class='guided-wod-kicker-row'>"+
             "<div class='guided-wod-kicker'>"+escHtml((cfg&&cfg.label)||"WOD")+"</div>"+
-            wodNoteBtn+
+            "<div class='guided-wod-kicker-actions'>"+wodHistoBtn+wodNoteBtn+"</div>"+
           "</div>"+
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
           "</div>";

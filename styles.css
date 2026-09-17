@@ -8253,3 +8253,84 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   margin-top:14px;
 }
 .calib-actions .btn-ghost{ min-height:44px; }
+
+/* ═══════════════════════════════════════════
+   HISTORIQUE DES CONDITIONNEMENTS (scripts/session/wod_history.js)
+   Le bouton vit dans la ligne du kicker de la carte WOD, à côté du bouton
+   note : même gabarit .gvn-btn-mini, donc AUCUNE hauteur ajoutée à la carte
+   et aucun pixel repris au chrono (docs/UI_CONSTRAINTS.md — Timer éditable).
+   Le reste est dans la modale .tuto-modal, partagée avec le tuto et
+   l'explication de charge. Palette et polices existantes uniquement.
+   ═══════════════════════════════════════════ */
+/* Deux boutons à droite du kicker : ils restent groupés et collés, sinon le
+   `space-between` de la ligne les écarterait aux deux bouts. */
+.guided-wod-kicker-actions{
+  display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;
+}
+/* Ligne du titre de la carte WOD des Résultats : le bouton se pose au bout
+   sans pousser le nom sur une deuxième ligne. */
+#resultsView .sf-name-row{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+#resultsView .sf-name-row > span{min-width:0;overflow-wrap:anywhere;}
+#resultsView .sf-name-row .gvn-btn-mini{flex:0 0 auto;}
+
+.cwh-filters{
+  display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px;
+}
+.cwh-filter{
+  flex:1 1 auto;min-height:36px;padding:0 12px;border-radius:999px;
+  border:1px solid rgba(30,144,255,.45);
+  background:rgba(30,144,255,.08);
+  color:var(--blue2);
+  font-family:var(--font-hud);font-size:11px;font-weight:900;
+  letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.cwh-filter.active{
+  border-color:var(--cyan);background:var(--cyan);color:var(--bg);
+  box-shadow:0 0 12px rgba(0,212,255,.45);
+}
+/* La liste défile dans la modale : l'historique peut être long, la coquille
+   ne doit pas grandir sans fin. */
+.cwh-list{max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.cwh-row{
+  border:1px solid rgba(30,144,255,.22);
+  border-radius:12px;padding:10px 12px;margin-bottom:8px;
+  background:rgba(30,144,255,.05);
+}
+.cwh-row-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-family:var(--font-hud);font-size:10px;font-weight:900;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--blue2);
+}
+.cwh-tag{
+  flex:0 0 auto;padding:2px 7px;border-radius:999px;
+  background:rgba(0,212,255,.16);color:var(--cyan);font-size:9px;
+}
+.cwh-row-title{
+  margin-top:4px;font-family:var(--font-hud);font-size:12px;font-weight:900;
+  color:var(--white);letter-spacing:.04em;
+}
+.cwh-row-text{
+  margin-top:4px;font-family:var(--font-main);font-size:13px;line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.cwh-rebuilt{color:var(--blue2);font-size:11px;}
+.cwh-missing{color:var(--blue2);font-style:italic;}
+/* Le score est ce qu'on vient lire : police HUD, taille au-dessus du texte. */
+.cwh-row-score{
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+  margin-top:7px;font-family:var(--font-hud);font-size:17px;font-weight:900;
+  color:var(--cyan);
+}
+.cwh-rpe{font-size:11px;color:var(--blue2);letter-spacing:.06em;}
+.cwh-row-score.cwh-skipped{color:var(--blue2);font-size:13px;}
+.cwh-row-note{
+  margin-top:5px;font-family:var(--font-main);font-size:12px;
+  color:var(--blue2);overflow-wrap:anywhere;
+}
+.cwh-empty{
+  padding:18px 4px;text-align:center;font-family:var(--font-main);
+  font-size:13px;color:var(--blue2);
+}

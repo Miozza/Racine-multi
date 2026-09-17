@@ -45,8 +45,11 @@
     {id:'blessure', label:'Blessure'}
   ];
 
-  // Champs de performance à retirer d'une ligne annulée. Même liste que les
+  // Champs de performance à retirer d'une ligne annulée. Sous-ensemble des
   // `data-field` écrits par la carte WOD de scripts/session/results.js.
+  // `wodText` en est volontairement absent : ce n'est pas une performance,
+  // c'est l'identité du conditionnement. Un WOD non fait doit quand même dire
+  // LEQUEL n'a pas été fait, sinon l'historique montre un trou anonyme.
   var PERFORMANCE_FIELDS = ['rpe','result','rounds','roundSplits','lastRoundRemaining'];
 
   function clean(v){ return String(v === undefined || v === null ? '' : v); }

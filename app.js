@@ -1,5 +1,5 @@
-// Racine V5.0.10 — le Power Clean vitesse suit ta capacité, pas les livres écrites
-var APP_VERSION = "V5.0.10";
+// Racine V5.0.11 — l'historique des conditionnements s'ouvre depuis la séance
+var APP_VERSION = "V5.0.11";
 
 // Architecture stable
 // programs/*.js = plan prévu
