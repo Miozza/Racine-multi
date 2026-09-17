@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 215,
+    "ACTIF": 217,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -4018,6 +4018,26 @@
       "size": 366,
       "lines": 9,
       "role": "Test end-to-end Playwright de l application.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/wod_history.js",
+      "size": 12273,
+      "lines": 274,
+      "role": "Historique des conditionnements (porte window.CoachWodHistory). Affiche les WOD passés avec leur texte, leur score, leur RPE et leur note : un score seul (« 4 rounds + 6 ») ne disait pas de quel WOD il venait. Deux sources pour le texte, dans l'ordre : `wodText` enregistré avec le score, sinon reconstruction depuis (jour, semaine) et SEULEMENT si le programme actif est celui de la séance. Ne compare rien, ne touche ni au moteur de charges ni à aucune clé de stockage : c'est de l'affichage.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "dev/wod_history_checks.js",
+      "size": 8612,
+      "lines": 158,
+      "role": "Garde-fous de l'historique des conditionnements : la clé de lecture est celle de la ligne WOD des résultats, le format se lit sur le texte et jamais sur le titre (générique et réutilisé), le texte enregistré l'emporte sur la reconstruction, une séance d'un autre programme ne se reconstruit pas, un WOD non fait garde son identité, et le module n'écrit rien ni ne touche au moteur de charges.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],

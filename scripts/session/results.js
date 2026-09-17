@@ -192,7 +192,11 @@ function renderSessionEntry(){
       var card=document.createElement("div");
       card.className="sf-card";
       // ── Carte WOD intelligente ──
-      card.innerHTML = '<div class="sf-name">'+item.name+'</div>';
+      // Historique des conditionnements : même bouton que la carte WOD de la
+      // séance guidée (scripts/session/wod_history.js), dans la ligne du titre.
+      var histoBtn = '';
+      try{ if(window.CoachWodHistory) histoBtn = CoachWodHistory.buttonHtml(item.key.replace(/^wod_/,''))||''; }catch(e){}
+      card.innerHTML = '<div class="sf-name sf-name-row"><span>'+item.name+'</span>'+histoBtn+'</div>';
       container.appendChild(card);
 
       var wodInner = '';
@@ -280,6 +284,10 @@ function renderSessionEntry(){
         wodInner += '<input class="sf-input" id="wod_free_'+item.key+'" data-key="'+item.key+'" data-field="result" type="hidden" value="EMOM complété"/>';
       }
 
+      // Le texte du WOD part avec le score. Sans lui, l'historique montrait
+      // « 4 rounds + 6 » sans jamais dire de quoi. Champ purement additif :
+      // aucune migration, et un export produit avant reste importable.
+      wodInner += '<input class="sf-input" id="wod_text_'+item.key+'" data-key="'+item.key+'" data-field="wodText" type="hidden" value="'+escHtml(item.wodText||'')+'"/>';
       wodInner += '<input class="sf-input" id="wod_rpe_value_'+item.key+'" data-key="'+item.key+'" data-field="rpe" type="hidden" value="8"/>';
       wodInner += '<span class="sf-label" style="margin-top:12px">RPE</span>';
       wodInner += '<div class="sf-chips" id="wod_rpe_'+item.key+'">';
