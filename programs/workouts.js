@@ -48,6 +48,11 @@ function buildWorkout(day,week){
     // appliqués ici — l'entonnoir unique de toutes les vues. La logique vit
     // dans le domaine profils, pas dans programs/.
     if(window.RacineMovementSwaps && RacineMovementSwaps.applyToWorkout) w = RacineMovementSwaps.applyToWorkout(w);
+    // Ajustements Coach IA (scripts/coach_ai/plan.js), acceptés par l'athlète.
+    // APRÈS les remplacements : un ajustement vise le mouvement tel qu'il
+    // s'affiche, pas le nom d'origine du template. La logique vit dans le
+    // domaine coach_ai, pas dans programs/ — même règle que les remplacements.
+    if(window.CoachAIPlan && CoachAIPlan.applyToWorkout) w = CoachAIPlan.applyToWorkout(w, day, week);
     return w;
   }
 

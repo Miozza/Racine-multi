@@ -8334,3 +8334,257 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   padding:18px 4px;text-align:center;font-family:var(--font-main);
   font-size:13px;color:var(--blue2);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COACH IA — conversation, propositions, réglages.
+   Propriétaire : scripts/coach_ai/ui.js.
+   Aucune police ni couleur d'accent nouvelle (CLAUDE.md §5) : Orbitron pour
+   le HUD (titres, étiquettes), Inter pour le texte lu, et les tokens
+   existants pour tout le reste.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+#coachaiView {
+  display: none;
+  flex-direction: column;
+  height: calc(100dvh - var(--nav-h) - var(--safe-top) - var(--safe-bot));
+  padding: 0 16px 8px;
+  gap: 8px;
+}
+#coachaiView.view-active { display: flex; }
+
+#coachaiView .view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cai-title {
+  font-family: var(--font-hud);
+  font-size: 15px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin: 0;
+}
+.cai-gear {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+/* ── Fil de conversation ── */
+
+.cai-messages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.cai-msg {
+  max-width: 88%;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-family: var(--font-main);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+.cai-msg p { margin: 0 0 6px; }
+.cai-msg p:last-child { margin-bottom: 0; }
+.cai-list { margin: 4px 0 6px; padding-left: 18px; }
+.cai-list li { margin-bottom: 4px; }
+
+/* L'athlète à droite, le coach à gauche : la convention que tout le monde
+   lit sans légende. */
+.cai-msg-me {
+  align-self: flex-end;
+  background: rgba(30, 144, 255, .14);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.cai-msg-coach {
+  align-self: flex-start;
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  box-shadow: 0 0 18px var(--sl-glow);
+}
+.cai-msg-system {
+  align-self: center;
+  max-width: 100%;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid var(--border2);
+  font-size: 13px;
+  color: var(--muted);
+}
+.cai-ok  { border-color: rgba(77, 255, 136, .35); color: var(--green); }
+.cai-err { border-color: rgba(255, 107, 127, .35); color: var(--red-hud); }
+
+.cai-thinking { opacity: .65; font-style: italic; }
+
+.cai-empty {
+  margin: auto 0;
+  padding: 18px 4px;
+  color: var(--muted);
+  font-family: var(--font-main);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.cai-empty-title {
+  font-family: var(--font-hud);
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin: 0 0 8px;
+}
+.cai-empty-hint {
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  color: var(--text2);
+  opacity: .75;
+}
+
+/* ── Cartes de proposition ── */
+
+.cai-proposals { display: flex; flex-direction: column; gap: 10px; }
+
+.cai-patch {
+  border: 1px solid var(--cyan);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 0 22px var(--sl-glow);
+  overflow: hidden;
+}
+.cai-patch-head {
+  font-family: var(--font-hud);
+  font-size: 12px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  padding: 10px 13px 6px;
+}
+.cai-patch-body {
+  padding: 0 13px 8px;
+  font-family: var(--font-main);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+.cai-patch-body p { margin: 0 0 5px; }
+.cai-patch-foot {
+  padding: 0 13px 10px;
+  font-family: var(--font-main);
+  font-size: 12px;
+  color: var(--muted);
+}
+.cai-patch-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 13px;
+  border-top: 1px solid var(--border2);
+}
+
+/* ── Boutons ── */
+
+.cai-btn {
+  flex: 1 1 auto;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel3);
+  color: var(--text);
+  font-family: var(--font-hud);
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  /* 44px de haut minimum : cible tactile utilisable avec des mains moites. */
+  min-height: 44px;
+}
+.cai-btn:disabled { opacity: .5; }
+.cai-btn-accept { border-color: var(--green); color: var(--green); }
+.cai-btn-refuse { border-color: var(--border); color: var(--muted); }
+.cai-btn-send { flex: 0 0 auto; }
+
+/* ── Zone de saisie ── */
+
+.cai-composer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding-bottom: var(--safe-bot);
+}
+.cai-textarea {
+  flex: 1 1 auto;
+  resize: none;
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  font-family: var(--font-main);
+  /* 16px exactement : en dessous, Safari iOS zoome au focus et casse la mise
+     en page de la vue. Ce n'est pas un choix esthétique. */
+  font-size: 16px;
+  line-height: 1.4;
+}
+.cai-textarea::placeholder { color: var(--muted); opacity: .7; }
+
+/* ── Bandeau d'indisponibilité ── */
+
+.cai-banner {
+  padding: 10px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 107, 53, .08);
+  color: var(--text2);
+  font-family: var(--font-main);
+  font-size: 13px;
+}
+.cai-banner p { margin: 0; }
+
+/* ── Réglages ── */
+
+.cai-settings {
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cai-settings.cai-hidden { display: none; }
+.cai-label {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.cai-input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  font-family: var(--font-main);
+  font-size: 16px;
+}
+.cai-hint {
+  margin: 0;
+  font-family: var(--font-main);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.cai-settings-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }

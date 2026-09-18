@@ -1,8 +1,51 @@
-# ETAT ACTUEL — V5.0.11
+# ETAT ACTUEL — V5.1.0
 
-Version actuelle : V5.0.11
+Version actuelle : V5.1.0
 
 ## État courant
+
+### Coach IA — il lit ton entraînement, il propose, tu décides
+
+Nouveau domaine `scripts/coach_ai/`, porte publique `window.CoachAI`, onglet
+réservé à l'admin. C'est la première fois que Racine appelle le réseau : la
+règle « pas de distant » (CLAUDE.md §3.4) a été levée explicitement le
+2026-09-18, pour ce domaine seulement.
+
+**Ce qu'il voit.** L'historique réel des séances, les notes dictées pendant
+l'entraînement, la progression et la mémoire Brain par mouvement, le matériel
+disponible, les remplacements déjà actifs. Le contexte de départ reste court ;
+il creuse un mouvement précis à la demande, avec l'outil
+`consulter_mouvement`, qui lui rend aussi la suggestion courante du moteur et
+son explication — pour qu'il raisonne **autour**, pas contre.
+
+**Ce qu'il peut proposer.** Un remplacement de mouvement, un changement de
+format / repos / consigne sur un exercice, ou une semaine complète. Chaque
+proposition arrive en carte Accepter / Refuser. Rien n'entre dans
+l'entraînement sans ce geste : `chat.js` ne référence jamais
+`CoachAIPatch.apply`, seul le bouton l'appelle.
+
+**Ce qu'il ne peut pas faire : écrire une charge.** Aucun outil n'a de champ de
+poids — c'est dans le schéma JSON, pas dans une consigne de prompt, et le
+garde-fou échoue si un tel champ réapparaît. Dans `programs/`, une charge
+chiffrée est un %1RM de l'athlète de référence que `scaling.js` redescend
+ensuite ; un nombre écrit par un modèle est indécidable entre les deux et donne
+une double réduction. Et sur le poids exact, le moteur est meilleur : il
+connaît les e1RM réels, le frein RPE, les ratios du profil et les tailles du
+rack. L'intensité voulue passe par le champ `intention`
+(`technique` / `legere` / `facile`), que `coachExtractMovementIntent()` lit
+déjà pour couper l'auto-progression.
+
+**Comment une semaine générée arrive à l'écran.** Par un programme normal,
+`programs/ai_custom.js` (privé), qui lit ses blocs dans `state.aiPlan` au lieu
+de les coder en dur. `buildWorkout()` étant l'entonnoir unique de toutes les
+vues, la séance s'affiche partout sans qu'aucune vue soit touchée. Retirer une
+semaine rend le programme d'origine intact — rien n'a été écrasé.
+
+**Hors-ligne**, Coach IA est muet et le reste de Racine fonctionne
+normalement.
+
+Contrat : `docs/COACH_AI.md`. Garde-fou : `node dev/coach_ai_checks.js`.
+
 
 ### Une séance admise à poids réduit garde sa charge
 

@@ -1,3 +1,39 @@
+## V5.1.0 — Coach IA : il lit, il propose, tu décides
+
+**Ce qui manquait**
+
+Racine savait déjà tout ce qu'il fallait pour qu'une IA soit utile — `scripts/ai/ai_export.js` construit le contexte complet, `ai_import.js` valide une réponse structurée, `ai_influence.js` trace les écarts manuels — mais le trajet passait par un copier-coller. Et surtout : rien ne pouvait **écrire une séance**. `registerProgramsFromIndex()` ne connaît que les programmes déclarés statiquement ; aucun programme ne vivait dans le stockage local. Le moteur de charges est bon, mais un bon poids sur un mauvais choix de mouvement ne donne pas une bonne progression.
+
+**Ce qui change**
+
+- **Un onglet Coach IA** (admin seulement). Conversation en français avec un modèle qui lit l'historique réel, les notes dictées en séance, la progression par mouvement et la mémoire Brain. Il peut creuser un mouvement à la demande via l'outil `consulter_mouvement` — le contexte de départ reste court, le détail vient quand il en a besoin.
+- **Il propose, l'athlète décide.** Remplacement de mouvement, changement de format / repos / consigne, ou semaine complète : chaque changement arrive en carte Accepter / Refuser. `chat.js` ne référence jamais `CoachAIPatch.apply` — seul le bouton l'appelle. Même posture que la prescription coach → client.
+- **Les semaines générées passent par un vrai programme**, `programs/ai_custom.js` (privé). Il expose `getBlocks()` comme n'importe quel programme et lit ses blocs dans `state.aiPlan`. Conséquence : `buildWorkout()` étant l'entonnoir unique de toutes les vues, la séance générée s'affiche partout sans qu'aucune vue soit modifiée. Un mécanisme parallèle aurait dû être rebranché dans chaque écran, et aurait divergé.
+- **Les ajustements marchent sur n'importe quelle semaine**, générée ou non — surcouche posée dans `buildWorkout()` juste après les remplacements de mouvements, donc sur le nom que l'athlète voit réellement. Les blocs sont copiés, jamais mutés.
+- **Réversible partout.** Retirer une semaine rend le programme d'origine intact : rien n'a été écrasé. `CoachAIPlan.undo()` garde les trois derniers instantanés.
+
+**La règle qui tient tout : le moteur garde la main sur les poids**
+
+Aucun outil exposé au modèle n'a de champ de charge. Pas une consigne de prompt — le schéma JSON lui-même, et `dev/coach_ai_checks.js` échoue si un champ de poids y réapparaît. `sanitizeExercise()` efface en plus toute charge qui passerait quand même.
+
+Deux raisons. D'abord l'ambiguïté du chiffre : dans `programs/`, une charge chiffrée est un **%1RM de l'athlète de référence** que `scaling.js` redescend ensuite au niveau réel. Un nombre écrit par un modèle est indécidable entre les deux, et pris pour l'un quand c'est l'autre il donne une double réduction — des poids ridicules. Ensuite, le moteur est simplement meilleur à ça : il connaît les e1RM réels, le frein RPE récent, les ratios du profil et les tailles du rack. Un modèle ne connaît rien de tout ça de façon fiable depuis une conversation.
+
+Le modèle exprime donc l'intensité par le champ `intention` (`technique`, `legere`, `facile`), reporté dans la note — exactement les mots que `coachExtractMovementIntent()` lit déjà pour couper l'auto-progression. S'il faut conseiller un poids précis, il le dit dans la conversation, et `ai_influence.js` documente ce que l'athlète saisit réellement. Aucune charge n'est jamais modifiée automatiquement.
+
+**Le réseau — une règle levée, explicitement**
+
+C'est la première fois que Racine sort de l'appareil. CLAUDE.md §3.4 interdisait de réintroduire du distant sans décision explicite : la décision a été prise le 2026-09-18 et vaut pour ce domaine seulement. Un seul fichier appelle `fetch()`, `scripts/coach_ai/client.js`, en HTTP brut — pas le SDK npm, parce que Racine n'a ni bundler ni étape de build et que `architecture.json` fige ce choix. Hors-ligne, Coach IA est muet et le reste de l'app fonctionne normalement.
+
+**Ce que ça ne fait pas**
+
+Pas de streaming de la réponse (à reconsidérer si la génération de semaine traîne à l'usage). Pas de Coach IA pour les profils clients : la clé API ne peut pas voyager, il faudrait un relais serveur. Et rien pendant la séance guidée — elle doit rester utilisable sans réseau, et une latence entre deux séries est inacceptable.
+
+**Données**
+
+La clé API vit dans une clé d'appareil, hors du state de profil : elle ne peut pas partir dans un export JSON ni dans un lien de prescription. Les semaines et ajustements vont dans `state.aiPlan`, schéma versionné avec migration ascendante, isolé par profil par construction. La conversation vit hors du state, plafonnée — l'export sert à restaurer un athlète, pas à archiver un chat, et le quota local n'a aucune copie serveur. Aucun `localStorage.clear()` nulle part.
+
+Contrat : `docs/COACH_AI.md`. Garde-fou : `dev/coach_ai_checks.js` (83 vérifications).
+
 ## V5.0.11 — L'historique des conditionnements s'ouvre depuis la séance
 
 **Le défaut**

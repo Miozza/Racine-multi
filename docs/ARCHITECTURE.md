@@ -30,6 +30,7 @@ Objectif : éviter qu'un écran appelle un autre écran sans propriétaire clair
 - **Rounds AMRAP** (`scripts/session/amrap_rounds.js`, `window.CoachAmrapRounds`) possède le comptage des rounds tapés sur le chrono : splits, round le plus rapide/lent, temps restant du dernier round entamé, bandeau de séance et panneau Résultats. Le chrono ne fournit que la seconde affichée et la durée; `results.js` ne porte que la reprise du compte et les champs durables de la ligne WOD. Mémoire vive seulement, aucune clé de stockage.
 - **Mini-chrono** (`scripts/session/mini_timer.js`, `window.CoachMiniTimer`) possède le chronométrage des blocs **non-WOD** : EMOM programmé dans un bloc `main`/`secondary`/`conditioning`, et minuteur de repos. Frontière stricte avec `timer.js` : un bloc `kind:"wod"` n'arme jamais le mini-chrono, et le mini-chrono ne touche jamais à `guidedTimer`. Il occupe la boîte de l'heure (`#guidedLiveClock`) au lieu d'un espace dans la carte — c'est ce qui rend son coût en hauteur nul pour les charges/reps/RPE ; `app.js` (`updateGlobalClock`) lui cède la place au lieu d'écrire par-dessus. La durée vient du « EMOM n » lu dans le `format` d'un exercice ou le `text` du bloc, **jamais** de `block.time`. Mémoire vive seulement, aucune clé de stockage.
 - **Cycles** (`app.js`) possède la machine à états d'un cycle : quatre sorties — pause récupérable (`savedCycles`), **terminé**, archivé et abandonné (`archivedCycles`, champ `status`). Toute installation d'un autre cycle passe par `closeActiveCycleBefore()`, qui choisit la sortie ; `scripts/season/ui.js` l'appelle au lieu d'écrire lui-même une fiche de cycle. Le journal de saison (`CoachSeason`) enregistre la fin, il ne décide pas du statut. La date de fin vit des deux côtés (fiche + journal) : toute correction passe par `CoachSeason.setCycleEnd()` **et** `syncCycleFicheEndDate()`, sinon l'app affiche deux dates pour un même cycle.
+- **Coach IA** (`scripts/coach_ai/ui.js`, `window.CoachAIUI`) possède la vue `coachaiView` : conversation, cartes de proposition Accepter/Refuser, et le réglage de la clé API. Elle ne rend jamais une séance — elle propose, l'athlète accepte, et WOD+ / Séance affichent le résultat comme pour n'importe quel programme. Réservée à l'admin, comme la vue PC.
 - **App** (`app.js`) choisit la vue, tient l’état courant et appelle les API publiques. Il ne doit pas redevenir propriétaire du rendu détaillé d’un écran.
 
 État actuel : certaines fonctions de rendu historiques se croisent encore entre WOD+, PC et Session. Ce contrat décrit la destination avant tout déplacement de code; il ne justifie pas une nouvelle couche ou un nouveau fichier.
@@ -144,6 +145,7 @@ node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 node dev/movement_swaps_checks.js
 node dev/prescription_checks.js
+node dev/coach_ai_checks.js
 ```
 
 
@@ -151,6 +153,28 @@ node dev/prescription_checks.js
 
 `session/` contient `view.js`, `timer.js`, `amrap_rounds.js`, `results.js`, `extra_movements.js`, `save.js`, `index.js`. Le timer guidé appartient à `scripts/session/timer.js`; le rendu de séance appartient à `scripts/session/view.js`.
 
+
+## Domaine Coach IA
+
+Regroupé dans `scripts/coach_ai/`, porte d'entrée publique `window.CoachAI`
+(`scripts/coach_ai/index.js`). Contrat complet : `docs/COACH_AI.md`.
+
+- `config.js` : clé API et réglages, stockés au niveau **appareil** — jamais dans le state d'un profil, donc jamais dans un export JSON ni un lien de prescription.
+- `context.js` : construit l'état de l'athlète envoyé au modèle. Lecture seule, borné.
+- `plan.js` : semaines générées et ajustements, dans `state.aiPlan`. Schéma versionné. Efface toute charge écrite par le modèle.
+- `client.js` : **seul fichier du dépôt qui appelle le réseau**. `fetch` brut, pas de SDK (aucun bundler, zéro import ES).
+- `patch.js` : schémas des outils, rendu d'une proposition, application sur geste de l'athlète.
+- `chat.js` : conversation et boucle d'outils bornée. N'applique jamais un patch.
+- `ui.js` : la vue.
+
+Frontières : le domaine ne modifie ni `scripts/charge/`, ni `data/`, ni
+`programs/`. Les charges restent calculées par `CoachCharge`. Le seul point de
+contact avec `programs/` est une délégation d'une ligne dans `buildWorkout()`,
+au même endroit que les remplacements de mouvements.
+
+Le programme `programs/ai_custom.js` (privé) est un programme autonome standard
+qui lit ses blocs dans `CoachAIPlan` — il ne demande aucun traitement
+particulier à l'app.
 
 ## Domaine state
 

@@ -1,8 +1,29 @@
 # Racine — prototype multi-utilisateur
 
-- Version : `V5.0.11`
+- Version : `V5.1.0`
 
 Racine est une PWA d'entraînement en JavaScript vanilla, sans framework et sans serveur. Cette branche transforme l'ancien outil personnel en prototype multi-utilisateur local : plusieurs profils peuvent utiliser la même app sur un appareil, avec des charges calibrées à leur niveau. La version courante corrige la mémoire du moteur : renommer un titre de bloc n'efface plus l'historique d'un mouvement, un mouvement jamais travaillé n'hérite plus en silence de l'historique d'un nom voisin (un Close-Grip Bench Press lisait celui du Bench Press), et les charges de `Phase 2 — Fable 5` reviennent à l'échelle de l'athlète de référence, la seule que la mise à l'échelle par profil sait interpréter. Le conditionnement de fin peut être déclaré non fait, avec son motif, pour que l'historique le sache au lieu de laisser un trou. Un lest posé sur le poids du corps (traction ou dip lestés) n'emprunte plus le ratio d'échelle d'une famille de mouvements, dont l'échelle n'a rien à voir. Elle ajoute aussi le `Barbell RDL`, le `DB Reverse Lunge` et le `DB Lunge` à la bibliothèque de mouvements — trois mouvements à part entière, sans alias croisé qui ferait migrer un historique. Et la porte de sortie « conditionnement non fait » se lit à la taille du reste de la carte : elle reste discrète par l'absence de chrome, pas par un texte effacé. Enfin, une séance admise à poids réduit — le repli qui évite de couper le moteur de tout son passé un jour de contexte léger — garde sa charge : la copie pondérée la masquait, et le moteur lisait zéro séance utilisable là où il en avait sept.
+
+## Coach IA
+
+Réservé au profil admin. Une conversation avec un modèle
+qui lit l'historique réel, les notes dictées en séance, la progression par
+mouvement et la mémoire Brain. Il peut **proposer** un remplacement de
+mouvement, un changement de format / repos / consigne, ou une semaine complète
+— chaque proposition arrive en carte Accepter / Refuser, et rien n'entre dans
+l'entraînement sans ce geste.
+
+Il ne fixe jamais une charge : aucun outil ne lui offre de champ de poids. Une
+charge chiffrée dans `programs/` est un %1RM de l'athlète de référence, et un
+nombre écrit par un modèle serait indécidable entre ce pourcentage et un poids
+réel — la confusion donne une double réduction. Le moteur de Racine calcule
+donc chaque poids comme pour n'importe quel programme, et le modèle exprime
+l'intensité par l'intention du travail.
+
+C'est la seule partie de Racine qui appelle le réseau (`scripts/coach_ai/client.js`).
+La clé API reste sur l'appareil et n'entre dans aucun export. Hors-ligne,
+Coach IA se tait et le reste de l'app fonctionne normalement.
+Contrat : `docs/COACH_AI.md`.
 
 ## Direction produit
 
@@ -24,6 +45,9 @@ Les anciens repères de force ne sont plus injectés comme données vivantes dan
 - `scripts/profiles/ui.js` : interface profil/onboarding/export/import.
 - `scripts/charge/scaling.js` : application des ratios au moteur de charge.
 - `dev/multi_profile_checks.js` : garde-fous anti-contamination profil.
+- `scripts/coach_ai/` : domaine Coach IA (`window.CoachAI`), porte publique `scripts/coach_ai/index.js`.
+- `programs/ai_custom.js` : programme privé dont les blocs sont lus dans le plan généré.
+- `dev/coach_ai_checks.js` : garde-fous du domaine IA (aucune charge écrite par le modèle, rien d'appliqué sans accord).
 
 ## Progression PC
 
