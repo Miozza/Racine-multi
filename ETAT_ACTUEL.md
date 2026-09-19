@@ -1,8 +1,29 @@
-# ETAT ACTUEL — V5.1.2
+# ETAT ACTUEL — V5.2.0
 
-Version actuelle : V5.1.2
+Version actuelle : V5.2.0
 
 ## État courant
+
+### Ce que tes données disent — analyse locale, gratuite, hors-ligne
+
+Carte en tête de l'onglet Historique, pour **tous les profils**, sans réseau et
+sans coût. Domaine `scripts/insights/`, porte publique `window.CoachInsights`.
+
+Elle rapporte sur 90 jours : les **plateaux** (charge plate *pendant que* le
+RPE monte — une charge plate à RPE stable n'en est pas un), ce qui **progresse
+bien**, les **déséquilibres de volume** par patron de mouvement avec leurs
+comptes, les **trous de fréquence**, et les **motifs récurrents dans tes
+notes**.
+
+Le principe : « lire mon historique, ma progression, mes faiblesses » est de
+l'arithmétique, pas du langage. Ça n'a pas besoin d'un modèle, donc ça ne coûte
+rien et ça se teste. La même analyse alimente aussi le prompt du pont Coach IA,
+pour que le modèle parte de constats déjà calculés.
+
+Garde-fou : `node dev/insights_checks.js` — chaque seuil testé dans les deux
+sens, parce qu'un plateau annoncé à tort fait changer un entraînement pour
+rien.
+
 
 ### Coach IA — il lit ton entraînement, il propose, tu décides
 

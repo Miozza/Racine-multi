@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 231,
+    "ACTIF": 234,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -140,8 +140,8 @@
     },
     {
       "path": "app.js",
-      "size": 150330,
-      "lines": 2956,
+      "size": 153788,
+      "lines": 3008,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
       "exposes": [
@@ -810,6 +810,18 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/insights_checks.js",
+      "size": 12365,
+      "lines": 208,
+      "role": "Garde-fous de l'analyse locale : lecture seule (aucune écriture, aucun réseau, aucun contact avec le domaine charge hors epley1RM), et surtout des seuils testés DANS LES DEUX SENS — le cas qui doit déclencher et le cas voisin qui ne doit pas, pour qu'un « plateau » ne soit jamais annoncé à tort.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/insights/index.js"
+      ]
     },
     {
       "path": "dev/intent_from_kind_checks.js",
@@ -1984,8 +1996,8 @@
     },
     {
       "path": "index.html",
-      "size": 23094,
-      "lines": 447,
+      "size": 25670,
+      "lines": 495,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -3350,8 +3362,8 @@
     },
     {
       "path": "scripts/coach_ai/context.js",
-      "size": 12897,
-      "lines": 287,
+      "size": 13702,
+      "lines": 302,
       "role": "Coach IA : construit le texte d'état de l'athlète envoyé au modèle (séances récentes, notes, mémoire Brain, contraintes matériel, remplacements actifs). LECTURE SEULE et borné. Sert aussi l'outil consulter_mouvement.",
       "category": "ACTIF",
       "exposes": [
@@ -3509,6 +3521,38 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "scripts/insights/index.js",
+      "size": 18454,
+      "lines": 416,
+      "role": "Analyse locale déterministe (window.CoachInsights) : plateaux, progressions, déséquilibres de volume par patron de mouvement, trous de fréquence et motifs récurrents dans les notes. LECTURE SEULE, hors-ligne, sans coût. Compare des e1RM (Epley) et non des charges brutes, pour qu'un changement de format de séries ne soit pas lu comme une chute. Même doctrine que season/suggest.js (« règles explicables, jamais de ML »), un cran plus fin : le mouvement plutôt que le cycle.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachInsights"
+      ],
+      "consumedBy": [
+        "scripts/insights/ui.js",
+        "scripts/coach_ai/context.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/insights/ui.js",
+      "size": 4240,
+      "lines": 104,
+      "role": "Propriétaire du rendu de la carte « Ce que tes données disent » à l'intérieur de la vue Historique — renderHistory() ne porte que le point d'accroche. Placée dans Historique et non dans Coach IA parce que l'analyse est gratuite, hors-ligne et utile à tous les profils, alors que Coach IA est réservé à l'admin.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachInsightsUI"
+      ],
+      "consumedBy": [
+        "app.js"
+      ],
+      "consumes": [
+        "scripts/insights/index.js",
+        "scripts/ui/index.js"
+      ]
     },
     {
       "path": "scripts/migrate_bertin.js",
@@ -4224,8 +4268,8 @@
     },
     {
       "path": "styles.css",
-      "size": 274399,
-      "lines": 8139,
+      "size": 292527,
+      "lines": 8744,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],

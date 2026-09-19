@@ -1,3 +1,39 @@
+## V5.2.0 — Ce que tes données disent
+
+**Le constat de départ**
+
+Pour savoir ce qui stagne, ce qui progresse et ce qui revient dans les notes, Racine n'a pas besoin d'un modèle de langage. C'est de l'arithmétique sur des données déjà présentes. Un modèle n'y ajoute rien, coûte de l'argent à chaque demande, et ne se teste pas.
+
+**Ce qui change**
+
+Nouveau domaine `scripts/insights/` (`window.CoachInsights`) et une carte « Ce que tes données disent » en tête de l'onglet Historique. **Gratuite, hors-ligne, pour tous les profils.** Elle rapporte, sur 90 jours :
+
+- **Les plateaux** — et la définition compte : pas « la charge n'a pas monté », mais « la charge n'a pas monté **alors que** l'effort ressenti monte ». Une charge plate à RPE stable peut être un choix de programmation ; ce n'en est pas un quand le RPE grimpe. Les deux cas sont testés.
+- **Ce qui progresse bien** — gain d'e1RM à RPE stable ou en baisse.
+- **Les déséquilibres de volume** — poussée/tirage, squat/charnière, tirage vertical/horizontal, avec le ratio et les comptes. Silencieux en dessous de 8 expositions sur la paire : un ratio calculé sur trois séances ne veut rien dire.
+- **Les trous de fréquence** — un mouvement prévu au programme actif et pas fait depuis 21 jours.
+- **Les motifs dans les notes** — « épaule » revenu 4 fois, et sur quels mouvements. Compteur de mots sur un vocabulaire français d'une cinquantaine d'entrées, insensible aux accents. Ce n'est pas de la compréhension du langage, et c'est dit tel quel à l'écran.
+
+**Deux décisions de conception**
+
+*Les comparaisons se font en e1RM (Epley), jamais en charge brute.* Sans ça, passer de 5 reps à 3 reps plus lourd se lirait comme une chute et déclencherait un faux plateau. Vérifié par un test dédié.
+
+*Les patrons de mouvement sont un axe différent des familles de `scripts/charge/movement_profiles.js`*, qui décrivent un comportement de charge. Les fusionner aurait fait bouger le domaine prioritaire pour une raison qui ne le concerne pas.
+
+**Une seule analyse, deux lecteurs**
+
+La même sortie alimente la carte Historique **et** le prompt du pont Coach IA (`CoachInsights.toText()`). Le modèle reçoit donc les constats déjà calculés au lieu de refaire à la main une arithmétique déjà faite — et mieux faite. Pas de second calcul, pas de risque de divergence.
+
+**Ce que ça ne fait pas**
+
+Juger une situation nouvelle, comprendre une phrase que personne n'a prévue, discuter. La répartition est nette : le local pour le mesurable, le LLM pour le jugement.
+
+**Un détail attrapé par les tests**
+
+« Push-Up » avec trait d'union ne tombait dans aucun patron : un mouvement sortait silencieusement du comptage, et le déséquilibre calculé devenait faux sans que rien ne le signale. Les noms sont désormais normalisés avant classement.
+
+Garde-fou : `dev/insights_checks.js`, 54 vérifications, chaque seuil testé dans les deux sens.
+
 ## V5.1.2 — Coach IA marche avec n'importe quelle IA
 
 **Ce qui change**

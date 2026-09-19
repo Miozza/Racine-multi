@@ -211,6 +211,20 @@
     return lines;
   }
 
+  // ── Bloc 5 bis : l'analyse locale ──────────────────────────────────────
+  // Les constats mesurables (plateaux, déséquilibres, trous, motifs de notes)
+  // sont déjà calculés par CoachInsights pour l'écran Historique. On les
+  // réutilise tels quels : une seule analyse, deux lecteurs. Ça évite au
+  // modèle de refaire à la main une arithmétique déjà faite — et mieux faite.
+  function insightLines(){
+    try{
+      if(!window.CoachInsights || typeof CoachInsights.toText !== "function") return [];
+      var t = str(CoachInsights.toText());
+      if(!t) return [];
+      return ["", "## Analyse locale déjà calculée par Racine", t];
+    }catch(e){ return []; }
+  }
+
   // ── Bloc 6 : la semaine générée en cours, s'il y en a une ──────────────
   function planLines(){
     try{
@@ -229,6 +243,7 @@
       .concat(sessionLines(opts.sessions))
       .concat(noteLines(opts.notes))
       .concat(brainLines())
+      .concat(insightLines())
       .concat(constraintLines())
       .concat(planLines());
     return lines.join("\n");

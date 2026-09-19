@@ -334,7 +334,37 @@ Il n'y a donc pas deux définitions de ce qui est proposable, et un patch collé
 privé) qui lit ses blocs dans `state.aiPlan`. Ne pas inventer un second chemin
 d'affichage : `buildWorkout()` est l'entonnoir unique de toutes les vues.
 
-### 3.6 Admin
+### 3.6 Analyse locale — le mesurable ne demande pas de modèle
+
+Domaine `scripts/insights/`, porte publique `window.CoachInsights`. Lit le
+journal brut et en tire des constats : plateaux (charge plate **pendant que**
+le RPE monte), progressions, déséquilibres de volume par patron de mouvement,
+trous de fréquence, motifs récurrents dans les notes.
+
+**Le principe** : « lire mon historique, ma progression, mes faiblesses » est
+de l'arithmétique, pas du langage. Un modèle n'y ajoute rien, coûte de l'argent
+et ne se teste pas. Avant d'envoyer une question à un LLM, regarder si elle se
+calcule. C'est la doctrine déjà écrite dans `scripts/season/suggest.js`
+(« Règles explicables, jamais de ML »), appliquée au mouvement plutôt qu'au
+cycle.
+
+Règles :
+
+- **Lecture seule**, hors-ligne, sans coût. Aucune écriture nulle part.
+- **Compare des e1RM**, jamais des charges brutes : sinon un passage de 5 reps
+  à 3 reps plus lourd se lit comme une chute.
+- **Ne pas fusionner** les patrons de mouvement avec les familles de
+  `scripts/charge/movement_profiles.js` : axes différents, et le domaine
+  charge est prioritaire — il ne bouge pas pour servir une analyse de volume.
+- **Une seule analyse, deux lecteurs** : la carte Historique et le prompt du
+  pont Coach IA. Ne pas en recalculer une seconde.
+- Tout constat porte ses chiffres. Un diagnostic sans le compte qui le soutient
+  n'est pas vérifiable, donc pas affichable.
+
+Garde-fou : `dev/insights_checks.js`. Il teste chaque seuil **dans les deux
+sens** — un « plateau » annoncé à tort fait changer un entraînement pour rien.
+
+### 3.7 Admin
 
 - Panneau admin (vue PC paysage) : accessible via le flag `profile.isAdmin`
   (`CoachProfiles.isActiveAdmin()`). Le profil nommé `Bertin` reçoit ce flag au
@@ -413,7 +443,8 @@ polices ni la nature « dark HUD » de l'app.
   `RELEASE_CHECKLIST.md` (a minima `node dev/structure_checks.js`,
   `node dev/regression_checks.js`, `node dev/charge_engine_checks.js`,
   `node dev/progression_contract_checks.js`, et
-  `node dev/coach_ai_checks.js` dès qu'on touche à `scripts/coach_ai/`).
+  `node dev/coach_ai_checks.js` dès qu'on touche à `scripts/coach_ai/`, et
+  `node dev/insights_checks.js` dès qu'on touche à `scripts/insights/`).
 
 ---
 
@@ -484,6 +515,7 @@ comptent que si on les ouvre. Deux natures à ne pas confondre.
 | `docs/CHARGE_ENGINE.md` + `docs/CHARGE_CONTEXT.md` | le calcul/contexte de suggestion | moteur (voir réserves § 3.2) |
 | `docs/BRAIN.md` | Brain : apprentissage, confiance, explication `(!)`, Avis IA | philosophie Brain |
 | `docs/COACH_AI.md` | Coach IA : conversation, propositions, semaines générées, appel réseau | frontières du domaine IA |
+| `docs/ARCHITECTURE.md` § Domaine analyse locale | plateaux, déséquilibres, motifs de notes | analyse déterministe |
 | `docs/UI_CONSTRAINTS.md` | une vue / une séance | contraintes UI |
 | `docs/ERROR_LOGGING.md` | le logger `CoachLog` | journal d'erreurs |
 

@@ -8656,3 +8656,89 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   color: var(--muted);
   opacity: .85;
 }
+
+/* ── Carte « Ce que tes données disent » (scripts/insights/ui.js) ──
+   Constats mesurés, chacun avec ses chiffres. Aucune couleur d'accent
+   nouvelle : Orbitron pour les étiquettes HUD, Inter pour ce qui se lit. */
+
+.ins-host { margin-bottom: 12px; }
+
+.ins-card {
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 12px 13px;
+  box-shadow: 0 0 18px var(--sl-glow);
+}
+
+.ins-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ins-title {
+  font-family: var(--font-hud);
+  font-size: 12px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.ins-meta {
+  font-family: var(--font-hud);
+  font-size: 10px;
+  letter-spacing: .05em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ins-block { margin-bottom: 10px; }
+.ins-block:last-of-type { margin-bottom: 0; }
+.ins-block-title {
+  font-family: var(--font-hud);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.ins-list { list-style: none; margin: 0; padding: 0; }
+.ins-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.ins-list li:last-child { border-bottom: none; }
+
+.ins-main {
+  font-family: var(--font-main);
+  font-size: 14px;
+  color: var(--text);
+}
+/* Les chiffres en Orbitron : c'est la règle HUD de Racine, et ici ils sont
+   la justification du constat, pas une décoration. */
+.ins-detail {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ins-empty, .ins-foot {
+  font-family: var(--font-main);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 0;
+}
+.ins-foot {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border2);
+  font-size: 11px;
+  opacity: .8;
+}

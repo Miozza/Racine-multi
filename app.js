@@ -1,5 +1,5 @@
-// Racine V5.1.2 — Coach IA marche avec n'importe quelle IA, pas seulement Claude
-var APP_VERSION = "V5.1.2";
+// Racine V5.2.0 — Ce que tes données disent : analyse locale, hors-ligne, gratuite
+var APP_VERSION = "V5.2.0";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2085,6 +2085,9 @@ var historyRenderLimit = 30; // affichage seulement — les données complètes 
 var historyActiveSubtab="sessions";
 function renderHistory(){
   var h=$("history");if(!h)return;
+  // Carte « Ce que tes données disent » — analyse locale déterministe.
+  // app.js ne porte que l'accroche ; la logique vit dans scripts/insights/.
+  try{ if(window.CoachInsightsUI) CoachInsightsUI.render(); }catch(e){ /* jamais bloquant */ }
   var showProgress=historyActiveSubtab==="progress";
   var tS=$("historySubtabSessions");if(tS)tS.classList.toggle("active",!showProgress);
   var tP=$("historySubtabProgress");if(tP)tP.classList.toggle("active",showProgress);

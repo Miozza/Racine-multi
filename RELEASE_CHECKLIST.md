@@ -65,6 +65,7 @@ node dev/pc_cycle_view_checks.js
 node dev/pc_progress_compare_checks.js
 node dev/deload_guard_checks.js
 node dev/coach_ai_checks.js
+node dev/insights_checks.js
 node dev/verify-architecture.js
 ```
 
