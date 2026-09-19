@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 17268,
-      "lines": 285,
+      "size": 18187,
+      "lines": 299,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -3279,8 +3279,8 @@
     },
     {
       "path": "scripts/coach_ai/bridge.js",
-      "size": 9875,
-      "lines": 225,
+      "size": 10625,
+      "lines": 239,
       "role": "Coach IA : pont copier-coller, le chemin PAR DÉFAUT du domaine (un abonnement Claude Pro ne couvre pas l'API, facturée séparément). Construit le prompt à coller dans Claude — contexte élargi, car aucune facturation au jeton ici — et lit la réponse recollée. Le contrat envoyé au modèle est engendré depuis CoachAIPatch.tools() : une seule définition de ce qui est proposable, donc un patch collé à la main ne peut pas plus écrire une charge qu'un patch venu de l'API.",
       "category": "ACTIF",
       "exposes": [
@@ -3331,8 +3331,8 @@
     },
     {
       "path": "scripts/coach_ai/config.js",
-      "size": 4200,
-      "lines": 110,
+      "size": 5176,
+      "lines": 130,
       "role": "Coach IA : configuration de l'accès API. Clé stockée au niveau APPAREIL (racine_coach_ai_device_v1), jamais dans le state d'un profil — donc jamais dans un export JSON ni un lien de prescription. Porte la garde admin et la raison lisible d'indisponibilité.",
       "category": "ACTIF",
       "exposes": [
@@ -3429,8 +3429,8 @@
     },
     {
       "path": "scripts/coach_ai/ui.js",
-      "size": 18527,
-      "lines": 434,
+      "size": 19535,
+      "lines": 450,
       "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
       "category": "ACTIF",
       "exposes": [

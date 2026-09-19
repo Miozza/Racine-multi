@@ -155,6 +155,15 @@ envoyé à l'API (14 séances et 16 notes, contre 8 et 8). Il n'y a pas de
 facturation au jeton sur ce chemin, donc autant en donner davantage. C'est le
 seul point où le copier-coller est objectivement meilleur que l'API.
 
+**Indépendant du fournisseur, et ça doit le rester.** Le prompt ne nomme aucune
+IA et ne suppose aucune capacité propriétaire : il décrit un rôle, un contrat de
+sortie et un état. Claude, ChatGPT ou autre chose le lisent pareil. L'écran
+affiche un nom choisi par l'athlète (`CoachAIConfig.assistantLabel()`), purement
+cosmétique. Ne pas introduire de branche par fournisseur dans `bridge.js` — un
+garde-fou vérifie que le prompt construit ne contient aucun nom de fournisseur.
+C'est un avantage réel sur le chemin API, lié à Anthropic par construction : le
+pont survit à un changement d'abonnement sans une ligne de code.
+
 Ce que ce chemin perd : la boucle d'outils. Le modèle ne peut pas appeler
 `consulter_mouvement` pour creuser un mouvement à la demande — d'où le contexte
 élargi en compensation. Et il n'y a pas de fil de conversation : chaque

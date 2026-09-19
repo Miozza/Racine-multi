@@ -1,6 +1,6 @@
-# ETAT ACTUEL — V5.1.1
+# ETAT ACTUEL — V5.1.2
 
-Version actuelle : V5.1.1
+Version actuelle : V5.1.2
 
 ## État courant
 
@@ -15,6 +15,11 @@ le copier-coller : Racine écrit le prompt, tu le colles dans Claude, tu
 recolles la réponse, et les propositions arrivent dans les mêmes cartes
 Accepter / Refuser. Aucun réseau, aucun coût de plus. L'appel API direct reste
 possible mais dormant — sans clé enregistrée, il ne s'active jamais.
+
+Le pont marche avec **n'importe quelle IA** : le prompt ne nomme aucun
+fournisseur, donc Claude, ChatGPT ou autre chose le lisent pareil. Un réglage
+« Quelle IA tu utilises » ajuste les libellés de l'écran, et un garde-fou
+vérifie que le prompt reste portable.
 
 **Ce qu'il voit.** L'historique réel des séances, les notes dictées pendant
 l'entraînement, la progression et la mémoire Brain par mouvement, le matériel

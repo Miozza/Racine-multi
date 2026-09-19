@@ -5,8 +5,16 @@
 // qu'un abonnement déjà payé sait faire n'a pas de sens. Ce pont est donc le
 // chemin PAR DÉFAUT de Coach IA :
 //
-//   Racine construit le prompt  →  tu le colles dans Claude (app ou site)
+//   Racine construit le prompt  →  tu le colles dans ton IA (app ou site)
 //   →  tu recolles la réponse   →  Racine la lit et affiche les propositions
+//
+// INDÉPENDANT DU FOURNISSEUR, et ça doit le rester. Le prompt ne nomme aucune
+// IA et ne suppose aucune capacité propriétaire : il décrit un rôle, un
+// contrat de sortie et un état. Claude, ChatGPT ou autre chose le lisent
+// pareil. Ne pas introduire ici de branche par fournisseur — l'écran affiche
+// un nom choisi par l'athlète (CoachAIConfig.assistantLabel), c'est tout.
+// C'est aussi ce qui rend le pont plus robuste que l'API : il survit à un
+// changement d'abonnement sans une ligne de code.
 //
 // L'appel API direct (client.js) reste possible et dormant : sans clé, il ne
 // s'active jamais et ne coûte rien. C'est une option, pas le chemin normal.
@@ -31,6 +39,12 @@
   var END = "RACINE_COACH_END";
 
   function str(v){ return String(v==null?"":v).trim(); }
+
+  // Libellé seulement — jamais injecté dans le prompt.
+  function ia(){
+    try{ return window.CoachAIConfig ? window.CoachAIConfig.assistantLabel() : "ton IA"; }
+    catch(e){ return "ton IA"; }
+  }
 
   // ── Construction du prompt ─────────────────────────────────────────────
 
@@ -91,7 +105,7 @@
     return Object.keys(INTENTS).map(function(k){ return {key: k, label: INTENTS[k].label}; });
   };
 
-  // Construit le texte complet à coller dans Claude.
+  // Construit le texte complet à coller dans l'IA de l'athlète.
   // Le contexte n'est PAS rogné ici comme il l'est pour l'API : il n'y a pas de
   // facturation au jeton sur ce chemin, donc autant en donner davantage. C'est
   // le seul endroit où le copier-coller est objectivement meilleur que l'API.
@@ -170,7 +184,7 @@
 
   api.parseResponse = function(raw){
     raw = str(raw);
-    if(!raw) return {ok:false, error:"Rien à lire : colle la réponse de Claude."};
+    if(!raw) return {ok:false, error:"Rien à lire : colle la réponse de " + ia() + "."};
 
     var prose = proseOf(raw);
 
@@ -190,7 +204,7 @@
       return {
         ok: false,
         text: prose,
-        error: "Le bloc de propositions n'est pas un JSON valide. Redemande à Claude de le réécrire entre "
+        error: "Le bloc de propositions n'est pas un JSON valide. Redemande à " + ia() + " de le réécrire entre "
              + START + " et " + END + "."
       };
     }

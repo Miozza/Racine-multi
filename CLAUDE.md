@@ -317,6 +317,12 @@ L'intensité voulue passe par le champ `intention`
 ne référencent `CoachAIPatch.apply` : seul le bouton Accepter de `ui.js`
 l'appelle.
 
+**Le pont est indépendant du fournisseur.** Le prompt ne nomme aucune IA :
+Claude, ChatGPT ou autre chose le lisent pareil, et l'athlète choisit le nom
+affiché dans l'écran. Ne pas introduire de branche par fournisseur dans
+`bridge.js` — un garde-fou vérifie que le prompt construit ne contient aucun
+nom de fournisseur.
+
 **Deux chemins, un seul contrat.** Le mode pont (copier-coller, par défaut) et
 le mode API lisent tous deux `CoachAIPatch.tools()` — pour l'API ce sont des
 outils, pour le pont c'est un contrat en texte engendré par `contractText()`.

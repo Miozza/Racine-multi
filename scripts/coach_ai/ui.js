@@ -37,6 +37,12 @@
   }
   function str(v){ return String(v==null?"":v).trim(); }
 
+  // Nom de l'assistant utilisé, pour les libellés seulement. Le prompt, lui,
+  // ne nomme aucun fournisseur — c'est ce qui le rend portable.
+  function ia(){
+    try{ return CoachAIConfig.assistantLabel(); }catch(e){ return "ton IA"; }
+  }
+
   // Rendu minimal du texte du modèle : paragraphes et puces. Volontairement
   // pas de moteur Markdown — une dépendance de plus pour trois cas d'usage,
   // et tout ce qui n'est pas échappé ici deviendrait une injection.
@@ -106,7 +112,7 @@
             + "« Écris-moi la semaine 3, j'ai seulement 3 jours cette semaine. »<br>"
             + "« Mon épaule gauche accroche au strict press, change-moi ça. »</p>"
           : "<p class='cai-empty-hint'>Suis les trois étapes ci-dessous. Le prompt contient déjà tout "
-            + "ce que Claude a besoin de savoir sur toi — tu n'as rien à lui réexpliquer.</p>")
+            + "ce que " + esc(ia()) + " a besoin de savoir sur toi — tu n'as rien à lui réexpliquer.</p>")
       + "</div>";
 
     host.innerHTML = html;
@@ -235,7 +241,7 @@
 
       + "<div class='cai-bridge-step'>"
       +   "<span class='cai-step-num'>2</span>"
-      +   "<span class='cai-step-text'>Copie, colle dans Claude, reviens</span>"
+      +   "<span class='cai-step-text'>Copie, colle dans " + esc(ia()) + ", reviens</span>"
       + "</div>"
       + "<button type='button' class='cai-btn cai-btn-accept cai-btn-wide' id='caiCopyPrompt'>Copier le prompt</button>"
       + "<textarea id='caiPromptFallback' class='cai-textarea cai-fallback' rows='4' readonly style='display:none'></textarea>"
@@ -245,7 +251,7 @@
       +   "<span class='cai-step-text'>Colle sa réponse complète ici</span>"
       + "</div>"
       + "<textarea id='caiPasteAnswer' class='cai-textarea' rows='3' "
-      +   "placeholder='Colle toute la réponse de Claude, texte compris.'></textarea>"
+      +   "placeholder='Colle toute la réponse de " + esc(ia()) + ", texte compris.'></textarea>"
       + "<button type='button' class='cai-btn cai-btn-wide' id='caiReadAnswer'>Lire la réponse</button>";
   }
 
@@ -254,7 +260,7 @@
     var prompt = CoachAIBridge.buildPrompt(bridgeIntent, extra ? extra.value : "");
     var ok = await copyToClipboard(prompt, $("caiPromptFallback"));
     appendBubble("cai-msg-system " + (ok ? "cai-ok" : ""),
-      ok ? "<p>Prompt copié. Colle-le dans Claude, puis reviens avec sa réponse.</p>"
+      ok ? "<p>Prompt copié. Colle-le dans " + esc(ia()) + ", puis reviens avec sa réponse.</p>"
          : "<p>Copie automatique refusée par le navigateur. Le prompt est affiché ci-dessous : sélectionne-le et copie-le à la main.</p>");
   }
 
@@ -263,7 +269,7 @@
     if(!box) return;
     var raw = str(box.value);
     if(!raw){
-      appendBubble("cai-msg-system", "<p>Colle d'abord la réponse de Claude.</p>");
+      appendBubble("cai-msg-system", "<p>Colle d'abord la réponse de " + esc(ia()) + ".</p>");
       return;
     }
 
@@ -301,6 +307,14 @@
     var hasKey = !!str(cfg.apiKey);
 
     host.innerHTML = ""
+      + "<label class='cai-label' for='caiAssistant'>Quelle IA tu utilises</label>"
+      + "<select id='caiAssistant' class='cai-input'>"
+      +   CoachAIConfig.assistants().map(function(a){
+            return "<option value='" + esc(a.key) + "'" + (cfg.assistant === a.key ? " selected" : "") + ">" + esc(a.label) + "</option>";
+          }).join("")
+      + "</select>"
+      + "<p class='cai-hint'>Change seulement les libellés de cet écran. Le prompt ne nomme aucune IA : "
+      +   "il marche pareil avec Claude, ChatGPT ou autre chose.</p>"
       + "<label class='cai-label' for='caiKey'>Clé API Anthropic</label>"
       + "<input id='caiKey' class='cai-input' type='password' autocomplete='off' spellcheck='false' "
       +   "placeholder='" + (hasKey ? "Clé enregistrée — laisser vide pour la garder" : "sk-ant-…") + "'>"
@@ -330,10 +344,12 @@
     // pour changer l'effort effacerait la clé au passage.
     if(key && str(key.value)) patch.apiKey = str(key.value);
     if(effort) patch.effort = effort.value;
+    var assistant = $("caiAssistant");
+    if(assistant) patch.assistant = assistant.value;
     CoachAIConfig.set(patch);
     if(key) key.value = "";
     renderSettings();
-    renderAvailability();
+    renderAvailability();   // re-rend aussi le pont, dont les libellés changent
     appendBubble("cai-msg-system cai-ok", "<p>Réglages enregistrés.</p>");
   }
 
@@ -352,8 +368,8 @@
       // Pas de clé : le pont. Ce n'est PAS une indisponibilité — c'est le
       // chemin normal, et il passe par l'abonnement déjà payé.
       banner.style.display = "";
-      banner.innerHTML = "<p><strong>Mode copier-coller.</strong> Racine écrit le prompt, tu le colles dans Claude, "
-        + "tu recolles sa réponse. Rien de plus à payer : ça passe par ton abonnement.</p>";
+      banner.innerHTML = "<p><strong>Mode copier-coller.</strong> Racine écrit le prompt, tu le colles dans "
+        + esc(ia()) + ", tu recolles sa réponse. Rien de plus à payer : ça passe par ton abonnement.</p>";
       composer.style.display = "none";
       bridge.style.display = "";
       renderBridge();

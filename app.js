@@ -1,5 +1,5 @@
-// Racine V5.1.1 — Coach IA passe par ton abonnement : mode copier-coller par défaut
-var APP_VERSION = "V5.1.1";
+// Racine V5.1.2 — Coach IA marche avec n'importe quelle IA, pas seulement Claude
+var APP_VERSION = "V5.1.2";
 
 // Architecture stable
 // programs/*.js = plan prévu

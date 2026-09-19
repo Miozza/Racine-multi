@@ -1,3 +1,22 @@
+## V5.1.2 — Coach IA marche avec n'importe quelle IA
+
+**Ce qui change**
+
+Le pont copier-coller était déjà indépendant du fournisseur sans que ce soit dit : le prompt décrit un rôle, un contrat de sortie et un état de l'athlète, il ne nomme aucune IA et ne suppose aucune capacité propriétaire. Seuls les libellés de l'écran disaient « Claude ».
+
+- **Un réglage « Quelle IA tu utilises »** — Claude, ChatGPT, ou autre chose. Il change les libellés de l'écran, rien d'autre : le prompt envoyé est identique dans les trois cas.
+- **Un garde-fou verrouille cette portabilité** : le prompt construit est vérifié comme ne contenant aucun nom de fournisseur (`claude`, `chatgpt`, `anthropic`, `openai`, `gpt-`, `gemini`). Si quelqu'un y écrit un jour « demande à Claude de… », la suite échoue.
+
+**Pourquoi ça compte plus qu'un détail de libellé**
+
+Le pont survit à un changement d'abonnement sans une ligne de code. C'est un avantage réel sur le chemin API, qui est lié à un fournisseur par construction (`client.js` ne parle qu'à l'API Anthropic).
+
+**Ce qui ne change pas**
+
+Le contrat des propositions reste engendré depuis `CoachAIPatch.tools()`, et `sanitizeExercise()` efface toujours toute charge. Une semaine écrite par ChatGPT n'a pas plus de droits qu'une semaine écrite par Claude : le moteur de Racine calcule les poids dans les deux cas.
+
+Garde-fou : `dev/coach_ai_checks.js` passe de 111 à 119 vérifications.
+
 ## V5.1.1 — Coach IA passe par ton abonnement
 
 **Le défaut**

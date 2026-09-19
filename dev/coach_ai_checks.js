@@ -257,6 +257,20 @@ const pastedWeek = CoachAIPlan.sanitizeWeek({
 assert(pastedWeek.days.lundi[0].exercises[0].load === '—',
   'Une charge arrivée par COPIER-COLLER est effacée exactement comme par l\'API — pas de porte dérobée.');
 
+// Le prompt lui-même ne doit nommer AUCUN fournisseur : c'est ce qui permet de
+// le coller dans Claude, ChatGPT ou autre chose sans toucher une ligne de code,
+// et de survivre à un changement d'abonnement.
+ctxBridge.window.CoachAIConfig = {assistantLabel: function(){ return "ChatGPT"; }};
+const builtPrompt = CoachAIBridge.buildPrompt('semaine', 'ma question');
+['claude', 'chatgpt', 'anthropic', 'openai', 'gpt-', 'gemini'].forEach(function(name){
+  assert(builtPrompt.toLowerCase().indexOf(name) === -1,
+    'Le prompt ne nomme aucun fournisseur (' + name + ') — il reste portable.');
+});
+assert(builtPrompt.indexOf('proposer_semaine') !== -1 && builtPrompt.indexOf('ma question') !== -1,
+  'Le prompt porte bien le contrat et la demande de l\'athlète.');
+assert(code('scripts/coach_ai/bridge.js').indexOf('assistantLabel') !== -1,
+  'Le nom affiché vient du réglage, pas d\'une chaîne codée en dur.');
+
 // Le pont ne fait pas de réseau et n'applique rien tout seul.
 assert(code('scripts/coach_ai/bridge.js').indexOf('CoachAIPatch.apply') === -1,
   'bridge.js n\'applique jamais un patch : seul le bouton Accepter le fait.');

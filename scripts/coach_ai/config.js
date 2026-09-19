@@ -31,10 +31,22 @@
 
   function str(v){ return String(v==null?"":v).trim(); }
 
+  // Quel assistant l'athlète colle-t-il son prompt dans. PUREMENT COSMÉTIQUE :
+  // ça change les libellés de l'écran, jamais le prompt ni la lecture de la
+  // réponse. Le pont est indépendant du fournisseur par construction — il
+  // produit du texte et lit du texte — et il doit le rester : ne pas
+  // introduire ici de branche qui changerait le contenu envoyé.
+  var ASSISTANTS = {
+    claude:  "Claude",
+    chatgpt: "ChatGPT",
+    autre:   "ton IA"
+  };
+
   function defaults(){
     return {
       schema: SCHEMA,
       apiKey: "",
+      assistant: "claude",
       model: DEFAULT_MODEL,
       // effort : profondeur de réflexion. "medium" pour la conversation
       // courante, le générateur de semaine monte à "high" de son côté.
@@ -52,6 +64,7 @@
     out.schema = SCHEMA;
     if(!str(out.model)) out.model = DEFAULT_MODEL;
     if(["low","medium","high","xhigh","max"].indexOf(str(out.effort)) < 0) out.effort = "medium";
+    if(!Object.prototype.hasOwnProperty.call(ASSISTANTS, str(out.assistant))) out.assistant = "claude";
     return out;
   }
 
@@ -72,6 +85,7 @@
       if("apiKey" in patch) cfg.apiKey = str(patch.apiKey);
       if("model"  in patch) cfg.model  = str(patch.model) || DEFAULT_MODEL;
       if("effort" in patch) cfg.effort = str(patch.effort);
+      if("assistant" in patch) cfg.assistant = str(patch.assistant);
       if("enabled" in patch) cfg.enabled = !!patch.enabled;
     }
     return write(cfg) ? cfg : null;
@@ -101,6 +115,12 @@
     if(!str(cfg.apiKey)) return "Aucune clé API enregistrée. Réglages → Coach IA.";
     if(cfg.enabled === false) return "Coach IA est désactivé dans les réglages.";
     return "";
+  };
+
+  // Nom à afficher dans l'écran. Sert aux libellés, à rien d'autre.
+  api.assistantLabel = function(){ return ASSISTANTS[read().assistant] || ASSISTANTS.claude; };
+  api.assistants = function(){
+    return Object.keys(ASSISTANTS).map(function(k){ return {key: k, label: ASSISTANTS[k]}; });
   };
 
   api.ENDPOINT = ENDPOINT;
