@@ -1,5 +1,5 @@
-// Racine V5.1.0 — Coach IA : conversation, propositions acceptées par l'athlète, semaines générées
-var APP_VERSION = "V5.1.0";
+// Racine V5.1.1 — Coach IA passe par ton abonnement : mode copier-coller par défaut
+var APP_VERSION = "V5.1.1";
 
 // Architecture stable
 // programs/*.js = plan prévu

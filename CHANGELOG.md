@@ -1,3 +1,30 @@
+## V5.1.1 — Coach IA passe par ton abonnement
+
+**Le défaut**
+
+La version précédente faisait de l'appel API direct le chemin normal. C'était une erreur de conseil : **un abonnement Claude Pro ne couvre pas l'API**, qui se facture séparément et à l'usage. Coach IA était donc livré en demandant de payer une seconde fois pour un service déjà payé.
+
+**Ce qui change**
+
+- **Le mode copier-coller devient le chemin par défaut** (`scripts/coach_ai/bridge.js`). Racine construit le prompt — consigne, contrat des propositions, état complet de l'athlète — tu le colles dans Claude, tu recolles la réponse, et les propositions arrivent dans les mêmes cartes Accepter / Refuser. Aucun appel réseau, aucun coût supplémentaire.
+- **Trois étapes numérotées** dans l'écran, avec quatre intentions préréglées (question libre, écrire ma semaine, analyser ma progression, mes points faibles) et un champ de précision optionnel. Sur un iPhone, entre deux applications, l'ordre des gestes doit être évident sans être relu.
+- **Le contexte envoyé est plus large qu'en API** — 14 séances et 16 notes, contre 8 et 8. Il n'y a pas de facturation au jeton sur ce chemin, donc autant en donner davantage. C'est le seul point où le copier-coller est objectivement meilleur.
+- **L'appel API direct reste possible, dormant.** Sans clé enregistrée, il ne s'active jamais et ne coûte rien. L'écran de réglages dit maintenant en toutes lettres que la clé est optionnelle et facturée à part.
+
+**Deux chemins, un seul contrat**
+
+Le contrat envoyé au modèle en mode pont est **engendré** depuis `CoachAIPatch.tools()`, les mêmes schémas que les outils de l'API (`contractText()`). Il n'y a pas deux définitions de ce qui est proposable, donc pas de dérive possible entre les deux chemins — et notamment, un patch collé à la main ne peut pas plus écrire une charge qu'un patch venu de l'API. Le garde-fou le vérifie bout en bout : une semaine collée contenant `"load":"315 lb"` ressort avec `load: "—"` et le moteur calcule le poids.
+
+**Lecture tolérante**
+
+Marqueurs `RACINE_COACH_START` / `RACINE_COACH_END` d'abord, bloc ```` ```json ```` ensuite, premier objet JSON en dernier recours — même approche qu'Avis IA, déjà rodée. Une réponse **sans bloc du tout est valide** : c'est le cas le plus fréquent, le modèle a répondu en texte. Un type d'action inventé est refusé et signalé, jamais deviné. Un JSON cassé donne une erreur qui dit quoi redemander, pas un plantage.
+
+**Ce que ce chemin perd**
+
+La boucle d'outils : le modèle ne peut pas appeler `consulter_mouvement` pour creuser un mouvement à la demande — d'où le contexte élargi en compensation. Et il n'y a pas de fil de conversation : chaque aller-retour repart de l'état courant.
+
+Garde-fou : `dev/coach_ai_checks.js` passe de 83 à 111 vérifications.
+
 ## V5.1.0 — Coach IA : il lit, il propose, tu décides
 
 **Ce qui manquait**

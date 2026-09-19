@@ -149,6 +149,45 @@
 
   api.tools = tools;
   api.isProposal = function(name){ return PROPOSALS.indexOf(str(name)) >= 0; };
+
+  // ── Le même contrat, en texte ──────────────────────────────────────────
+  //
+  // Racine sait parler au modèle de deux façons : par l'API (les schémas
+  // ci-dessus deviennent des outils) ou par copier-coller vers claude.ai
+  // (les mêmes schémas deviennent une consigne écrite). Les DEUX chemins
+  // lisent `tools()` — il n'y a pas deux définitions de ce que le modèle a le
+  // droit de proposer, donc pas de dérive possible entre les deux. En
+  // particulier, l'absence de champ de charge vaut pour les deux.
+  function renderSchema(schema, indent){
+    var pad = new Array((indent || 0) + 1).join("  ");
+    var props = (schema && schema.properties) || {};
+    var required = (schema && schema.required) || [];
+    var out = [];
+    Object.keys(props).forEach(function(key){
+      var p = props[key] || {};
+      var type = str(p.type);
+      var head = pad + "- `" + key + "` (" + type
+        + (required.indexOf(key) >= 0 ? ", obligatoire" : ", optionnel") + ")";
+      if(Array.isArray(p.enum)) head += " — valeurs : " + p.enum.join(" | ");
+      out.push(head + (str(p.description) ? " : " + str(p.description) : ""));
+      if(type === "object" && p.properties) out = out.concat(renderSchema(p, (indent || 0) + 1));
+      if(type === "array" && p.items && p.items.properties) out = out.concat(renderSchema(p.items, (indent || 0) + 1));
+    });
+    return out;
+  }
+
+  api.contractText = function(){
+    var lines = [];
+    tools().forEach(function(t){
+      if(!api.isProposal(t.name)) return;   // les outils de lecture n'existent pas hors API
+      lines.push("### " + t.name);
+      lines.push(str(t.description));
+      lines.push("Champs :");
+      lines = lines.concat(renderSchema(t.input_schema, 0));
+      lines.push("");
+    });
+    return lines.join("\n");
+  };
   api.isRead = function(name){ return str(name) === "consulter_mouvement"; };
 
   // ── Rendu lisible d'une proposition ────────────────────────────────────

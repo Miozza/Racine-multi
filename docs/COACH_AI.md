@@ -34,6 +34,12 @@ consigne de prompt — c'est le schéma JSON lui-même
 (`scripts/coach_ai/patch.js`), et `dev/coach_ai_checks.js` échoue si un champ
 de poids y réapparaît.
 
+La garantie vaut pour **les deux chemins** : le contrat texte du mode pont est
+engendré depuis les mêmes schémas (`CoachAIPatch.contractText()`), et de toute
+façon `sanitizeExercise()` efface toute charge à l'écriture. Un patch collé à
+la main n'a donc pas plus de pouvoir qu'un patch venu de l'API — vérifié bout
+en bout par le garde-fou.
+
 Deux raisons, dans cet ordre :
 
 1. **L'ambiguïté du chiffre.** Dans `programs/`, une charge chiffrée est un
@@ -123,11 +129,43 @@ réellement. Les blocs sont copiés, jamais mutés (même règle que
 
 ---
 
-## 6. Le réseau
+## 6. Deux chemins vers le même coach
 
-C'est la seule partie de Racine qui sort de l'appareil. Décision explicite du
-2026-09-18, qui lève la règle « pas de distant » de CLAUDE.md §3.4 pour ce
-domaine **seulement**.
+### 6.1 Le pont copier-coller — chemin par défaut
+
+`scripts/coach_ai/bridge.js`. **Un abonnement Claude Pro ne donne pas accès à
+l'API** : la facturation API est séparée et à l'usage. Payer au jeton pour ce
+qu'un abonnement déjà payé sait faire n'a pas de sens, donc c'est ce chemin qui
+est le défaut.
+
+```
+Racine construit le prompt  →  collé dans Claude  →  réponse recollée
+                            →  Racine lit et affiche les propositions
+```
+
+Le prompt contient la consigne, le contrat des propositions, et l'état complet
+de l'athlète. Il porte les marqueurs `RACINE_COACH_START` / `RACINE_COACH_END`,
+sur le modèle déjà rodé d'Avis IA. L'analyseur est tolérant dans cet ordre :
+marqueurs, puis bloc ```` ```json ````, puis premier objet JSON. Une réponse
+**sans bloc du tout est valide** — c'est le cas le plus fréquent, le modèle a
+simplement répondu en texte.
+
+Un détail qui compte : le contexte envoyé ici est **plus large** que celui
+envoyé à l'API (14 séances et 16 notes, contre 8 et 8). Il n'y a pas de
+facturation au jeton sur ce chemin, donc autant en donner davantage. C'est le
+seul point où le copier-coller est objectivement meilleur que l'API.
+
+Ce que ce chemin perd : la boucle d'outils. Le modèle ne peut pas appeler
+`consulter_mouvement` pour creuser un mouvement à la demande — d'où le contexte
+élargi en compensation. Et il n'y a pas de fil de conversation : chaque
+aller-retour repart du même état.
+
+### 6.2 L'appel API direct — optionnel, dormant
+
+C'est la seule partie de Racine qui sort de l'appareil, et elle ne s'active
+**que si une clé API est enregistrée**. Sans clé, ce chemin n'existe pas et ne
+coûte rien. Décision explicite du 2026-09-18, qui lève la règle « pas de
+distant » de CLAUDE.md §3.4 pour ce domaine **seulement**.
 
 - Un seul fichier appelle `fetch()` : `scripts/coach_ai/client.js`. Vérifié.
 - `fetch` brut, pas le SDK npm : Racine n'a ni bundler ni étape de build, et
@@ -138,8 +176,9 @@ domaine **seulement**.
   application personnelle, clé locale, profil admin seulement. **Ce n'est pas
   transposable à un déploiement client** ; une version B2C demanderait un
   relais serveur.
-- **Hors-ligne, Coach IA est muet et le reste de Racine fonctionne
-  normalement.** C'est non négociable : l'app est une PWA de terrain.
+- **Hors-ligne, le mode pont reste utilisable** (copier un prompt ne demande
+  aucun réseau) et le reste de Racine fonctionne normalement. C'est non
+  négociable : l'app est une PWA de terrain.
 - La boucle d'outils est bornée (`MAX_TOOL_ROUNDS`) — garde-fou de coût.
 
 Le contexte athlète est envoyé dans un bloc système **mis en cache**
@@ -171,10 +210,12 @@ du state de profil et inaccessible à l'export et à la prescription ;
 
 ## 9. Ce qui n'est pas construit, et pourquoi
 
-- **Streaming de la réponse.** Non-streaming pour l'instant : une réponse de
-  coaching tient largement dans le budget, et le SSE à la main coûterait plus
-  qu'il ne rapporte. À reconsidérer si la génération de semaine devient longue
-  à l'usage.
+- **Streaming de la réponse.** Sans objet sur le chemin par défaut. Sur le
+  chemin API, non-streaming : une réponse de coaching tient largement dans le
+  budget, et le SSE à la main coûterait plus qu'il ne rapporte.
+- **Un fil de conversation dans le mode pont.** Chaque aller-retour repart de
+  l'état courant. Garder l'historique demanderait de le réinjecter dans chaque
+  prompt, ce qui allonge le copier-coller pour un gain incertain.
 - **Coach IA pour les profils clients.** Demanderait un relais serveur (la clé
   ne peut pas voyager) et une décision de coût. Hors périmètre.
 - **Le modèle qui lit un résultat pendant la séance.** Volontairement absent :

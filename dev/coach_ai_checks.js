@@ -40,6 +40,7 @@ const DOMAIN = [
   'scripts/coach_ai/plan.js',
   'scripts/coach_ai/client.js',
   'scripts/coach_ai/patch.js',
+  'scripts/coach_ai/bridge.js',
   'scripts/coach_ai/chat.js',
   'scripts/coach_ai/ui.js',
   'scripts/coach_ai/index.js'
@@ -187,6 +188,84 @@ assert(clientSrc.indexOf('anthropic-version') !== -1, 'La version d\'API est ép
 DOMAIN.filter(function(f){ return f !== 'scripts/coach_ai/client.js'; }).forEach(function(f){
   assert(code(f).indexOf('fetch(') === -1, 'Un seul fichier fait du réseau : ' + f + ' n\'appelle pas fetch().');
 });
+
+// ── Le pont copier-coller : même contrat, mêmes limites ────────────────────
+//
+// C'est le chemin PAR DÉFAUT (un abonnement Pro ne couvre pas l'API). Il ne
+// doit surtout pas devenir une porte dérobée : un patch collé à la main n'a
+// pas plus de pouvoir qu'un patch venu de l'API.
+const bridgeSrc = read('scripts/coach_ai/bridge.js');
+const ctxBridge = {window:{}, console:console};
+ctxBridge.window.window = ctxBridge.window;
+vm.createContext(ctxBridge);
+vm.runInContext(patchSrc, ctxBridge, {filename:'patch.js'});
+vm.runInContext(bridgeSrc, ctxBridge, {filename:'bridge.js'});
+const CoachAIBridge = ctxBridge.window.CoachAIBridge;
+
+// Le contrat envoyé au modèle est ENGENDRÉ depuis tools() : une seule
+// définition de ce qui est proposable, donc aucune dérive possible entre le
+// chemin API et le chemin copier-coller.
+const contract = ctxBridge.window.CoachAIPatch.contractText().toLowerCase();
+['"load"', 'charge (', 'poids (', '`load`', '`charge`', '`poids`'].forEach(function(needle){
+  assert(contract.indexOf(needle) === -1, 'Aucun champ de charge dans le contrat texte : ' + needle);
+});
+assert(contract.indexOf('intention') !== -1, 'Le contrat texte décrit bien le champ `intention`.');
+['proposer_semaine', 'proposer_remplacement', 'proposer_ajustement'].forEach(function(n){
+  assert(contract.indexOf(n) !== -1, 'Le contrat texte décrit ' + n + '.');
+});
+assert(contract.indexOf('consulter_mouvement') === -1,
+  'Le contrat texte n\'annonce pas un outil de lecture qui n\'existe pas hors API.');
+
+// Le prompt doit porter l'interdiction en toutes lettres, en plus du schéma.
+const promptSrc = bridgeSrc;
+assert(/N'écris donc AUCUN poids/.test(promptSrc), 'Le prompt interdit explicitement d\'écrire un poids.');
+
+// Lecture d'une réponse : texte seul, propositions, type inventé, JSON cassé.
+let p1 = CoachAIBridge.parseResponse('Ton squat progresse bien, rien à changer cette semaine.');
+assert(p1.ok && p1.proposals.length === 0 && p1.text.indexOf('squat') !== -1,
+  'Une réponse en texte seul est valide et affichée (cas le plus fréquent).');
+
+let p2 = CoachAIBridge.parseResponse(
+  'Voici ce que je vois.\n' + CoachAIBridge.START +
+  '{"propositions":[{"type":"proposer_remplacement","de":"Bench Press","vers":"DB Bench Press","raison":"épaule"}]}' +
+  CoachAIBridge.END);
+assert(p2.ok && p2.proposals.length === 1, 'Une proposition entre marqueurs est lue.');
+assert(p2.proposals[0].name === 'proposer_remplacement', 'Le type est reconnu.');
+assert(p2.text.indexOf('Voici ce que je vois') !== -1 && p2.text.indexOf('propositions') === -1,
+  'Le texte de coach est séparé du bloc machine.');
+
+let p3 = CoachAIBridge.parseResponse(CoachAIBridge.START + '{"propositions":[{"type":"supprimer_historique"}]}' + CoachAIBridge.END);
+assert(p3.ok && p3.proposals.length === 0 && p3.rejected.length === 1,
+  'Un type inventé est REFUSÉ et signalé, jamais deviné.');
+
+let p4 = CoachAIBridge.parseResponse(CoachAIBridge.START + '{ceci nest pas du json' + CoachAIBridge.END);
+assert(!p4.ok && /JSON/.test(p4.error), 'Un bloc illisible donne une erreur explicite, pas un plantage.');
+
+// Repli sans marqueurs : un bloc ```json seul reste lisible.
+let p5 = CoachAIBridge.parseResponse('Réponse.\n```json\n{"propositions":[{"type":"proposer_ajustement","semaine":1,"jour":"lundi","mouvement":"Back Squat","format":"5×3","raison":"x"}]}\n```');
+assert(p5.ok && p5.proposals.length === 1, 'Un bloc ```json sans marqueurs est lu en repli.');
+
+// BOUT EN BOUT : une charge collée à la main est effacée comme via l'API.
+let p6 = CoachAIBridge.parseResponse(CoachAIBridge.START + JSON.stringify({propositions:[{
+  type:'proposer_semaine', semaine:3, label:'X',
+  jours:[{jour:'lundi', blocs:[{title:'A', kind:'main', exercises:[{name:'Back Squat', format:'5×5', load:'315 lb'}]}]}]
+}]}) + CoachAIBridge.END);
+assert(p6.proposals.length === 1, 'La semaine collée est lue.');
+const pastedWeek = CoachAIPlan.sanitizeWeek({
+  days: {lundi: p6.proposals[0].input.jours[0].blocs}
+});
+assert(pastedWeek.days.lundi[0].exercises[0].load === '—',
+  'Une charge arrivée par COPIER-COLLER est effacée exactement comme par l\'API — pas de porte dérobée.');
+
+// Le pont ne fait pas de réseau et n'applique rien tout seul.
+assert(code('scripts/coach_ai/bridge.js').indexOf('CoachAIPatch.apply') === -1,
+  'bridge.js n\'applique jamais un patch : seul le bouton Accepter le fait.');
+
+// Sans clé, l'app doit rester pleinement utilisable : le pont est le défaut.
+const uiSrc = code('scripts/coach_ai/ui.js');
+assert(uiSrc.indexOf('function mode()') !== -1 && uiSrc.indexOf('CoachAIConfig.isReady()') !== -1,
+  'L\'écran choisit son mode selon la présence d\'une clé.');
+assert(uiSrc.indexOf('renderBridge()') !== -1, 'Le mode pont est rendu quand aucune clé n\'est enregistrée.');
 
 // ── Sortie ─────────────────────────────────────────────────────────────────
 function fakeStorage(){

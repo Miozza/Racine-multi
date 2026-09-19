@@ -8588,3 +8588,71 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   color: var(--muted);
 }
 .cai-settings-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+/* ── Coach IA : mode copier-coller ──
+   Trois étapes numérotées plutôt qu'un mur de boutons : sur un iPhone, entre
+   deux applications, l'ordre des gestes doit être évident sans être relu. */
+
+.cai-bridge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: var(--safe-bot);
+}
+
+.cai-bridge-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.cai-step-num {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-hud);
+  font-size: 11px;
+  line-height: 19px;
+  text-align: center;
+}
+.cai-step-text {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cai-intents { display: flex; flex-wrap: wrap; gap: 6px; }
+.cai-chip {
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text2);
+  font-family: var(--font-main);
+  font-size: 13px;
+  min-height: 38px;
+  cursor: pointer;
+}
+.cai-chip-on {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 14px var(--sl-glow);
+}
+
+.cai-btn-wide { width: 100%; flex: 0 0 auto; }
+.cai-bridge-q { font-size: 16px; }
+
+/* Repli quand le presse-papiers est refusé : le prompt s'affiche pour une
+   sélection manuelle. Volontairement en petit — c'est un secours, pas la
+   voie normale. */
+.cai-fallback {
+  font-size: 12px;
+  font-family: var(--font-main);
+  color: var(--muted);
+  opacity: .85;
+}

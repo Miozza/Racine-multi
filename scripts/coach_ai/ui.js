@@ -14,8 +14,19 @@
 
   var api = window.CoachAIUI = window.CoachAIUI || {};
 
-  var pending = [];   // propositions en attente de décision
+  var pending = [];        // propositions en attente de décision
   var busy = false;
+  var bridgeIntent = "libre";  // intention choisie dans le mode copier-coller
+
+  // Deux chemins vers le même coach :
+  //  - "pont"  : Racine écrit le prompt, tu le colles dans Claude, tu recolles
+  //              la réponse. Passe par l'abonnement, ne coûte rien de plus.
+  //  - "api"   : appel direct, facturé au jeton. Actif SEULEMENT si une clé est
+  //              enregistrée. Sans clé, il n'existe pas.
+  // Les deux aboutissent aux mêmes cartes Accepter / Refuser.
+  function mode(){
+    return (window.CoachAIConfig && CoachAIConfig.isReady()) ? "api" : "pont";
+  }
 
   function $(id){ return document.getElementById(id); }
   function esc(s){
@@ -46,6 +57,25 @@
     return html;
   }
 
+  // Le presse-papiers échoue silencieusement dans certains contextes iOS
+  // (page non sécurisée, geste non reconnu). Le repli sélectionne le texte
+  // pour que « Copier » du menu système reste possible : un bouton qui ne fait
+  // rien sans le dire est pire que pas de bouton.
+  async function copyToClipboard(text, fallbackEl){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    }catch(e){}
+    if(fallbackEl){
+      fallbackEl.value = text;
+      fallbackEl.style.display = "";
+      try{ fallbackEl.focus(); fallbackEl.setSelectionRange(0, text.length); }catch(e){}
+    }
+    return false;
+  }
+
   // ── Conversation ───────────────────────────────────────────────────────
 
   function renderMessages(){
@@ -68,11 +98,15 @@
     // éviter de reconstituer le texte depuis des blocs à chaque affichage.
     if(!html) html = "<div class='cai-empty'>"
       + "<p class='cai-empty-title'>Coach IA</p>"
-      + "<p>Il lit ton historique, tes notes et ta progression réelle. Demande-lui de regarder un mouvement, "
-      + "d'ajuster une séance, ou d'écrire ta semaine.</p>"
-      + "<p class='cai-empty-hint'>« Mon développé couché stagne depuis un mois, qu'est-ce que tu vois ? »<br>"
-      + "« Écris-moi la semaine 3, j'ai seulement 3 jours cette semaine. »<br>"
-      + "« Mon épaule gauche accroche au strict press, change-moi ça. »</p>"
+      + "<p>Il lit ton historique réel, tes notes de séance et ta progression par mouvement, "
+      + "puis il propose — remplacer un mouvement, changer des répétitions, écrire ta semaine. "
+      + "Tu acceptes ou tu refuses.</p>"
+      + (mode() === "api"
+          ? "<p class='cai-empty-hint'>« Mon développé couché stagne depuis un mois, qu'est-ce que tu vois ? »<br>"
+            + "« Écris-moi la semaine 3, j'ai seulement 3 jours cette semaine. »<br>"
+            + "« Mon épaule gauche accroche au strict press, change-moi ça. »</p>"
+          : "<p class='cai-empty-hint'>Suis les trois étapes ci-dessous. Le prompt contient déjà tout "
+            + "ce que Claude a besoin de savoir sur toi — tu n'as rien à lui réexpliquer.</p>")
       + "</div>";
 
     host.innerHTML = html;
@@ -178,6 +212,86 @@
     }
   }
 
+  // ── Mode pont : copier le prompt, coller la réponse ────────────────────
+
+  function renderBridge(){
+    var host = $("caiBridge");
+    if(!host) return;
+
+    var intents = CoachAIBridge.intents();
+    host.innerHTML = ""
+      + "<div class='cai-bridge-step'>"
+      +   "<span class='cai-step-num'>1</span>"
+      +   "<span class='cai-step-text'>Choisis ce que tu veux lui demander</span>"
+      + "</div>"
+      + "<div class='cai-intents'>"
+      +   intents.map(function(i){
+            return "<button type='button' class='cai-chip" + (i.key === bridgeIntent ? " cai-chip-on" : "")
+              + "' data-cai-intent='" + esc(i.key) + "'>" + esc(i.label) + "</button>";
+          }).join("")
+      + "</div>"
+      + "<textarea id='caiBridgeQuestion' class='cai-textarea cai-bridge-q' rows='2' "
+      +   "placeholder='Précision optionnelle — « seulement 3 jours cette semaine », « mon épaule gauche accroche »…'></textarea>"
+
+      + "<div class='cai-bridge-step'>"
+      +   "<span class='cai-step-num'>2</span>"
+      +   "<span class='cai-step-text'>Copie, colle dans Claude, reviens</span>"
+      + "</div>"
+      + "<button type='button' class='cai-btn cai-btn-accept cai-btn-wide' id='caiCopyPrompt'>Copier le prompt</button>"
+      + "<textarea id='caiPromptFallback' class='cai-textarea cai-fallback' rows='4' readonly style='display:none'></textarea>"
+
+      + "<div class='cai-bridge-step'>"
+      +   "<span class='cai-step-num'>3</span>"
+      +   "<span class='cai-step-text'>Colle sa réponse complète ici</span>"
+      + "</div>"
+      + "<textarea id='caiPasteAnswer' class='cai-textarea' rows='3' "
+      +   "placeholder='Colle toute la réponse de Claude, texte compris.'></textarea>"
+      + "<button type='button' class='cai-btn cai-btn-wide' id='caiReadAnswer'>Lire la réponse</button>";
+  }
+
+  async function copyPrompt(){
+    var extra = $("caiBridgeQuestion");
+    var prompt = CoachAIBridge.buildPrompt(bridgeIntent, extra ? extra.value : "");
+    var ok = await copyToClipboard(prompt, $("caiPromptFallback"));
+    appendBubble("cai-msg-system " + (ok ? "cai-ok" : ""),
+      ok ? "<p>Prompt copié. Colle-le dans Claude, puis reviens avec sa réponse.</p>"
+         : "<p>Copie automatique refusée par le navigateur. Le prompt est affiché ci-dessous : sélectionne-le et copie-le à la main.</p>");
+  }
+
+  function readAnswer(){
+    var box = $("caiPasteAnswer");
+    if(!box) return;
+    var raw = str(box.value);
+    if(!raw){
+      appendBubble("cai-msg-system", "<p>Colle d'abord la réponse de Claude.</p>");
+      return;
+    }
+
+    var out = CoachAIBridge.parseResponse(raw);
+
+    if(str(out.text)) appendBubble("cai-msg-coach", formatText(out.text));
+
+    if(!out.ok){
+      appendBubble("cai-msg-system cai-err", formatText(out.error));
+      return;
+    }
+
+    if(out.proposals && out.proposals.length){
+      pending = pending.concat(out.proposals);
+      renderProposals();
+    } else if(!str(out.text)){
+      appendBubble("cai-msg-system", "<p>Rien de lisible dans ce qui a été collé.</p>");
+    }
+
+    // Un type inventé par le modèle est signalé, jamais deviné ni appliqué.
+    if(out.rejected && out.rejected.length){
+      appendBubble("cai-msg-system cai-err",
+        formatText("Proposition(s) ignorée(s), type inconnu : " + out.rejected.join(", ")));
+    }
+
+    box.value = "";
+  }
+
   // ── Réglages (clé API) ─────────────────────────────────────────────────
 
   function renderSettings(){
@@ -190,8 +304,11 @@
       + "<label class='cai-label' for='caiKey'>Clé API Anthropic</label>"
       + "<input id='caiKey' class='cai-input' type='password' autocomplete='off' spellcheck='false' "
       +   "placeholder='" + (hasKey ? "Clé enregistrée — laisser vide pour la garder" : "sk-ant-…") + "'>"
-      + "<p class='cai-hint'>Elle reste sur cet appareil. Elle n'entre jamais dans un export de profil, "
-      +   "ni dans un lien de prescription. Efface-la si tu prêtes ton téléphone.</p>"
+      + "<p class='cai-hint'><strong>Optionnelle.</strong> Sans clé, Coach IA fonctionne en copier-coller et ne coûte rien de plus "
+      +   "que ton abonnement. Une clé API se facture séparément, à l'usage — un abonnement Pro ne la couvre pas. "
+      +   "Elle n'a d'intérêt que si tu veux la conversation directe dans l'app.</p>"
+      + "<p class='cai-hint'>Elle reste sur cet appareil : elle n'entre jamais dans un export de profil ni dans un lien de prescription. "
+      +   "Efface-la si tu prêtes ton téléphone.</p>"
       + "<label class='cai-label' for='caiEffort'>Profondeur de réflexion</label>"
       + "<select id='caiEffort' class='cai-input'>"
       +   ["low","medium","high","xhigh"].map(function(e){
@@ -223,16 +340,23 @@
   // ── Disponibilité ──────────────────────────────────────────────────────
 
   function renderAvailability(){
-    var banner = $("caiUnavailable"), composer = $("caiComposer");
-    if(!banner || !composer) return;
-    var reason = CoachAIConfig.unavailableReason();
-    if(reason){
-      banner.style.display = "";
-      banner.innerHTML = "<p>" + esc(reason) + "</p>";
-      composer.style.display = "none";
-    } else {
+    var banner = $("caiUnavailable"), composer = $("caiComposer"), bridge = $("caiBridge");
+    if(!banner || !composer || !bridge) return;
+
+    if(mode() === "api"){
+      // Clé enregistrée : conversation directe.
       banner.style.display = "none";
       composer.style.display = "";
+      bridge.style.display = "none";
+    } else {
+      // Pas de clé : le pont. Ce n'est PAS une indisponibilité — c'est le
+      // chemin normal, et il passe par l'abonnement déjà payé.
+      banner.style.display = "";
+      banner.innerHTML = "<p><strong>Mode copier-coller.</strong> Racine écrit le prompt, tu le colles dans Claude, "
+        + "tu recolles sa réponse. Rien de plus à payer : ça passe par ton abonnement.</p>";
+      composer.style.display = "none";
+      bridge.style.display = "";
+      renderBridge();
     }
   }
 
@@ -259,6 +383,20 @@
       if(!t || !t.getAttribute) return;
 
       if(t.id === "caiSend"){ send(); return; }
+      if(t.id === "caiCopyPrompt"){ copyPrompt(); return; }
+      if(t.id === "caiReadAnswer"){ readAnswer(); return; }
+
+      var intent = t.getAttribute("data-cai-intent");
+      if(intent){
+        bridgeIntent = intent;
+        // Re-rendre ne doit pas effacer ce que l'athlète a déjà tapé ou collé.
+        var q = $("caiBridgeQuestion"), a = $("caiPasteAnswer");
+        var keptQ = q ? q.value : "", keptA = a ? a.value : "";
+        renderBridge();
+        if(keptQ && $("caiBridgeQuestion")) $("caiBridgeQuestion").value = keptQ;
+        if(keptA && $("caiPasteAnswer")) $("caiPasteAnswer").value = keptA;
+        return;
+      }
       if(t.id === "caiSaveCfg"){ saveSettings(); return; }
       if(t.id === "caiClearKey"){
         CoachAIConfig.clearKey();

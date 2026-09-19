@@ -257,10 +257,19 @@ persiste persiste toujours localement.
 - Export/import JSON local uniquement.
 - Ne pas réintroduire de sync **de données** sans décision explicite.
 
-**Exception accordée le 2026-09-18 — Coach IA, et rien d'autre.**
-Le domaine `scripts/coach_ai/` appelle l'API Claude directement depuis le
-navigateur. La décision est prise, elle n'a pas à être redemandée. Sa portée
-est stricte :
+**Coach IA — chemin par défaut : copier-coller, pas de réseau.**
+Un abonnement Claude Pro **ne couvre pas l'API** : la facturation API est
+séparée et à l'usage. Le chemin normal de Coach IA est donc
+`scripts/coach_ai/bridge.js` — Racine écrit le prompt, l'athlète le colle dans
+Claude, recolle la réponse. Aucun appel réseau, aucun coût supplémentaire.
+Ne pas proposer l'API comme solution par défaut : le dire coûte une phrase,
+l'oublier coûte de l'argent à l'utilisateur.
+
+**Exception réseau accordée le 2026-09-18 — optionnelle, dormante par défaut.**
+Le domaine peut aussi appeler l'API Claude directement depuis le navigateur,
+**si et seulement si** une clé est enregistrée. Sans clé, ce chemin ne
+s'active jamais et ne coûte rien. La décision est prise, elle n'a pas à être
+redemandée. Sa portée est stricte :
 
 - **Un seul fichier** fait du réseau : `scripts/coach_ai/client.js`. Un
   `fetch()` ailleurs dans le runtime reste une violation, et
@@ -271,8 +280,9 @@ est stricte :
   toujours pas entre appareils.
 - **La clé API vit au niveau appareil**, hors du state de profil : elle ne peut
   entrer ni dans un export JSON ni dans un lien `#rx=`.
-- **Hors-ligne, Racine fonctionne normalement** et Coach IA se tait. Une vue
-  qui deviendrait inutilisable sans réseau serait un bug bloquant.
+- **Hors-ligne, Racine fonctionne normalement** et le mode pont reste
+  utilisable (copier le prompt ne demande aucun réseau). Une vue qui
+  deviendrait inutilisable sans réseau serait un bug bloquant.
 - **Admin seulement.** Étendre Coach IA à des profils clients demanderait un
   relais serveur et une décision de coût : ce n'est pas couvert par cette
   exception.
@@ -303,8 +313,16 @@ L'intensité voulue passe par le champ `intention`
 (`technique` / `legere` / `facile`), reporté dans la note — les mots que
 `coachExtractMovementIntent()` lit déjà pour couper l'auto-progression (§3.1).
 
-**Rien ne s'applique sans un geste de l'athlète.** `chat.js` ne référence
-jamais `CoachAIPatch.apply` : seul le bouton Accepter de `ui.js` l'appelle.
+**Rien ne s'applique sans un geste de l'athlète.** Ni `chat.js` ni `bridge.js`
+ne référencent `CoachAIPatch.apply` : seul le bouton Accepter de `ui.js`
+l'appelle.
+
+**Deux chemins, un seul contrat.** Le mode pont (copier-coller, par défaut) et
+le mode API lisent tous deux `CoachAIPatch.tools()` — pour l'API ce sont des
+outils, pour le pont c'est un contrat en texte engendré par `contractText()`.
+Il n'y a donc pas deux définitions de ce qui est proposable, et un patch collé
+à la main ne peut pas plus écrire une charge qu'un patch venu de l'API. Ne pas
+écrire un second schéma.
 
 **Les semaines générées passent par un programme normal** (`programs/ai_custom.js`,
 privé) qui lit ses blocs dans `state.aiPlan`. Ne pas inventer un second chemin

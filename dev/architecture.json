@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-18",
+  "generatedAt": "2026-09-19",
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 230,
+    "ACTIF": 231,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 12367,
-      "lines": 206,
+      "size": 17268,
+      "lines": 285,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -3278,6 +3278,23 @@
       "consumes": []
     },
     {
+      "path": "scripts/coach_ai/bridge.js",
+      "size": 9875,
+      "lines": 225,
+      "role": "Coach IA : pont copier-coller, le chemin PAR DÉFAUT du domaine (un abonnement Claude Pro ne couvre pas l'API, facturée séparément). Construit le prompt à coller dans Claude — contexte élargi, car aucune facturation au jeton ici — et lit la réponse recollée. Le contrat envoyé au modèle est engendré depuis CoachAIPatch.tools() : une seule définition de ce qui est proposable, donc un patch collé à la main ne peut pas plus écrire une charge qu'un patch venu de l'API.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIBridge"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/ui.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/context.js",
+        "scripts/coach_ai/patch.js"
+      ]
+    },
+    {
       "path": "scripts/coach_ai/chat.js",
       "size": 8502,
       "lines": 184,
@@ -3374,8 +3391,8 @@
     },
     {
       "path": "scripts/coach_ai/patch.js",
-      "size": 14187,
-      "lines": 302,
+      "size": 16081,
+      "lines": 341,
       "role": "Coach IA : schémas des outils exposés au modèle, rendu lisible d'une proposition, et application sur geste de l'athlète. AUCUN champ de charge dans les schémas — la règle « le moteur garde la main » est tenue dans le schéma, pas dans une consigne de prompt. Journal des propositions plafonné.",
       "category": "ACTIF",
       "exposes": [
@@ -3412,8 +3429,8 @@
     },
     {
       "path": "scripts/coach_ai/ui.js",
-      "size": 12056,
-      "lines": 296,
+      "size": 18527,
+      "lines": 434,
       "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
       "category": "ACTIF",
       "exposes": [

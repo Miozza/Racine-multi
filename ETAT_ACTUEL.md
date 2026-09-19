@@ -1,15 +1,20 @@
-# ETAT ACTUEL — V5.1.0
+# ETAT ACTUEL — V5.1.1
 
-Version actuelle : V5.1.0
+Version actuelle : V5.1.1
 
 ## État courant
 
 ### Coach IA — il lit ton entraînement, il propose, tu décides
 
-Nouveau domaine `scripts/coach_ai/`, porte publique `window.CoachAI`, onglet
-réservé à l'admin. C'est la première fois que Racine appelle le réseau : la
-règle « pas de distant » (CLAUDE.md §3.4) a été levée explicitement le
-2026-09-18, pour ce domaine seulement.
+Domaine `scripts/coach_ai/`, porte publique `window.CoachAI`, onglet réservé à
+l'admin.
+
+**Il passe par ton abonnement, pas par l'API.** Un abonnement Claude Pro ne
+couvre pas l'API, facturée séparément à l'usage. Le chemin par défaut est donc
+le copier-coller : Racine écrit le prompt, tu le colles dans Claude, tu
+recolles la réponse, et les propositions arrivent dans les mêmes cartes
+Accepter / Refuser. Aucun réseau, aucun coût de plus. L'appel API direct reste
+possible mais dormant — sans clé enregistrée, il ne s'active jamais.
 
 **Ce qu'il voit.** L'historique réel des séances, les notes dictées pendant
 l'entraînement, la progression et la mémoire Brain par mouvement, le matériel
