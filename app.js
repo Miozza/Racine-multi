@@ -1,5 +1,5 @@
-// Racine V5.0.11 — l'historique des conditionnements s'ouvre depuis la séance
-var APP_VERSION = "V5.0.11";
+// Racine V5.1.2 — Coach IA marche avec n'importe quelle IA, pas seulement Claude
+var APP_VERSION = "V5.1.2";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2789,7 +2789,7 @@ window.restoreLegacyStateBackup=restoreLegacyStateBackup;
 // ─── Binding ─────────────────────────────────────────────────────────────────
 
 function bind(){
-  [["trainingTab","training"],["phoneTab","phone"],["profileTab","profile"],["cycleTab","cycle"],["historyTab","history"],["settingsTab","settings"]].forEach(function(pair){
+  [["trainingTab","training"],["phoneTab","phone"],["profileTab","profile"],["cycleTab","cycle"],["historyTab","history"],["settingsTab","settings"],["coachaiTab","coachai"]].forEach(function(pair){
     var t=$(pair[0]);if(t)t.onclick=function(){switchView(pair[1]);};
   });
   var pvb=$("phoneViewBtn");if(pvb)pvb.onclick=function(){switchView("phone");};

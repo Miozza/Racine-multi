@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-24",
+  "generatedAt": "2026-09-19",
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 217,
+    "ACTIF": 231,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -642,6 +642,19 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/coach_ai_checks.js",
+      "size": 18187,
+      "lines": 299,
+      "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/coach_ai/plan.js",
+        "scripts/coach_ai/patch.js"
+      ]
     },
     {
       "path": "dev/crossfit_quality_checks.js",
@@ -1292,6 +1305,16 @@
       "consumes": []
     },
     {
+      "path": "dev/wod_history_checks.js",
+      "size": 8612,
+      "lines": 158,
+      "role": "Garde-fous de l'historique des conditionnements : la clé de lecture est celle de la ligne WOD des résultats, le format se lit sur le texte et jamais sur le titre (générique et réutilisé), le texte enregistré l'emporte sur la reconstruction, une séance d'un autre programme ne se reconstruit pas, un WOD non fait garde son identité, et le module n'écrit rien ni ne touche au moteur de charges.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/wod_moves_checks.js",
       "size": 8692,
       "lines": 143,
@@ -1503,6 +1526,16 @@
           "line": 0
         }
       ],
+      "consumes": []
+    },
+    {
+      "path": "docs/COACH_AI.md",
+      "size": 8800,
+      "lines": 182,
+      "role": "Contrat du domaine Coach IA : ce que le modèle peut et ne peut pas, pourquoi les charges ne lui appartiennent pas, où vont les données, comment une semaine générée entre dans l'app, et la levée explicite de la règle « pas de distant » pour ce domaine seulement.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
       "consumes": []
     },
     {
@@ -2023,6 +2056,23 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": []
+    },
+    {
+      "path": "programs/ai_custom.js",
+      "size": 4437,
+      "lines": 114,
+      "role": "Programme « Semaines Coach IA » (id ai_custom, PRIVÉ). Programme autonome standard : il expose getBlocks/dayMeta/cycleRules comme les autres, mais lit ses blocs dans CoachAIPlan au lieu de les coder en dur. Son tableau days est muté sur place, jamais réassigné (registerProgramsFromIndex en partage la référence). N'écrit aucune charge.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.COACH_BERTIN_PROGRAMS.ai_custom",
+        "window.RacineAICustomProgram"
+      ],
+      "consumedBy": [
+        "programs/workouts.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/plan.js"
+      ]
     },
     {
       "path": "programs/arnold_split_2026_adapte.js",
@@ -3228,6 +3278,175 @@
       "consumes": []
     },
     {
+      "path": "scripts/coach_ai/bridge.js",
+      "size": 10625,
+      "lines": 239,
+      "role": "Coach IA : pont copier-coller, le chemin PAR DÉFAUT du domaine (un abonnement Claude Pro ne couvre pas l'API, facturée séparément). Construit le prompt à coller dans Claude — contexte élargi, car aucune facturation au jeton ici — et lit la réponse recollée. Le contrat envoyé au modèle est engendré depuis CoachAIPatch.tools() : une seule définition de ce qui est proposable, donc un patch collé à la main ne peut pas plus écrire une charge qu'un patch venu de l'API.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIBridge"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/ui.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/context.js",
+        "scripts/coach_ai/patch.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/chat.js",
+      "size": 8502,
+      "lines": 184,
+      "role": "Coach IA : conversation, consigne système et boucle d'outils bornée. Les outils de lecture s'exécutent seuls ; une proposition n'est JAMAIS appliquée ici — elle remonte à l'UI avec un tool_result d'attente. Conversation plafonnée, stockée hors du state de profil.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIChat"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/ui.js",
+        "scripts/coach_ai/index.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/client.js",
+        "scripts/coach_ai/context.js",
+        "scripts/coach_ai/patch.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/client.js",
+      "size": 4610,
+      "lines": 109,
+      "role": "Coach IA : SEUL fichier du dépôt qui appelle le réseau. POST vers l'API Messages en fetch brut (pas de SDK : aucun bundler, zéro import ES). En-tête anthropic-dangerous-direct-browser-access requis pour CORS. Traduit les erreurs HTTP en français lisible et dégrade proprement hors-ligne.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIClient"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/chat.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/config.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/config.js",
+      "size": 5176,
+      "lines": 130,
+      "role": "Coach IA : configuration de l'accès API. Clé stockée au niveau APPAREIL (racine_coach_ai_device_v1), jamais dans le state d'un profil — donc jamais dans un export JSON ni un lien de prescription. Porte la garde admin et la raison lisible d'indisponibilité.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIConfig"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/client.js",
+        "scripts/coach_ai/chat.js",
+        "scripts/coach_ai/ui.js",
+        "scripts/coach_ai/index.js"
+      ],
+      "consumes": [
+        "scripts/profiles/storage.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/context.js",
+      "size": 12897,
+      "lines": 287,
+      "role": "Coach IA : construit le texte d'état de l'athlète envoyé au modèle (séances récentes, notes, mémoire Brain, contraintes matériel, remplacements actifs). LECTURE SEULE et borné. Sert aussi l'outil consulter_mouvement.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIContext"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/chat.js"
+      ],
+      "consumes": [
+        "scripts/charge/brain_memory.js",
+        "scripts/charge/brain_explain.js",
+        "scripts/charge/index.js",
+        "scripts/profiles/swaps.js",
+        "data/equipment.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/index.js",
+      "size": 1592,
+      "lines": 38,
+      "role": "Coach IA : porte d'entrée publique du domaine (window.CoachAI). app.js et les vues ne touchent jamais aux modules internes.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAI"
+      ],
+      "consumedBy": [
+        "app.js",
+        "scripts/app_navigation.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/ui.js",
+        "scripts/coach_ai/chat.js",
+        "scripts/coach_ai/plan.js",
+        "scripts/coach_ai/config.js",
+        "scripts/coach_ai/patch.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/patch.js",
+      "size": 16081,
+      "lines": 341,
+      "role": "Coach IA : schémas des outils exposés au modèle, rendu lisible d'une proposition, et application sur geste de l'athlète. AUCUN champ de charge dans les schémas — la règle « le moteur garde la main » est tenue dans le schéma, pas dans une consigne de prompt. Journal des propositions plafonné.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIPatch"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/chat.js",
+        "scripts/coach_ai/ui.js",
+        "scripts/coach_ai/index.js"
+      ],
+      "consumes": [
+        "scripts/profiles/swaps.js",
+        "scripts/coach_ai/plan.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/plan.js",
+      "size": 14395,
+      "lines": 364,
+      "role": "Coach IA : semaines générées et ajustements d'exercice, stockés dans state.aiPlan (isolation par profil par construction). Schéma versionné + migration ascendante. sanitizeExercise() EFFACE toute charge écrite par le modèle : le moteur garde la main sur les poids. applyToWorkout() pose les ajustements en surcouche sans muter les templates.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIPlan"
+      ],
+      "consumedBy": [
+        "programs/ai_custom.js",
+        "programs/workouts.js",
+        "scripts/coach_ai/patch.js",
+        "scripts/coach_ai/context.js"
+      ],
+      "consumes": [
+        "scripts/state/index.js"
+      ]
+    },
+    {
+      "path": "scripts/coach_ai/ui.js",
+      "size": 19535,
+      "lines": 450,
+      "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachAIUI"
+      ],
+      "consumedBy": [
+        "scripts/coach_ai/index.js"
+      ],
+      "consumes": [
+        "scripts/coach_ai/chat.js",
+        "scripts/coach_ai/patch.js",
+        "scripts/coach_ai/config.js",
+        "scripts/ui/index.js"
+      ]
+    },
+    {
       "path": "scripts/core/logger.js",
       "size": 4944,
       "lines": 165,
@@ -3764,6 +3983,16 @@
       "consumes": []
     },
     {
+      "path": "scripts/session/wod_history.js",
+      "size": 12273,
+      "lines": 274,
+      "role": "Historique des conditionnements (porte window.CoachWodHistory). Affiche les WOD passés avec leur texte, leur score, leur RPE et leur note : un score seul (« 4 rounds + 6 ») ne disait pas de quel WOD il venait. Deux sources pour le texte, dans l'ordre : `wodText` enregistré avec le score, sinon reconstruction depuis (jour, semaine) et SEULEMENT si le programme actif est celui de la séance. Ne compare rien, ne touche ni au moteur de charges ni à aucune clé de stockage : c'est de l'affichage.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "scripts/session/wod_skip.js",
       "size": 11173,
       "lines": 238,
@@ -4018,26 +4247,6 @@
       "size": 366,
       "lines": 9,
       "role": "Test end-to-end Playwright de l application.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [],
-      "consumes": []
-    },
-    {
-      "path": "scripts/session/wod_history.js",
-      "size": 12273,
-      "lines": 274,
-      "role": "Historique des conditionnements (porte window.CoachWodHistory). Affiche les WOD passés avec leur texte, leur score, leur RPE et leur note : un score seul (« 4 rounds + 6 ») ne disait pas de quel WOD il venait. Deux sources pour le texte, dans l'ordre : `wodText` enregistré avec le score, sinon reconstruction depuis (jour, semaine) et SEULEMENT si le programme actif est celui de la séance. Ne compare rien, ne touche ni au moteur de charges ni à aucune clé de stockage : c'est de l'affichage.",
-      "category": "ACTIF",
-      "exposes": [],
-      "consumedBy": [],
-      "consumes": []
-    },
-    {
-      "path": "dev/wod_history_checks.js",
-      "size": 8612,
-      "lines": 158,
-      "role": "Garde-fous de l'historique des conditionnements : la clé de lecture est celle de la ligne WOD des résultats, le format se lit sur le texte et jamais sur le titre (générique et réutilisé), le texte enregistré l'emporte sur la reconstruction, une séance d'un autre programme ne se reconstruit pas, un WOD non fait garde son identité, et le module n'écrit rien ni ne touche au moteur de charges.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],

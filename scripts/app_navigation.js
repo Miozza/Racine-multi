@@ -10,7 +10,7 @@ var VIEW_MAIN_IDS={pc:"pcView"};
 var VIEW_TAB_IDS={pc:"phoneTab"};
 // « references » : onglet fusionne dans « Charge » (profileView) — plus de vue
 // dediee. renderReferences() est appele par renderProfile().
-var VIEWS=["training","pc","session","results","cycle","history","settings","profile"];
+var VIEWS=["training","pc","session","results","cycle","history","settings","profile","coachai"];
 
 function normalizeViewName(v){
   return VIEW_ALIASES[v] || v;
@@ -65,4 +65,10 @@ function switchView(v){
   if(v==="history")renderHistory();
   if(v==="profile")renderProfile();
   if(v==="settings")renderSettings();
+  // Coach IA : réservé à l'admin, comme la vue PC. Un profil client qui
+  // atteindrait la vue par un chemin détourné retombe sur l'entraînement.
+  if(v==="coachai"){
+    if(window.CoachAI && CoachAI.isAdmin && !CoachAI.isAdmin()) return switchView("training");
+    if(window.CoachAI) CoachAI.render();
+  }
 }

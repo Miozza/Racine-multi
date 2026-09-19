@@ -241,6 +241,8 @@ Deux sens du mot **« Brain »**, à ne pas confondre :
 Détail persistance : la **sauvegarde est locale uniquement**. Le flux GitHub
 (`saveToGitHub`) a été retiré du code ; les mentions résiduelles dans
 `docs/DATA_FLOW_CONTRACT.md` et `docs/CHARGE_ENGINE_TESTS.md` sont **périmées**.
+Coach IA (§3.5) appelle le réseau mais ne synchronise aucune donnée : ce qui
+persiste persiste toujours localement.
 
 ### 3.3 Cerveau statistique / Avis IA
 
@@ -253,9 +255,86 @@ Détail persistance : la **sauvegarde est locale uniquement**. Le flux GitHub
 
 - Pas de module de sync GitHub — retiré délibérément. Racine fonctionne en local.
 - Export/import JSON local uniquement.
-- Ne pas réintroduire de sync distante sans décision explicite.
+- Ne pas réintroduire de sync **de données** sans décision explicite.
 
-### 3.5 Admin
+**Coach IA — chemin par défaut : copier-coller, pas de réseau.**
+Un abonnement Claude Pro **ne couvre pas l'API** : la facturation API est
+séparée et à l'usage. Le chemin normal de Coach IA est donc
+`scripts/coach_ai/bridge.js` — Racine écrit le prompt, l'athlète le colle dans
+Claude, recolle la réponse. Aucun appel réseau, aucun coût supplémentaire.
+Ne pas proposer l'API comme solution par défaut : le dire coûte une phrase,
+l'oublier coûte de l'argent à l'utilisateur.
+
+**Exception réseau accordée le 2026-09-18 — optionnelle, dormante par défaut.**
+Le domaine peut aussi appeler l'API Claude directement depuis le navigateur,
+**si et seulement si** une clé est enregistrée. Sans clé, ce chemin ne
+s'active jamais et ne coûte rien. La décision est prise, elle n'a pas à être
+redemandée. Sa portée est stricte :
+
+- **Un seul fichier** fait du réseau : `scripts/coach_ai/client.js`. Un
+  `fetch()` ailleurs dans le runtime reste une violation, et
+  `dev/coach_ai_checks.js` échoue dessus.
+- **Aucune donnée n'est synchronisée.** Rien n'est stocké à distance, rien
+  n'est relu depuis un serveur. Le contexte part dans un prompt, la réponse
+  revient, et tout ce qui persiste persiste localement. Un profil ne voyage
+  toujours pas entre appareils.
+- **La clé API vit au niveau appareil**, hors du state de profil : elle ne peut
+  entrer ni dans un export JSON ni dans un lien `#rx=`.
+- **Hors-ligne, Racine fonctionne normalement** et le mode pont reste
+  utilisable (copier le prompt ne demande aucun réseau). Une vue qui
+  deviendrait inutilisable sans réseau serait un bug bloquant.
+- **Admin seulement.** Étendre Coach IA à des profils clients demanderait un
+  relais serveur et une décision de coût : ce n'est pas couvert par cette
+  exception.
+
+Contrat complet : `docs/COACH_AI.md`.
+
+### 3.5 Coach IA — il propose, l'athlète décide
+
+Domaine `scripts/coach_ai/`, porte publique `window.CoachAI`. Conversation avec
+un modèle qui lit l'état réel de l'athlète et **propose** des changements
+d'entraînement. Lire `docs/COACH_AI.md` avant d'y toucher.
+
+**La règle qui gouverne le domaine : le moteur garde la main sur les poids.**
+
+Aucun outil exposé au modèle n'a de champ de charge, et ce n'est pas une
+consigne de prompt — c'est le schéma JSON de `scripts/coach_ai/patch.js`. Ne
+pas en ajouter un. Deux raisons :
+
+- dans `programs/`, une charge chiffrée est un **%1RM de l'athlète de
+  référence** que `scaling.js` redescend ensuite au niveau réel (§3.1). Un
+  nombre écrit par un modèle est indécidable entre les deux, et la confusion
+  donne une double réduction — exactement le défaut que §3.1 interdit déjà ;
+- sur le poids exact, le moteur est meilleur : e1RM réels, frein RPE récent,
+  ratios du profil, tailles du rack. Un modèle ne sait rien de tout ça de façon
+  fiable depuis une conversation.
+
+L'intensité voulue passe par le champ `intention`
+(`technique` / `legere` / `facile`), reporté dans la note — les mots que
+`coachExtractMovementIntent()` lit déjà pour couper l'auto-progression (§3.1).
+
+**Rien ne s'applique sans un geste de l'athlète.** Ni `chat.js` ni `bridge.js`
+ne référencent `CoachAIPatch.apply` : seul le bouton Accepter de `ui.js`
+l'appelle.
+
+**Le pont est indépendant du fournisseur.** Le prompt ne nomme aucune IA :
+Claude, ChatGPT ou autre chose le lisent pareil, et l'athlète choisit le nom
+affiché dans l'écran. Ne pas introduire de branche par fournisseur dans
+`bridge.js` — un garde-fou vérifie que le prompt construit ne contient aucun
+nom de fournisseur.
+
+**Deux chemins, un seul contrat.** Le mode pont (copier-coller, par défaut) et
+le mode API lisent tous deux `CoachAIPatch.tools()` — pour l'API ce sont des
+outils, pour le pont c'est un contrat en texte engendré par `contractText()`.
+Il n'y a donc pas deux définitions de ce qui est proposable, et un patch collé
+à la main ne peut pas plus écrire une charge qu'un patch venu de l'API. Ne pas
+écrire un second schéma.
+
+**Les semaines générées passent par un programme normal** (`programs/ai_custom.js`,
+privé) qui lit ses blocs dans `state.aiPlan`. Ne pas inventer un second chemin
+d'affichage : `buildWorkout()` est l'entonnoir unique de toutes les vues.
+
+### 3.6 Admin
 
 - Panneau admin (vue PC paysage) : accessible via le flag `profile.isAdmin`
   (`CoachProfiles.isActiveAdmin()`). Le profil nommé `Bertin` reçoit ce flag au
@@ -333,7 +412,8 @@ polices ni la nature « dark HUD » de l'app.
 - Validations `dev/` à faire passer avant livraison : liste de référence dans
   `RELEASE_CHECKLIST.md` (a minima `node dev/structure_checks.js`,
   `node dev/regression_checks.js`, `node dev/charge_engine_checks.js`,
-  `node dev/progression_contract_checks.js`).
+  `node dev/progression_contract_checks.js`, et
+  `node dev/coach_ai_checks.js` dès qu'on touche à `scripts/coach_ai/`).
 
 ---
 
@@ -403,6 +483,7 @@ comptent que si on les ouvre. Deux natures à ne pas confondre.
 | `docs/CHARGE_PROGRESSION_CONTRACT.md` | la **progression** des charges | règles de progression |
 | `docs/CHARGE_ENGINE.md` + `docs/CHARGE_CONTEXT.md` | le calcul/contexte de suggestion | moteur (voir réserves § 3.2) |
 | `docs/BRAIN.md` | Brain : apprentissage, confiance, explication `(!)`, Avis IA | philosophie Brain |
+| `docs/COACH_AI.md` | Coach IA : conversation, propositions, semaines générées, appel réseau | frontières du domaine IA |
 | `docs/UI_CONSTRAINTS.md` | une vue / une séance | contraintes UI |
 | `docs/ERROR_LOGGING.md` | le logger `CoachLog` | journal d'erreurs |
 

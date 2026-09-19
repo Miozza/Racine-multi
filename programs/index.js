@@ -34,7 +34,11 @@
     { id: "arnold_split_2026_adapte",   file: "programs/arnold_split_2026_adapte.js",    name: "Arnold Split 2026 Adapté",                   phase: 0, macroRole: "buffer",   macroStatus: "hors-saison perso",durationWeeks: 8,  minWeeks: 4,  maxWeeks: 16, visibility: "private", fillsGap: ["hors-saison", "hypertrophie", "bodybuilding"] },
     { id: "arnold_split_strict",        file: "programs/arnold_split_strict.js",         name: "Arnold Split Strict",                        phase: 0, macroRole: "buffer",   macroStatus: "hors-saison perso",durationWeeks: 8,  minWeeks: 4,  maxWeeks: 16, visibility: "public",  fillsGap: ["hors-saison", "hypertrophie", "bodybuilding", "fréquence variable"], objective: "hypertrophie", frequency: 6, suggestedNext: ["client_strength_4d", "client_hybrid_performance_4d"] },
     { id: "hypertrophie_fesse_stephanie", file: "programs/hypertrophie_fesse_stephanie.js", name: "Hypertrophie Fessier Femme",       phase: 0, macroRole: "alternative", macroStatus: "hypertrophie fessiers", durationWeeks: 2, minWeeks: 2, maxWeeks: 2, visibility: "private", fillsGap: ["hypertrophie", "fessiers", "femme"], objective: "hypertrophie", frequency: 5, suggestedNext: ["hypertrophie_fesse", "general_hypertrophy_3d"] },
-    { id: "phase2_fable5", file: "programs/phase2_fable5.js", name: "Phase 2 — Fable 5", phase: 2, macroRole: "main", macroStatus: "option phase 2 Bertin", durationWeeks: 8, minWeeks: 8, maxWeeks: 10, visibility: "private", objective: "force", frequency: 4, suggestedNext: ["force_performance", "competition_peak"] }
+    { id: "phase2_fable5", file: "programs/phase2_fable5.js", name: "Phase 2 — Fable 5", phase: 2, macroRole: "main", macroStatus: "option phase 2 Bertin", durationWeeks: 8, minWeeks: 8, maxWeeks: 10, visibility: "private", objective: "force", frequency: 4, suggestedNext: ["force_performance", "competition_peak"] },
+    // Semaines écrites par Coach IA dans le state du profil (scripts/coach_ai/plan.js).
+    // PRIVÉ et sans intention de devenir public : un programme dont le contenu
+    // est généré ne se publie pas à un catalogue client.
+    { id: "ai_custom", file: "programs/ai_custom.js", name: "Semaines Coach IA", phase: 0, macroRole: "buffer", macroStatus: "programmation assistée", durationWeeks: 4, minWeeks: 1, maxWeeks: 12, visibility: "private", fillsGap: ["sur mesure", "coach ia", "adaptation"] }
   ];
 
   var clientPrograms = [
