@@ -1,5 +1,5 @@
-// Racine V5.1.2 — Coach IA marche avec n'importe quelle IA, pas seulement Claude
-var APP_VERSION = "V5.1.2";
+// Racine V5.1.3 — Cycle de réhabilitation Stéphanie, chrono d'intervalles et horloge ancrée
+var APP_VERSION = "V5.1.3";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -624,11 +624,21 @@ var wodTimer={duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:
 
 function wodTimerConfig(block){
   var txt=String((block&&block.text)||""),seconds=parseTimeToSeconds(block&&block.time),label="Timer",mode="down",isEmom=false;
-  if(/AMRAP/i.test(txt)){label="AMRAP "+Math.round(seconds/60)+" min";}
+  // Intervalles travail/repos (« 10 × (20 s fort / 40 s facile) », « 4 × 3 min
+  // / 1 min repos ») : la durée vient du FORMAT, jamais du créneau du bloc.
+  // Sur « 4 × 3 min / 1 min » le créneau écrit vaut 15 ou 16 min selon qu'on
+  // compte le dernier repos — le format, lui, dure exactement 15 min.
+  var intervals=(window.CoachIntervalTimer)?CoachIntervalTimer.parse(txt):null;
+  if(intervals){
+    seconds=intervals.totalSec;
+    label="Intervalles "+intervals.label;
+  }
+  else if(/AMRAP/i.test(txt)){label="AMRAP "+Math.round(seconds/60)+" min";}
   else if(/EMOM/i.test(txt)){label="EMOM "+Math.round(seconds/60)+" min";isEmom=true;}
   else if(/For time|Cap/i.test(txt)){label="CAP "+Math.round(seconds/60)+" min";mode="up";}
+  else if(/zone\s*2/i.test(txt)&&seconds){label="Zone 2 "+Math.round(seconds/60)+" min";}
   if(!seconds){seconds=8*60;label="Timer 8 min";}
-  return{seconds:seconds,label:label,mode:mode,isEmom:isEmom};
+  return{seconds:seconds,label:label,mode:mode,isEmom:isEmom,intervals:intervals};
 }
 function stopWodTimer(){
   if(wodTimer.interval){clearInterval(wodTimer.interval);wodTimer.interval=null;}
@@ -2919,6 +2929,11 @@ function coachMigratePrTrophyReferences(){
 function coachFullBoot(){
   if(window.CoachProfiles && CoachProfiles.reconcileOwnerPermissions) CoachProfiles.reconcileOwnerPermissions();
   if(window.CoachProfiles && CoachProfiles.reconcileActivePrivateProgramPermissions) CoachProfiles.reconcileActivePrivateProgramPermissions();
+  // Bascule one-shot des cycles dont le programme a été archivé et remplacé.
+  // Avant registerProgramsFromIndex() : le catalogue doit être reconstruit avec
+  // la permission du programme de remplacement déjà accordée, sinon le cycle
+  // tout juste basculé déclencherait le fallback « programme absent ».
+  if(window.CoachProfiles && CoachProfiles.migrateArchivedPrograms) CoachProfiles.migrateArchivedPrograms();
   // Reconstruire le catalogue avec les permissions du profil actif MAINTENANT.
   // focusConfigs était construit une seule fois au chargement de la page : un
   // programme privé accordé ensuite (prescription acceptée, activation admin,

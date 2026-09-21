@@ -1,3 +1,23 @@
+## V5.1.3 — Cycle de réhabilitation, chrono d'intervalles, horloge qui ne dérive plus
+
+**Ce qui change**
+
+- **Un cycle de réhabilitation** (`programs/rehab_stephanie.js`, privé) : 4 séances de 45 min par semaine sur 4 semaines, ~7 min de mobilité, ~23 min de force, ~15 min de vélo. Il est écrit autour de deux blessures nommées — conflit fémoro-acétabulaire de type pincer à la hanche droite, supra-épineux et infra-épineux gauches. Donc : aucun overhead, aucune position en appui sur les bras, aucun push-up, aucun RDL, aucun hip thrust unilatéral, aucun rameur ni SkiErg, et jamais de squat sous la parallèle — la boîte est le repère, pas une suggestion.
+- **La progression passe par le moteur existant**, pas par une table parallèle : S1 les charges de base, S2 les mêmes charges avec 1 à 2 reps de plus, S3 +5 %, S4 −15 % et une série de moins. Le libellé de la S4 porte « récupération », ce que `coachIsDeloadWeekOrContext()` lit pour couper l'auto-progression ; le curl porte « léger » et RPE 7 dans sa note, ce que lit `coachExtractMovementIntent()`.
+- **Les charges sont écrites à l'échelle de l'athlète de référence**, comme l'exige le contrat : un poids déjà réduit écrit dans un programme serait réduit une seconde fois par la mise à l'échelle du profil. L'en-tête du fichier montre la conversion, mouvement par mouvement.
+- **Le chrono lit un quatrième format** : les intervalles travail/repos. `scripts/session/interval_timer.js` (`window.CoachIntervalTimer`) reconnaît « 10 × (20 s fort / 40 s facile) » et « 4 × 3 min / 1 min repos », compte les rondes, sonne à chaque changement de phase et affiche le temps restant **dans la phase** — sur un vélo à 20 secondes d'effort, le total ne sert à rien. La durée vient du format, jamais du créneau du bloc, et le dernier repos n'est pas compté.
+- **Les deux chronos ne dérivent plus.** Le chrono WOD et le mini-chrono (EMOM, minuteur de repos) calculaient leurs secondes en comptant les tics d'un `setInterval`. Sur iPhone en PWA, écran verrouillé, ces tics sont ralentis ou suspendus : le chrono revenait en retard de tout le temps passé éteint. Ils lisent maintenant `Date.now()` et rattrapent les secondes manquées. Le rattrapage est **muet** — rejouer quarante bips au déverrouillage n'apprend rien.
+
+**Archivage**
+
+`programs/hypertrophie_fesse_stephanie.js` devient `programs/archive/hypertrophie_fesse_stephanie.js`. Le fichier reste **chargé** et reste au catalogue (privé, `macroStatus: "archivé"`) : un cycle en pause, un cycle repris ou un historique qui le référence doit continuer de se résoudre, sinon l'athlète voit « Programme absent ». Une migration one-shot idempotente (`CoachProfiles.migrateArchivedPrograms()`, appelée au boot) bascule le cycle **actif** d'un profil qui l'utilisait vers le nouveau cycle : elle n'écrit que les champs de cycle (programme, semaine, jour, date de début), jamais l'historique, les résultats, `athleteState`, `movementRefs` ni les charges personnalisées. Le drapeau est posé sur tous les profils au premier passage : un athlète qui choisirait volontairement l'ancien cycle plus tard ne se le fera pas rebasculer dans son dos.
+
+**Tutos**
+
+Quatre fiches nouvelles, toutes pour des mouvements que la bibliothèque n'avait pas : `Half-Kneeling Hip Flexor Stretch`, `90/90 Breathing`, `Adductor Rockback`, `Vélo stationnaire`. Vidéos choisies chez des cliniciens (Hospital for Special Surgery, Medbridge, Mike Reinold PT, Bob & Brad), titre et chaîne vérifiés un par un. Les fiches déjà existantes n'ont pas été réécrites : elles sont partagées par tous les profils, et les consignes propres à ces deux blessures vivent dans les notes d'exercice du cycle.
+
+Garde-fous : `dev/rehab_stephanie_checks.js` (mouvements interdits absents de toutes les semaines, profondeur de squat écrite, charges à l'échelle de référence, progression, détection de la S4, cardio vélo, fiche + vidéo pour chaque mouvement) et `dev/interval_timer_checks.js` (lecture des formats, phases, signaux, horloge ancrée sur les deux chronos).
+
 ## V5.1.2 — Coach IA marche avec n'importe quelle IA
 
 **Ce qui change**

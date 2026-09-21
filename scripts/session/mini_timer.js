@@ -106,13 +106,38 @@
     if(st.interval && typeof clearInterval === 'function') clearInterval(st.interval);
     st.interval = null;
   }
+
+  // ── Horloge ancrée sur Date.now() ─────────────────────────────────────────
+  // Même raison que le chrono WOD (scripts/session/timer.js) : sur iPhone en
+  // PWA, un setInterval est ralenti ou suspendu dès que l'écran se verrouille.
+  // Un minuteur de repos qui rend la main avec trente secondes de retard n'est
+  // pas un minuteur. Le tic reste l'unité de logique — un tic = une seconde,
+  // c'est ce que les garde-fous pilotent à la main — mais c'est l'horloge
+  // murale qui dit combien de tics sont dus.
+  // Rattrapage MUET : au déverrouillage, seul le tic qui correspond à
+  // maintenant a le droit de sonner.
+  var catchingUp = false;
+  function anchoredInterval(onTick){
+    if(typeof setInterval !== 'function') return null;
+    var anchor = Date.now(), served = 0;
+    return setInterval(function(){
+      var due = Math.floor((Date.now() - anchor) / 1000);
+      while(served < due){
+        served++;
+        catchingUp = (served < due);
+        onTick();
+      }
+      catchingUp = false;
+    }, 250);
+  }
+
   function startLoop(){
     clearLoop();
-    if(typeof setInterval !== 'function') return;
-    st.interval = setInterval(function(){ tick(); }, 1000);
+    st.interval = anchoredInterval(function(){ tick(); });
   }
 
   function bip(fn, pattern){
+    if(catchingUp) return;   // signaux d'un instant passé : ils ne servent plus
     try{
       if(typeof guidedSoundMuted === 'function' && guidedSoundMuted()) { /* muet : aucun nœud audio */ }
       else if(typeof fn === 'function') fn();
@@ -205,7 +230,7 @@
     restState.running = true;         // un repos démarre tout de suite : il a commencé
     restState.host = host || null;
     restState.saved = (host && typeof host.innerHTML === 'string') ? host.innerHTML : null;
-    if(typeof setInterval === 'function') restState.interval = setInterval(restTick, 1000);
+    restState.interval = anchoredInterval(restTick);
     paintRest();
     return true;
   }

@@ -4007,6 +4007,93 @@ body.racine-modal-lock {
 .guided-wod-timer.emom-red::after{color:#ff4164;}
 .guided-wod-timer.emom-go::after{content:"GO";color:#00ffb0;}
 
+/* Intervalles travail/repos — même grammaire visuelle que l'EMOM.
+   Deux états seulement se distinguent d'un coup d'œil sur un vélo : on pousse
+   (cyan, la couleur d'accent de Racine) ou on récupère (bleu éteint). Les
+   paliers d'approche réutilisent le jaune et le rouge déjà appris ailleurs —
+   aucune couleur nouvelle n'entre dans le design system. */
+.guided-wod-timer.phase-work,
+.guided-wod-timer.phase-rest,
+.guided-wod-timer.phase-yellow,
+.guided-wod-timer.phase-red{
+  position: relative;
+}
+.guided-wod-timer.phase-work{
+  border-color: rgba(0,212,255,.95) !important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(0,212,255,.24), transparent 44%),
+    linear-gradient(180deg, rgba(0,212,255,.12), rgba(30,144,255,.10)) !important;
+  box-shadow:
+    0 0 0 2px rgba(0,212,255,.18),
+    0 0 28px rgba(0,212,255,.34),
+    inset 0 0 24px rgba(0,212,255,.12) !important;
+}
+.guided-wod-timer.phase-work .guided-timer-display{
+  color:#00d4ff !important;
+  text-shadow:0 0 14px rgba(0,212,255,.70) !important;
+}
+.guided-wod-timer.phase-rest{
+  border-color: rgba(120,160,200,.70) !important;
+  background: linear-gradient(180deg, rgba(30,144,255,.07), rgba(4,6,15,.30)) !important;
+  box-shadow: inset 0 0 20px rgba(30,144,255,.08) !important;
+}
+.guided-wod-timer.phase-rest .guided-timer-display{
+  color:#9fb8cf !important;
+  text-shadow:none !important;
+}
+.guided-wod-timer.phase-yellow{
+  border-color: rgba(255,210,70,.95) !important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,210,70,.25), transparent 44%),
+    linear-gradient(180deg, rgba(255,210,70,.12), rgba(255,170,0,.10)) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,210,70,.18),
+    0 0 26px rgba(255,210,70,.32) !important;
+}
+.guided-wod-timer.phase-yellow .guided-timer-display{
+  color:#ffd84a !important;
+  text-shadow:0 0 14px rgba(255,216,74,.75) !important;
+}
+.guided-wod-timer.phase-red{
+  border-color: rgba(255,65,100,.98) !important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,65,100,.32), transparent 44%),
+    linear-gradient(180deg, rgba(255,65,100,.16), rgba(255,30,60,.16)) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,65,100,.24),
+    0 0 34px rgba(255,65,100,.45) !important;
+  animation: emomPulseRed .32s alternate infinite;
+}
+.guided-wod-timer.phase-red .guided-timer-display{
+  color:#ff4164 !important;
+  text-shadow:0 0 14px rgba(255,65,100,.9) !important;
+}
+/* La bandelette dit la phase ET la ronde : « FORT 3/10 ». C'est ce qui
+   remplace le total, que le grand nombre n'affiche plus pendant un format
+   d'intervalles. */
+.guided-wod-timer.phase-work::after,
+.guided-wod-timer.phase-rest::after,
+.guided-wod-timer.phase-yellow::after,
+.guided-wod-timer.phase-red::after{
+  content: attr(data-emom-warning);
+  position:absolute;
+  top:8px;
+  right:10px;
+  min-width:44px;
+  text-align:center;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:950;
+  letter-spacing:.05em;
+  background:rgba(0,0,0,.38);
+  border:1px solid currentColor;
+}
+.guided-wod-timer.phase-work::after{color:#00d4ff;}
+.guided-wod-timer.phase-rest::after{color:#9fb8cf;}
+.guided-wod-timer.phase-yellow::after{color:#ffd84a;}
+.guided-wod-timer.phase-red::after{color:#ff4164;}
+
 @keyframes emomPulseRed{
   from{transform:scale(1);filter:brightness(1);}
   to{transform:scale(1.012);filter:brightness(1.18);}
@@ -7915,6 +8002,7 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 }
 @media (prefers-reduced-motion: reduce){
   .guided-card.emom-red, .guided-card.emom-go{ animation:none !important; }
+  .guided-wod-timer.phase-red{ animation:none !important; }
 }
 
 /* ── La ligne « Repos » EST le minuteur ─────────────────────────────────────

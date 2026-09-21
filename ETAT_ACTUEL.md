@@ -1,8 +1,37 @@
-# ETAT ACTUEL — V5.1.2
+# ETAT ACTUEL — V5.1.3
 
-Version actuelle : V5.1.2
+Version actuelle : V5.1.3
 
 ## État courant
+
+### Cycle de réhabilitation — hanche et épaule
+
+`programs/rehab_stephanie.js` : 4 séances de 45 min par semaine sur 4 semaines
+(~7 min mobilité, ~23 min force, ~15 min cardio vélo), écrites autour d'un
+conflit fémoro-acétabulaire de type pincer à droite et d'une coiffe gauche
+irritée. Aucun overhead, aucune position en appui sur les bras, aucun squat
+sous la parallèle — la boîte sert de repère de profondeur. Progression par le
+moteur existant : S2 ajoute des reps, S3 +5 %, S4 −15 % avec une série de moins
+et un libellé de semaine que `coachIsDeloadWeekOrContext()` reconnaît.
+
+Le cycle fessiers qu'il remplace est **archivé** dans
+`programs/archive/hypertrophie_fesse_stephanie.js` : toujours chargé et
+toujours dans le catalogue, parce qu'un cycle en pause ou un historique qui le
+référence doit continuer de se résoudre. Une migration one-shot
+(`CoachProfiles.migrateArchivedPrograms()`) bascule le cycle actif d'un profil
+qui l'utilisait, sans toucher à son historique, ses résultats ni ses charges.
+
+### Chrono : intervalles travail/repos, et horloge qui ne dérive plus
+
+`scripts/session/interval_timer.js` (`window.CoachIntervalTimer`) lit
+« 10 × (20 s fort / 40 s facile) » et « 4 × 3 min / 1 min repos » dans le texte
+d'un bloc cardio : phases, rondes, signaux aux transitions. La durée vient du
+format, jamais du créneau du bloc, et le dernier repos n'est pas compté.
+
+Les deux chronos de la séance (WOD et mini-chrono EMOM/repos) calculent
+désormais leurs tics depuis `Date.now()` au lieu de compter les tics d'un
+`setInterval` : sur iPhone en PWA, écran verrouillé, ils rattrapent les
+secondes manquées au lieu de revenir en retard. Le rattrapage est muet.
 
 ### Coach IA — il lit ton entraînement, il propose, tu décides
 
