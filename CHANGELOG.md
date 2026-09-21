@@ -1,3 +1,17 @@
+## V5.1.4 — Le cycle de réhabilitation devient sélectionnable
+
+**Ce qui change**
+
+`rehab_stephanie` passe de `private` à `public`. L'athlète le trouve maintenant dans l'onglet Cycle et le démarre elle-même : plus besoin d'accorder une permission depuis le panneau admin, ni d'envoyer un lien de prescription — deux chemins qui supposaient tous les deux un geste du coach sur le bon appareil.
+
+**Ce que ça implique, et qui est assumé**
+
+- Tout profil voit désormais ce cycle dans son catalogue. Le libellé affiché ne nomme personne (« Réhabilitation & renforcement profond ») ; seul l'identifiant porte un prénom, et il n'est jamais montré. Un garde-fou l'épingle.
+- `scripts/season/suggest.js` prend **tous** les programmes publics comme candidats de fin de cycle. Son `objective` « réhabilitation » n'appartient à aucune liste d'objectifs : il score bas et ne passe jamais devant un programme aligné sur l'objectif déclaré de l'athlète. Il peut en revanche apparaître chez un profil qui n'a pas déclaré d'objectif. C'est le prix de la sélection libre, pas un défaut.
+- Le compteur de programmes publics de `dev/program_catalog_checks.js` passe de 31 à 32. Ce n'est pas de la friction : c'est le tripwire qui force à décider explicitement qu'un programme devient public (CLAUDE.md § 3.1).
+
+La bascule one-shot des profils qui étaient sur l'ancien cycle fessiers (`CoachProfiles.migrateArchivedPrograms()`) reste en place et inchangée : elle continue de faire le travail toute seule pour qui n'a rien à sélectionner.
+
 ## V5.1.3 — Cycle de réhabilitation, chrono d'intervalles, horloge qui ne dérive plus
 
 **Ce qui change**

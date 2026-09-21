@@ -33,9 +33,19 @@
     { id: "strict_muscle_up_personnel", file: "programs/strict_muscle_up_personnel.js",  name: "Strict Muscle-Up Personnel — 12 semaines",  phase: 0, macroRole: "buffer",   macroStatus: "skill perso",      durationWeeks: 12, minWeeks: 12, maxWeeks: 12, visibility: "private", fillsGap: ["muscle-up", "gymnastique", "anneaux", "skill"] },
     { id: "arnold_split_2026_adapte",   file: "programs/arnold_split_2026_adapte.js",    name: "Arnold Split 2026 Adapté",                   phase: 0, macroRole: "buffer",   macroStatus: "hors-saison perso",durationWeeks: 8,  minWeeks: 4,  maxWeeks: 16, visibility: "private", fillsGap: ["hors-saison", "hypertrophie", "bodybuilding"] },
     { id: "arnold_split_strict",        file: "programs/arnold_split_strict.js",         name: "Arnold Split Strict",                        phase: 0, macroRole: "buffer",   macroStatus: "hors-saison perso",durationWeeks: 8,  minWeeks: 4,  maxWeeks: 16, visibility: "public",  fillsGap: ["hors-saison", "hypertrophie", "bodybuilding", "fréquence variable"], objective: "hypertrophie", frequency: 6, suggestedNext: ["client_strength_4d", "client_hybrid_performance_4d"] },
-    // Réhabilitation Stéphanie — cycle actif. Privé : il est écrit autour de
-    // deux blessures nommées, il n'a rien à faire dans un catalogue public.
-    { id: "rehab_stephanie", file: "programs/rehab_stephanie.js", name: "Réhabilitation & renforcement profond", phase: 0, macroRole: "alternative", macroStatus: "réhabilitation", durationWeeks: 4, minWeeks: 4, maxWeeks: 8, visibility: "private", fillsGap: ["réhabilitation", "retour de blessure", "mobilité", "hanche", "épaule"], objective: "réhabilitation", frequency: 4, suggestedNext: [] },
+    // Réhabilitation — PUBLIC depuis V5.1.4, décision explicite : l'athlète
+    // concernée doit pouvoir le choisir elle-même dans l'onglet Cycle, sans
+    // permission à accorder ni lien de prescription à envoyer.
+    // Deux conséquences assumées, écrites ici pour le prochain qui lira :
+    //   - tout profil voit désormais ce cycle dans son catalogue ;
+    //   - scripts/season/suggest.js prend TOUS les programmes publics comme
+    //     candidats de fin de cycle. Son objective « réhabilitation » n'est
+    //     dans aucune liste d'objectifs, donc il score bas et ne remonte pas
+    //     devant un programme aligné — mais il peut apparaître chez un profil
+    //     sans objectif déclaré. C'est le prix de la sélection libre.
+    // Le libellé affiché ne nomme personne ; seul l'identifiant porte un
+    // prénom, et il n'est jamais montré.
+    { id: "rehab_stephanie", file: "programs/rehab_stephanie.js", name: "Réhabilitation & renforcement profond", phase: 0, macroRole: "alternative", macroStatus: "réhabilitation", durationWeeks: 4, minWeeks: 4, maxWeeks: 8, visibility: "public", fillsGap: ["réhabilitation", "retour de blessure", "mobilité", "hanche", "épaule"], objective: "réhabilitation", frequency: 4, suggestedNext: [] },
     // ARCHIVÉ (V5.1.3) — remplacé par rehab_stephanie. Le fichier vit dans
     // programs/archive/ et reste CHARGÉ : un cycle déjà commencé, un cycle en
     // pause ou un historique qui le référence doivent continuer de se résoudre.
