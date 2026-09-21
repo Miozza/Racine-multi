@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 263684,
-      "lines": 1728,
+      "size": 265243,
+      "lines": 1742,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 40377,
-      "lines": 562,
+      "size": 40484,
+      "lines": 564,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -108,7 +108,7 @@
     },
     {
       "path": "README.md",
-      "size": 8140,
+      "size": 8273,
       "lines": 132,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
@@ -140,7 +140,7 @@
     },
     {
       "path": "app.js",
-      "size": 154590,
+      "size": 154580,
       "lines": 3020,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -1011,8 +1011,8 @@
     },
     {
       "path": "dev/program_catalog_checks.js",
-      "size": 8623,
-      "lines": 126,
+      "size": 8828,
+      "lines": 129,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -1096,8 +1096,8 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": [],
-      "size": 13188,
-      "lines": 215
+      "size": 13575,
+      "lines": 220
     },
     {
       "path": "dev/repro_bug1_charges_client.js",
@@ -2536,8 +2536,8 @@
     },
     {
       "path": "programs/index.js",
-      "size": 20840,
-      "lines": 156,
+      "size": 21562,
+      "lines": 166,
       "role": "Registre central des programmes : construit COACH_BERTIN_PROGRAM_INDEX (ordre + visibilité public/private) et les macrocycles. Ne charge AUCUN script (les <script> restent dans index.html).",
       "category": "ACTIF",
       "exposes": [

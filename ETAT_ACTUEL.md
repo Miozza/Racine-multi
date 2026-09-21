@@ -1,12 +1,14 @@
-# ETAT ACTUEL — V5.1.3
+# ETAT ACTUEL — V5.1.4
 
-Version actuelle : V5.1.3
+Version actuelle : V5.1.4
 
 ## État courant
 
 ### Cycle de réhabilitation — hanche et épaule
 
-`programs/rehab_stephanie.js` : 4 séances de 45 min par semaine sur 4 semaines
+`programs/rehab_stephanie.js`, **public** : l'athlète le choisit elle-même dans
+l'onglet Cycle, sans permission ni lien de prescription. 4 séances de 45 min par
+semaine sur 4 semaines
 (~7 min mobilité, ~23 min force, ~15 min cardio vélo), écrites autour d'un
 conflit fémoro-acétabulaire de type pincer à droite et d'une coiffe gauche
 irritée. Aucun overhead, aucune position en appui sur les bras, aucun squat

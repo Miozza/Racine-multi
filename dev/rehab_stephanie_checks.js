@@ -49,7 +49,12 @@ const entry = (ctx.window.COACH_BERTIN_PROGRAM_INDEX || []).find(x => x && x.id 
 const WEEKS = [1,2,3,4];
 
 assert(!!P && typeof P.getBlocks === 'function', 'rehab_stephanie est enregistré et fournit getBlocks().');
-assert(entry.visibility === 'private', 'le cycle reste privé : il est écrit autour de blessures nommées.');
+// Public par décision explicite (V5.1.4) : l'athlète le sélectionne elle-même.
+// Ce qui reste épinglé, c'est que le libellé affiché ne nomme personne — un
+// catalogue public ne doit pas porter le prénom de quelqu'un ni sa blessure.
+assert(entry.visibility === 'public', 'le cycle est publié : sélectionnable sans permission.');
+assert(!/st[ée]phanie/i.test(String(entry.name) + ' ' + String(P.label) + ' ' + String(P.impact)),
+  'aucun prénom dans ce que le catalogue affiche.');
 assert(Array.isArray(P.days) && P.days.length === 4, 'le cycle compte 4 séances par semaine.');
 assert(Number(entry.durationWeeks) === 4, 'le cycle dure 4 semaines.');
 

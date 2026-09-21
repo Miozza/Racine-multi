@@ -1,5 +1,5 @@
-// Racine V5.1.3 — Cycle de réhabilitation Stéphanie, chrono d'intervalles et horloge ancrée
-var APP_VERSION = "V5.1.3";
+// Racine V5.1.4 — le cycle de réhabilitation devient sélectionnable par l'athlète
+var APP_VERSION = "V5.1.4";
 
 // Architecture stable
 // programs/*.js = plan prévu
