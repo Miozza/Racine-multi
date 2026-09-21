@@ -2,7 +2,40 @@
 // Timer guidé AMRAP/EMOM/For Time de la vue séance.
 // Aucun changement volontaire de comportement : extraction depuis scripts/session/view.js.
 
-var guidedTimer = {duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:"down",label:"",isEmom:false,intervalSec:60,countdownActive:false,countdownRemaining:10};
+var guidedTimer = {duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:"down",label:"",isEmom:false,intervalSec:60,countdownActive:false,countdownRemaining:10,intervals:null};
+
+// ── Horloge : ancrée sur Date.now(), pas sur le nombre de tics ───────────────
+// Un setInterval qui incrémente un compteur suppose que le navigateur lui donne
+// exactement un tic par seconde. Sur iPhone en PWA c'est faux dès que l'écran se
+// verrouille ou que l'app passe en arrière-plan : les tics sont ralentis ou
+// suspendus, et le chrono revient en retard de tout le temps passé éteint — sur
+// un WOD de 12 minutes, l'écart se compte en minutes. Racine est utilisée
+// exactement comme ça : téléphone posé, écran qui s'éteint, vélo qui tourne.
+//
+// On garde donc le tic comme UNITÉ DE LOGIQUE (un tic = une seconde de chrono,
+// ce que toute la suite du fichier attend) mais c'est l'horloge murale qui
+// décide COMBIEN de tics sont dus. Au retour d'un écran verrouillé, les
+// secondes manquantes sont rattrapées d'un coup et le chrono affiche l'heure
+// juste.
+//
+// Le rattrapage est MUET. Rejouer quarante bips d'un format d'intervalles au
+// déverrouillage ne renseigne sur rien : ces signaux appartenaient à un instant
+// passé. Seul le dernier tic — celui qui correspond à maintenant — a le droit
+// de sonner.
+var guidedTimerSilent = false;
+function guidedTimerAnchoredInterval(onTick){
+  if(typeof setInterval !== "function") return null;
+  var anchor = Date.now(), served = 0;
+  return setInterval(function(){
+    var due = Math.floor((Date.now() - anchor) / 1000);
+    while(served < due){
+      served++;
+      guidedTimerSilent = (served < due);   // muet sur tout sauf le tic courant
+      onTick();
+    }
+    guidedTimerSilent = false;
+  }, 250);
+}
 
 // ── Signaux sonores du timer guidé ───────────────────────────────────────────
 // Muet = aucun helper audio appelé, donc aucun nœud Web Audio créé (pas un
@@ -20,10 +53,10 @@ function setGuidedSoundMuted(muted){
   // reprendre l'AudioContext (contrainte Safari iOS).
   if(!state.guidedSoundMuted && typeof resumeAudio==="function") resumeAudio();
 }
-function guidedBipCountdown(){ if(!guidedSoundMuted() && typeof bipCountdown==="function") bipCountdown(); }
-function guidedBipStart(){ if(!guidedSoundMuted() && typeof bipStart==="function") bipStart(); }
-function guidedBipEmom(){ if(!guidedSoundMuted() && typeof bipEmom==="function") bipEmom(); }
-function guidedBipEnd(){ if(!guidedSoundMuted() && typeof bipEnd==="function") bipEnd(); }
+function guidedBipCountdown(){ if(!guidedTimerSilent && !guidedSoundMuted() && typeof bipCountdown==="function") bipCountdown(); }
+function guidedBipStart(){ if(!guidedTimerSilent && !guidedSoundMuted() && typeof bipStart==="function") bipStart(); }
+function guidedBipEmom(){ if(!guidedTimerSilent && !guidedSoundMuted() && typeof bipEmom==="function") bipEmom(); }
+function guidedBipEnd(){ if(!guidedTimerSilent && !guidedSoundMuted() && typeof bipEnd==="function") bipEnd(); }
 
 // ── Timer éditable — durée, intervalle de bips, sens ─────────────────────────
 // L'athlète ajuste le timer du WOD sur le terrain (WOD raccourci, EMOM en 90s,
@@ -112,11 +145,40 @@ function resetGuidedTimerState(cfg){
   guidedTimer.label=(cfg&&cfg.label)||"Timer";
   guidedTimer.isEmom=!!(cfg&&cfg.isEmom);
   guidedTimer.intervalSec=Number(cfg&&cfg.intervalSec)||60;
+  // Format travail/repos lu dans le texte du bloc (scripts/session/interval_timer.js).
+  // Null pour tous les autres formats : AMRAP, EMOM et CAP ne changent pas.
+  guidedTimer.intervals=(cfg&&cfg.intervals)||null;
   guidedTimer.countdownActive=false;
   guidedTimer.countdownRemaining=10;
   updateGuidedTimerDisplay();
 }
-function guidedTimerCurrentValue(){return guidedTimer.mode==="up"?guidedTimer.elapsed:guidedTimer.remaining;}
+// Sur un format d'intervalles, le grand nombre est le temps restant dans la
+// PHASE en cours, pas dans le bloc. À 20 secondes d'effort sur un vélo, le
+// total ne sert à rien : ce qu'on regarde, c'est quand ça s'arrête. Le total
+// reste lisible autrement — la ronde en cours est peinte sur la carte.
+function guidedTimerCurrentValue(){
+  var p=guidedIntervalPhase();
+  if(p && p.phase!=="done") return p.remaining;
+  return guidedTimer.mode==="up"?guidedTimer.elapsed:guidedTimer.remaining;
+}
+
+// ── Intervalles travail/repos ───────────────────────────────────────────────
+// Toute la logique de format vit dans CoachIntervalTimer (module pur, testé
+// sans horloge). Ici on ne fait que brancher : lire la phase, sonner au
+// changement, peindre la carte.
+function guidedIntervalPhase(){
+  if(!guidedTimer.intervals || !window.CoachIntervalTimer) return null;
+  if(guidedTimer.countdownActive) return null;
+  return CoachIntervalTimer.phaseAt(guidedTimer.intervals, guidedTimerElapsedSeconds());
+}
+function guidedIntervalTransitionTick(){
+  if(!guidedTimer.intervals || !window.CoachIntervalTimer) return;
+  var elapsed=guidedTimerElapsedSeconds();
+  if(!CoachIntervalTimer.isTransition(guidedTimer.intervals, elapsed)) return;
+  var p=CoachIntervalTimer.phaseAt(guidedTimer.intervals, elapsed);
+  if(p && p.isWork){ guidedBipStart(); vibrate([200,80,200]); }
+  else { guidedBipEmom(); vibrate([100,50,100]); }
+}
 function guidedTimerIntervalSeconds(){
   var v=Number(guidedTimer&&guidedTimer.intervalSec)||60;
   return v>0 ? v : 60;
@@ -154,8 +216,20 @@ function updateGuidedEmomVisualWarning(){
   var box=d ? d.closest(".guided-wod-timer") : null;
   if(!box) return;
 
-  box.classList.remove("emom-blue","emom-yellow","emom-red","emom-go");
+  box.classList.remove("emom-blue","emom-yellow","emom-red","emom-go","phase-work","phase-rest","phase-yellow","phase-red");
   box.removeAttribute("data-emom-warning");
+
+  // Intervalles : la bande dit toujours où on en est (FORT 3/10, FACILE 3/10),
+  // pas seulement à l'approche du changement. C'est la seule information qui
+  // compte quand le nombre géant repart de zéro toutes les vingt secondes.
+  if(guidedTimer.intervals && window.CoachIntervalTimer && guidedTimer.running){
+    var ph=CoachIntervalTimer.alertState(guidedTimer.intervals, guidedTimerElapsedSeconds());
+    if(ph){
+      box.classList.add(ph.cls);
+      box.setAttribute("data-emom-warning", ph.label);
+    }
+    return;
+  }
 
   var st = guidedEmomMinuteState();
   if(!st) return;
@@ -481,7 +555,7 @@ function startGuidedTimerCountdown(onDone){
   guidedTimer.countdownActive=true;
   guidedTimer.countdownRemaining=10;
   updateGuidedTimerDisplay();
-  guidedTimer.interval=setInterval(function(){
+  guidedTimer.interval=guidedTimerAnchoredInterval(function(){
     guidedTimer.countdownRemaining--;
     if(guidedTimer.countdownRemaining<=3&&guidedTimer.countdownRemaining>0){guidedBipCountdown();vibrate([60]);}
     if(guidedTimer.countdownRemaining<=0){
@@ -502,19 +576,24 @@ function startGuidedTimer(){
   startGuidedTimerCountdown(function(){
     guidedTimer.running=true;
     syncGuidedTimerButtons();
-    guidedTimer.interval=setInterval(function(){
+    guidedTimer.interval=guidedTimerAnchoredInterval(function(){
       if(guidedTimer.mode==="up"){
         guidedTimer.elapsed=Math.min(guidedTimer.duration,guidedTimer.elapsed+1);
         guidedTimerIntervalTick();
+        guidedIntervalTransitionTick();
         if(guidedTimer.elapsed>=guidedTimer.duration){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
       } else {
         guidedTimer.remaining=Math.max(0,guidedTimer.remaining-1);
-        if(guidedTimer.remaining<=3&&guidedTimer.remaining>0){guidedBipCountdown();vibrate([60]);}
+        // Sur un format d'intervalles, les trois derniers bips appartiennent à
+        // la PHASE, pas au bloc : c'est la fin de l'effort qu'on annonce.
+        var phaseLeft=guidedTimer.intervals?guidedTimerCurrentValue():guidedTimer.remaining;
+        if(phaseLeft<=3&&phaseLeft>0){guidedBipCountdown();vibrate([60]);}
         guidedTimerIntervalTick();
+        guidedIntervalTransitionTick();
         if(guidedTimer.remaining<=0){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
       }
       updateGuidedTimerDisplay();
-    },1000);
+    });
   });
 }
 function pauseGuidedTimer(){stopGuidedTimer();updateGuidedTimerDisplay();}

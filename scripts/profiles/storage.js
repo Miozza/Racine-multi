@@ -196,6 +196,70 @@
     return changed;
   };
 
+  // ─── Migration one-shot : programme archivé → programme de remplacement ───
+  // Quand un programme est ARCHIVÉ et remplacé (V5.1.3 : le cycle fessiers de
+  // Stéphanie remplacé par son cycle de réhabilitation), l'ancien fichier reste
+  // chargé — un historique doit toujours se résoudre — mais le cycle ACTIF doit
+  // basculer, et personne ne peut le faire à la main : les données vivent dans
+  // le localStorage du téléphone de l'athlète, il n'existe aucune copie serveur.
+  //
+  // Trois garanties, dans l'ordre d'importance :
+  //   1. AUCUNE DONNÉE PERDUE. On écrit exactement les champs de cycle que
+  //      setProfileActiveProgram() écrit déjà (goal, week, day, date de début).
+  //      history, results, athleteState, movementRefs, rpeHistory et les
+  //      charges personnalisées ne sont pas touchés — ils ne sont même pas lus.
+  //   2. UNE SEULE FOIS. Le drapeau est posé sur TOUS les profils au premier
+  //      passage, migrés ou non. Sans ça, un athlète qui reprendrait
+  //      volontairement l'ancien programme plus tard se le ferait rebasculer
+  //      dans son dos — une migration ne doit jamais contredire un choix
+  //      délibéré postérieur.
+  //   3. AUCUN AUTRE PROFIL TOUCHÉ. Seul un profil dont le cycle actif est
+  //      exactement l'ancien programme bascule ; les autres reçoivent le
+  //      drapeau et rien d'autre.
+  var ARCHIVED_PROGRAM_MIGRATIONS = [
+    { flag: "migratedRehabStephanieV1", from: "hypertrophie_fesse_stephanie", to: "rehab_stephanie" }
+  ];
+
+  api.migrateArchivedPrograms = function(){
+    var reg = readRegistry();
+    var changed = false;
+    ARCHIVED_PROGRAM_MIGRATIONS.forEach(function(mig){
+      reg.profiles.forEach(function(profile){
+        if(profile[mig.flag]) return;              // déjà considéré : on n'y revient pas
+        profile[mig.flag] = true;
+        changed = true;
+
+        var keys = api.storageKeysFor(profile.id);
+        var st = null;
+        try{ st = JSON.parse(localStorage.getItem(keys.state) || "null"); }catch(e){ st = null; }
+        if(!st || typeof st !== "object") return;  // profil sans state : rien à basculer
+        if(!st.cycle || st.cycle.goal !== mig.from) return;
+
+        var perms = Array.isArray(profile.programPermissions) ? profile.programPermissions.slice() : [];
+        if(perms.indexOf(mig.to) === -1) perms.push(mig.to);
+        // L'ancien programme reste accordé : son historique et ses cycles en
+        // pause doivent rester lisibles et reprenables.
+        if(perms.indexOf(mig.from) === -1) perms.push(mig.from);
+        profile.programPermissions = perms;
+
+        st.cycle.goal = mig.to;
+        st.missingCycle = null;
+        st.week = 1;
+        var prog = window.COACH_BERTIN_PROGRAMS && window.COACH_BERTIN_PROGRAMS[mig.to];
+        st.day = (prog && prog.days && prog.days[0]) || st.day || "lundi";
+        st.activeCycleStartDate = new Date().toISOString();
+        try{ localStorage.setItem(keys.state, JSON.stringify(st)); }catch(e){ /* stockage plein : le drapeau reste, on ne boucle pas */ }
+        try{
+          if(window.CoachLog && CoachLog.info){
+            CoachLog.info("migrate_archived_program", {profile:profile.id, from:mig.from, to:mig.to});
+          }
+        }catch(e){}
+      });
+    });
+    if(changed) writeRegistry(reg);
+    return changed;
+  };
+
   // Admin (coach) vs client. Centralisé : toute vérification admin passe par ici.
   // Admin = flag isAdmin, sinon marqueur propriétaire posé à la migration.
   // Le nom du profil ne donne plus l'admin : créer un profil « Bertin » via

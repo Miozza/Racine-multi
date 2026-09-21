@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 231,
+    "ACTIF": 235,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 206863,
-      "lines": 1141,
+      "size": 263684,
+      "lines": 1728,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 8485,
-      "lines": 137,
+      "size": 40377,
+      "lines": 562,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -108,8 +108,8 @@
     },
     {
       "path": "README.md",
-      "size": 5875,
-      "lines": 104,
+      "size": 8140,
+      "lines": 132,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
       "exposes": [],
@@ -124,8 +124,8 @@
     },
     {
       "path": "RELEASE_CHECKLIST.md",
-      "size": 6921,
-      "lines": 138,
+      "size": 7110,
+      "lines": 144,
       "role": "Liste de référence des checks dev à passer avant livraison.",
       "category": "ACTIF",
       "exposes": [],
@@ -140,8 +140,8 @@
     },
     {
       "path": "app.js",
-      "size": 150330,
-      "lines": 2956,
+      "size": 154590,
+      "lines": 3020,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
       "exposes": [
@@ -370,8 +370,8 @@
     },
     {
       "path": "data/movements_media.js",
-      "size": 16064,
-      "lines": 194,
+      "size": 17270,
+      "lines": 209,
       "role": "Table nom de mouvement → ID vidéo YouTube (COACH_BERTIN_MOVEMENT_VIDEOS), clé alignée sur programs/tutorials.js.",
       "category": "ACTIF",
       "exposes": [
@@ -826,6 +826,16 @@
       ]
     },
     {
+      "path": "dev/interval_timer_checks.js",
+      "role": "Garde-fous du chrono d'intervalles et de l'horloge ancrée : lecture des deux écritures réelles de format, refus des AMRAP/EMOM, phases et signaux, et vérification que les deux chronos de la séance calculent leurs tics depuis Date.now().",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [],
+      "size": 7903,
+      "lines": 127
+    },
+    {
       "path": "dev/json_export_ios_checks.js",
       "size": 8890,
       "lines": 179,
@@ -889,8 +899,8 @@
     },
     {
       "path": "dev/multi_profile_checks.js",
-      "size": 7900,
-      "lines": 135,
+      "size": 11835,
+      "lines": 210,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -1001,8 +1011,8 @@
     },
     {
       "path": "dev/program_catalog_checks.js",
-      "size": 7635,
-      "lines": 111,
+      "size": 8623,
+      "lines": 126,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -1080,6 +1090,16 @@
       "consumes": []
     },
     {
+      "path": "dev/rehab_stephanie_checks.js",
+      "role": "Garde-fous du cycle de réhabilitation : mouvements interdits absents de toutes les semaines, profondeur de squat écrite, charges à l'échelle de l'athlète de référence, progression S1→S4, détection de la semaine de décharge, cardio vélo chronométrable, fiche technique et vidéo pour chaque mouvement.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [],
+      "size": 13188,
+      "lines": 215
+    },
+    {
       "path": "dev/repro_bug1_charges_client.js",
       "size": 12792,
       "lines": 207,
@@ -1143,7 +1163,7 @@
     },
     {
       "path": "dev/simulate_multi_users.js",
-      "size": 41594,
+      "size": 41602,
       "lines": 839,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
@@ -1336,8 +1356,8 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "size": 11094,
-      "lines": 195,
+      "size": 15587,
+      "lines": 222,
       "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
       "category": "ACTIF",
       "exposes": [],
@@ -1984,8 +2004,8 @@
     },
     {
       "path": "index.html",
-      "size": 23094,
-      "lines": 447,
+      "size": 25606,
+      "lines": 492,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2073,6 +2093,32 @@
       "consumes": [
         "scripts/coach_ai/plan.js"
       ]
+    },
+    {
+      "path": "programs/archive/hypertrophie_fesse_stephanie.js",
+      "size": 20085,
+      "lines": 213,
+      "role": "Programme autonome ARCHIVÉ (V5.1.3), remplacé par programs/rehab_stephanie.js. Toujours chargé et toujours indexé : un cycle en pause ou un historique qui le référence doit continuer de se résoudre.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 320
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
     },
     {
       "path": "programs/arnold_split_2026_adapte.js",
@@ -2463,32 +2509,6 @@
       "consumes": []
     },
     {
-      "path": "programs/hypertrophie_fesse_stephanie.js",
-      "size": 20085,
-      "lines": 214,
-      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
-      "category": "ACTIF",
-      "exposes": [
-        "getBlocks",
-        "getWodText",
-        "dayMeta",
-        "cycleRules"
-      ],
-      "consumedBy": [
-        {
-          "path": "index.html",
-          "vector": "script-tag",
-          "line": 320
-        },
-        {
-          "path": "programs/index.js",
-          "vector": "index-entry",
-          "line": 0
-        }
-      ],
-      "consumes": []
-    },
-    {
       "path": "programs/hypertrophy_base.js",
       "size": 16304,
       "lines": 242,
@@ -2516,8 +2536,8 @@
     },
     {
       "path": "programs/index.js",
-      "size": 18963,
-      "lines": 144,
+      "size": 20840,
+      "lines": 156,
       "role": "Registre central des programmes : construit COACH_BERTIN_PROGRAM_INDEX (ordre + visibilité public/private) et les macrocycles. Ne charge AUCUN script (les <script> restent dans index.html).",
       "category": "ACTIF",
       "exposes": [
@@ -2645,6 +2665,37 @@
       "consumes": []
     },
     {
+      "path": "programs/rehab_stephanie.js",
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules) : cycle de réhabilitation 4 semaines × 4 séances de 45 min, écrit autour d'un conflit fémoro-acétabulaire de hanche et d'une coiffe d'épaule irritée. Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 0
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        },
+        {
+          "path": "dev/rehab_stephanie_checks.js",
+          "vector": "garde-fou",
+          "line": 0
+        }
+      ],
+      "consumes": [],
+      "size": 21152,
+      "lines": 283
+    },
+    {
       "path": "programs/retour_au_travail.js",
       "size": 14067,
       "lines": 222,
@@ -2751,8 +2802,8 @@
     },
     {
       "path": "programs/tutorials.js",
-      "size": 75435,
-      "lines": 303,
+      "size": 80888,
+      "lines": 313,
       "role": "Base de fiches technique COACH_BERTIN_TUTORIALS + findCoachBertinTutorial(name) (matching par nom, exclut le cardio).",
       "category": "ACTIF",
       "exposes": [
@@ -3121,8 +3172,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 25131,
-      "lines": 471,
+      "size": 30455,
+      "lines": 551,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -3632,8 +3683,8 @@
     },
     {
       "path": "scripts/profiles/storage.js",
-      "size": 18288,
-      "lines": 413,
+      "size": 21666,
+      "lines": 476,
       "role": "API publique multi-profils CoachProfiles : registre local + stockage namespacé par profil, flag admin.",
       "category": "ACTIF",
       "exposes": [
@@ -3873,9 +3924,37 @@
       "consumes": []
     },
     {
+      "path": "scripts/session/interval_timer.js",
+      "role": "Intervalles travail/repos de la séance guidée : lecture du format écrit dans le texte d'un bloc cardio (« 10 × (20 s fort / 40 s facile) »), position dans le format à la seconde N, changements de phase. Logique pure — aucun DOM, aucun son, aucune horloge.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachIntervalTimer"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 0
+        },
+        {
+          "path": "app.js",
+          "vector": "wodTimerConfig",
+          "line": 0
+        },
+        {
+          "path": "scripts/session/timer.js",
+          "vector": "phase + signaux",
+          "line": 0
+        }
+      ],
+      "consumes": [],
+      "size": 7414,
+      "lines": 163
+    },
+    {
       "path": "scripts/session/mini_timer.js",
-      "size": 17325,
-      "lines": 453,
+      "size": 27441,
+      "lines": 670,
       "role": "Mini-chrono de la séance guidée : EMOM programmé hors bloc WOD et minuteur de repos. Occupe la boîte de l'heure (.guided-live-clock) au lieu d'un espace dans la carte, donc ne retire aucune hauteur aux charges, reps, RPE et recommandations. Affiche la minute courante et les secondes restantes dans la minute ; l'alerte se lit sur la bordure de la carte.",
       "category": "ACTIF",
       "exposes": [
@@ -3930,8 +4009,8 @@
     },
     {
       "path": "scripts/session/timer.js",
-      "size": 12904,
-      "lines": 287,
+      "size": 42023,
+      "lines": 856,
       "role": "Timer guidé AMRAP/EMOM/For Time du mode séance.",
       "category": "ACTIF",
       "exposes": [
@@ -4224,8 +4303,8 @@
     },
     {
       "path": "styles.css",
-      "size": 274399,
-      "lines": 8139,
+      "size": 293905,
+      "lines": 8746,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],

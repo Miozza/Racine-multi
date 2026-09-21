@@ -65,7 +65,7 @@ assert(!/Miozza|GitHub|github/i.test(catalogText), 'Le catalogue client ne dépe
 // (enregistré dans COACH_BERTIN_PROGRAMS avec getBlocks). Bug historique : la
 // bibliothèque de séances existait sans enregistrement runtime — l'activer
 // déclenchait « programme absent » et la vue WOD restait vide.
-vm.runInContext(read('programs/hypertrophie_fesse_stephanie.js'), context, {filename:'programs/hypertrophie_fesse_stephanie.js'});
+vm.runInContext(read('programs/archive/hypertrophie_fesse_stephanie.js'), context, {filename:'programs/archive/hypertrophie_fesse_stephanie.js'});
 const steph = programs['hypertrophie_fesse_stephanie'];
 assert(!!steph, 'hypertrophie_fesse_stephanie est enregistré dans COACH_BERTIN_PROGRAMS.');
 assert(typeof steph.getBlocks === 'function', 'hypertrophie_fesse_stephanie fournit getBlocks().');

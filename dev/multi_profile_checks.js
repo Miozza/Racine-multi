@@ -95,6 +95,82 @@ try{
   errors.push('Migration programme privé actif impossible : ' + (e && e.stack ? e.stack : e));
 }
 
+// ── Bascule one-shot d'un programme archivé vers son remplaçant ─────────────
+// Une migration qui écrit dans le localStorage d'un athlète réel doit être
+// vérifiée : il n'existe aucune copie serveur (CLAUDE.md § 2.1). Trois choses
+// comptent, dans cet ordre : ne rien perdre, ne le faire qu'une fois, ne
+// toucher personne d'autre.
+try{
+  const mem = {};
+  const localStorage = {
+    getItem: key => Object.prototype.hasOwnProperty.call(mem, key) ? mem[key] : null,
+    setItem: (key, value) => { mem[key] = String(value); },
+    removeItem: key => { delete mem[key]; }
+  };
+  mem.racineProfileRegistry = JSON.stringify({
+    version:1,
+    activeProfileId:'p_steph',
+    profiles:[
+      {id:'p_steph', name:'Stéphanie', onboarded:true, programPermissions:['hypertrophie_fesse_stephanie']},
+      {id:'p_autre', name:'Autre',     onboarded:true, programPermissions:['strength']}
+    ]
+  });
+  const stephBefore = {
+    cycle:{goal:'hypertrophie_fesse_stephanie'},
+    week:4, day:'jeudi',
+    history:[{id:'h1'},{id:'h2'}],
+    results:{'Hip Thrust':[{load:135,reps:10}]},
+    athleteState:{movements:{'Hip Thrust':{}}},
+    movementRefs:{'hipThrust__hypertrophy':{load:135,reps:10}},
+    rpeHistory:{'hipThrust__hypertrophy':[7,7]}
+  };
+  const autreBefore = { cycle:{goal:'strength'}, week:2, day:'lundi', history:[{id:'a1'}] };
+  mem['racineState::p_steph'] = JSON.stringify(stephBefore);
+  mem['racineState::p_autre'] = JSON.stringify(autreBefore);
+
+  const ctx2 = {
+    window:{
+      COACH_BERTIN_PROGRAM_INDEX:[
+        {id:'hypertrophie_fesse_stephanie', visibility:'private'},
+        {id:'rehab_stephanie', visibility:'private'},
+        {id:'strength', visibility:'public'}
+      ],
+      COACH_BERTIN_PROGRAMS:{ rehab_stephanie:{ days:['lundi','mardi','jeudi','vendredi'] } }
+    },
+    localStorage, console
+  };
+  ctx2.window.window = ctx2.window;
+  vm.runInNewContext(read('scripts/profiles/storage.js'), ctx2, {filename:'storage.js'});
+  const api2 = ctx2.window.CoachProfiles;
+  assert(typeof api2.migrateArchivedPrograms === 'function', 'La bascule des programmes archivés est exposée.');
+  assert(api2.migrateArchivedPrograms() === true, 'La bascule s\'applique au premier passage.');
+
+  const stephAfter = JSON.parse(mem['racineState::p_steph']);
+  assert(stephAfter.cycle.goal === 'rehab_stephanie', 'Le cycle actif bascule vers le programme de remplacement.');
+  assert(stephAfter.week === 1 && stephAfter.day === 'lundi', 'Le nouveau cycle repart à sa première séance.');
+  ['history','results','athleteState','movementRefs','rpeHistory'].forEach(k => {
+    assert(JSON.stringify(stephAfter[k]) === JSON.stringify(stephBefore[k]),
+      'La bascule ne touche pas ' + k + ' : aucune donnée d\'athlète perdue.');
+  });
+  assert(api2.hasProgramPermission('p_steph','rehab_stephanie'), 'Le profil reçoit la permission du nouveau programme.');
+  assert(api2.hasProgramPermission('p_steph','hypertrophie_fesse_stephanie'),
+    'L\'ancien programme reste accordé : son historique et ses cycles en pause doivent rester lisibles.');
+
+  const autreAfter = JSON.parse(mem['racineState::p_autre']);
+  assert(JSON.stringify(autreAfter) === JSON.stringify(autreBefore), 'Aucun autre profil n\'est touché.');
+
+  assert(api2.migrateArchivedPrograms() === false, 'La bascule est idempotente.');
+  // Et surtout : elle ne contredit jamais un choix postérieur de l'athlète.
+  const repris = JSON.parse(mem['racineState::p_steph']);
+  repris.cycle.goal = 'hypertrophie_fesse_stephanie';
+  mem['racineState::p_steph'] = JSON.stringify(repris);
+  api2.migrateArchivedPrograms();
+  assert(JSON.parse(mem['racineState::p_steph']).cycle.goal === 'hypertrophie_fesse_stephanie',
+    'Un athlète qui reprend volontairement l\'ancien cycle ne se le fait pas rebasculer.');
+}catch(e){
+  errors.push('Bascule de programme archivé impossible : ' + (e && e.stack ? e.stack : e));
+}
+
 // Test dynamique minimal : un débutant bench 95x8 doit produire un ratio bas,
 // pas une charge de départ avancée ou héritée.
 try{

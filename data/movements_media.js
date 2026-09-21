@@ -195,6 +195,15 @@ window.COACH_BERTIN_MOVEMENT_VIDEOS = {
   "Couch Stretch": "nTJaGnjUkTY",             // A-Team Fitness — Couch Stretch
   "Figure-4 Stretch": "eGqbnFII3J8",          // Supine Figure 4 Stretch
   "Supine Hamstring Stretch": "Il1L75v6gq0",  // Ask Doctor Jo — Hamstring Stretch with Strap, Supine
-  "Box Breathing": "E9Pz3vpzp6c"              // Box Breathing (choix Bertin)
+  "Box Breathing": "E9Pz3vpzp6c",             // Box Breathing (choix Bertin)
+
+  // ── Réhabilitation hanche / épaule (programs/rehab_stephanie.js) ──────────
+  // Sources choisies chez des cliniciens : hôpital orthopédique, plateforme de
+  // formation continue en physiothérapie, physio du sport, physiothérapeutes.
+  // Titre et chaîne vérifiés un par un via l'API oEmbed de YouTube.
+  "Half-Kneeling Hip Flexor Stretch": "mzPvzMivukw", // Hospital for Special Surgery (HSS)
+  "90/90 Breathing": "LADa1fkj7kE",                  // Medbridge (formation physiothérapie)
+  "Adductor Rockback": "yF8o6I6aSZg",                // Mike Reinold, PT (Adductor Quadruped Rockback)
+  "Vélo stationnaire": "B5jBa94dNZ4"                 // Bob & Brad, physiothérapeutes — hauteur de selle
 };
 

@@ -107,7 +107,7 @@ function loadBrowserSandbox() {
     'programs/racine_client_programs.js',
     'programs/racine_crossfit_programs.js',
     'programs/strict_muscle_up_cycle.js',
-    'programs/hypertrophie_fesse_stephanie.js',
+    'programs/archive/hypertrophie_fesse_stephanie.js',
     'data/charges.js',
     'data/equipment.js',
     'scripts/app_helpers.js',

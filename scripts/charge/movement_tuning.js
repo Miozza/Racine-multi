@@ -504,7 +504,18 @@
       // repere du step-up gagner sur un mouvement qui n'en est pas un.
       {pattern:/db reverse lunge|db lunge|dumbbell lunge/, load:40},
       {pattern:/pull through/, load:70},
-      {pattern:/hip abduction/, load:25},
+      // L'abduction au CABLE porte une plaque ; l'abduction couchee sur le
+      // cote n'en porte aucune. Un seul motif pour les deux donnait une
+      // suggestion de 10 lb sur un mouvement au poids du corps
+      // (programs/rehab_stephanie.js). Le motif cable passe EN PREMIER :
+      // coachDefaultLoadSeedForMovement() ne teste pas le nom, il concatene
+      // tous les alias du mouvement et cherche dans la chaine entiere.
+      // Kickback fessier au cable : aucun repere n'existait, le moteur restait
+      // aveugle des qu'une charge textuelle etait ecrite. 30 lb a l'echelle de
+      // l'athlete de reference — un mouvement d'isolation, pas un principal.
+      {pattern:/kickback/, load:30},
+      {pattern:/cable hip abduction|band hip abduction/, load:25},
+      {pattern:/hip abduction/, load:0},
       {pattern:/kb swing|kettlebell swing/, load:53},
       {pattern:/step up|box step/, load:35},
       {pattern:/farmer carry|farmer walk/, load:70},
