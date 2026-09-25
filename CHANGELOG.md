@@ -1,3 +1,17 @@
+## V5.1.6 — Une semaine de deload est marquée dans l'historique
+
+**Le défaut (vécu trois fois)**
+
+Une semaine de deload se déclare dans son libellé ou son objectif (`weekLabels` / `weekGoals`), mais le contexte enregistré avec chaque résultat ne lisait que le texte de l'exercice. La séance légère partait donc dans l'historique comme une séance normale : à RPE bas, elle passait `upgrade_ready` et **remplaçait la capacité** du mouvement (reproduit : Back Squat 280 → 225 lb). La reprise repartait d'en bas, et Brain comptait ces séances dans ses statistiques — `coachBrainIsDeloadRow()` comparait `context` à la chaîne `'deload'`, alors que `context` est un objet : le filtre ne reconnaissait rien.
+
+**Ce qui change**
+
+- À la sauvegarde, un résultat de semaine deload reçoit le marqueur récupération déjà lu partout (`isRecovery`, intention `recovery`) via `coachMarkDeloadResultContext()`. Il est enregistré `context_logged` et ne remplace plus la capacité. Aucun champ nouveau, aucun format de stockage modifié.
+- `coachBrainIsDeloadRow()` reconnaît ce marqueur : les séances deload sortent des statistiques Brain et de la « dernière charge normale ».
+- Contexte Coach IA : libellé et objectif de la semaine courante, avertissement explicite en semaine de deload, et séances deload marquées « · deload » dans les séances récentes.
+
+**Limite assumée** : les séances deload déjà enregistrées avant cette version ne portent pas le marqueur ; elles ne sont pas réécrites (pas de migration de données). Garde-fou : `dev/deload_detection_checks.js` § 7.
+
 ## V5.1.5 — Les jours manqués remontent dans le contexte du Coach IA
 
 **Ce qui change**

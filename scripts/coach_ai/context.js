@@ -80,6 +80,17 @@
     lines.push("## Position dans le cycle");
     lines.push("Programme actif : " + (programLabel || programId || "inconnu") + (programId ? " (id " + programId + ")" : ""));
     try{ lines.push("Semaine " + str(state.week) + " · jour courant : " + str(state.day)); }catch(e){}
+    // Le libellé et l'objectif de semaine sont là où un deload se déclare
+    // (coachIsDeloadWeekOrContext). Sans eux, le coach lisait une semaine de
+    // deload comme une semaine normale et poussait la charge ou le volume.
+    try{
+      var wi = (typeof buildWeekInfo === "function") ? (buildWeekInfo() || {})[Number(state.week)] : null;
+      var weekText = wi ? [str(wi.label), str(wi.goal)].filter(Boolean).join(" — ") : "";
+      if(weekText) lines.push("Semaine courante : " + weekText);
+      if(typeof coachIsDeloadWeekOrContext === "function" && coachIsDeloadWeekOrContext({week: state.week})){
+        lines.push("SEMAINE DE DELOAD : les charges sont volontairement réduites. Une baisse de charge cette semaine n'est pas une régression ; ne propose ni hausse de charge ni ajout de volume.");
+      }
+    }catch(e){}
     var days = [];
     try{
       days = (typeof currentDayOrder === "function") ? (currentDayOrder() || []) : [];
@@ -121,8 +132,11 @@
     rows.forEach(function(s){
       var head = "- " + str(s.date) + " · S" + str(s.week) + " · " + str(s.day);
       if(str(s.focus)) head += " · " + str(s.focus);
-      lines.push(head);
       var results = (s && s.results) || {};
+      // Marqueur posé à la sauvegarde (coachMarkDeloadResultContext) : ces
+      // charges basses sont voulues, pas une baisse de niveau.
+      if(Object.keys(results).some(function(k){ var r = results[k] || {}; var c = (r.planned && r.planned.context) || r.context; return !!(c && typeof c === "object" && c.isRecovery); })) head += " · deload";
+      lines.push(head);
       Object.keys(results).forEach(function(key){
         var r = results[key] || {};
         var parts = [];

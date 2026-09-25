@@ -134,7 +134,15 @@ function coachBrainValidationCount(rows,lastLoad,targetReps){
   }
   return count;
 }
-function coachBrainIsDeloadRow(r){ return !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
+// `context` est un OBJET de contexte depuis longtemps : la comparaison a la
+// chaine 'deload' ne matchait plus rien. Le marqueur reel est isRecovery,
+// pose a la sauvegarde d'une seance de semaine deload.
+function coachBrainIsDeloadRow(r){
+  if(!r)return false;
+  if(r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))return true;
+  var c=(r.context && typeof r.context==='object') ? r.context : (r.planned && r.planned.context) || null;
+  return !!(c && c.isRecovery);
+}
 function coachBrainIsCalibrationSeed(r){ return (typeof coachIsNonPerformanceSeed==='function')?coachIsNonPerformanceSeed(r):!!(r&&r.planned&&(r.planned.source==='manual_recalibration'||r.planned.source==='manual_charge_override')); }
 function coachBrainBuildStats(label,history,context,targetReps,proposedLoad,lastLoad){
   // Exclut les séances deload et les seeds de calibrage (1RM/5RM d'onboarding) :

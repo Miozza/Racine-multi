@@ -1,5 +1,5 @@
-// Racine V5.1.5 — les jours manqués remontent dans le contexte du Coach IA
-var APP_VERSION = "V5.1.5";
+// Racine V5.1.6 — une semaine de deload est marquée dans l’historique
+var APP_VERSION = "V5.1.6";
 
 // Architecture stable
 // programs/*.js = plan prévu
