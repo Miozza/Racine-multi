@@ -155,6 +155,20 @@
     return lines;
   }
 
+  // ── Bloc 2b : les jours manqués, semaines passées comprises ────────────
+  // Un trou dans les séances ne dit pas pourquoi. Même source que l'onglet
+  // Historique (missedDayEntriesForHistory, app.js) : lecture seule.
+  function missedLines(limit){
+    var rows = [];
+    try{ rows = (typeof missedDayEntriesForHistory === "function") ? missedDayEntriesForHistory() : []; }catch(e){ rows = []; }
+    if(!rows.length) return [];
+    var lines = ["", "## Jours manqués (le plus récent en premier)"];
+    rows.slice(0, limit || NOTES_LIMIT).forEach(function(m){
+      lines.push("- " + str(m.date) + " · S" + str(m.week) + " · " + str(m.day) + (str(m.cycle) ? " · " + str(m.cycle) : "") + (str(m.reason) ? " : " + str(m.reason) : ""));
+    });
+    return lines;
+  }
+
   // ── Bloc 3 : les notes, séparées et datées ─────────────────────────────
   // Elles sont déjà dans les séances ci-dessus, mais les regrouper aide le
   // modèle à voir un motif qui traverse plusieurs semaines (« épaule gauche »
@@ -259,6 +273,7 @@
     var lines = []
       .concat(profileLines())
       .concat(sessionLines(opts.sessions))
+      .concat(missedLines(opts.notes))
       .concat(noteLines(opts.notes))
       .concat(brainLines())
       .concat(constraintLines())

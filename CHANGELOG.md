@@ -1,3 +1,12 @@
+## V5.1.7 — Les jours manqués apparaissent dans l'historique
+
+**Ce qui change**
+
+- **Onglet Historique** : chaque jour marqué manqué devient une carte « Jeudi — S7 — Manqué » avec sa raison, intercalée par date entre les séances. Bordure pointillée, pas de bouton Modifier/Supprimer : ce n'est pas une séance.
+- **Contexte Coach IA** : nouvelle section « Jours manqués (le plus récent en premier) », semaines passées comprises, bornée comme les notes.
+
+**D'où viennent les données** : `state.missedDays` ne garde que la semaine courante ; les manqués des semaines passées sont déjà conservés dans `weekTransitions[].missedDays`. `missedDayEntriesForHistory()` (app.js) lit les deux et dédoublonne par programme/semaine/jour. Lecture seule : aucune donnée réécrite, aucun format changé, `state.history` ne contient toujours que des séances réelles (le moteur de charges n'est pas concerné).
+
 ## V5.1.6 — Une semaine de deload est marquée dans l'historique
 
 **Le défaut (vécu trois fois)**

@@ -3460,6 +3460,10 @@ body.racine-modal-lock {
 /* Historique : l'italique dit l'absence, la couleur reste lisible. Un
    var(--muted) sur 12px italique ne se lisait plus sur fond sombre. */
 .history-row.is-skipped .val { color: var(--text2); font-style: italic; }
+/* Jour manqué : même carte qu'une séance, bordure pointillée — il n'y a pas
+   eu de séance, mais le trou est expliqué. */
+.history-item.is-missed { border-style: dashed; background: transparent; }
+.history-item.is-missed .history-title { color: var(--text2); }
 
 #phoneView .wod-result-preview {
   scroll-margin-bottom: calc(180px + var(--safe-bot));

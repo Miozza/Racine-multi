@@ -1,5 +1,5 @@
-// Racine V5.1.6 — une semaine de deload est marquée dans l’historique
-var APP_VERSION = "V5.1.6";
+// Racine V5.1.7 — les jours manqués apparaissent dans l’historique
+var APP_VERSION = "V5.1.7";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2093,6 +2093,32 @@ var historyRenderLimit = 30; // affichage seulement — les données complètes 
 // (défaut) ; la Progression s'affiche sur demande explicite — moment logique
 // pour inviter à passer en paysage sur iPhone (bandeau CSS, portrait only).
 var historyActiveSubtab="sessions";
+// Jours manqués, pour l'affichage seulement. state.missedDays ne garde que la
+// semaine courante (applyWeekTrackingForWeek) ; ceux des semaines passées
+// vivent dans weekTransitions[].missedDays. Lecture seule, dédoublonnée par
+// programme/semaine/jour, triée du plus récent au plus ancien.
+function missedDayEntriesForHistory(){
+  var seen={}, out=[];
+  function add(x){
+    if(!x||!x.day)return;
+    var k=String(x.cycle||"")+"|"+Number(x.week)+"|"+x.day;
+    if(seen[k])return;
+    seen[k]=true;out.push(x);
+  }
+  (state.missedDays||[]).forEach(add);
+  (state.weekTransitions||[]).forEach(function(t){(t&&t.missedDays||[]).forEach(add);});
+  return out.sort(function(a,b){return String(b.date||"")<String(a.date||"")?-1:String(b.date||"")>String(a.date||"")?1:0;});
+}
+function missedDayHistoryItem(m){
+  var div=document.createElement("div");
+  div.className="history-item is-missed";
+  var title=(baseDays[m.day]?baseDays[m.day].label:m.day)+" — S"+(m.week||"")+" — Manqué";
+  div.innerHTML=
+    '<div class="history-date">'+escHtml(m.date||"")+'</div>'+
+    '<div class="history-title">'+escHtml(title)+'</div>'+
+    (m.reason?'<div class="history-rows"><div class="history-row is-skipped"><span class="mv">Raison</span><span class="val">'+escHtml(m.reason)+'</span></div></div>':'');
+  return div;
+}
 function renderHistory(){
   var h=$("history");if(!h)return;
   var showProgress=historyActiveSubtab==="progress";
@@ -2118,7 +2144,14 @@ function renderHistory(){
     status.className="status-msg";
     h.parentNode.insertBefore(status,h);
   }
+  var missedItems=missedDayEntriesForHistory(), missedPos=0;
+  function flushMissedAfter(date){
+    while(missedPos<missedItems.length&&(date===null||String(missedItems[missedPos].date||"")>String(date||""))){
+      h.appendChild(missedDayHistoryItem(missedItems[missedPos++]));
+    }
+  }
   if(!state.history||!state.history.length){
+    if(missedItems.length){ flushMissedAfter(null); return; }
     h.innerHTML='<p style="color:var(--muted);font-size:13px">Aucune séance enregistrée.</p>';
     return;
   }
@@ -2128,6 +2161,7 @@ function renderHistory(){
   var visible = historyRenderLimit;
   state.history.slice().reverse().slice(0, visible).forEach(function(s,revIndex){
     var originalIndex = state.history.length - 1 - revIndex;
+    flushMissedAfter(s.date);
     var div=document.createElement("div");
     div.className="history-item deletable";
     var dayKey=s.day||s.jour;
@@ -2180,6 +2214,7 @@ function renderHistory(){
     h.appendChild(div);
   });
 
+  if(state.history.length <= visible) flushMissedAfter(null);
   if(state.history.length > visible){
     var more=document.createElement("button");
     more.type="button";
