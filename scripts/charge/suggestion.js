@@ -56,6 +56,23 @@ function coachIsDeloadWeekOrContext(context){
   return false;
 }
 
+// Une semaine de deload se declare dans son libelle ou son objectif
+// (buildWeekInfo), pas dans le texte de l'exercice. Le contexte enregistre
+// avec un resultat ne lisait que l'exercice : une seance de semaine deload
+// partait donc dans l'historique comme une seance normale, remplacait la
+// capacite du mouvement et faisait redescendre la reprise. On pose ici,
+// A LA SAUVEGARDE, le marqueur recuperation deja lu partout (isRecovery,
+// intention 'recovery') : aucun champ nouveau, aucun format change.
+function coachMarkDeloadResultContext(ctx){
+  if(!ctx||ctx.isRecovery)return ctx;
+  if(!coachIsDeloadWeekOrContext(ctx))return ctx;
+  ctx.isRecovery=true;
+  ctx.intents=Array.isArray(ctx.intents)?ctx.intents.slice():[];
+  if(ctx.intents.indexOf('recovery')<0)ctx.intents.unshift('recovery');
+  ctx.primaryIntent='recovery';
+  return ctx;
+}
+
 function coachIsMainLoadContext(label,context){
   var raw=[label,context&&context.kind,context&&context.primaryIntent,context&&context.blockTitle].filter(Boolean).join(' ');
   var n=coachNormalizeMoveText(raw);
@@ -1700,6 +1717,7 @@ function plannedMapFromSessionExercises(){
       var targetMin=Number(it.targetMin)||0;
       var targetMax=Number(it.targetMax)||targetMin||0;
       var ctx=(typeof coachBuildMovementContext==='function'?coachBuildMovementContext(it.name||it.key,{kind:it.kind,format:it.format,note:it.note,text:it.text,blockTitle:it.blockTitle,load:it.load,pctOf1RM:it.pctOf1RM,day:(state&&state.day),week:(state&&state.week)}):null);
+      coachMarkDeloadResultContext(ctx);
       map[it.key]={name:label,load:plannedLoad,reps:targetMin||targetMax, targetMin:targetMin, targetMax:targetMax, format:it.format||"", kind:it.kind||"", context:ctx, bodyweightMovement:(typeof coachIsBodyweightExternalLoadMovement==='function'?coachIsBodyweightExternalLoadMovement(label,ctx):false)};
       map[label]=map[it.key];
       map[normalizeExerciseName(label)]=map[it.key];
@@ -1770,6 +1788,7 @@ function updateAthleteStateFromResults(results,dateStr){
     var label=movementLabelFromKeyOrName(key);
     var planned=r.planned||{};
     var resultContext=planned.context||((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(label,{kind:planned.kind,format:planned.format,day:(state&&state.day),week:(state&&state.week)}):null);
+    coachMarkDeloadResultContext(resultContext);
     var bodyweightMovement=!!planned.bodyweightMovement || (typeof coachIsBodyweightExternalLoadMovement==='function'&&coachIsBodyweightExternalLoadMovement(label,resultContext));
     var hasValidLoad=(load>0)||(load===0&&bodyweightMovement);
     // Un 0 rep n'est un echec que s'il a ete SAISI. Un champ reps absent est une
@@ -1933,7 +1952,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     function rowLoad(r){ return Number(r && (r.load || r.externalLoad)) || 0; }
     function rowRpe(r){  return Number(r && r.rpe) || 0; }
     function rowReps(r){ return Number(r && (r.reps || r.actualReps)) || 0; }
-    function isDeloadRow(r){ return !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
+    function isDeloadRow(r){ return (typeof coachBrainIsDeloadRow==='function') ? coachBrainIsDeloadRow(r) : !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
 
     // Filtrer l'historique : on exclut les séances deload ET les repères de
     // calibrage (source "manual_recalibration" = 1RM/5RM semé à l'onboarding).

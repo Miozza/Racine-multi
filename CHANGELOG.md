@@ -1,3 +1,40 @@
+## V5.1.7 — Les jours manqués apparaissent dans l'historique
+
+**Ce qui change**
+
+- **Onglet Historique** : chaque jour marqué manqué devient une carte « Jeudi — S7 — Manqué » avec sa raison, intercalée par date entre les séances. Bordure pointillée, pas de bouton Modifier/Supprimer : ce n'est pas une séance.
+- **Contexte Coach IA** : nouvelle section « Jours manqués (le plus récent en premier) », semaines passées comprises, bornée comme les notes.
+
+**D'où viennent les données** : `state.missedDays` ne garde que la semaine courante ; les manqués des semaines passées sont déjà conservés dans `weekTransitions[].missedDays`. `missedDayEntriesForHistory()` (app.js) lit les deux et dédoublonne par programme/semaine/jour. Lecture seule : aucune donnée réécrite, aucun format changé, `state.history` ne contient toujours que des séances réelles (le moteur de charges n'est pas concerné).
+
+## V5.1.6 — Une semaine de deload est marquée dans l'historique
+
+**Le défaut (vécu trois fois)**
+
+Une semaine de deload se déclare dans son libellé ou son objectif (`weekLabels` / `weekGoals`), mais le contexte enregistré avec chaque résultat ne lisait que le texte de l'exercice. La séance légère partait donc dans l'historique comme une séance normale : à RPE bas, elle passait `upgrade_ready` et **remplaçait la capacité** du mouvement (reproduit : Back Squat 280 → 225 lb). La reprise repartait d'en bas, et Brain comptait ces séances dans ses statistiques — `coachBrainIsDeloadRow()` comparait `context` à la chaîne `'deload'`, alors que `context` est un objet : le filtre ne reconnaissait rien.
+
+**Ce qui change**
+
+- À la sauvegarde, un résultat de semaine deload reçoit le marqueur récupération déjà lu partout (`isRecovery`, intention `recovery`) via `coachMarkDeloadResultContext()`. Il est enregistré `context_logged` et ne remplace plus la capacité. Aucun champ nouveau, aucun format de stockage modifié.
+- `coachBrainIsDeloadRow()` reconnaît ce marqueur : les séances deload sortent des statistiques Brain et de la « dernière charge normale ».
+- Contexte Coach IA : libellé et objectif de la semaine courante, avertissement explicite en semaine de deload, et séances deload marquées « · deload » dans les séances récentes.
+
+**Limite assumée** : les séances deload déjà enregistrées avant cette version ne portent pas le marqueur ; elles ne sont pas réécrites (pas de migration de données). Garde-fou : `dev/deload_detection_checks.js` § 7.
+
+## V5.1.5 — Les jours manqués remontent dans le contexte du Coach IA
+
+**Ce qui change**
+
+La section « Position dans le cycle » du contexte Coach IA ne listait que les jours complétés : un jour marqué manqué y était indiscernable d'un jour pas encore fait, et le coach pouvait proposer d'ajuster une séance que l'athlète avait déjà déclarée manquée (maladie). Elle affiche maintenant trois lignes :
+
+- `Jours déjà complétés cette semaine : …` (ou « aucun ») ;
+- `Jours manqués cette semaine : jeudi (malade), …` (ou « aucun ») — raison entre parenthèses si elle existe ;
+- `Jours restants cette semaine : …` = jours d'entraînement − complétés − manqués (ou « aucun »).
+
+Les consignes des deux chemins (pont et API) disent au coach de ne jamais proposer d'ajustement pour un jour manqué, et d'adapter la reprise de la semaine suivante quand la raison touche la santé.
+
+**Choix tranché** : le filtre des jours manqués est celui de `isDayMissed()` — semaine courante **et** programme actif (`cycle` = `activeProgramId()`). Une ancienne entrée sans `cycle` est ignorée, comme l'écran l'ignore déjà : le coach ne voit pas un « manqué » que l'athlète ne voit pas. Lecture seule, aucun format de stockage modifié.
+
 ## V5.1.4 — Le cycle de réhabilitation devient sélectionnable
 
 **Ce qui change**

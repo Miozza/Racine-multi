@@ -138,6 +138,30 @@ assert(!/context\.isRecovery\s*\|\|\s*context\.isLight/.test(src),
 assert(/isLight/.test(read('scripts/charge/mouvements.js')),
   'isLight existe toujours : il gouverne la progression limitée, pas le deload.');
 
+// ─── 7. La SAUVEGARDE d'une semaine deload ne remplace pas la capacite ─────
+// Le deload se declarait dans le libelle de semaine, mais le contexte enregistre
+// avec le resultat ne lisait que l'exercice : la seance legere de S6 remplacait
+// la capacite (280 -> 225 lb) et la reprise repartait d'en bas. Trois fois.
+const saveCtx = makeContext({ 6: { label:'S6', goal:'Deload — semaine facile' } });
+saveCtx.state.athleteState = { movements:{} };
+function saveSquat(week, load, rpe, date){
+  saveCtx.state.week = week;
+  saveCtx.updateAthleteStateFromResults({ backSquat:{ load:load, reps:5, rpe:rpe } }, date);
+}
+saveSquat(5, 280, 8.5, '2026-08-17');
+saveSquat(6, 225, 6, '2026-08-24');
+const mvs = saveCtx.ensureAthleteState().movements;
+const sq = mvs[Object.keys(mvs)[0]];
+assert(sq.ranges.strength.currentLoad === 280,
+  'Une séance de semaine deload ne remplace pas la capacité (' + sq.ranges.strength.currentLoad + ' lb, attendu 280).');
+const lastRow = sq.history[sq.history.length - 1];
+assert(lastRow.status === 'context_logged' && lastRow.context && lastRow.context.isRecovery === true,
+  'La ligne d\'historique de la semaine deload porte le marqueur récupération.');
+assert(saveCtx.coachBrainIsDeloadRow(lastRow) === true,
+  'Brain reconnaît la ligne comme deload et l\'écarte de ses statistiques.');
+assert(saveCtx.coachBrainIsDeloadRow(sq.history[0]) === false,
+  'La séance normale de S5 n\'est pas prise pour un deload.');
+
 if(failed){
   console.error('\nÉCHEC deload_detection_checks.js — ' + failed + ' controle(s) sur ' + checks + '.');
   process.exit(1);

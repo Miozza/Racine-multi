@@ -80,13 +80,42 @@
     lines.push("## Position dans le cycle");
     lines.push("Programme actif : " + (programLabel || programId || "inconnu") + (programId ? " (id " + programId + ")" : ""));
     try{ lines.push("Semaine " + str(state.week) + " · jour courant : " + str(state.day)); }catch(e){}
+    // Le libellé et l'objectif de semaine sont là où un deload se déclare
+    // (coachIsDeloadWeekOrContext). Sans eux, le coach lisait une semaine de
+    // deload comme une semaine normale et poussait la charge ou le volume.
     try{
-      var days = (typeof currentDayOrder === "function") ? currentDayOrder() : [];
-      if(days && days.length) lines.push("Jours d'entraînement : " + days.join(", "));
+      var wi = (typeof buildWeekInfo === "function") ? (buildWeekInfo() || {})[Number(state.week)] : null;
+      var weekText = wi ? [str(wi.label), str(wi.goal)].filter(Boolean).join(" — ") : "";
+      if(weekText) lines.push("Semaine courante : " + weekText);
+      if(typeof coachIsDeloadWeekOrContext === "function" && coachIsDeloadWeekOrContext({week: state.week})){
+        lines.push("SEMAINE DE DELOAD : les charges sont volontairement réduites. Une baisse de charge cette semaine n'est pas une régression ; ne propose ni hausse de charge ni ajout de volume.");
+      }
     }catch(e){}
+    var days = [];
+    try{
+      days = (typeof currentDayOrder === "function") ? (currentDayOrder() || []) : [];
+      if(days.length) lines.push("Jours d'entraînement : " + days.join(", "));
+    }catch(e){ days = []; }
     try{
       var done = Array.isArray(state.completedDays) ? state.completedDays : [];
-      if(done.length) lines.push("Jours déjà complétés cette semaine : " + done.join(", "));
+      lines.push("Jours déjà complétés cette semaine : " + (done.length ? done.join(", ") : "aucun"));
+      // Même filtre que isDayMissed() (app.js) : semaine courante ET programme
+      // actif. Une ancienne entrée sans `cycle` est ignorée, comme l'écran
+      // l'ignore déjà — le coach ne doit pas voir un « manqué » que l'athlète
+      // ne voit pas. Sans `reason`, on affiche le jour seul.
+      var missed = [], missedDays = [];
+      (Array.isArray(state.missedDays) ? state.missedDays : []).forEach(function(x){
+        if(!x || !str(x.day) || Number(x.week) !== Number(state.week)) return;
+        if(!programId || str(x.cycle) !== programId) return;
+        if(missedDays.indexOf(x.day) >= 0 || done.indexOf(x.day) >= 0) return;
+        missedDays.push(x.day);
+        missed.push(str(x.day) + (str(x.reason) ? " (" + str(x.reason) + ")" : ""));
+      });
+      lines.push("Jours manqués cette semaine : " + (missed.length ? missed.join(", ") : "aucun"));
+      if(days.length){
+        var left = days.filter(function(d){ return done.indexOf(d) < 0 && missedDays.indexOf(d) < 0; });
+        lines.push("Jours restants cette semaine : " + (left.length ? left.join(", ") : "aucun"));
+      }
     }catch(e){}
 
     return lines;
@@ -103,8 +132,11 @@
     rows.forEach(function(s){
       var head = "- " + str(s.date) + " · S" + str(s.week) + " · " + str(s.day);
       if(str(s.focus)) head += " · " + str(s.focus);
-      lines.push(head);
       var results = (s && s.results) || {};
+      // Marqueur posé à la sauvegarde (coachMarkDeloadResultContext) : ces
+      // charges basses sont voulues, pas une baisse de niveau.
+      if(Object.keys(results).some(function(k){ var r = results[k] || {}; var c = (r.planned && r.planned.context) || r.context; return !!(c && typeof c === "object" && c.isRecovery); })) head += " · deload";
+      lines.push(head);
       Object.keys(results).forEach(function(key){
         var r = results[key] || {};
         var parts = [];
@@ -119,6 +151,20 @@
         if(str(r.note)) line += "  [note : " + str(r.note) + "]";
         lines.push(line);
       });
+    });
+    return lines;
+  }
+
+  // ── Bloc 2b : les jours manqués, semaines passées comprises ────────────
+  // Un trou dans les séances ne dit pas pourquoi. Même source que l'onglet
+  // Historique (missedDayEntriesForHistory, app.js) : lecture seule.
+  function missedLines(limit){
+    var rows = [];
+    try{ rows = (typeof missedDayEntriesForHistory === "function") ? missedDayEntriesForHistory() : []; }catch(e){ rows = []; }
+    if(!rows.length) return [];
+    var lines = ["", "## Jours manqués (le plus récent en premier)"];
+    rows.slice(0, limit || NOTES_LIMIT).forEach(function(m){
+      lines.push("- " + str(m.date) + " · S" + str(m.week) + " · " + str(m.day) + (str(m.cycle) ? " · " + str(m.cycle) : "") + (str(m.reason) ? " : " + str(m.reason) : ""));
     });
     return lines;
   }
@@ -227,6 +273,7 @@
     var lines = []
       .concat(profileLines())
       .concat(sessionLines(opts.sessions))
+      .concat(missedLines(opts.notes))
       .concat(noteLines(opts.notes))
       .concat(brainLines())
       .concat(constraintLines())
