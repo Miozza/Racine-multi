@@ -1,5 +1,5 @@
-// Racine V5.1.4 — le cycle de réhabilitation devient sélectionnable par l'athlète
-var APP_VERSION = "V5.1.4";
+// Racine V5.1.5 — les jours manqués remontent dans le contexte du Coach IA
+var APP_VERSION = "V5.1.5";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -80,13 +80,31 @@
     lines.push("## Position dans le cycle");
     lines.push("Programme actif : " + (programLabel || programId || "inconnu") + (programId ? " (id " + programId + ")" : ""));
     try{ lines.push("Semaine " + str(state.week) + " · jour courant : " + str(state.day)); }catch(e){}
+    var days = [];
     try{
-      var days = (typeof currentDayOrder === "function") ? currentDayOrder() : [];
-      if(days && days.length) lines.push("Jours d'entraînement : " + days.join(", "));
-    }catch(e){}
+      days = (typeof currentDayOrder === "function") ? (currentDayOrder() || []) : [];
+      if(days.length) lines.push("Jours d'entraînement : " + days.join(", "));
+    }catch(e){ days = []; }
     try{
       var done = Array.isArray(state.completedDays) ? state.completedDays : [];
-      if(done.length) lines.push("Jours déjà complétés cette semaine : " + done.join(", "));
+      lines.push("Jours déjà complétés cette semaine : " + (done.length ? done.join(", ") : "aucun"));
+      // Même filtre que isDayMissed() (app.js) : semaine courante ET programme
+      // actif. Une ancienne entrée sans `cycle` est ignorée, comme l'écran
+      // l'ignore déjà — le coach ne doit pas voir un « manqué » que l'athlète
+      // ne voit pas. Sans `reason`, on affiche le jour seul.
+      var missed = [], missedDays = [];
+      (Array.isArray(state.missedDays) ? state.missedDays : []).forEach(function(x){
+        if(!x || !str(x.day) || Number(x.week) !== Number(state.week)) return;
+        if(!programId || str(x.cycle) !== programId) return;
+        if(missedDays.indexOf(x.day) >= 0 || done.indexOf(x.day) >= 0) return;
+        missedDays.push(x.day);
+        missed.push(str(x.day) + (str(x.reason) ? " (" + str(x.reason) + ")" : ""));
+      });
+      lines.push("Jours manqués cette semaine : " + (missed.length ? missed.join(", ") : "aucun"));
+      if(days.length){
+        var left = days.filter(function(d){ return done.indexOf(d) < 0 && missedDays.indexOf(d) < 0; });
+        lines.push("Jours restants cette semaine : " + (left.length ? left.join(", ") : "aucun"));
+      }
     }catch(e){}
 
     return lines;
