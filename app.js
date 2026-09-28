@@ -1,5 +1,5 @@
-// Racine V5.1.7 — les jours manqués apparaissent dans l’historique
-var APP_VERSION = "V5.1.7";
+// Racine V5.1.8 — Fable 5 : semaine de tests 1RM
+var APP_VERSION = "V5.1.8";
 
 // Architecture stable
 // programs/*.js = plan prévu

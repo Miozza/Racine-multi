@@ -393,6 +393,39 @@ try {
   });
   assert(ancres.length === 3, 'Les 3 ancres de S8 sont bien presentes (' + ancres.length + ').');
 
+  // ─── 13b. Un 1RM de S8 doit pouvoir REMPLACER la capacite ────────────────
+  // S8 V2 (2026-09-28) : vrais tests 1RM. Un mot de trop dans une note
+  // (leger, technique, vitesse, progression) ou dans l'objectif de semaine
+  // (deload, facile, recuperation) rendrait le test muet : le resultat serait
+  // enregistre en contexte limite ou deload et ne toucherait jamais la
+  // capacite du mouvement — tout le but de la semaine.
+  const semaines = {};
+  fable5.weekLabels.forEach((l, i) => { semaines[i + 1] = { label: l, goal: fable5.weekGoals[i] }; });
+  const buildWeekInfoAvant = ctx.buildWeekInfo, semaineAvant = ctx.state.week;
+  ctx.buildWeekInfo = () => semaines;
+  ctx.state.week = 8;
+  const muets = [];
+  let tests1RM = 0;
+  (fable5.days || []).forEach(day => {
+    (fable5.getBlocks(day, 8) || []).forEach(b => {
+      if (b.kind !== 'main') return;
+      (b.exercises || []).forEach(ex => {
+        tests1RM++;
+        const c = ctx.coachBuildMovementContext(ex.name, { kind: b.kind, blockTitle: b.title,
+          note: ex.note, format: ex.format, load: ex.load, day, week: 8 });
+        if (!/1RM/.test(ex.format) || !ctx.coachPercentTargetFromText(String(ex.load || '')) ||
+            ctx.coachIsLimitedProgressionContext(c) || ctx.coachIsDeloadWeekOrContext(c)) {
+          muets.push(day + ' ' + ex.name + ' [' + c.intents.join(',') + ']');
+        }
+      });
+    });
+  });
+  ctx.buildWeekInfo = buildWeekInfoAvant;
+  ctx.state.week = semaineAvant;
+  assert(tests1RM === 5, 'S8 teste 5 mouvements en 1RM (' + tests1RM + ').');
+  assert(muets.length === 0, 'Chaque test 1RM de S8 est un contexte de force plein, en pourcentage : ' +
+    (muets.join(' | ') || 'aucun test muet') + '.');
+
   // ─── 14. Le volume quadriceps et bras est la toutes les semaines ─────────
   // Deux trous mesures sur l'historique reel : 15 reps lourdes de quadriceps
   // par semaine, et zero travail direct de bras. Ils sont combles par des
