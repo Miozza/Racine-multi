@@ -1,7 +1,9 @@
 // Racine — Phase 2 Fable 5 — 8 semaines
 // Objectif : force dos/épaules en santé, variété réelle semaine en semaine, progression mesurable sur 3 ancres.
-// Méthode : patrons fixes par jour, variations en rotation aux 3 semaines, vague RPE 7→8→9 intra-bloc, S7 deload, S8 tests.
-// Ancres testées S8 : Back Squat, Weighted Pull-up, Strict Press (AMRAP @ ~85% → e1RM Epley via moteur existant).
+// Méthode : patrons fixes par jour, variations en rotation aux 3 semaines, vague RPE 7→8→9 intra-bloc, S7 deload, S8 tests 1RM.
+// Tests S8 (V2, 2026-09-28) : vrai 1RM sur les mouvements du cycle — Back Squat, Weighted Pull-up,
+// Strict Press (les 3 ancres), puis Power Clean et Close-Grip Bench Press le vendredi.
+// Remplace l'AMRAP @ 85 % de la V1 : voir « S8 — TESTS 1RM » plus bas.
 // Règle : noms de mouvements propres. Les intentions vivent dans les notes, jamais dans les noms.
 //
 // CHARGES — échelle de l'ATHLÈTE DE RÉFÉRENCE, jamais celle d'un athlète réel.
@@ -32,9 +34,9 @@ window.COACH_BERTIN_PROGRAMS.phase2_fable5 = {
   phaseName: "Bloc conjugué varié — force + dos/épaules",
   phaseEnd: "à planifier",
   nextPhase: "force_performance",
-  impact: "Bloc conjugué de 8 semaines : les patrons restent fixes (squat lundi, tirage mardi, poussée jeudi, dynamique vendredi) mais les variations tournent aux 3 semaines. Ratio tirage:poussée 2:1 pour la santé d'épaules, protection lombaire systématique, 3 ancres testées en S8. Volume quadriceps et bras direct en accessoires : force sur le mouvement A, masse sur le reste.",
+  impact: "Bloc conjugué de 8 semaines : les patrons restent fixes (squat lundi, tirage mardi, poussée jeudi, dynamique vendredi) mais les variations tournent aux 3 semaines. Ratio tirage:poussée 2:1 pour la santé d'épaules, protection lombaire systématique, tests 1RM en S8 avec une porte de décision à ~90 %. Volume quadriceps et bras direct en accessoires : force sur le mouvement A, masse sur le reste.",
   days: ["lundi", "mardi", "jeudi", "vendredi"],
-  weekLabels: ["S1 Rotation A", "S2 Rotation A+", "S3 Rotation A max", "S4 Rotation B", "S5 Rotation B+", "S6 Rotation B max", "S7 Deload", "S8 Tests"],
+  weekLabels: ["S1 Rotation A", "S2 Rotation A+", "S3 Rotation A max", "S4 Rotation B", "S5 Rotation B+", "S6 Rotation B max", "S7 Deload", "S8 Tests 1RM"],
   weekGoals: [
     "Installer la rotation A (pause squat, traction lestée, strict press). RPE 7, technique irréprochable, aucun grind.",
     "Même rotation, charges montées. RPE 8. Le volume accessoire dos reste élevé.",
@@ -43,16 +45,46 @@ window.COACH_BERTIN_PROGRAMS.phase2_fable5 = {
     "Rotation B chargée. RPE 8. Vitesse de barre comme juge : si elle ralentit trop, la charge est trop haute.",
     "Semaine max de la rotation B : 3RM ou 5RM propres. RPE 9 max, garder 1 rep en réserve.",
     "Deload complet : charges légères, volume réduit de moitié, mobilité et posture en priorité.",
-    "Tests des 3 ancres : Back Squat, Weighted Pull-up, Strict Press. AMRAP contrôlé, arrêt dès que la technique casse."
+    "Tests 1RM : Back Squat, Weighted Pull-up, Strict Press, puis Power Clean et Close-Grip Bench le vendredi. Condition d'entrée : 48 h sans fièvre. Chaque test passe d'abord une porte à ~90 % — si elle est lourde, on garde le chiffre du cycle et on ne force rien."
   ],
-  sets: ["5×3", "4×3", "3RM", "5×3", "4×3", "3RM", "3×5 léger", "AMRAP test"],
-  targetReps: [3, 3, 3, 3, 3, 3, 5, 5],
-  mult: [0.72, 0.78, 0.85, 0.74, 0.80, 0.87, 0.55, 0.85],
+  sets: ["5×3", "4×3", "3RM", "5×3", "4×3", "3RM", "3×5 léger", "1RM test"],
+  targetReps: [3, 3, 3, 3, 3, 3, 5, 1],
+  mult: [0.72, 0.78, 0.85, 0.74, 0.80, 0.87, 0.55, 0.90],
   rest: "0:30–2:30",
   tag: "conjugué force dos épaules",
-  versionDate: "2026-07-22",
-  versionLabel: "2026-07-22 — Phase 2 Fable 5 V1, bloc 8 semaines"
+  versionDate: "2026-09-28",
+  versionLabel: "2026-09-28 — Phase 2 Fable 5 V2, S8 en tests 1RM"
 };
+
+// ── S8 — TESTS 1RM ────────────────────────────────────────────────────────
+// La V1 testait les ancres en AMRAP @ 85 % : le moteur en tirait un e1RM
+// Epley. Demande de l'athlète (2026-09-28) : un vrai 1RM sur les mouvements
+// du cycle, après un rhume avec fièvre qui a remplacé la semaine de deload.
+//
+// Pourquoi une PORTE plutôt qu'un plan fixe : après une fièvre, la fatigue
+// est basse (une semaine sans charge vaut un deload) mais la forme du jour
+// est imprévisible. Un single à ~90 % dit la vérité en une rep : il décide
+// s'il y a un test aujourd'hui, et jusqu'où.
+//
+// La charge affichée est « 90% » : c'est la PORTE, pas le 1RM. Le moteur
+// la résout sur la capacité MESURÉE (coachPercentTargetFromText), puis ses
+// garde-fous (frein RPE, plancher de maîtrise) la tiennent près de la
+// dernière charge lourde validée — mesuré à 90-93 % de l'e1RM, jusqu'à 80 %
+// quand l'historique est prudent. Écrire « 100% » ne donnait PAS un 1RM :
+// le frein RPE la ramenait au même nombre. Le moteur ne sait pas afficher
+// une tentative de record, et ce n'est pas à un programme de le lui faire
+// faire. D'où des sauts réglés au RPE du dernier single : ils atteignent le
+// 1RM du jour quelle que soit la précision de la charge affichée.
+//
+// Mots à NE PAS écrire dans ces notes ni dans l'objectif de S8 : deload,
+// récupération, reset, facile (semaine lue comme deload, V5.1.6) ; léger,
+// technique, vitesse, progression (contexte limité). Dans les deux cas un
+// 1RM réussi ne remplacerait jamais la capacité du mouvement.
+var FABLE5_TEST_PROTOCOLE = "Paliers : 50% ×5, 70% ×3, 85% ×1 de la charge affichée. " +
+  "PORTE : la charge affichée ×1. Porte à RPE 9 ou plus → pas de test aujourd'hui, reporte au vendredi. " +
+  "Sinon, chaque saut se règle sur le RPE du single précédent : RPE 6 ou moins → +10 %, RPE 7 → +5 %, " +
+  "RPE 8 → +2 à 3 % et c'est la dernière tentative, RPE 9 → stop, c'est ton 1RM du jour. " +
+  "3 tentatives max après la porte, 3-4 min de repos. Enregistre la meilleure rep réussie avec son RPE.";
 
 function fable5Plan(week){
   return ({
@@ -113,12 +145,12 @@ function fable5Plan(week){
       friClean:"EMOM 6 : 2 Power Clean technique", friCleanLoad:"110-120 lb", friCleanPct:"54-59 %", friSpeed:"4×2", friSpeedLoad:"40-45%", friWod:"10 min pacing facile : Bike + Step-Up + Ring Row."
     },
     8: {
-      label:"S8 Tests", note:"Tests des 3 ancres. AMRAP contrôlé, arrêt dès que la technique casse.", wodNote:"aucun metcon lourd",
-      monMain:"Back Squat", monMainFormat:"AMRAP @ 85%", monMainLoad:"85%", monMainNote:"TEST ANCRE 1. Échauffement long, puis une seule série AMRAP à 85% de ta capacité mesurée. Stop dès que le dos compense. Le moteur calcule le e1RM.",
-      monHinge:"2×8 léger", monHingeLoad:"120 lb", monCore:"2×8", monWod:"8 min Bike zone 2, récupération.",
-      tueMain:"Weighted Pull-up", tueMainFormat:"montée vers 3RM test", tueMainLoad:"92%", tueRow:"2×10/côté léger", tueRowLoad:"55 lb", tueRear:"2×15", tueRearLoad:"15 lb", tueFace:"2×15", tueFaceLoad:"50 lb", tueWod:"8 min Row zone 2.",
-      thuMain:"Strict Press", thuMainFormat:"AMRAP @ 85%", thuMainLoad:"85%", thuSecond:"Lateral Raise DB", thuSecondFormat:"2×15", thuSecondLoad:"15 lb", thuLat:"2×15", thuLatLoad:"15 lb", thuWod:"8 min Ski ou Bike zone 2.",
-      friClean:"Montée optionnelle : Power Clean lourd simple", friCleanLoad:"175-195 lb", friCleanPct:"", friSpeed:"—", friSpeedLoad:"—", friWod:"WOD célébration au choix, 10-12 min, intensité libre. Fin de bloc."
+      label:"S8 Tests 1RM", note:"Vrai 1RM, une porte de décision avant chaque test.", wodNote:"zone 2, aucun metcon lourd",
+      monMain:"Back Squat", monMainFormat:"montée vers 1RM", monMainLoad:"90%", monMainNote:"TEST ANCRE 1 — 1RM. " + FABLE5_TEST_PROTOCOLE + " Stop dès que le dos compense.",
+      monHinge:"2×8", monHingeLoad:"120 lb", monCore:"2×8", monWod:"8 min Bike, conversation possible",
+      tueMain:"Weighted Pull-up", tueMainFormat:"montée vers 1RM", tueMainLoad:"90%", tueRow:"2×10/côté", tueRowLoad:"55 lb", tueRear:"2×15", tueRearLoad:"15 lb", tueFace:"2×15", tueFaceLoad:"50 lb", tueWod:"8 min Row, conversation possible",
+      thuMain:"Strict Press", thuMainFormat:"montée vers 1RM", thuMainLoad:"90%", thuSecond:"Push-Up", thuSecondFormat:"2×10", thuSecondLoad:"poids du corps", thuLat:"2×15", thuLatLoad:"15 lb", thuWod:"8 min Ski ou Bike, conversation possible",
+      friClean:"montée vers 1RM", friCleanLoad:"90%", friCleanPct:"", friSpeed:"montée vers 1RM", friSpeedLoad:"90%", friWod:"WOD célébration au choix, 10-12 min, intensité libre. Fin de bloc."
     }
   })[week] || fable5Plan(1);
 }
@@ -170,7 +202,7 @@ function fable5Blocks(day, week){
   if(day === "lundi") return [
     {time:"8 min", title:"Échauffement squat", tag:"Préparation", kind:"warmup", text:"Bike 2 min + ankle rocks 10/côté + glute bridge 15 + goblet squat 10 + 90/90 hanches. Montée progressive longue sur le mouvement A" + (isTest ? " — au moins 6 paliers avant le test" : "") + "."},
     {time:isTest ? "20 min" : "17 min", title:"A. " + p.monMain, tag:isTest ? "TEST ANCRE" : "Effort maximal", kind:"main", exercises:[
-      fable5ExFixed(p.monMain, p.monMainFormat, p.monMainLoad, "2:00-2:30", p.monMainNote)
+      fable5ExFixed(p.monMain, p.monMainFormat, p.monMainLoad, isTest ? "3:00-4:00" : "2:00-2:30", p.monMainNote)
     ]},
     {time:"10 min", title:"B. Volume quadriceps", tag:"Masse jambes", kind:"hypertrophy", exercises:[
       fable5ExFixed("Bulgarian Split Squat", isDeload || isTest ? "2×10/jambe" : "3×8-12/jambe", x.quad, "1:00",
@@ -187,8 +219,8 @@ function fable5Blocks(day, week){
 
   if(day === "mardi") return [
     {time:"8 min", title:"Échauffement tirage + posture", tag:"Préparation", kind:"warmup", text:"Row 2 min. Puis 2 tours : Band Pull-Apart 15 + Scap Pull-Up 6 + Wall Slide 8 + extension thoracique sur rouleau 60 sec. Montée progressive sur le mouvement A."},
-    {time:"16 min", title:"A. " + p.tueMain, tag:isTest ? "TEST ANCRE" : "Tirage lourd", kind:"main", exercises:[
-      fable5ExFixed(p.tueMain, p.tueMainFormat, p.tueMainLoad, "2:00-2:30", isTest ? "TEST ANCRE 2. Montée par paliers de 5 lb vers un 3RM propre, cible ~92% du lest mesuré. Arrêt au premier signe de kip." : "Tirage strict et lourd. Le dos porte le bloc : c'est lui qui rend les épaules durables.")
+    {time:isTest ? "20 min" : "16 min", title:"A. " + p.tueMain, tag:isTest ? "TEST ANCRE" : "Tirage lourd", kind:"main", exercises:[
+      fable5ExFixed(p.tueMain, p.tueMainFormat, p.tueMainLoad, isTest ? "3:00-4:00" : "2:00-2:30", isTest ? "TEST ANCRE 2 — 1RM, lest ajouté. " + FABLE5_TEST_PROTOCOLE + " Arrêt au premier signe de kip : menton au-dessus de la barre, départ bras tendus." : "Tirage strict et lourd. Le dos porte le bloc : c'est lui qui rend les épaules durables.")
     ]},
     {time:"13 min", title:"B. Volume dorsal", tag:"Ratio 2:1", kind:"accessory", exercises:[
       fable5ExFixed("One-Arm DB Row", p.tueRow, p.tueRowLoad, "0:30 avant B2", "Amplitude complète, coude vers la hanche, zéro rotation du tronc."),
@@ -207,7 +239,7 @@ function fable5Blocks(day, week){
   if(day === "jeudi") return [
     {time:"8 min", title:"Échauffement poussée", tag:"Préparation", kind:"warmup", text:"Row 2 min. Puis 2 tours : Band External Rotation 12/côté + Scap Push-Up 10 + Wall Slide 8. Montée progressive sur le mouvement A" + (isTest ? " — paliers longs avant le test" : "") + "."},
     {time:isTest ? "20 min" : "16 min", title:"A. " + p.thuMain, tag:isTest ? "TEST ANCRE" : "Effort maximal", kind:"main", exercises:[
-      fable5ExFixed(p.thuMain, p.thuMainFormat, p.thuMainLoad, "2:00-2:30", isTest ? "TEST ANCRE 3. Une seule série AMRAP à 85% de ta capacité mesurée. Stop si le bas du dos cambre ou si la barre dérive vers l'avant." : "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.")
+      fable5ExFixed(p.thuMain, p.thuMainFormat, p.thuMainLoad, isTest ? "3:00-4:00" : "2:00-2:30", isTest ? "TEST ANCRE 3 — 1RM. " + FABLE5_TEST_PROTOCOLE + " Stop si le bas du dos cambre ou si la barre dérive vers l'avant." : "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.")
     ]},
     {time:"11 min", title:"B. Poussée support", tag:"Support", kind:"secondary", exercises:[
       fable5ExFixed(p.thuSecond, p.thuSecondFormat, p.thuSecondLoad, "1:30", "Volume utile, jamais un deuxième test.")
@@ -222,13 +254,25 @@ function fable5Blocks(day, week){
     {time:"3 min", title:"E. Reset", tag:"Mobilité", kind:"mobility", text:"Pec stretch 45 sec/côté + lat stretch 45 sec/côté + respiration."}
   ];
 
+  if(isTest) return [
+    {time:"10 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:"Row 2 min + mobilité hanches/épaules + barre vide : 2×5 hang power clean, 2×5 front squat, 2×10 push-up. Si un test a été reporté plus tôt dans la semaine, il se fait ici À LA PLACE du Close-Grip Bench, et le Power Clean s'arrête à la porte."},
+    {time:"18 min", title:"A. Power Clean", tag:"TEST 1RM", kind:"main", exercises:[
+      fable5ExFixed("Power Clean", p.friClean, p.friCleanLoad, "3:00-4:00", "TEST 1RM. " + FABLE5_TEST_PROTOCOLE + " Réception au-dessus de la parallèle, coudes hauts. Une réception en squat ou un press-out ne compte pas.")
+    ]},
+    {time:"18 min", title:"B. Close-Grip Bench Press", tag:"TEST 1RM", kind:"main", exercises:[
+      fable5ExFixed("Close-Grip Bench Press", p.friSpeed, p.friSpeedLoad, "3:00-4:00", "TEST 1RM. " + FABLE5_TEST_PROTOCOLE + " Prise de la rotation B, pause touchée à la poitrine, fessiers sur le banc. Pareur obligatoire.")
+    ]},
+    {time:"12 min", title:"C. Metcon", tag:"WOD", kind:"wod", text:p.friWod},
+    {time:"3 min", title:"D. Reset", tag:"Mobilité", kind:"mobility", text:"Couch stretch + pec stretch + 10 respirations lentes. Fin du bloc."}
+  ];
+
   return [
     {time:"8 min", title:"Échauffement dynamique", tag:"Préparation", kind:"warmup", text:"Row 2 min + mobilité hanches/épaules + ramp-up technique clean avec barre vide puis 95-135 lb."},
     {time:"12 min", title:"A. Power Clean vitesse", tag:"Effort dynamique", kind:"main", exercises:[
-      fable5ExFixed("Power Clean", p.friClean, p.friCleanLoad, "le reste de la minute", isTest ? "Option fin de bloc : montée vers un simple lourd si les jambes sont fraîches, sinon rester technique." : (p.friCleanPct ? p.friCleanPct + " du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc." : "Vitesse maximale à charge sous-maximale. Chaque rep doit claquer. Une rep lente = fin du bloc."))
+      fable5ExFixed("Power Clean", p.friClean, p.friCleanLoad, "le reste de la minute", p.friCleanPct ? p.friCleanPct + " du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc." : "Vitesse maximale à charge sous-maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.")
     ]},
     {time:"10 min", title:"B. Squat vitesse", tag:"Effort dynamique", kind:"secondary", exercises:[
-      fable5ExFixed("Back Squat", p.friSpeed, p.friSpeedLoad, "1:00", isTest ? "Retiré en semaine de tests." : "~60%, descente contrôlée, remontée explosive. Intention de vitesse, pas de charge.")
+      fable5ExFixed("Back Squat", p.friSpeed, p.friSpeedLoad, "1:00", "~60%, descente contrôlée, remontée explosive. Intention de vitesse, pas de charge.")
     ]},
     {time:"12 min", title:"C. Metcon moteur", tag:"WOD", kind:"wod", text:p.friWod + " " + p.wodNote + ". Pont vers janvier 2027 : pacing intelligent, transitions rapides."},
     {time:"3 min", title:"D. Reset", tag:"Mobilité", kind:"mobility", text:"Couch stretch + pec stretch + 10 respirations lentes. Fin de semaine."}
@@ -243,7 +287,8 @@ window.COACH_BERTIN_PROGRAMS.phase2_fable5.getWodText = function(day, week){
 window.COACH_BERTIN_PROGRAMS.phase2_fable5.cycleRules = [
   "Méthode conjuguée adaptée : patrons fixes par jour, variations en rotation aux 3 semaines (A : S1-3, B : S4-6).",
   "Vague intra-rotation : RPE 7 → 8 → 9. La semaine 3 de chaque rotation monte vers un RM propre, jamais un échec.",
-  "S7 deload obligatoire, S8 tests des 3 ancres : Back Squat, Weighted Pull-up, Strict Press (AMRAP/3RM → e1RM Epley).",
+  "S7 deload obligatoire, S8 tests 1RM : Back Squat, Weighted Pull-up, Strict Press (ancres), Power Clean et Close-Grip Bench le vendredi.",
+  "S8 : chaque test passe une porte (charge affichée ≈ 90 % ×1). Porte à RPE 9+ → test reporté au vendredi. Sinon sauts au RPE : ≤6 → +10 %, 7 → +5 %, 8 → +2-3 % (dernière), 9 → stop. Après une fièvre : 48 h sans symptôme avant le premier test.",
   "Ratio tirage:poussée 2:1 chaque semaine. Le Cuban Press et les Band Pull-Apart ne tournent jamais : socle santé d'épaules.",
   "Protection lombaire systématique : pause/box squat pour contrôler la profondeur, Barbell RDL et anti-rotation chaque lundi.",
   "Chaque variation garde son propre historique de charges. Ne jamais comparer un 3RM pause squat à un 3RM back squat.",

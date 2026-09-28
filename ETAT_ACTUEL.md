@@ -1,8 +1,15 @@
-# ETAT ACTUEL — V5.1.7
+# ETAT ACTUEL — V5.1.8
 
-Version actuelle : V5.1.7
+Version actuelle : V5.1.8
 
 ## État courant
+
+### Phase 2 Fable 5 — S8 en tests 1RM (V5.1.8)
+
+La S8 de `programs/phase2_fable5.js` ne teste plus en AMRAP @ 85 % : vrais 1RM
+sur Back Squat, Weighted Pull-up, Strict Press, Power Clean et Close-Grip Bench,
+avec une porte de décision à la charge affichée (« 90% ») et des sauts réglés au
+RPE. Détail et raison dans `CHANGELOG.md`.
 
 ### Cycle de réhabilitation — hanche et épaule
 

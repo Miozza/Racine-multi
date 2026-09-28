@@ -1,3 +1,19 @@
+## V5.1.8 — Phase 2 Fable 5 : la S8 devient une vraie semaine de tests 1RM
+
+**Pourquoi** : rhume avec fièvre à la place de la S7 deload. L'athlète ne se sentait pas prêt pour un AMRAP à 85 %, mais se sentait capable d'aller chercher un 1RM. La fatigue est basse (une semaine sans charge vaut un deload) ; c'est la forme du jour qui est imprévisible.
+
+**Ce qui change** (`programs/phase2_fable5.js`, S8 seulement — S1-S7 intactes)
+
+- **5 tests 1RM** : Back Squat (lundi), Weighted Pull-up (mardi), Strict Press (jeudi), Power Clean puis Close-Grip Bench Press (vendredi).
+- **Porte de décision** : paliers 50 % ×5, 70 % ×3, 85 % ×1, puis un single à la charge affichée (« 90% », résolue par le moteur sur la capacité mesurée). Porte à RPE 9+ → pas de test, report au vendredi (le test reporté remplace le Close-Grip Bench).
+- **Sauts réglés au RPE** du single précédent : ≤ 6 → +10 %, 7 → +5 %, 8 → +2-3 % (dernière tentative), 9 → stop. 3 tentatives max après la porte, 3-4 min de repos.
+- Condition d'entrée écrite dans l'objectif de semaine : 48 h sans fièvre.
+- Correctif : le jeudi de S8 listait deux fois « Lateral Raise DB » (la capture des résultats se clé par nom) ; le second devient Push-Up 2×10.
+
+**Pourquoi « 90% » et pas « 100% »** : mesuré, le moteur ne sait pas afficher une tentative de record — le frein RPE et le plancher de maîtrise ramenaient « 100% » à la dernière charge lourde validée. La charge affichée est donc la porte (≈ 90 % de l'e1RM), et les sauts au RPE atteignent le 1RM du jour quelle que soit sa précision. Moteur de charges non modifié.
+
+**Garde-fou** : `dev/phase2_fable5_checks.js` § 13b — chaque test 1RM de S8 est en pourcentage, en contexte de force plein, hors deload. Un mot comme « léger », « technique » ou « facile » dans une note ou l'objectif de semaine rendrait le résultat muet pour la capacité ; le test échoue alors.
+
 ## V5.1.7 — Les jours manqués apparaissent dans l'historique
 
 **Ce qui change**
