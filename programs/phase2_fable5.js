@@ -33,7 +33,7 @@ window.COACH_BERTIN_PROGRAMS.phase2_fable5 = {
   phase: 2,
   phaseName: "Bloc conjugué varié — force + dos/épaules",
   phaseEnd: "à planifier",
-  nextPhase: "force_performance",
+  nextPhase: "pont_peak",
   impact: "Bloc conjugué de 8 semaines : les patrons restent fixes (squat lundi, tirage mardi, poussée jeudi, dynamique vendredi) mais les variations tournent aux 3 semaines. Ratio tirage:poussée 2:1 pour la santé d'épaules, protection lombaire systématique, tests 1RM en S8 avec une porte de décision à ~90 %. Volume quadriceps et bras direct en accessoires : force sur le mouvement A, masse sur le reste.",
   days: ["lundi", "mardi", "jeudi", "vendredi"],
   weekLabels: ["S1 Rotation A", "S2 Rotation A+", "S3 Rotation A max", "S4 Rotation B", "S5 Rotation B+", "S6 Rotation B max", "S7 Deload", "S8 Tests 1RM"],

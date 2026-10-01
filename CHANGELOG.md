@@ -1,3 +1,19 @@
+## V5.1.9 — Phase 3 — Pont Peak : 7 semaines entre Fable 5 et le Peak
+
+**Pourquoi** : `competition_peak` (8 sem. à partir du 23 novembre, compétition le 2027-01-15) ne contient ni bench, ni back squat, ni RDL. Entre la fin de Fable 5 et le Peak, il reste 7 semaines : la dernière fenêtre de bench lourd et de masse d'épaules avant janvier.
+
+**Ce qui change**
+
+- **Nouveau programme privé** `programs/pont_peak.js` (5 octobre → 22 novembre 2026), 4 jours. Rotation A (S1-3) : Tempo Back Squat, Paused Bench Press, Landmine Press. Rotation B (S4-5) : Back Squat, Bench Press, Strict Press. S6 deload, S7 test 1RM au **Bench Press seul**, avec la porte « 90% » et les sauts au RPE de la S8 de Fable 5. Lundi S7 : Back Squat 3×3 à 80 %, aucun test.
+- Constantes sur les 7 semaines : Barbell RDL chaque lundi, DB Pullover mardi et vendredi, Cuban Press le jeudi, 100 Band Pull-Apart le mardi. Metcon du mardi sans traction, rameur, wall balls, burpees, toes-to-bar ni ski.
+- Trois mouvements distincts, avec leur propre historique : Tempo Back Squat, Paused Bench Press, Bottoms-Up KB Press. Fiches ajoutées dans `programs/tutorials.js`. Le moteur les met déjà à l'échelle (ratio direct du Back Squat pour le premier, famille « poussée » bornée à 1,20 sans historique pour les deux autres) : moteur de charges non modifié.
+- Charges à l'échelle de l'athlète de référence ; mouvements A = 1RM de référence × `mult` de la semaine (Tempo Back Squat ≈ 0,85 × 315, Paused Bench ≈ 0,93 × 245).
+- Fable 5 enchaîne maintenant sur `pont_peak` (`nextPhase`, et `suggestedNext` le propose en premier). Le profil propriétaire reçoit la permission par `reconcileOwnerPermissions()` ; aucun profil client ne le voit.
+
+**Écarts assumés par rapport à la spécification** : pour tenir le ratio tirage:poussée ≥ 1,5 en rotation B (Bench 5×3 + Strict Press 5×3 + Close-Grip 4×5 + Seated DB Press), le Lat Pulldown 3×10-12 reste aussi en S4-S5 et le Face Pull du vendredi passe de 2×15 à 3×15 en S1-S5.
+
+**Garde-fou** : `dev/pont_peak_checks.js` — constantes, test unique en contexte de force plein, rotations, metcon du mardi, ratio tirage:poussée, charges ≤ 1RM de référence et = référence × mult.
+
 ## V5.1.8 — Phase 2 Fable 5 : la S8 devient une vraie semaine de tests 1RM
 
 **Pourquoi** : rhume avec fièvre à la place de la S7 deload. L'athlète ne se sentait pas prêt pour un AMRAP à 85 %, mais se sentait capable d'aller chercher un 1RM. La fatigue est basse (une semaine sans charge vaut un deload) ; c'est la forme du jour qui est imprévisible.
