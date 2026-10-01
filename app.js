@@ -1,5 +1,5 @@
-// Racine V5.1.8 — Fable 5 : semaine de tests 1RM
-var APP_VERSION = "V5.1.8";
+// Racine V5.1.9 — Phase 3 Pont Peak : nouveau programme entre Fable 5 et le Peak
+var APP_VERSION = "V5.1.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

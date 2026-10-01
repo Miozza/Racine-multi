@@ -1,10 +1,19 @@
-# ETAT ACTUEL — V5.1.8
+# ETAT ACTUEL — V5.1.9
 
-Version actuelle : V5.1.8
+Version actuelle : V5.1.9
 
 ## État courant
 
-### Phase 2 Fable 5 — S8 en tests 1RM (V5.1.8)
+### Phase 3 — Pont Peak (V5.1.9)
+
+`programs/pont_peak.js`, **privé** : 7 semaines entre Fable 5 et
+`competition_peak` (5 octobre → 22 novembre 2026). Rotation A (S1-3) sur des
+variations nouvelles, rotation B (S4-5) sur les mouvements de compétition, S6
+deload, S7 test 1RM au Bench Press seul (porte « 90% » de Fable 5). Fable 5
+enchaîne désormais sur ce bloc. Détail et écarts dans `CHANGELOG.md` ; contrat
+dans `dev/pont_peak_checks.js`.
+
+### Phase 2 Fable 5 — S8 en tests 1RM
 
 La S8 de `programs/phase2_fable5.js` ne teste plus en AMRAP @ 85 % : vrais 1RM
 sur Back Squat, Weighted Pull-up, Strict Press, Power Clean et Close-Grip Bench,

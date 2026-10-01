@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 235,
+    "ACTIF": 237,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -950,6 +950,22 @@
       "size": 16644,
       "lines": 319,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "dev/pont_peak_checks.js",
+      "size": 11640,
+      "lines": 198,
+      "role": "Contrat de Phase 3 — Pont Peak : place entre Fable 5 et le Peak, constantes du bloc (Barbell RDL, DB Pullover 2x/sem., Cuban Press, Band Pull-Apart), test unique Bench Press 1RM S7 en contexte de force plein, rotations A/B, metcon du mardi sans tirage ni poussee, ratio tirage:poussee >= 1,5, charges a l'echelle de reference.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [
@@ -2577,6 +2593,32 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 321
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/pont_peak.js",
+      "size": 28319,
+      "lines": 357,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules) : Phase 3 — Pont Peak, 7 semaines entre Fable 5 et competition_peak (bench lourd, masse d'epaules, test 1RM bench S7). Prive, enregistre dans window.COACH_BERTIN_PROGRAMS et indexe par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 376
         },
         {
           "path": "programs/index.js",

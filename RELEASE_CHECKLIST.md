@@ -43,6 +43,7 @@ node dev/program_calibration_checks.js
 node dev/retour_au_travail_checks.js
 node dev/rehab_stephanie_checks.js
 node dev/phase2_fable5_checks.js
+node dev/pont_peak_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 node dev/movement_swaps_checks.js
