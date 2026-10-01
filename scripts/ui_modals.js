@@ -241,7 +241,10 @@ function loadInfoPayload(exercise, shownLoad){
     source: hint && hint.source ? hint.source : null,
     context: hint && hint.context ? hint.context : null,
     brainStats: hint && hint.brainStats ? hint.brainStats : null,
-    ambitiousOption: hint && hint.ambitiousOption ? hint.ambitiousOption : null
+    ambitiousOption: hint && hint.ambitiousOption ? hint.ambitiousOption : null,
+    // Capacite estimee (Kalman) telle que la suggestion l'a lue : le (!) la
+    // relit, il ne la recalcule pas.
+    kalman: hint && hint.kalman ? hint.kalman : null
   };
 }
 function loadInfoText(exercise, shownLoad){
@@ -571,11 +574,16 @@ function renderLoadInfoModalBody(msg){
         escapeHtml(loadText(r.load))+" \u00d7 "+escapeHtml(r.reps||"?")+
         " \u2014 RPE "+escapeHtml(r.rpe||"?")+(r.status?" <small>"+escapeHtml(r.status)+"</small>":"")+origineTag+"</li>";
     }).join("") : "<li>Aucun historique retrouv\u00e9 pour ce mouvement. V\u00e9rifie que tu es dans le bon profil ou importe une sauvegarde JSON si l'historique existe ailleurs.</li>";
+    // Capacite estimee (Kalman) : relue sur l'indice, jamais recalculee.
+    var capacityLine='';
+    try{ if(window.CoachKalman&&typeof CoachKalman.explainLine==='function')capacityLine=CoachKalman.explainLine(hint.kalman)||''; }catch(e){ capacityLine=''; }
+    var capacityHtml=capacityLine?'<div class="tuto-section compact"><div class="tuto-section-title">Capacit\u00e9 estim\u00e9e</div><p>'+escapeHtml(capacityLine)+'</p></div>':'';
     var analysisHtml=(computedSource==="brain"||hint.brainStats)?renderBrainExplain(hint):'<div class="tuto-section compact"><div class="tuto-section-title">Analyse</div><p>'+escapeHtml(hint.reason||"\u2014")+'</p></div>';
     return '<div class="tuto-topline">HISTORIQUE DE CHARGE</div>'+ 
       '<div class="tuto-title">'+escapeHtml(hint.name||"Mouvement")+'</div>'+ 
       '<div class="tuto-goal"><strong>Charge sugg\u00e9r\u00e9e : '+escapeHtml(hint.load||"\u2014")+'</strong></div>'+ 
       sourceHtml+
+      capacityHtml+
       '<div class="tuto-section"><div class="tuto-section-title">Historique des poids utilis\u00e9s</div><ul>'+lis+'</ul></div>'+ 
       analysisHtml;
   }

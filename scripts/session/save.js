@@ -89,6 +89,9 @@ function setupSessionSave(){
       state.history.push(entry);
       save();
     }
+    // Capacite estimee (Kalman) : reconstruite depuis le journal brut qui vient
+    // de recevoir la seance. Etat derive en memoire, aucune ecriture.
+    try{ if(window.CoachKalman && typeof CoachKalman.rebuild==='function') CoachKalman.rebuild(); }catch(e){ /* jamais bloquant */ }
     // Mouvements hors programme : la liste ne vit que le temps de l'écran Résultats.
     try{ if(window.CoachExtraMovements)CoachExtraMovements.clear(); }catch(e){ /* jamais bloquant */ }
     // Brain V2.1 — mémoire locale par mouvement + intention.

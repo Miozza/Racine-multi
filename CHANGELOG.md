@@ -1,3 +1,26 @@
+## V5.2.0 — Kalman × moteur de charges : capacité estimée, en observation
+
+**Pourquoi** : le moteur à règles décide quoi faire, mais ne tenait aucune estimation de ce dont l'athlète est capable, avec une incertitude. Le Brain ne pouvait que freiner (`coachBrainApplyStatsGate` n'agit que sur une hausse). Cas mesuré sur l'export réel : Strict Press arrêté au 17 sept, le moteur affichait 140 lb pour le test 1RM du 1er oct (la conversion Epley de `coachRuleLastSetGuards` ne peut que baisser une charge) ; le test a donné 175 réussi, 185 raté.
+
+**Ce qui change**
+
+- **Nouveau module** `scripts/charge/kalman.js` (`window.CoachKalman`, aussi `CoachCharge.kalman`) : e1RM par mouvement en espace log avec sa variance, RIR tiré du RPE, bruit de mesure selon le statut, bruit de processus hebdomadaire, borne basse les jours de test, a priori par mouvement apparenté ou ratio de profil. API : `rebuild`, `estimate`, `loadFor`, `weight`.
+- **État dérivé** : reconstruit en mémoire depuis `state.history`, de façon déterministe — au chargement, après chaque sauvegarde, et dès que le journal change. **Aucune nouvelle clé de stockage, aucun changement de schéma, export/import inchangés.**
+- **Mode `shadow` par défaut** : la charge affichée est identique bit à bit à V5.1.9. Le `(!)` gagne une section « Capacité estimée (observation) : X lb ± Y » ; la trace de diagnostic gagne `capaciteEstimee` ; le journal Brain garde la dernière lecture en mémoire.
+- **Mode `blend`** (par profil : `kalman.mode = 2` dans la surcharge de tuning, ou `CoachKalman.setMode('blend')`) : mélange vers la capacité estimée avant les garde-fous, portail Brain piloté par l'incertitude, porte du jour de test 1RM à 90 % de l'e1RM. Sur la fixture Strict Press, le test du 1er oct passe de 145 lb (moteur) à 155 lb (porte ~158).
+- Tous les paramètres dans `COACH_MOVEMENT_TUNING.kalman` ; neuf scalaires surchargeables par profil (`tuning_override.js`).
+- `brain_stats.js` : `coachBrainApplyStatsGate` accepte un 8ᵉ argument optionnel ; absent, comportement d'avant à l'identique.
+- `ml_refinement.js` non modifié ; fonctions gelées non touchées.
+
+**Écarts assumés par rapport à la spécification**
+
+- `kalmanMode` est un **nombre** (0 off, 1 shadow, 2 blend) et non une chaîne : la surcharge de profil n'accepte que des scalaires numériques bornés (sa règle 1). `CoachKalman.mode()` rend la chaîne.
+- La porte du jour de test 1RM s'applique **après** les freins de dernière série et le frein RPE récent (qui raisonnent sur des séries de même plage de reps et tiendraient la porte d'un single à une charge de travail), mais **avant** le plancher, les plafonds, les caps de surveillance et de deload et l'arrondi. Un dernier RPE ≥ 9 interdit toujours la hausse.
+- Les lests sur poids du corps (Weighted Pull-up, Weighted Dip) n'alimentent pas le filtre : Epley sur un lest n'a pas de sens.
+- Le service worker n'énumère aucun fichier (réseau d'abord) : pas de liste de précache à mettre à jour.
+
+**Garde-fous** : `dev/kalman_checks.js` (maths, filtre de contexte, déterminisme, aucune écriture `localStorage`, shadow = off sur toute la matrice, blend borné, module absent ou en erreur, ligne `(!)`, ancrage 176 ± 3 lb) et `dev/kalman_replay.js [export.json]` (erreur moteur vs Kalman vs mélange, au global et sur les lignes déviées).
+
 ## V5.1.9 — Phase 3 — Pont Peak : 7 semaines entre Fable 5 et le Peak
 
 **Pourquoi** : `competition_peak` (8 sem. à partir du 23 novembre, compétition le 2027-01-15) ne contient ni bench, ni back squat, ni RDL. Entre la fin de Fable 5 et le Peak, il reste 7 semaines : la dernière fenêtre de bench lourd et de masse d'épaules avant janvier.

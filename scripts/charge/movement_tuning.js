@@ -361,6 +361,69 @@
       // Le plancher d'une hausse meritee n'est PAS defini ici : il vient de
       // coachRpeEarnedLoad(), qui relit l'echelon RPE reel de l'athlete.
     },
+    // scripts/charge/kalman.js — capacite estimee (e1RM) avec son incertitude.
+    //
+    // Le moteur a regles decide QUOI faire (intention, reps, deload, plafonds,
+    // freins). Il ne tenait aucune estimation de ce dont l'athlete est CAPABLE,
+    // avec une marge d'erreur. Le filtre la tient, en espace log
+    // (x = ln e1RM, variance P), reconstruite en memoire depuis le journal
+    // brut (state.history) — aucune cle de stockage.
+    //
+    // `mode` : 0 = off, 1 = shadow (observation seule, charge identique bit a
+    // bit), 2 = blend (melange avant les garde-fous). Un NOMBRE et non une
+    // chaine : la surcharge de profil (tuning_override.js) n'accepte que des
+    // scalaires numeriques bornes — c'est sa regle 1, pas un detail.
+    kalman: {
+      mode: 1,
+      // Bruit de processus : ecart-type (log) gagne par SEMAINE sans mesure.
+      // P += processSdPerWeek^2 x jours / 7. ~1,5 %/semaine : apres un mois
+      // sans seance, l'estimation reste lisible mais n'est plus « sure ».
+      processSdPerWeek: 0.015,
+      // Bruit de mesure (ecart-type log) selon le statut de la serie.
+      // Succes propre : la serie dit presque exactement la capacite. Serie
+      // dure (RPE >= 9) : le RPE haut est moins precis. Echec : la plus
+      // bruitee — on garde l'information, sans la laisser tirer fort.
+      measurementSd: { clean: 0.03, hard: 0.045, failed: 0.07 },
+      // Jour de test (montee vers un nRM) : la meilleure rep reussie est une
+      // BORNE BASSE. Au-dessus de l'estimation elle tire fort ; en dessous
+      // elle ne dit rien (on ne connait pas l'echec qui a suivi).
+      testLowerBoundSd: 0.02,
+      // Variance de depart d'un a priori (mouvement apparente ou ratios de
+      // profil) : large, l'a priori ne fait qu'orienter la premiere mesure.
+      priorSd: 0.10,
+      // RPE absent : lu comme 8. RIR = clamp(10 - RPE, 0, maxRir).
+      defaultRpe: 8,
+      maxRir: 4,
+      // RPE vise quand le programme n'en dit rien (cible du melange).
+      targetRpe: 8,
+      // Poids du melange : wMax x (1 - sd/sdMax), 0 au-dela de sdMax et sous
+      // minObservations mesures. Le moteur garde toujours au moins 1 - wMax.
+      wMax: 0.5,
+      sdMax: 0.08,
+      minObservations: 2,
+      // Portail Brain en blend : au-dela de cet ecart-type, la hausse est
+      // amortie (incertitude) ; en deca, elle passe si l'estimation la soutient.
+      gateSd: 0.04,
+      // Jour de test 1RM en blend : porte = gatePct x e1RM.
+      gatePct: 0.90,
+      // Formats lus comme jour de test (texte normalise, sans accents). La
+      // borne basse s'applique a tous ; la porte 1RM seulement a `oneRm`.
+      testFormatPatterns: [/montee vers \d+ ?rm/, /\d+ ?rm test/, /test \d+ ?rm/],
+      oneRmFormatPatterns: [/montee vers 1 ?rm/, /\b1 ?rm test/, /test 1 ?rm/],
+      // A priori par mouvement apparente : e1RM(name) ~ ratio x e1RM(from).
+      // Noms normalises, egalite stricte — jamais un motif large. Ratios de
+      // litterature, volontairement ronds : la variance large les corrige.
+      related: [
+        {name:'push press',             from:'strict press', ratio:1.25},
+        {name:'strict press',           from:'push press',   ratio:0.80},
+        {name:'front squat',            from:'back squat',   ratio:0.85},
+        {name:'back squat',             from:'front squat',  ratio:1.18},
+        {name:'pause back squat',       from:'back squat',   ratio:0.88},
+        {name:'box squat',              from:'back squat',   ratio:1.00},
+        {name:'close grip bench press', from:'bench press',  ratio:0.90},
+        {name:'bench press',            from:'close grip bench press', ratio:1.11}
+      ]
+    },
     // coachCeilingForMovement() / coachRuleCeilingCap() — scripts/charge/ceiling.js
     //
     // Tous les reglages ci-dessus portent une VITESSE de progression

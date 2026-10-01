@@ -1,10 +1,21 @@
-# ETAT ACTUEL — V5.1.9
+# ETAT ACTUEL — V5.2.0
 
-Version actuelle : V5.1.9
+Version actuelle : V5.2.0
 
 ## État courant
 
-### Phase 3 — Pont Peak (V5.1.9)
+### Kalman × moteur de charges — capacité estimée (V5.2.0)
+
+`scripts/charge/kalman.js` (`window.CoachKalman`) estime l'e1RM de chaque
+mouvement avec son incertitude, depuis le journal brut, en mémoire seulement.
+**Mode `shadow` par défaut** : la charge ne change pas, le `(!)` affiche la
+capacité estimée. Mode `blend` activable par profil (`kalman.mode` de la
+surcharge de tuning) : mélange avant les garde-fous, portail Brain piloté par
+l'incertitude, porte des tests 1RM à 90 % de l'e1RM. Contrat :
+`docs/BRAIN.md` § « Kalman : capacité estimée » ; garde-fous :
+`dev/kalman_checks.js`, `dev/kalman_replay.js`.
+
+### Phase 3 — Pont Peak
 
 `programs/pont_peak.js`, **privé** : 7 semaines entre Fable 5 et
 `competition_peak` (5 octobre → 22 novembre 2026). Rotation A (S1-3) sur des

@@ -1,0 +1,188 @@
+{
+  "_pourquoi": "Fixture minimale ANONYMISEE pour dev/kalman_checks.js et dev/kalman_replay.js : les 6 dernieres lignes Strict Press d'un export reel (13 aout -> 17 sept 2026), charges/reps/RPE tels que logges. Aucune autre donnee de l'athlete. Les deux 'montee vers 3RM' sont les jours de test (borne basse). Ancrage : e1RM estime au 17 sept = 176 +/- 3 lb. Reference terrain : test du 1er oct, 175 reussi, 185 rate.",
+  "schema": "racine-profile-export-v2",
+  "state": {
+    "history": [
+      {
+        "date": "2026-08-13",
+        "day": "jeudi",
+        "results": {
+          "Strict Press": {
+            "load": "150",
+            "reps": "3",
+            "rpe": "9",
+            "status": "hard_success",
+            "planned": {
+              "reps": 3,
+              "targetMin": 3,
+              "targetMax": 3,
+              "format": "montée vers 3RM",
+              "kind": "main",
+              "context": {
+                "rawName": "Strict Press",
+                "label": "Strict Press",
+                "equipment": "barbell",
+                "kind": "main",
+                "blockTitle": "A. Strict Press",
+                "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+                "text": "",
+                "format": "montée vers 3RM",
+                "day": "jeudi"
+              }
+            }
+          }
+        }
+      },
+      {
+        "date": "2026-08-20",
+        "day": "jeudi",
+        "results": {
+          "Strict Press": {
+            "load": "150",
+            "reps": "3",
+            "rpe": "8.5",
+            "status": "success",
+            "planned": {
+              "reps": 3,
+              "targetMin": 3,
+              "targetMax": 3,
+              "format": "montée vers 3RM",
+              "kind": "main",
+              "context": {
+                "rawName": "Strict Press",
+                "label": "Strict Press",
+                "equipment": "barbell",
+                "kind": "main",
+                "blockTitle": "A. Strict Press",
+                "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+                "text": "",
+                "format": "montée vers 3RM",
+                "day": "jeudi"
+              }
+            }
+          }
+        }
+      },
+      {
+        "date": "2026-08-27",
+        "day": "jeudi",
+        "results": {
+          "Strict Press": {
+            "load": "155",
+            "reps": "3",
+            "rpe": "8.5",
+            "status": "success",
+            "planned": {
+              "reps": 3,
+              "targetMin": 3,
+              "targetMax": 3,
+              "format": "4×3",
+              "kind": "main",
+              "context": {
+                "rawName": "Strict Press",
+                "label": "Strict Press",
+                "equipment": "barbell",
+                "kind": "main",
+                "blockTitle": "A. Strict Press",
+                "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+                "text": "",
+                "format": "4×3",
+                "day": "jeudi"
+              }
+            }
+          }
+        }
+      },
+      {
+        "date": "2026-09-03",
+        "day": "jeudi",
+        "results": {
+          "Strict Press": {
+            "load": "145",
+            "reps": "5",
+            "rpe": "9",
+            "status": "hard_success",
+            "planned": {
+              "reps": 5,
+              "targetMin": 5,
+              "targetMax": 5,
+              "format": "3×5",
+              "kind": "main",
+              "context": {
+                "rawName": "Strict Press",
+                "label": "Strict Press",
+                "equipment": "barbell",
+                "kind": "main",
+                "blockTitle": "A. Strict Press",
+                "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+                "text": "",
+                "format": "3×5",
+                "day": "jeudi"
+              }
+            }
+          }
+        }
+      },
+      {
+        "date": "2026-09-10",
+        "day": "jeudi",
+        "results": {
+          "Strict Press": {
+            "load": "145",
+            "reps": "6",
+            "rpe": "9",
+            "status": "hard_success",
+            "planned": {
+              "reps": 6,
+              "targetMin": 6,
+              "targetMax": 6,
+              "format": "3×6",
+              "kind": "main",
+              "context": {
+                "rawName": "Strict Press",
+                "label": "Strict Press",
+                "equipment": "barbell",
+                "kind": "main",
+                "blockTitle": "A. Strict Press",
+                "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+                "text": "",
+                "format": "3×6",
+                "day": "jeudi"
+              }
+            }
+          }
+        }
+      },
+      {
+        "date": "2026-09-17",
+        "day": "jeudi",
+        "results": {
+          "Strict Press": {
+            "load": "140",
+            "reps": "6",
+            "rpe": "8",
+            "status": "success",
+            "planned": {
+              "reps": 6,
+              "targetMin": 6,
+              "targetMax": 6,
+              "format": "3×6",
+              "kind": "main",
+              "context": {
+                "rawName": "Strict Press",
+                "label": "Strict Press",
+                "equipment": "barbell",
+                "kind": "main",
+                "blockTitle": "A. Strict Press",
+                "note": "Poussée du jour. Gainage solide, aucune compensation lombaire, stop si la vitesse meurt.",
+                "text": "",
+                "format": "3×6",
+                "day": "jeudi"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

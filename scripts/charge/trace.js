@@ -118,7 +118,10 @@
     var full=mv.history;
     try{
       mv.history=full.slice(0,index);
-      var d=guardedSuggestedLoadDecision(label,programLoad,targetReps,ctx);
+      // La capacite estimee ne voit, elle aussi, que les seances anterieures.
+      var cut=(full[index]&&full[index].date)||null;
+      var run=function(){ return guardedSuggestedLoadDecision(label,programLoad,targetReps,ctx); };
+      var d=(window.CoachKalman&&typeof CoachKalman.withCutoff==='function'&&cut)?CoachKalman.withCutoff(cut,run):run();
       return {propose:(d&&(d.loadNum||d.loadNum===0))?d.loadNum:null, texte:(d&&d.loadText)||'', severite:(d&&d.severity)||'', raison:(d&&d.reason)||''};
     }catch(e){
       return {propose:null, texte:'', severite:'', raison:'Reconstitution impossible : '+(e&&e.message)};
@@ -214,6 +217,11 @@
       var d=guardedSuggestedLoadDecision(label,programLoad,target,ctx);
       decision={propose:(d&&(d.loadNum||d.loadNum===0))?d.loadNum:null, texte:(d&&d.loadText)||'', severite:(d&&d.severity)||'', raison:(d&&d.reason)||''};
     }catch(e){ decision={propose:null,texte:'',severite:'',raison:'Suggestion impossible : '+(e&&e.message)}; }
+    // Capacite estimee (Kalman) telle que la suggestion ci-dessus l'a lue.
+    var capacite=null;
+    try{
+      if(window.CoachBrainJournal&&typeof CoachBrainJournal.kalmanFor==='function')capacite=CoachBrainJournal.kalmanFor(label);
+    }catch(e){ capacite=null; }
 
     var programNum=num(programLoad);
     // La trace passe par la MEME porte que le moteur. Tant qu'elle appelait
@@ -258,6 +266,7 @@
         equipement:(ctx&&ctx.equipment)||''
       },
       suggestion:decision,
+      capaciteEstimee:capacite,
       ecartReps:gap,
       capacites:(mv&&mv.ranges)?mv.ranges:null,
       historique:{
