@@ -54,6 +54,15 @@ function coachClampScaleRatio(ratio, label, sourceKey){
   return clamped;
 }
 
+// Seuil au-delà duquel un ratio de composante n'est pas une mesure. UN SEUL
+// propriétaire : CoachOnboarding (règle des moyennes de famille). Module
+// absent → 0, et l'appelant garde son comportement d'avant.
+function coachRatioComponentMax(){
+  var mod = (typeof window !== 'undefined' && window.CoachOnboarding) ? window.CoachOnboarding : null;
+  var v = mod ? Number(mod.RATIO_COMPONENT_MAX) : 0;
+  return v > 0 ? v : 0;
+}
+
 // Repère de niveau pour un profil SANS ratios de test.
 // Avant : un tel profil était bloqué — aucune charge, une phrase à la place.
 // Or le matériel existe déjà : l'onboarding applique `fallbackRatio` (0.45
@@ -140,6 +149,16 @@ function coachUserLoadRatioSource(label){
         // direct > 0 : un ratio 0 stocké (donnée corrompue d'une version
         // antérieure) n'est pas « ne pas scaler » — on le traite comme absent
         // et on retombe sur la famille puis _overall.
+        // Hors de la bande RATIO_COMPONENT_MAX, ce n'est pas une mesure :
+        // c'est une valeur saisie à une autre échelle (cas réel :
+        // latPulldown10RM = 140 lb de poulie contre une référence de lest de
+        // 20 → 7). On ne la borne pas à 1,6 comme une mesure : on la
+        // traite comme absente — lest, puis famille, puis _overall.
+        var bandMax = coachRatioComponentMax();
+        if(direct > 0 && bandMax && direct > bandMax){
+          try{ if(typeof window !== 'undefined' && window.CoachLog && CoachLog.warn) CoachLog.warn('scale_ratio_out_of_band', {movement:String(label||''), source:cfg.profile, ratio:direct}); }catch(e){}
+          break;
+        }
         if(direct > 0) return {ratio: coachClampScaleRatio(direct, label, cfg.profile), source: cfg.profile, borrowed:false};
         break;
       }

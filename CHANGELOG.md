@@ -1,3 +1,25 @@
+## V5.2.2 — Prompt Coach fidèle, garde des ratios, trophées 1RM automatiques
+
+**Pourquoi** : le prompt Coach (`RACINE_COACH_START`) envoyait à l'IA des données fausses ou trompeuses (rapport de l'athlète du 2026-10-02).
+
+**Ce qui change**
+
+- `scripts/coach_ai/context.js` (affichage seulement, lecture seule) :
+  - courbe de précision : `precisionTrend()` rend déjà un pourcentage 0–100, il était remultiplié par 100 (8000 %). Chaque point porte son `n`, et le mois en cours est signalé ;
+  - section « Par mouvement et intention » : lisait des champs inexistants (`tested`, `succeeded`…) au lieu de `testedPredictions`, `successfulPredictions`, `underPredictions`, `overPredictions`. Elle est maintenant remplie, et son en-tête disparaît s'il n'y a aucune prédiction testée ;
+  - metcons : titre du bloc au lieu de la clé `wod_X`, score/rounds/note, « metcon non enregistré » si vide. Un 0 de charge, de reps ou de RPE veut dire « non saisi » et n'est plus envoyé ;
+  - notes de l'app (« PR automatique détecté », « PR saisi manuellement »…) séparées des notes de l'athlète, dans la séance comme dans la liste. La séparation se fait à la lecture, donc elle couvre l'historique déjà stocké ;
+  - « jour courant » devient « jour affiché dans l'app », avec la date du jour à côté ;
+  - une composante de ratio hors bande est signalée comme « exclue des moyennes ».
+- `scripts/profiles/onboarding.js` (**moteur**) : une seule règle de moyenne de famille (`familyRatios`) partagée par le calcul et par une **migration idempotente au chargement** (`migrateFamilyRatios`, appelée par `app.js`). Les profils calibrés avant la bande `RATIO_COMPONENT_MAX` gardaient `_upperPull`/`_overall` empoisonnés par `latPulldown10RM = 7`. Seules les familles déjà stockées sont recalculées, et seulement si une composante est hors bande. Les composantes ne sont jamais réécrites. La copie du registre est réparée aussi.
+
+- **Garde contre les ratios aberrants** (**moteur**, seuil `RATIO_COMPONENT_MAX` = 2,0, choisi par l'athlète) : un ratio direct hors bande n'est plus pris pour une mesure bornée à 1,6. `scripts/charge/scaling.js` le traite comme absent (règle des lests, puis famille, puis `_overall`) et `scripts/charge/suggestion.js` ne le relit plus comme ancrage 1RM. Avant : `latPulldown10RM` = 140 lb de poulie / 20 de référence → 20 lb de lest de traction suggérés à 30 lb, et ~187 lb de « 1RM » de lest. Le seuil a un seul propriétaire, `CoachOnboarding.RATIO_COMPONENT_MAX`.
+- **Lest de traction modifiable** dans l'onglet Charge (« Weighted Pull-up 10RM », lest seul) : `latPulldown10RM` n'était écrivable que par l'onboarding, qui ne l'affiche même pas. `CoachOnboarding.setCalibrationValue` met à jour la valeur, son ratio et seulement les moyennes qui la contiennent ; une valeur hors bande est enregistrée avec un avertissement, mais exclue.
+- **Avertissement non bloquant** à l'écran « Mouvements calculés » de l'onboarding : une valeur à plus de 2× la référence est signalée et demande « Continuer quand même ».
+- **Trophées 1RM** : nouveaux champs Close-Grip Bench 1RM et Weighted Pull-up 1RM (lest seul). Back Squat 1RM, Deadlift 1RM et ces deux-là se mettent à jour **automatiquement sur un vrai single** plus lourd que le record (nom exact : une variante n'écrase jamais un autre mouvement). Trophées seulement : écrits dans `state.profile.records`, jamais dans athleteState, movementRefs ou une clé de calibration. Au premier chargement, une migration unique (`profile.recordsBackfill`) remplit les champs vides depuis le journal ; un record existant n'est jamais modifié. Le résumé de séance et le prompt Coach les affichent comme notes de l'app.
+
+**Garde-fous** : `dev/coach_ai_checks.js` (contexte construit et vérifié), `dev/charge_engine_checks.js` (réparation, idempotence, profil sain intact, garde hors bande) et `dev/regression_checks.js` (trophées : single réel, variantes, migration unique, aucun effet moteur).
+
 ## V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
 
 **Pourquoi** : relecture de l'athlète. Le Pallof Press travaillait trop peu, le Lat Pulldown est remplacé par du vrai tirage au poids du corps, et le gym n'a ni tapis ni piste pour courir.

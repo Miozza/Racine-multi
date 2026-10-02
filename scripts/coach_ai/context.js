@@ -54,6 +54,81 @@
     return str(key);
   }
 
+  // ── Lignes WOD : clé interne `wod_<titre du bloc>` (results.js) ─────────
+  // Un metcon n'a ni charge ni reps : son résultat vit dans `result` (score,
+  // temps), `rounds` (repli durable de l'AMRAP) et `note`. Les "0" de load/reps
+  // sont des champs vides, et RPE 0 veut dire « non saisi » — jamais une valeur.
+  var WOD_PREFIX = "wod_";
+  function isWodKey(key){ return str(key).indexOf(WOD_PREFIX) === 0; }
+  function positive(v){ var n = num(v); return (n != null && n > 0) ? n : null; }
+  function wodParts(r){
+    var parts = [];
+    if(str(r.skipped) === "1" || str(r.skipped).toLowerCase() === "true"){
+      return ["non fait" + (str(r.skipReason) ? " (" + str(r.skipReason) + ")" : "")];
+    }
+    var score = str(r.result);
+    if(!score && positive(r.rounds) != null) score = positive(r.rounds) + " rounds";
+    if(score) parts.push("score " + score);
+    if(str(r.lastRoundRemaining)) parts.push(str(r.lastRoundRemaining));
+    if(positive(r.rpe) != null) parts.push("RPE " + positive(r.rpe));
+    return parts;
+  }
+  function liftParts(r){
+    var parts = [];
+    if(positive(r.load) != null) parts.push(positive(r.load) + " lb");
+    if(positive(r.reps) != null) parts.push(positive(r.reps) + " reps");
+    if(positive(r.rpe) != null) parts.push("RPE " + positive(r.rpe));
+    if(str(r.time)) parts.push(str(r.time));
+    if(positive(r.rounds) != null) parts.push(positive(r.rounds) + " rounds");
+    return parts;
+  }
+  function rowLabel(key, r){
+    return isWodKey(key) ? str(key).slice(WOD_PREFIX.length) + " (metcon)" : label(key, r);
+  }
+
+  // ── Notes système vs notes de l'athlète ────────────────────────────────
+  // L'app écrit certaines phrases dans `note` (app.js : détection de PR,
+  // saisie de PR, recalibrage). Ce ne sont pas des mots de l'athlète : le
+  // modèle les lirait comme un ressenti. On les sépare à la lecture, ce qui
+  // couvre aussi tout l'historique déjà stocké, sans migration.
+  var SYSTEM_NOTES = [
+    "PR automatique détecté",
+    "PR saisi manuellement",
+    "Reference de travail saisie",
+    "Reference de travail (migration)",
+    "Recalibrage saisi manuellement"
+  ];
+  function splitNote(r){
+    r = r || {};
+    var athlete = [], system = [];
+    str(r.note).split(" · ").forEach(function(part){
+      part = str(part);
+      if(!part) return;
+      (SYSTEM_NOTES.indexOf(part) >= 0 ? system : athlete).push(part);
+    });
+    if(r.autoPr){
+      var pr = "PR automatique : " + (num(r.prOld) ? num(r.prOld) + " → " : "") + num(r.prNew) + " lb"
+        + (num(r.prReps) ? " (repère " + num(r.prReps) + " rep" + (num(r.prReps) > 1 ? "s" : "") + ")" : "");
+      system = system.filter(function(x){ return x !== "PR automatique détecté"; });
+      system.unshift(pr);
+    }
+    if(r.trophyPr && r.trophyPr.new){
+      system.push("Record " + str(r.trophyPr.label) + " : " + (num(r.trophyPr.old) ? num(r.trophyPr.old) + " → " : "") + num(r.trophyPr.new) + " lb");
+    }
+    return {athlete: athlete.join(" · "), system: system.join(" · ")};
+  }
+  function todayInfo(){
+    var iso = "", day = "";
+    try{ iso = (typeof todayIsoDate === "function") ? str(todayIsoDate()) : ""; }catch(e){}
+    try{ day = (typeof actualDayName === "function") ? str(actualDayName()) : ""; }catch(e){}
+    if(!iso || !day){
+      var d = new Date();
+      if(!iso) iso = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+      if(!day) day = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][d.getDay()];
+    }
+    return {iso: iso, day: day};
+  }
+
   // ── Bloc 1 : qui est l'athlète, où il en est ────────────────────────────
   function profileLines(){
     var lines = [], p = {}, c = {};
@@ -67,8 +142,17 @@
     var ratios = p.scaleRatios || {};
     var rk = Object.keys(ratios);
     if(rk.length){
+      // Une composante hors de la bande RATIO_COMPONENT_MAX (onboarding.js)
+      // est une saisie à la mauvaise échelle, déjà exclue des moyennes : le
+      // modèle doit le savoir plutôt que lire « 7× la référence ».
+      var band = (window.CoachOnboarding && CoachOnboarding.RATIO_COMPONENT_MAX) || 0;
       lines.push("Ratios de charge par famille (1.0 = niveau de l'athlète de référence) :");
-      rk.forEach(function(k){ lines.push("  - " + k + " : " + ratios[k]); });
+      rk.forEach(function(k){
+        var v = num(ratios[k]);
+        var out = (v == null) ? str(ratios[k]) : String(Math.round(v * 100) / 100);
+        if(band && v != null && k.charAt(0) !== "_" && v > band) out += " (hors bande : valeur saisie à une autre échelle, exclue des moyennes)";
+        lines.push("  - " + k + " : " + out);
+      });
     }
 
     var programId = "";
@@ -79,7 +163,14 @@
     lines.push("");
     lines.push("## Position dans le cycle");
     lines.push("Programme actif : " + (programLabel || programId || "inconnu") + (programId ? " (id " + programId + ")" : ""));
-    try{ lines.push("Semaine " + str(state.week) + " · jour courant : " + str(state.day)); }catch(e){}
+    // state.day est le jour AFFICHÉ dans l'app (curseur de navigation, posé au
+    // démarrage du cycle ou par un geste), pas la date du jour : les deux sont
+    // donnés séparément, sinon le modèle croit qu'on est ce jour-là.
+    try{
+      var today = todayInfo();
+      lines.push("Aujourd'hui : " + today.day + " " + today.iso);
+      lines.push("Semaine " + str(state.week) + " · jour affiché dans l'app : " + str(state.day));
+    }catch(e){}
     // Le libellé et l'objectif de semaine sont là où un deload se déclare
     // (coachIsDeloadWeekOrContext). Sans eux, le coach lisait une semaine de
     // deload comme une semaine normale et poussait la charge ou le volume.
@@ -139,16 +230,16 @@
       lines.push(head);
       Object.keys(results).forEach(function(key){
         var r = results[key] || {};
-        var parts = [];
-        var load = num(r.load), reps = num(r.reps), rpe = num(r.rpe);
-        if(load != null) parts.push(load + " lb");
-        if(reps != null) parts.push(reps + " reps");
-        if(rpe != null) parts.push("RPE " + rpe);
-        if(str(r.time)) parts.push(str(r.time));
-        if(str(r.rounds)) parts.push(str(r.rounds) + " rounds");
-        if(!parts.length && !str(r.note)) return;
-        var line = "    · " + label(key, r) + (parts.length ? " — " + parts.join(" × ") : "");
-        if(str(r.note)) line += "  [note : " + str(r.note) + "]";
+        var wod = isWodKey(key);
+        var parts = wod ? wodParts(r) : liftParts(r);
+        var notes = splitNote(r);
+        if(!parts.length && !notes.athlete && !notes.system){
+          if(wod) lines.push("    · " + rowLabel(key, r) + " — metcon non enregistré");
+          return;
+        }
+        var line = "    · " + rowLabel(key, r) + (parts.length ? " — " + parts.join(wod ? " · " : " × ") : "");
+        if(notes.athlete) line += "  [note de l'athlète : " + notes.athlete + "]";
+        if(notes.system) line += "  [note de l'app : " + notes.system + "]";
         lines.push(line);
       });
     });
@@ -174,17 +265,20 @@
   // modèle à voir un motif qui traverse plusieurs semaines (« épaule gauche »
   // trois fois en un mois) au lieu d'une remarque isolée.
   function noteLines(limit){
-    var out = [];
+    var athlete = [], system = [];
     hist().slice().reverse().forEach(function(s){
       var results = (s && s.results) || {};
       Object.keys(results).forEach(function(key){
-        var note = str((results[key] || {}).note);
-        if(!note) return;
-        out.push("- " + str(s.date) + " · " + label(key, results[key]) + " : " + note);
+        var n = splitNote(results[key]);
+        var head = "- " + str(s.date) + " · " + rowLabel(key, results[key]) + " : ";
+        if(n.athlete) athlete.push(head + n.athlete);
+        if(n.system) system.push(head + n.system);
       });
     });
-    if(!out.length) return [];
-    return ["", "## Notes écrites par l'athlète pendant ses séances"].concat(out.slice(0, limit || NOTES_LIMIT));
+    var lines = [];
+    if(athlete.length) lines = lines.concat(["", "## Notes écrites par l'athlète pendant ses séances"], athlete.slice(0, limit || NOTES_LIMIT));
+    if(system.length) lines = lines.concat(["", "## Événements notés par l'app (pas par l'athlète)"], system.slice(0, limit || NOTES_LIMIT));
+    return lines;
   }
 
   // ── Bloc 4 : ce que Brain a appris ─────────────────────────────────────
@@ -202,29 +296,36 @@
     try{
       var trend = CoachBrainMemory.precisionTrend ? CoachBrainMemory.precisionTrend() : null;
       if(trend && trend.length){
-        lines.push("Courbe de précision (un point par mois, du plus ancien au plus récent) :");
+        // precisionTrend() rend déjà un pourcentage 0–100 (brain_memory.js) :
+        // ne pas re-multiplier. n = prédictions testées du mois — un mois à
+        // n=1 donne 0 % ou 100 %, le modèle doit voir l'échantillon.
+        var month = todayInfo().iso.slice(0, 7);
+        lines.push("Courbe de précision (un point par mois, du plus ancien au plus récent ; n = prédictions testées) :");
         lines.push("  " + trend.map(function(p){
-          var pct = (p && p.precision != null) ? Math.round(p.precision * 100) + " %" : "n/d";
-          return str(p && (p.month || p.key)) + " " + pct;
+          var pct = (p && p.precision != null) ? Math.round(num(p.precision)) + " %" : "n/d";
+          var m = str(p && (p.month || p.key));
+          return m + " " + pct + " (n=" + (num(p && p.tested) || 0) + (m === month ? ", mois en cours" : "") + ")";
         }).join(" · "));
       }
     }catch(e){}
 
-    var profiles = {};
-    try{
-      var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
-      profiles = (mem.profiles && (mem.profiles[activeId] || mem.profiles)) || {};
-    }catch(e){ profiles = mem.profiles || {}; }
-
-    var keys = Object.keys(profiles || {});
-    if(keys.length){
+    // La mémoire est déjà propre au profil actif (clé de stockage namespacée,
+    // brain_memory.js) : `profiles` est indexé « mouvement::intention ».
+    // Champs réels : testedPredictions, successfulPredictions,
+    // underPredictions (reps manquées = trop ambitieuse), overPredictions
+    // (≥ 2 reps de marge = trop prudente). Mêmes profils que la courbe.
+    var profiles = mem.profiles || {};
+    var rows = Object.keys(profiles).map(function(k){ return profiles[k]; }).filter(function(p){
+      return p && typeof p === "object" && (num(p.testedPredictions) || 0) > 0;
+    });
+    rows.sort(function(a, b){ return num(b.testedPredictions) - num(a.testedPredictions); });
+    if(rows.length){
       lines.push("Par mouvement et intention — prédictions testées / réussies / trop ambitieuses / trop prudentes :");
-      keys.slice(0, 30).forEach(function(k){
-        var p = profiles[k] || {};
-        if(typeof p !== "object" || p.tested == null) return;
+      rows.slice(0, 30).forEach(function(p){
         var recent = null;
         try{ recent = CoachBrainMemory.recentPrecision ? CoachBrainMemory.recentPrecision(p) : null; }catch(e){}
-        lines.push("  - " + k + " : " + num(p.tested) + " / " + num(p.succeeded) + " / " + num(p.tooAmbitious) + " / " + num(p.tooCautious)
+        lines.push("  - " + str(p.label) + " · " + str(p.intent || "general") + " : " + (num(p.testedPredictions) || 0) + " / " + (num(p.successfulPredictions) || 0)
+          + " / " + (num(p.underPredictions) || 0) + " / " + (num(p.overPredictions) || 0)
           + (recent != null ? "  (précision récente " + Math.round(recent * 100) + " %)" : ""));
       });
     }
@@ -299,12 +400,11 @@
       for(var j = 0; j < keys.length && found < MOVEMENT_ROWS_LIMIT; j++){
         var r = results[keys[j]] || {};
         if(norm(label(keys[j], r)) !== wanted) continue;
-        var parts = [];
-        if(num(r.load) != null) parts.push(num(r.load) + " lb");
-        if(num(r.reps) != null) parts.push(num(r.reps) + " reps");
-        if(num(r.rpe) != null) parts.push("RPE " + num(r.rpe));
+        var parts = liftParts(r);
+        var notes = splitNote(r);
         lines.push("- " + str(s.date) + " · S" + str(s.week) + " · " + (parts.join(" × ") || "aucun chiffre")
-          + (str(r.note) ? "  [note : " + str(r.note) + "]" : ""));
+          + (notes.athlete ? "  [note de l'athlète : " + notes.athlete + "]" : "")
+          + (notes.system ? "  [note de l'app : " + notes.system + "]" : ""));
         found++;
       }
     }

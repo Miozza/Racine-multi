@@ -53,6 +53,13 @@ retirée du code — aucun envoi réseau lors d'une sauvegarde de séance.
 - Peut etre reconstruit depuis resultats si necessaire.
 - Peut refuser de remplacer une capacite principale quand le contexte est technique, WOD, recovery ou autre contexte limite.
 
+### state.profile.records (trophees)
+
+- Records personnels dates, `{cle: {value, date, unit, source}}`. Jamais lus par le moteur de charges.
+- Ecrits par la saisie manuelle (onglet Charge) et, pour les champs `single` de `TROPHY_FIELDS` (app.js), par un VRAI single plus lourd que le record a la sauvegarde d une seance.
+- Migration unique `profile.recordsBackfill` : remplit les champs vides depuis `state.history`, ne modifie jamais un record existant.
+- N ecrivent jamais athlete_state, movementRefs ni une cle de calibration du profil.
+
 ### data/charges.js
 
 - Configuration stable des charges et de l equipement.
