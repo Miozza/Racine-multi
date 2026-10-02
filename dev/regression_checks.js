@@ -346,6 +346,57 @@ assert(/setGuidedResult\(it\.key,'note',noteInp\.value\)/.test(resultsSrc),
 assert(/value="'\+escHtml\(getGuidedResult\(item\.key,'note',''\)\)\+'"/.test(resultsSrc),
   'Le champ note de l’écran Résultats doit être pré-rempli par la note écrite pendant le WOD.');
 
+// ── Trophées 1RM : un VRAI single, jamais une variante, jamais le moteur ────
+// Choix de l'athlète (2026-10-02) : Back Squat, Close-Grip Bench, Deadlift et
+// Weighted Pull-up (lest seul) se mettent à jour sur un single réel plus lourd ;
+// ce sont des trophées, ignorés par le moteur ; l'historique les remplit une
+// fois au chargement, sans toucher un record existant.
+{
+  const vm = require('vm');
+  const app = read('app.js');
+  const pick = re => { const m = app.match(re); if(!m) fail('Introuvable dans app.js : ' + re); return m ? m[0] : ''; };
+  const c = {console, Math, String, Number, Object, RegExp, JSON};
+  c.window = c;
+  vm.createContext(c);
+  vm.runInContext(read('scripts/app_helpers.js').match(/function parseLoad[^\n]*\n/)[0], c);
+  vm.runInContext(read('scripts/charge/utilitaires.js').match(/function chargeKeyFromName[^\n]*\n/)[0], c);
+  vm.runInContext(pick(/var TROPHY_FIELDS = \[[\s\S]*?\n\];/), c);
+  vm.runInContext(pick(/function trophyNameKey[\s\S]*?\nfunction backfillTrophySinglesFromHistory[\s\S]*?\n\}/), c);
+  let saves = 0;
+  c.save = function(){ saves++; };
+  c.state = {profile:{records:{deadlift:{value:405, date:'2026-01-10', unit:'lb'}}}, athleteState:{movements:{}}, movementRefs:{},
+    history:[
+      {date:'2026-09-28', results:{'Back Squat':{load:'300', reps:'1'}, 'Tempo Back Squat':{load:'320', reps:'1'}}},
+      {date:'2026-09-21', results:{'Back Squat':{load:'285', reps:'1'}, 'Deadlift':{load:'415', reps:'1'}}},
+      {date:'2026-10-02', results:{'Close-Grip Bench Press':{load:'265', reps:'3'}, 'wod_D. Metcon':{load:'0', reps:'1'}}}
+    ]};
+
+  assert(c.backfillTrophySinglesFromHistory() === true, 'Le journal remplit les trophées 1RM vides au chargement.');
+  const rec = c.state.profile.records;
+  assert(rec.backSquat1RM && rec.backSquat1RM.value === 300 && rec.backSquat1RM.date === '2026-09-28',
+    'Back Squat 1RM = meilleur vrai single (300, 2026-09-28) ; « Tempo Back Squat » n\'est pas un Back Squat.');
+  assert(rec.deadlift.value === 405, 'Un record existant n\'est jamais modifié par la migration.');
+  assert(!rec.closeGripBench1RM, 'Un 265 × 3 n\'est pas un single : pas de 1RM inscrit.');
+  rec.backSquat1RM = undefined; delete rec.backSquat1RM;
+  assert(c.backfillTrophySinglesFromHistory() === false && !rec.backSquat1RM && saves === 1,
+    'Migration unique : un record effacé exprès n\'est pas réinscrit.');
+
+  const res = {'Close-Grip Bench Press':{load:'275', reps:'1'}, 'Weighted Pull-up':{load:'90', reps:'1'},
+    'Bench Press':{load:'300', reps:'1'}, 'Back Squat':{load:'310', reps:'2'}};
+  const up = c.detectTrophySingles(res, '2026-10-09');
+  assert(rec.closeGripBench1RM.value === 275 && rec.weightedPullup1RM.value === 90 && up.length === 2,
+    'Un single plus lourd met à jour Close-Grip Bench et Weighted Pull-up (lest seul).');
+  assert(!rec.backSquat1RM, 'Une série de 2 reps ne met pas à jour un 1RM.');
+  assert(res['Close-Grip Bench Press'].trophyPr && !res['Close-Grip Bench Press'].autoPr && !res['Close-Grip Bench Press'].note,
+    'Le trophée est marqué à part (trophyPr) : ni autoPr (repère moteur) ni note ajoutée.');
+  assert(Object.keys(c.state.athleteState.movements).length === 0 && Object.keys(c.state.movementRefs).length === 0 && c.state.profile.bench === undefined,
+    'Un trophée n\'écrit ni athleteState, ni movementRefs, ni clé de calibration : le moteur l\'ignore.');
+  assert(c.detectTrophySingles({'Close-Grip Bench Press':{load:'275', reps:'1'}}, '2026-10-10').length === 0,
+    'Égaler un record ne le réécrit pas.');
+  assert(/return updates\.concat\(detectTrophySingles\(results,dateStr\)\);/.test(app) && /backfillTrophySinglesFromHistory\(\);/.test(app),
+    'La détection est branchée sur la sauvegarde de séance, la migration sur le chargement.');
+}
+
 if(errors.length){
   console.error('\nÉCHEC regression_checks.js');
   errors.forEach((e,i) => console.error((i+1) + '. ' + e));

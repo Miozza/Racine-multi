@@ -1644,6 +1644,50 @@ try {
       'app.js lance la réparation des familles au chargement, après la migration de référence.');
   }
 
+  // ── Garde : un ratio direct hors bande n'est pas une mesure ─────────────
+  // Choix de l'athlète (2026-10-02) : seuil = RATIO_COMPONENT_MAX (2,0) de
+  // l'onboarding, déjà utilisé pour les moyennes. Avant : latPulldown10RM = 7
+  // était borné à 1,6 et pris pour une MESURE — 20 lb de lest sortaient à
+  // 30 lb, et la règle des lests n'était jamais atteinte. Le 1RM d'ancrage
+  // relisait aussi 140 lb de poulie comme un 10RM de lest (~187 lb).
+  {
+    resetState();
+    const appSrc = read('app.js');
+    vm.runInContext(read('scripts/profiles/reference.js'), ctx, {filename:'reference.js'});
+    vm.runInContext(read('scripts/profiles/onboarding.js'), ctx, {filename:'onboarding.js'});
+    vm.runInContext(appSrc.match(/var PR_FIELD_MAP = \{[\s\S]*?\n\};/)[0].replace('var PR_FIELD_MAP', 'PR_FIELD_MAP'), ctx);
+    vm.runInContext(appSrc.match(/function normalizePrCompareName[\s\S]*?\n\}/)[0], ctx);
+    vm.runInContext(appSrc.match(/function prCfgMatchesResult[\s\S]*?\n\}/)[0], ctx);
+    ctx.movements.latPulldown = {name:'Weighted pull-up', profile:null};
+
+    ctx.state.profile = {onboarded:true, latPulldown10RM:140,
+      scaleRatios:{row8RM:1.27, chestRow8RM:1.27, latPulldown10RM:7, _upperPull:1.27, _overall:1.05}};
+    const wp = ctx.coachUserLoadRatioSource('Weighted Pull-up');
+    assert(wp.ratio === 1 && wp.source === 'lest sur poids du corps',
+      'Ratio direct 7 hors bande : le Weighted Pull-up retombe sur la règle des lests (obtenu ' + wp.ratio + ', « ' + wp.source + ' »).');
+    const pu = ctx.coachUserLoadRatioSource('Pull-Up');
+    assert(pu.source === 'tirage' && pu.borrowed === true && Math.abs(pu.ratio - 1.27) < 1e-9,
+      'Ratio direct hors bande : Pull-Up emprunte sa famille au lieu du 7 borné à 1,6 (obtenu ' + pu.ratio + ').');
+    assert(ctx.coachStrengthAnchorOneRm('Weighted Pull-up', null) === null,
+      'Le 1RM d\'ancrage ne relit pas 140 lb de poulie comme un 10RM de lest.');
+
+    // Dans la bande, rien ne change : c'est une mesure.
+    ctx.state.profile = {onboarded:true, latPulldown10RM:32,
+      scaleRatios:{latPulldown10RM:1.6, _upperPull:1.27, _overall:1.05}};
+    const ok = ctx.coachUserLoadRatioSource('Pull-Up');
+    assert(ok.source === 'latPulldown10RM' && ok.borrowed === false && ok.ratio === 1.6,
+      'Un ratio direct dans la bande reste une mesure (obtenu ' + ok.ratio + ', « ' + ok.source + ' »).');
+    const anchor = ctx.coachStrengthAnchorOneRm('Weighted Pull-up', null);
+    assert(anchor && anchor.source === 'profil' && anchor.oneRm > 32,
+      'Un lest dans la bande sert toujours d\'ancrage 1RM.');
+
+    // Le bac à sable des autres blocs n'a ni PR_FIELD_MAP ni onboarding.
+    delete ctx.PR_FIELD_MAP; delete ctx.CoachOnboarding; delete ctx.RacineProfileReference;
+    delete ctx.prCfgMatchesResult; delete ctx.normalizePrCompareName;
+    delete ctx.RACINE_REFERENCE_PROFILE; delete ctx.RACINE_REFERENCE_REFS;
+    resetState();
+  }
+
   // ── Un lest sur le poids du corps n'emprunte le ratio de personne ────────
   // Le ratio d'une famille dit « cet athlete souleve X fois la reference » sur
   // une charge TOTALE. Un Weighted Pull-up et un Weighted Dip portent le

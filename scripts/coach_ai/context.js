@@ -112,6 +112,9 @@
       system = system.filter(function(x){ return x !== "PR automatique détecté"; });
       system.unshift(pr);
     }
+    if(r.trophyPr && r.trophyPr.new){
+      system.push("Record " + str(r.trophyPr.label) + " : " + (num(r.trophyPr.old) ? num(r.trophyPr.old) + " → " : "") + num(r.trophyPr.new) + " lb");
+    }
     return {athlete: athlete.join(" · "), system: system.join(" · ")};
   }
   function todayInfo(){

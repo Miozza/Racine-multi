@@ -1325,9 +1325,15 @@ function coachStrengthAnchorOneRm(label,mv){
   if(!(best>0)&&typeof PR_FIELD_MAP==='object'&&typeof prCfgMatchesResult==='function'){
     var profile=(typeof state!=='undefined'&&state)?state.profile:null;
     if(profile){
+      // Une valeur dont le ratio est hors bande est à une autre échelle :
+      // 140 lb de poulie lus comme un 10RM de lest donnaient ~187 lb de
+      // « 1RM » de traction lestée. Même seuil que scaling.js.
+      var bandMax=(typeof coachRatioComponentMax==='function')?coachRatioComponentMax():0;
+      var ratios=profile.scaleRatios||{};
       Object.keys(PR_FIELD_MAP).forEach(function(id){
         var cfg=PR_FIELD_MAP[id];
         if(!cfg||!cfg.profile||!prCfgMatchesResult(cfg,label))return;
+        if(bandMax&&Number(ratios[cfg.profile])>bandMax)return;
         var v=Number(profile[cfg.profile])||0;
         if(!(v>0))return;
         var est=epley1RM(v,Number(cfg.reps)||1);

@@ -1,4 +1,4 @@
-// Racine V5.2.2 — Prompt Coach : données fidèles, ratios de famille réparés
+// Racine V5.2.2 — Prompt Coach fidèle, garde des ratios, trophées 1RM automatiques
 var APP_VERSION = "V5.2.2";
 
 // Architecture stable
@@ -2341,13 +2341,76 @@ function renderProfile(){
 // aussi reflétés dans state.profile[scaleKey] (ancien chemin / affichage).
 var TROPHY_FIELDS = [
   {key:'bench',        label:'Bench Press 1RM',  unit:'lb',   scaleKey:'bench'},
-  {key:'backSquat1RM', label:'Back Squat 1RM',   unit:'lb'},
+  {key:'closeGripBench1RM', label:'Close-Grip Bench 1RM', unit:'lb', single:/^close grip bench( press)?$/},
+  {key:'backSquat1RM', label:'Back Squat 1RM',   unit:'lb',   single:/^back squat$/},
   {key:'frontSquat',   label:'Front Squat 1RM',  unit:'lb',   scaleKey:'frontSquat'},
-  {key:'deadlift',     label:'Deadlift 1RM',     unit:'lb'},
+  {key:'deadlift',     label:'Deadlift 1RM',     unit:'lb',   single:/^deadlift$/},
   {key:'strictPress',  label:'Strict Press 1RM', unit:'lb',   scaleKey:'strictPress'},
   {key:'powerClean',   label:'Power Clean 1RM',  unit:'lb',   scaleKey:'powerClean'},
+  {key:'weightedPullup1RM', label:'Weighted Pull-up 1RM (lest)', unit:'lb', single:/^weighted pull ?up$/},
   {key:'maxPullup',    label:'Max tractions',    unit:'reps', scaleKey:'strictPullupReps'}
 ];
+
+// ─── Trophées automatiques : un VRAI single plus lourd que le record ────────
+// Seuls les champs portant `single` (nom exact du mouvement, normalisé) sont
+// concernés. Une variante n'écrase jamais un autre mouvement : « Tempo Back
+// Squat » n'est pas « Back Squat », « Close-Grip Bench » n'est pas « Bench ».
+// Pour le Weighted Pull-up, la charge saisie est le LEST seul. Écrit
+// uniquement state.profile.records : jamais athleteState, movementRefs ni
+// profile[clé de calibration] — un trophée ne touche pas le moteur.
+function trophyNameKey(name){
+  var s=String(chargeKeyFromName(name)||"").toLowerCase();
+  try{s=s.normalize("NFD").replace(/[\u0300-\u036f]/g,"");}catch(e){}
+  return s.replace(/[^a-z0-9]+/g," ").trim();
+}
+function trophyFieldForSingle(name){
+  var n=trophyNameKey(name);
+  for(var i=0;i<TROPHY_FIELDS.length;i++){var f=TROPHY_FIELDS[i];if(f.single&&f.single.test(n))return f;}
+  return null;
+}
+function isTrueSingle(key,r){
+  if(!r||r.isWod||String(key).indexOf("wod_")===0)return false;
+  if(String(r.skipped)==="1"||String(r.skipped).toLowerCase()==="true")return false;
+  return Number(r.reps)===1&&parseLoad(r.load)>0;
+}
+function detectTrophySingles(results,dateStr){
+  var updates=[];
+  if(!state.profile)return updates;
+  var recs=state.profile.records=state.profile.records||{};
+  Object.keys(results||{}).forEach(function(key){
+    var r=results[key];
+    if(!isTrueSingle(key,r))return;
+    var f=trophyFieldForSingle(key);if(!f)return;
+    var load=parseLoad(r.load), prev=recs[f.key], old=prev?Number(prev.value)||0:0;
+    if(load<=old)return;
+    recs[f.key]={value:load,date:dateStr,unit:f.unit,source:"auto"};
+    r.trophyPr={label:f.label,old:old||null,new:load};
+    updates.push({label:f.label,old:old||null,new:load,reps:1,key:key,trophy:true});
+  });
+  return updates;
+}
+// Migration unique (drapeau recordsBackfill) : relit le journal et inscrit le
+// meilleur vrai single des champs `single` encore VIDES. Un record existant
+// n'est jamais modifié ; un record effacé exprès n'est pas réinscrit ensuite.
+function backfillTrophySinglesFromHistory(){
+  if(!state.profile||state.profile.recordsBackfill===1)return false;
+  var recs=state.profile.records=state.profile.records||{};
+  var best={};
+  (state.history||[]).forEach(function(entry){
+    var results=(entry&&entry.results)||{};
+    Object.keys(results).forEach(function(key){
+      var r=results[key];
+      if(!isTrueSingle(key,r))return;
+      var f=trophyFieldForSingle(key);if(!f||recs[f.key])return;
+      var load=parseLoad(r.load);
+      if(!best[f.key]||load>best[f.key].value)best[f.key]={value:load,date:String(entry.actualDate||entry.date||"").slice(0,10),unit:f.unit,source:"historique"};
+    });
+  });
+  Object.keys(best).forEach(function(k){recs[k]=best[k];});
+  state.profile.recordsBackfill=1;
+  save();
+  return Object.keys(best).length>0;
+}
 
 function trophyRecord(key){var recs=(state.profile&&state.profile.records)||{};return recs[key]||null;}
 function trophyPrefillValue(f){
@@ -2610,7 +2673,7 @@ function detectAndApplyAutomaticPr(results,dateStr){
       updates.push({label:cfg.label,old:old||null,new:load,reps:cfg.reps,key:key});
     });
   });
-  return updates;
+  return updates.concat(detectTrophySingles(results,dateStr));
 }
 
 async function savePrProfile(){
@@ -3014,6 +3077,7 @@ function coachFullBoot(){
   if(window.CoachSeason)CoachSeason.ensure(state);
   if(window.CoachOnboarding&&CoachOnboarding.migrateReferenceVersion)CoachOnboarding.migrateReferenceVersion();
   if(window.CoachOnboarding&&CoachOnboarding.migrateFamilyRatios)CoachOnboarding.migrateFamilyRatios();
+  backfillTrophySinglesFromHistory();
   ensureCurrentDay();
   loadCustomCharges();
   bind();

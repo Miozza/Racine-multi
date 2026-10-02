@@ -297,6 +297,7 @@ assert(uiSrc.indexOf('renderBridge()') !== -1, 'Le mode pont est rendu quand auc
     history:[{date:'2026-09-30', week:8, day:'mercredi', results:{
       'Power Clean': {load:'235', reps:'1', rpe:'9', note:'explosif · PR automatique détecté', autoPr:true, prOld:225, prNew:235, prReps:1},
       'wod_D. Metcon': {load:'0', reps:'0', rpe:'0'},
+      'Back Squat': {load:'300', reps:'1', rpe:'9.5', trophyPr:{label:'Back Squat 1RM', old:285, new:300}},
       'wod_C. Finisher': {load:'0', reps:'0', rpe:'8', result:'4 rounds + 6', rounds:'4'}
     }}]};
   c.localStorage.setItem('racine::__pending__::brain-memory-v1', JSON.stringify({version:'brain-memory-v1', schema:2, journal:[], profiles:{
@@ -317,12 +318,14 @@ assert(uiSrc.indexOf('renderBridge()') !== -1, 'Le mode pont est rendu quand auc
     'Un metcon sans donnée est dit « non enregistré », pas « 0 lb × 0 reps ».');
   assert(txt.indexOf('C. Finisher (metcon) — score 4 rounds + 6 · RPE 8') !== -1,
     'Un metcon renseigné montre son score.');
-  assert(!/0 lb|0 reps|RPE 0\b/.test(txt), 'Ni charge, reps ni RPE à zéro : zéro veut dire « non saisi ».');
+  assert(!/(^|[^0-9.])0 (lb|reps)|RPE 0\b/.test(txt), 'Ni charge, reps ni RPE à zéro : zéro veut dire « non saisi ».');
   const athleteNotes = (txt.split('## Notes écrites par l\'athlète')[1] || '').split('##')[0];
   assert(athleteNotes.indexOf('explosif') !== -1 && athleteNotes.indexOf('PR automatique') === -1,
     'Les notes de l\'athlète ne contiennent plus les notes générées par l\'app.');
   assert(txt.indexOf('[note de l\'app : PR automatique : 225 → 235 lb') !== -1,
     'La note système reste visible dans la séance, étiquetée comme venant de l\'app.');
+  assert(txt.indexOf('Record Back Squat 1RM : 285 → 300 lb') !== -1 && athleteNotes.indexOf('Record') === -1,
+    'Un trophée 1RM détecté est une note de l\'app, jamais une note de l\'athlète.');
   assert(txt.indexOf('Aujourd\'hui : vendredi 2026-10-02') !== -1 && txt.indexOf('jour affiché dans l\'app : mardi') !== -1,
     'Le jour affiché (curseur) n\'est plus présenté comme la date du jour.');
 
