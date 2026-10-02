@@ -20,7 +20,7 @@
 
 - **Nouveau module** `scripts/charge/kalman.js` (`window.CoachKalman`, aussi `CoachCharge.kalman`) : e1RM par mouvement en espace log avec sa variance, RIR tiré du RPE, bruit de mesure selon le statut, bruit de processus hebdomadaire, borne basse les jours de test, a priori par mouvement apparenté ou ratio de profil. API : `rebuild`, `estimate`, `loadFor`, `weight`.
 - **État dérivé** : reconstruit en mémoire depuis `state.history`, de façon déterministe — au chargement, après chaque sauvegarde, et dès que le journal change. **Aucune nouvelle clé de stockage, aucun changement de schéma, export/import inchangés.**
-- **Mode `shadow` par défaut** : la charge affichée est identique bit à bit à V5.1.9. Le `(!)` gagne une section « Capacité estimée (observation) : X lb ± Y » ; la trace de diagnostic gagne `capaciteEstimee` ; le journal Brain garde la dernière lecture en mémoire.
+- **Mode `shadow` par défaut** : la charge affichée est identique bit à bit à V5.1.9. Le `(!)` gagne une section « 1RM estimé : X lb (bas–haut) · n mesures · observation » ; la trace de diagnostic gagne `capaciteEstimee` ; le journal Brain garde la dernière lecture en mémoire.
 - **Mode `blend`** (par profil : `kalman.mode = 2` dans la surcharge de tuning, ou `CoachKalman.setMode('blend')`) : mélange vers la capacité estimée avant les garde-fous, portail Brain piloté par l'incertitude, porte du jour de test 1RM à 90 % de l'e1RM. Sur la fixture Strict Press, le test du 1er oct passe de 145 lb (moteur) à 155 lb (porte ~158).
 - Tous les paramètres dans `COACH_MOVEMENT_TUNING.kalman` ; neuf scalaires surchargeables par profil (`tuning_override.js`).
 - `brain_stats.js` : `coachBrainApplyStatsGate` accepte un 8ᵉ argument optionnel ; absent, comportement d'avant à l'identique.

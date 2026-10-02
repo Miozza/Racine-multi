@@ -116,7 +116,7 @@ Contrôles manuels minimum :
 15. Basculer sur un profil client : les plafonds de l'admin ne l'ont pas suivi.
 16. Exporter le profil admin puis le réimporter : plafonds manuels et calibration revenus.
 17. ⚙ Réglages → Diagnostic charges → **Copier trace semaine** : le presse-papier contient un JSON avec, pour chaque mouvement, les séances retenues et le motif d'écart des autres.
-18. Bouton `(!)` d'un mouvement principal avec historique : la section **Capacité estimée** affiche « Capacité estimée (observation) : X lb ± Y » et la charge suggérée est la même qu'en V5.1.9.
+18. Bouton `(!)` d'un mouvement principal avec historique : la section **1RM estimé** affiche « 1RM estimé : X lb (bas–haut) · n mesures · observation » et la charge suggérée est la même qu'en V5.1.9.
 
 Règle de sécurité : les données vivantes d'un utilisateur réel doivent rester dans le cellulaire/localStorage ou dans un export JSON manuel. Le dossier `data/` du repo peut être inclus, mais il doit rester neutre et sans historique réel.
 

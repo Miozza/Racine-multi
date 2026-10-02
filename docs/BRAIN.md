@@ -215,7 +215,7 @@ met jamais l'état à jour. Le verdict vient des détecteurs existants
 profil via `tuning_override.js` : 0 off, 1 shadow, 2 blend).
 
 - `shadow` (défaut) : `ctx.kalman` est attaché à la suggestion, à l'indice du
-  `(!)` (« Capacité estimée (observation) : X lb ± Y »), à la trace
+  `(!)` (« 1RM estimé : X lb (bas–haut) · n mesures · observation »), à la trace
   (`capaciteEstimee`) et au journal Brain en mémoire. **La charge affichée est
   identique bit à bit** à celle du moteur seul — golden master inchangé.
 - `blend` : séance normale, `suggested += poids × (cible − suggested)` avec

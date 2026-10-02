@@ -577,7 +577,7 @@ function renderLoadInfoModalBody(msg){
     // Capacite estimee (Kalman) : relue sur l'indice, jamais recalculee.
     var capacityLine='';
     try{ if(window.CoachKalman&&typeof CoachKalman.explainLine==='function')capacityLine=CoachKalman.explainLine(hint.kalman)||''; }catch(e){ capacityLine=''; }
-    var capacityHtml=capacityLine?'<div class="tuto-section compact"><div class="tuto-section-title">Capacit\u00e9 estim\u00e9e</div><p>'+escapeHtml(capacityLine)+'</p></div>':'';
+    var capacityHtml=capacityLine?'<div class="tuto-section compact"><div class="tuto-section-title">1RM estim\u00e9</div><p>'+escapeHtml(capacityLine)+'</p></div>':'';
     var analysisHtml=(computedSource==="brain"||hint.brainStats)?renderBrainExplain(hint):'<div class="tuto-section compact"><div class="tuto-section-title">Analyse</div><p>'+escapeHtml(hint.reason||"\u2014")+'</p></div>';
     return '<div class="tuto-topline">HISTORIQUE DE CHARGE</div>'+ 
       '<div class="tuto-title">'+escapeHtml(hint.name||"Mouvement")+'</div>'+ 

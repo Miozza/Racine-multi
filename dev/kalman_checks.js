@@ -314,14 +314,14 @@ function withMode(ctx, m, fn){ const T = ctx.COACH_MOVEMENT_TUNING.kalman; const
   const hint = ctx.__coachLoadHints['strict press'];
   assert(!!hint && !!hint.kalman, 'Shadow : la capacite estimee est attachee a l\'indice du (!).');
   const ex = ctx.CoachBrainExplain.build(hint);
-  assert(/^Capacite estimee \(observation\) : \d+ lb ± \d+/.test(ex.capacity || ''), 'Shadow : ligne (!) non vide — « ' + ex.capacity + ' ».');
+  assert(/^1RM estimé : \d+ lb \(\d+–\d+\) · \d+ mesures? · observation/.test(ex.capacity || ''), 'Shadow : ligne (!) non vide — « ' + ex.capacity + ' ».');
   const j = ctx.CoachBrainJournal.kalmanFor('Strict Press');
   assert(!!j && j.mode === 'shadow' && j.e1RM > 0 && j.applique === null, 'Journal Brain : lecture shadow enregistree, aucune application.');
   // Le (!) de l'app relit un payload recopie champ par champ (loadInfoPayload) :
   // sans `kalman` dans cette copie, la ligne n'atteindrait jamais l'ecran.
   const modals = read('scripts/ui_modals.js');
   assert(/kalman:\s*hint && hint\.kalman/.test(modals), 'ui_modals : loadInfoPayload emporte hint.kalman jusqu\'au (!).');
-  assert(/CoachKalman\.explainLine\(hint\.kalman\)/.test(modals), 'ui_modals : la section Capacite estimee relit la ligne, sans recalcul.');
+  assert(/CoachKalman\.explainLine\(hint\.kalman\)/.test(modals), 'ui_modals : la section 1RM estime relit la ligne, sans recalcul.');
   withMode(ctx, 0, () => decide(ctx, s));
   const hintOff = ctx.__coachLoadHints['strict press'];
   assert(!hintOff.kalman && !ctx.CoachBrainExplain.build(hintOff).capacity, 'Off : aucune ligne de capacite.');

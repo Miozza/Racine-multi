@@ -596,21 +596,19 @@
 
   // ─── Explication (bouton (!)) ────────────────────────────────────────────
   // Une ligne, jamais un recalcul : elle relit ce que la suggestion a attache.
+  // Libelle « 1RM estime » : c'est ce que le chiffre EST (un e1RM), dit dans
+  // les mots de l'athlete. La fourchette est l'intervalle a 95 %.
   api.explainLine = function(k){
     if(!k || !k.estimate) return '';
     var e = k.estimate;
-    var pm = Math.round((e.high - e.low) / 2);
-    var tag = e.source === 'prior'
-      ? ' (a priori' + (e.prior && e.prior.from ? ' depuis ' + e.prior.from : '') + ', aucune mesure)'
-      : ' (' + e.n + ' mesure' + (e.n > 1 ? 's' : '') + ')';
-    if(k.mode === 'shadow'){
-      return 'Capacite estimee (observation) : ' + Math.round(e.e1RM) + ' lb ± ' + pm + tag + '.';
-    }
-    var line = 'Capacite estimee : ' + Math.round(e.e1RM) + ' lb ± ' + pm + tag;
-    if(k.applied && k.applied.kind === 'testGate') line += ' — porte du test a ' + Math.round(k.gatePct * 100) + ' %';
-    else if(k.weight > 0) line += ' — poids du melange ' + Math.round(k.weight * 100) + ' %';
-    else line += ' — trop incertaine pour peser sur la charge';
-    return line + '.';
+    var line = '1RM estimé : ' + Math.round(e.e1RM) + ' lb (' + Math.round(e.low) + '–' + Math.round(e.high) + ')';
+    line += e.source === 'prior'
+      ? ' · a priori' + (e.prior && e.prior.from ? ' depuis ' + e.prior.from : '') + ', aucune mesure'
+      : ' · ' + e.n + ' mesure' + (e.n > 1 ? 's' : '');
+    if(k.mode === 'shadow') return line + ' · observation : la charge suggérée n’en dépend pas.';
+    if(k.applied && k.applied.kind === 'testGate') return line + ' · porte du test à ' + Math.round(k.gatePct * 100) + ' %.';
+    if(k.weight > 0) return line + ' · pèse ' + Math.round(k.weight * 100) + ' % dans la charge suggérée.';
+    return line + ' · trop incertain pour peser sur la charge.';
   };
   // Version serialisable, pour le journal et la trace.
   api.snapshot = function(k){
