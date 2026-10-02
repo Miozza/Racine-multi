@@ -1,3 +1,9 @@
+## V5.2.2 — (!) : « 1RM estimé » au lieu de « Capacité estimée »
+
+**Pourquoi** : le chiffre affiché par Kalman est un 1RM estimé (e1RM), mais le libellé ne le disait pas, et « ± Y » restait abstrait.
+
+**Ce qui change** : la section du `(!)` s'appelle **1RM estimé** et affiche « 1RM estimé : 176 lb (166–186) · 6 mesures », avec la fourchette à 95 % au lieu d'un ±. En observation, la ligne précise que la charge suggérée n'en dépend pas ; en mélange, quelle part elle pèse dans la charge (ou la porte du test). Aucun calcul ni aucune charge modifiés.
+
 ## V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
 
 **Pourquoi** : relecture de l'athlète. Le Pallof Press travaillait trop peu, le Lat Pulldown est remplacé par du vrai tirage au poids du corps, et le gym n'a ni tapis ni piste pour courir.

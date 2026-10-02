@@ -1,5 +1,5 @@
-// Racine V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
-var APP_VERSION = "V5.2.1";
+// Racine V5.2.2 — (!) : la capacité estimée s’affiche « 1RM estimé : X lb (bas–haut) »
+var APP_VERSION = "V5.2.2";
 
 // Architecture stable
 // programs/*.js = plan prévu

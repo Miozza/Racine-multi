@@ -1,6 +1,6 @@
-# ETAT ACTUEL — V5.2.1
+# ETAT ACTUEL — V5.2.2
 
-Version actuelle : V5.2.1
+Version actuelle : V5.2.2
 
 ## État courant
 
@@ -8,8 +8,8 @@ Version actuelle : V5.2.1
 
 `scripts/charge/kalman.js` (`window.CoachKalman`) estime l'e1RM de chaque
 mouvement avec son incertitude, depuis le journal brut, en mémoire seulement.
-**Mode `shadow` par défaut** : la charge ne change pas, le `(!)` affiche la
-capacité estimée. Mode `blend` activable par profil (`kalman.mode` de la
+**Mode `shadow` par défaut** : la charge ne change pas, le `(!)` affiche
+« 1RM estimé : X lb (bas–haut) », fourchette à 95 %. Mode `blend` activable par profil (`kalman.mode` de la
 surcharge de tuning) : mélange avant les garde-fous, portail Brain piloté par
 l'incertitude, porte des tests 1RM à 90 % de l'e1RM. Contrat :
 `docs/BRAIN.md` § « Kalman : capacité estimée » ; garde-fous :
