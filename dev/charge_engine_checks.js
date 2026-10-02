@@ -1595,6 +1595,55 @@ try {
     resetState();
   }
 
+  // ── Ratios de famille stockés : réparation idempotente au chargement ─────
+  // Cas réel (2026-10-02) : latPulldown10RM = 140 / 20 = 7 — une valeur de
+  // machine en lb contre une référence de lest. Le calcul actuel l'exclut des
+  // moyennes (RATIO_COMPONENT_MAX), mais un profil calibré avant cette bande
+  // gardait _upperPull 3,18 et _overall 1,56, jamais recalculés.
+  {
+    const o = {console, Math, JSON, Number, Object, Array, CoachLog:null};
+    o.window = o;
+    vm.createContext(o);
+    vm.runInContext(read('scripts/profiles/reference.js'), o, {filename:'reference.js'});
+    vm.runInContext(read('scripts/profiles/onboarding.js'), o, {filename:'onboarding.js'});
+    const comps = {bench:1.2, frontSquat:0.815, strictPress:1.19, powerClean:1.15, backSquat5RM:0.87, hipThrust8RM:0.9,
+      bulgarianDb:0.88, dbRdl:1, row8RM:1.27, chestRow8RM:1.27, latPulldown10RM:7, inclineDb10RM:1.1};
+    const poisoned = Object.assign({}, comps, {_upperPush:1.163, _upperPull:3.18, _lowerBody:0.855, _hinge:0.95, _olympic:1.15, _overall:1.56});
+    const fix = o.CoachOnboarding.repairFamilyRatios(poisoned, 'avance');
+    assert(Math.abs(fix.ratios._upperPull - 1.27) < 1e-9,
+      'La moyenne _upperPull exclut la composante hors bande (obtenu ' + fix.ratios._upperPull + ').');
+    const sane = Object.keys(comps).filter(k => k !== 'latPulldown10RM').map(k => comps[k]);
+    assert(Math.abs(fix.ratios._overall - sane.reduce((a,b) => a+b, 0) / sane.length) < 1e-9,
+      '_overall est recalculé sans la composante hors bande.');
+    assert(fix.ratios.latPulldown10RM === 7 && fix.ratios.row8RM === 1.27,
+      'Les composantes (mesures de l\'athlète) ne sont jamais réécrites.');
+    assert(o.CoachOnboarding.repairFamilyRatios(fix.ratios, 'avance').changed.length === 0,
+      'La réparation est idempotente : un second passage ne change rien.');
+    const healthy = Object.assign({}, comps, {latPulldown10RM:1.6, _upperPull:1.6, _overall:1.5});
+    const untouched = o.CoachOnboarding.repairFamilyRatios(healthy, 'avance');
+    assert(untouched.ratios === healthy && untouched.changed.length === 0,
+      'Un profil sans composante hors bande n\'est pas réécrit (ratios ajustés à la main conservés).');
+    assert(!('_hinge' in o.CoachOnboarding.repairFamilyRatios({dbRdl:1, latPulldown10RM:7, _overall:2}, 'avance').ratios),
+      'La réparation n\'ajoute jamais une famille absente du stockage.');
+
+    // Migration au chargement : copie de travail ET copie du registre.
+    let saved = 0, regPatch = null;
+    o.state = {profile:{experienceLevel:'avance', scaleRatios:Object.assign({}, poisoned)}};
+    o.save = function(){ saved++; };
+    o.CoachProfiles = {getActive(){ return {id:'p1', experienceLevel:'avance', scaleRatios:Object.assign({}, poisoned)}; },
+      update(id, patch){ regPatch = {id, patch}; return true; }};
+    assert(o.CoachOnboarding.migrateFamilyRatios() === true && saved === 1,
+      'migrateFamilyRatios répare le profil stocké et sauvegarde.');
+    assert(regPatch && regPatch.id === 'p1' && Math.abs(regPatch.patch.scaleRatios._upperPull - 1.27) < 1e-9,
+      'La copie du registre (source de resynchronisation) est réparée aussi.');
+    o.CoachProfiles.getActive = function(){ return {id:'p1', experienceLevel:'avance', scaleRatios:regPatch.patch.scaleRatios}; };
+    regPatch = null;
+    assert(o.CoachOnboarding.migrateFamilyRatios() === false && saved === 1 && regPatch === null,
+      'Second chargement : rien à réparer, aucune écriture.');
+    assert(/migrateReferenceVersion\(\);\s*\n\s*if\(window\.CoachOnboarding&&CoachOnboarding\.migrateFamilyRatios\)CoachOnboarding\.migrateFamilyRatios\(\);/.test(read('app.js')),
+      'app.js lance la réparation des familles au chargement, après la migration de référence.');
+  }
+
   // ── Un lest sur le poids du corps n'emprunte le ratio de personne ────────
   // Le ratio d'une famille dit « cet athlete souleve X fois la reference » sur
   // une charge TOTALE. Un Weighted Pull-up et un Weighted Dip portent le

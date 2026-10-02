@@ -256,20 +256,88 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     // de programme 245 lb suggéré à 600 lb). Un ratio > 2 n'est pas un humain
     // plus fort, c'est une donnée à la mauvaise échelle : exclu de la moyenne,
     // la famille s'appuie sur les autres repères ou retombe sur le niveau.
-    var RATIO_COMPONENT_MAX = 2.0;
+    var fam = familyRatios(ratios, Object.keys(ref), lvl.fallbackRatio);
+    Object.keys(fam).forEach(function(k){ ratios[k] = fam[k]; });
+    return ratios;
+  };
+
+  // Règle des moyennes de famille, en un seul endroit : le calcul
+  // (ratiosFromValues) et la réparation des ratios stockés
+  // (migrateFamilyRatios) ne peuvent pas diverger.
+  var RATIO_COMPONENT_MAX = 2.0;
+  var FAMILY_KEYS = {
+    _upperPush: ["bench","strictPress","inclineDb10RM"],
+    _upperPull: ["row8RM","chestRow8RM","latPulldown10RM"],
+    _lowerBody: ["frontSquat","backSquat5RM","bulgarianDb"],
+    _hinge:     ["hipThrust8RM","dbRdl"],
+    _olympic:   ["powerClean"]
+  };
+  function inBand(v){ return v > 0 && v <= RATIO_COMPONENT_MAX; }
+  function familyRatios(ratios, componentKeys, fallback){
     function avg(keys){
-      var present = keys.map(function(k){ return ratios[k]; }).filter(function(v){ return v > 0 && v <= RATIO_COMPONENT_MAX; });
-      if(!present.length) return lvl.fallbackRatio;
+      var present = keys.map(function(k){ return ratios[k]; }).filter(inBand);
+      if(!present.length) return fallback;
       return present.reduce(function(a,b){ return a+b; }, 0) / present.length;
     }
-    ratios._upperPush = avg(["bench","strictPress","inclineDb10RM"]);
-    ratios._upperPull = avg(["row8RM","chestRow8RM","latPulldown10RM"]);
-    ratios._lowerBody = avg(["frontSquat","backSquat5RM","bulgarianDb"]);
-    ratios._hinge     = avg(["hipThrust8RM","dbRdl"]);
-    ratios._olympic   = avg(["powerClean"]);
-    var allVals = Object.keys(ref).map(function(k){ return ratios[k]; }).filter(function(v){ return v > 0 && v <= RATIO_COMPONENT_MAX; });
-    ratios._overall = allVals.length ? (allVals.reduce(function(a,b){ return a+b; }, 0) / allVals.length) : lvl.fallbackRatio;
-    return ratios;
+    var out = {};
+    Object.keys(FAMILY_KEYS).forEach(function(f){ out[f] = avg(FAMILY_KEYS[f]); });
+    out._overall = avg(componentKeys);
+    return out;
+  }
+  api.RATIO_COMPONENT_MAX = RATIO_COMPONENT_MAX;
+
+  // Réparation des moyennes de famille STOCKÉES. Des profils calibrés avant la
+  // bande RATIO_COMPONENT_MAX gardent des moyennes empoisonnées par une
+  // composante à la mauvaise échelle (cas réel : latPulldown10RM = 140/20 = 7
+  // → _upperPull 3,18, _overall 1,56), et migrateReferenceVersion ne repasse
+  // jamais une fois referenceVersion posé. Pure : ne touche que les clés
+  // `_famille` DÉJÀ stockées dont au moins une composante est connue, et
+  // seulement si le profil porte une composante hors bande : un profil sain
+  // n'est pas réécrit.
+  // Les composantes (mesures de l'athlète) ne sont jamais modifiées.
+  api.repairFamilyRatios = function(stored, experienceLevel){
+    if(!stored || typeof stored !== "object") return {ratios: stored, changed: []};
+    var lvl = api.EXPERIENCE_LEVELS[experienceLevel] || api.EXPERIENCE_LEVELS.intermediaire;
+    var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : {};
+    var componentKeys = Object.keys(ref).filter(function(k){ return Number(stored[k]) > 0; });
+    var aberrant = componentKeys.some(function(k){ return !inBand(Number(stored[k])); });
+    if(!aberrant) return {ratios: stored, changed: []};
+    var nums = {};
+    componentKeys.forEach(function(k){ nums[k] = Number(stored[k]); });
+    var fam = familyRatios(nums, componentKeys, lvl.fallbackRatio);
+    var out = Object.assign({}, stored), changed = [];
+    Object.keys(fam).forEach(function(f){
+      if(!(f in stored)) return;
+      var keys = f === "_overall" ? componentKeys : FAMILY_KEYS[f];
+      if(!keys.some(function(k){ return nums[k] > 0; })) return;
+      if(Math.abs((Number(stored[f]) || 0) - fam[f]) > 1e-9){ out[f] = fam[f]; changed.push(f); }
+    });
+    return {ratios: changed.length ? out : stored, changed: changed};
+  };
+
+  // Migration au chargement, idempotente : un second passage ne trouve plus
+  // rien à changer. Répare la copie de travail (state.profile) ET la copie du
+  // registre, qui sert de source de resynchronisation (scaling.js).
+  api.migrateFamilyRatios = function(){
+    try{
+      if(typeof state !== "object" || !state.profile) return false;
+      var lvl = state.profile.experienceLevel;
+      var fix = api.repairFamilyRatios(state.profile.scaleRatios, lvl);
+      if(fix.changed.length){
+        state.profile.scaleRatios = fix.ratios;
+        if(typeof save === "function") save();
+      }
+      var reg = (window.CoachProfiles && CoachProfiles.getActive) ? CoachProfiles.getActive() : null;
+      var regFix = reg ? api.repairFamilyRatios(reg.scaleRatios, reg.experienceLevel || lvl) : {changed: []};
+      if(regFix.changed.length) CoachProfiles.update(reg.id, {scaleRatios: regFix.ratios});
+      if((fix.changed.length || regFix.changed.length) && window.CoachLog && CoachLog.info){
+        CoachLog.info("family_ratio_repair", {state: fix.changed, registry: regFix.changed});
+      }
+      return !!(fix.changed.length || regFix.changed.length);
+    }catch(e){
+      if(window.CoachLog && CoachLog.error) CoachLog.error("family_ratio_repair_failed", e, {});
+      return false;
+    }
   };
 
   // Migration référence V2 « Athlète X » : les scaleRatios stockés ont été

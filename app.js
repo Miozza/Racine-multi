@@ -1,5 +1,5 @@
-// Racine V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
-var APP_VERSION = "V5.2.1";
+// Racine V5.2.2 — Prompt Coach : données fidèles, ratios de famille réparés
+var APP_VERSION = "V5.2.2";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -3013,6 +3013,7 @@ function coachFullBoot(){
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   if(window.CoachSeason)CoachSeason.ensure(state);
   if(window.CoachOnboarding&&CoachOnboarding.migrateReferenceVersion)CoachOnboarding.migrateReferenceVersion();
+  if(window.CoachOnboarding&&CoachOnboarding.migrateFamilyRatios)CoachOnboarding.migrateFamilyRatios();
   ensureCurrentDay();
   loadCustomCharges();
   bind();

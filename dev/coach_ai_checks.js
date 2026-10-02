@@ -281,6 +281,59 @@ assert(uiSrc.indexOf('function mode()') !== -1 && uiSrc.indexOf('CoachAIConfig.i
   'L\'écran choisit son mode selon la présence d\'une clé.');
 assert(uiSrc.indexOf('renderBridge()') !== -1, 'Le mode pont est rendu quand aucune clé n\'est enregistrée.');
 
+// ── Le contexte dit vrai : unités, metcons, notes, jour ────────────────────
+// Rapport d'anomalies du 2026-10-02 sur le prompt Coach : courbe à 8000 %,
+// section Brain vide sous son en-tête, metcons en « wod_X — 0 lb × 0 reps ×
+// RPE 0 », note de l'app lue comme une note de l'athlète, « jour courant »
+// pris pour la date du jour.
+{
+  const c = {console:console, Math:Math, Date:Date, JSON:JSON, localStorage:fakeStorage()};
+  c.window = c;
+  vm.createContext(c);
+  vm.runInContext(read('scripts/charge/brain_memory.js'), c, {filename:'brain_memory.js'});
+  c.todayIsoDate = function(){ return '2026-10-02'; };
+  c.actualDayName = function(){ return 'vendredi'; };
+  c.state = {week:1, day:'mardi', completedDays:[], missedDays:[], cycle:{goal:'pont_peak'}, profile:{name:'T'},
+    history:[{date:'2026-09-30', week:8, day:'mercredi', results:{
+      'Power Clean': {load:'235', reps:'1', rpe:'9', note:'explosif · PR automatique détecté', autoPr:true, prOld:225, prNew:235, prReps:1},
+      'wod_D. Metcon': {load:'0', reps:'0', rpe:'0'},
+      'wod_C. Finisher': {load:'0', reps:'0', rpe:'8', result:'4 rounds + 6', rounds:'4'}
+    }}]};
+  c.localStorage.setItem('racine::__pending__::brain-memory-v1', JSON.stringify({version:'brain-memory-v1', schema:2, journal:[], profiles:{
+    'back squat::strength': {label:'Back Squat', intent:'strength', testedPredictions:12, successfulPredictions:10, underPredictions:2, overPredictions:1,
+      recentOutcomes:[1,1,0,1,1], precisionTrend:[{m:'2026-09', t:10, s:8}, {m:'2026-10', t:1, s:1}]}
+  }}));
+  vm.runInContext(read('scripts/coach_ai/context.js'), c, {filename:'context.js'});
+  const txt = c.CoachAIContext.build();
+
+  assert(txt.indexOf('2026-09 80 % (n=10)') !== -1 && txt.indexOf('8000') === -1,
+    'Courbe de précision : precisionTrend() est déjà en %, aucune double multiplication.');
+  assert(txt.indexOf('2026-10 100 % (n=1, mois en cours)') !== -1,
+    'Chaque point de la courbe porte son n, et le mois en cours est signalé.');
+  assert(/Back Squat · strength : 12 \/ 10 \/ 2 \/ 1/.test(txt),
+    'La section Brain lit les vrais champs (testedPredictions…) au lieu d\'un en-tête vide.');
+  assert(txt.indexOf('wod_') === -1, 'Aucune clé interne wod_X dans le prompt.');
+  assert(txt.indexOf('D. Metcon (metcon) — metcon non enregistré') !== -1,
+    'Un metcon sans donnée est dit « non enregistré », pas « 0 lb × 0 reps ».');
+  assert(txt.indexOf('C. Finisher (metcon) — score 4 rounds + 6 · RPE 8') !== -1,
+    'Un metcon renseigné montre son score.');
+  assert(!/0 lb|0 reps|RPE 0\b/.test(txt), 'Ni charge, reps ni RPE à zéro : zéro veut dire « non saisi ».');
+  const athleteNotes = (txt.split('## Notes écrites par l\'athlète')[1] || '').split('##')[0];
+  assert(athleteNotes.indexOf('explosif') !== -1 && athleteNotes.indexOf('PR automatique') === -1,
+    'Les notes de l\'athlète ne contiennent plus les notes générées par l\'app.');
+  assert(txt.indexOf('[note de l\'app : PR automatique : 225 → 235 lb') !== -1,
+    'La note système reste visible dans la séance, étiquetée comme venant de l\'app.');
+  assert(txt.indexOf('Aujourd\'hui : vendredi 2026-10-02') !== -1 && txt.indexOf('jour affiché dans l\'app : mardi') !== -1,
+    'Le jour affiché (curseur) n\'est plus présenté comme la date du jour.');
+
+  // Sans prédiction testée, pas d'en-tête orphelin.
+  c.localStorage.setItem('racine::__pending__::brain-memory-v1', JSON.stringify({version:'brain-memory-v1', schema:2, journal:[], profiles:{
+    'face pull::hypertrophy': {label:'Face Pull', intent:'hypertrophy', testedPredictions:0, precisionTrend:[]}
+  }}));
+  assert(c.CoachAIContext.build().indexOf('Par mouvement et intention') === -1,
+    'Section Brain vide → son en-tête n\'est pas affiché.');
+}
+
 // ── Sortie ─────────────────────────────────────────────────────────────────
 function fakeStorage(){
   const store = {};
