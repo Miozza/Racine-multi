@@ -1,10 +1,10 @@
-# ETAT ACTUEL — V5.2.0
+# ETAT ACTUEL — V5.2.1
 
-Version actuelle : V5.2.0
+Version actuelle : V5.2.1
 
 ## État courant
 
-### Kalman × moteur de charges — capacité estimée (V5.2.0)
+### Kalman × moteur de charges — capacité estimée
 
 `scripts/charge/kalman.js` (`window.CoachKalman`) estime l'e1RM de chaque
 mouvement avec son incertitude, depuis le journal brut, en mémoire seulement.
@@ -21,8 +21,10 @@ l'incertitude, porte des tests 1RM à 90 % de l'e1RM. Contrat :
 `competition_peak` (5 octobre → 22 novembre 2026). Rotation A (S1-3) sur des
 variations nouvelles, rotation B (S4-5) sur les mouvements de compétition, S6
 deload, S7 test 1RM au Bench Press seul (porte « 90% » de Fable 5). Fable 5
-enchaîne désormais sur ce bloc. Détail et écarts dans `CHANGELOG.md` ; contrat
-dans `dev/pont_peak_checks.js`.
+enchaîne désormais sur ce bloc. Gainage du lundi en Ab Wheel Rollout, volume
+vertical du mardi en Pull-Up, et aucune course en distance : Shuttle Runs de
+10 m ou Bike, le gym n'ayant ni tapis ni piste. Détail et écarts dans
+`CHANGELOG.md` ; contrat dans `dev/pont_peak_checks.js`.
 
 ### Phase 2 Fable 5 — S8 en tests 1RM
 

@@ -1,5 +1,5 @@
-// Racine V5.2.0 — Kalman × moteur de charges : capacité estimée (observation par défaut)
-var APP_VERSION = "V5.2.0";
+// Racine V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
+var APP_VERSION = "V5.2.1";
 
 // Architecture stable
 // programs/*.js = plan prévu

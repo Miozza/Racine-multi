@@ -136,6 +136,11 @@ try {
   const sales = W.filter(w => INTERDIT.test(P.getWodText('mardi', w))).map(w => 'S' + w + ' : ' + P.getWodText('mardi', w));
   assert(sales.length === 0, 'Metcon du mardi sans traction, rameur, wall balls, burpees, toes-to-bar ni ski (' + (sales.join(' | ') || 'propre') + ').');
 
+  // Pas de tapis ni de piste : la course se fait en Shuttle Runs, jamais en distance.
+  const courses = [];
+  days.forEach(d => W.forEach(w => { const t = P.getWodText(d, w); if (/\d+\s*k?m\s+Run\b|\bRun\s*\//i.test(t)) courses.push(d + ' S' + w + ' : ' + t); }));
+  assert(courses.length === 0, 'Aucune course en distance libre : Shuttle Runs ou Bike (' + (courses.join(' | ') || 'conforme') + ').');
+
   // ─── 6. Ratio tirage:poussée ─────────────────────────────────────────────
   // Séries de travail ; « montée vers NRM » compte pour 3. Hors stabilité
   // (Cuban, Bottoms-Up), deltoïdes latéraux et gainage (Pallof Press n'est

@@ -106,13 +106,13 @@
         tueMain:"Paused Bench Press", tueFormat:"5×3", tueLoad:"180 lb", // 228 × 0,80
         tueNote:"Pause 1 s sur la poitrine. RPE 8. La barre repart du même point à chaque rep.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"145 lb",
-        tueWod:"3 RFT : 200 m Run, 15 Air Squats.",
+        tueWod:"3 RFT : 10 Shuttle Runs de 10 m (aller-retour, ≈ 200 m), 15 Air Squats.",
         thuMain:"Landmine Press", thuFormat:"4×6/bras", thuLoad:"55 lb",
         thuNote:"Demi-genou, côtes basses. RPE 8. Aucune rotation du tronc.",
         thuWod:"EMOM 8 : minutes impaires 12 cal Row ; minutes paires 12 Goblet Squats.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"21-15-9 : Wall Balls, Burpees — 200 m Run après chaque tour (cap 14)."
+        friWod:"21-15-9 : Wall Balls, Burpees — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14)."
       },
       3: {
         monMain:"Tempo Back Squat", monFormat:"montée vers 3RM", monLoad:"235 lb", // 268 × 0,87
@@ -138,7 +138,7 @@
         tueMain:"Bench Press", tueFormat:"5×3", tueLoad:"195 lb", // 245 × 0,80
         tueNote:"Touch-and-go contrôlé, aucun rebond. RPE 8. Omoplates serrées, fessiers sur le banc.",
         pull:"Weighted Pull-up", pullFormat:"4×4", pullLoad:"80%",
-        tueWod:"4 × (1:00 Run / 1:00 repos).",
+        tueWod:"4 × (1:00 Shuttle Runs de 10 m / 1:00 repos) — compte les allers-retours, garde le même nombre à chaque intervalle.",
         thuMain:"Strict Press", thuFormat:"5×3", thuLoad:"125 lb", // 155 × 0,80
         thuNote:"RPE 8. Fessiers serrés, aucune cambrure, tête qui passe à travers en fin de poussée.",
         thuWod:"6 × (0:40 Row / 0:20 repos).",
@@ -154,7 +154,7 @@
         tueMain:"Bench Press", tueFormat:"4×2", tueLoad:"215 lb", // 245 × 0,88
         tueNote:"Doubles lourds, RPE 9 : préparation neurale du test. Une rep en réserve. Pareur obligatoire.",
         pull:"Weighted Pull-up", pullFormat:"4×4", pullLoad:"85%",
-        tueWod:"Pour le temps : 1 km Run (mini-benchmark).",
+        tueWod:"Pour le temps : 50 cal Bike (mini-benchmark, à refaire pendant le Peak).",
         thuMain:"Strict Press", thuFormat:"4×2", thuLoad:"135 lb", // 155 × 0,88
         thuNote:"Doubles lourds, RPE 9. Stop si le bas du dos cambre ou si la barre dérive vers l'avant.",
         thuWod:"Pour le temps : 500 m Row + 30 KB Swings (cap 7).",
@@ -221,7 +221,7 @@
       {time:"10 min", title:"C. Chaîne postérieure", tag:"Protection lombaire", kind:"accessory", exercises:[
         ex("Barbell RDL", p.rdl, p.rdlLoad, "0:30 avant C2", "Charnière propre, dos neutre, barre proche des tibias, genoux à peine fléchis. Le seul RDL avant janvier : le Peak n'en contient pas."),
         light ? ex("Dead Bug", "2×8/côté", "poids du corps", "1:00 après C2", "Côtes basses, bas du dos collé au sol, souffle contrôlé.")
-        : ex("Pallof Press", "3×8/côté", "bande ou câble léger", "1:00 après C2", "Anti-rotation. Côtes basses, souffle contrôlé.")
+        : ex("Ab Wheel Rollout", "3×8-10", "poids du corps", "1:00 après C2", "Anti-extension. Bassin rentré, côtes basses, dos qui ne creuse jamais. Rollout à genoux ; quand 10 reps propres passent, départ debout ou gilet lesté.")
       ]},
       {time:"8 min", title:"D. Metcon court", tag:"WOD", kind:"wod", text:p.monWod},
       {time:"3 min", title:"E. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + décompression suspendue 30 sec + respiration."}
@@ -248,10 +248,12 @@
             : light ? "Léger. Dos plat, barre qui repart du sol à chaque rep."
             : "Barre qui repart du sol à chaque rep, dos parallèle au sol, tirage vers le bas du sternum.")
         ]});
-        // Lat Pulldown : prévu en rotation A seulement ; gardé en S4-S5 pour
-        // tenir le ratio tirage:poussée ≥ 1,5 (voir dev/pont_peak_checks.js).
+        // Volume vertical en S1-S5, aussi en rotation B pour tenir le ratio
+        // tirage:poussée ≥ 1,5 (voir dev/pont_peak_checks.js). « Pull-Up » et
+        // non « Weighted Pull-up » : en rotation B, le lourd lesté du bloc B
+        // porte déjà ce nom, et la capture des résultats se clé par nom.
         if(w <= 5) mardi.push({time:"6 min", title:"C. Volume dorsal", tag:"Ratio tirage", kind:"accessory", exercises:[
-          ex("Lat Pulldown", "3×10-12", "120 lb", "1:00", "Épaules basses avant de tirer, coudes vers les hanches, aucun balancement.")
+          ex("Pull-Up", "3×8-10", "poids du corps", "1:00", "Strict, départ bras tendus, menton au-dessus de la barre, aucun kip. Si 10 reps propres passent sur les 3 séries, ajoute 5-10 lb de lest.")
         ]});
       }
       mardi.push({time:"6 min", title:"D. DB Pullover", tag:"Lats + thoracique", kind:"accessory", exercises:[
@@ -343,14 +345,14 @@
     "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Test bench, Back Squat S7, Weighted Pull-up et Power Clean en pourcentage, résolus sur la capacité mesurée."
   ];
   P.dayIntentions = {
-    lundi: "Squat lourd : variation de squat en rotation, volume quadriceps unilatéral, Barbell RDL, gainage anti-rotation, metcon court.",
-    mardi: "Bench lourd + tirage : variation de bench en rotation en superset avec un tirage, Lat Pulldown, DB Pullover, Face Pull, Cable Curl, 100 Band Pull-Apart, metcon qui épargne épaules et lats.",
+    lundi: "Squat lourd : variation de squat en rotation, volume quadriceps unilatéral, Barbell RDL, gainage anti-extension, metcon court.",
+    mardi: "Bench lourd + tirage : variation de bench en rotation en superset avec un tirage, Pull-Up, DB Pullover, Face Pull, Cable Curl, 100 Band Pull-Apart, metcon qui épargne épaules et lats.",
     jeudi: "Épaules : press en rotation, Front Squat d'amorce du Peak, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps, metcon sans poussée au-dessus de la tête.",
     vendredi: "Bench volume + transition Peak : Power Clean en EMOM, bench d'accessoire, rowing, DB Pullover cross-bench, metcon long style Peak."
   };
   P.dayMeta = {
-    lundi:   {label:"Lundi",   base:"Squat lourd",            focus:"Tempo Back Squat / Back Squat en rotation, split squat, Barbell RDL, Pallof Press, metcon court."},
-    mardi:   {label:"Mardi",   base:"Bench lourd + tirage",   focus:"Paused Bench Press / Bench Press en rotation, Pendlay Row / Weighted Pull-up, Lat Pulldown, DB Pullover, Face Pull, Band Pull-Apart, metcon court."},
+    lundi:   {label:"Lundi",   base:"Squat lourd",            focus:"Tempo Back Squat / Back Squat en rotation, split squat, Barbell RDL, Ab Wheel Rollout, metcon court."},
+    mardi:   {label:"Mardi",   base:"Bench lourd + tirage",   focus:"Paused Bench Press / Bench Press en rotation, Pendlay Row / Weighted Pull-up, Pull-Up, DB Pullover, Face Pull, Band Pull-Apart, metcon court."},
     jeudi:   {label:"Jeudi",   base:"Épaules + front squat",  focus:"Landmine Press / Strict Press en rotation, Front Squat, Arnold Press / Seated DB Press, Bottoms-Up KB Press, Cuban Press, metcon court."},
     vendredi:{label:"Vendredi",base:"Bench volume + Peak",    focus:"Power Clean EMOM, DB Bench / Close-Grip Bench, rowing, DB Pullover, metcon long."}
   };

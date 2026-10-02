@@ -1,3 +1,17 @@
+## V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
+
+**Pourquoi** : relecture de l'athlète. Le Pallof Press travaillait trop peu, le Lat Pulldown est remplacé par du vrai tirage au poids du corps, et le gym n'a ni tapis ni piste pour courir.
+
+**Ce qui change** (`programs/pont_peak.js`)
+
+- Le gainage du lundi passe du Pallof Press à l'**Ab Wheel Rollout** 3×8-10 (anti-extension, nettement plus exigeant ; départ debout ou gilet lesté quand 10 reps propres passent).
+- Le Lat Pulldown devient du **Pull-Up** 3×8-10, lesté de 5-10 lb quand les 3 séries passent à 10. Nom « Pull-Up » et non « Weighted Pull-up » : en rotation B, le lourd lesté du même mardi porte déjà ce nom, et la capture des résultats se clé par nom.
+- Pas de tapis ni de piste : les courses deviennent des **Shuttle Runs de 10 m** (mardi S2 et S4, vendredi S2), et le 1 km du mardi S5 devient **50 cal Bike** pour garder un mini-benchmark reproductible.
+- Fiches « Ab Wheel Rollout » et « Shuttle Run » ajoutées dans `programs/tutorials.js`.
+- Le ratio tirage:poussée est inchangé (3 séries de Pull-Up à la place de 3 séries de Lat Pulldown) : 1,50 à 1,76 sur S1-S5.
+
+**Garde-fou** : `dev/pont_peak_checks.js` — aucune course en distance libre dans les metcons (Shuttle Runs ou Bike).
+
 ## V5.2.0 — Kalman × moteur de charges : capacité estimée, en observation
 
 **Pourquoi** : le moteur à règles décide quoi faire, mais ne tenait aucune estimation de ce dont l'athlète est capable, avec une incertitude. Le Brain ne pouvait que freiner (`coachBrainApplyStatsGate` n'agit que sur une hausse). Cas mesuré sur l'export réel : Strict Press arrêté au 17 sept, le moteur affichait 140 lb pour le test 1RM du 1er oct (la conversion Epley de `coachRuleLastSetGuards` ne peut que baisser une charge) ; le test a donné 175 réussi, 185 raté.
