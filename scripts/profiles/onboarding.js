@@ -315,6 +315,43 @@ window.CoachOnboarding = window.CoachOnboarding || {};
     return {ratios: changed.length ? out : stored, changed: changed};
   };
 
+  // Saisie d'UN repère de calibration après l'onboarding (onglet Charge).
+  // Met à jour la valeur, son ratio, et seulement les moyennes qui la
+  // contiennent (sa famille + _overall), avec la même règle que le calcul :
+  // une valeur hors bande est enregistrée (avertissement non bloquant) mais
+  // exclue des moyennes, et ignorée par le moteur (scaling.js). Sans ratios
+  // stockés (profil non calibré), seule la valeur est écrite.
+  api.setCalibrationValue = function(key, value){
+    if(typeof state !== "object" || !state.profile) return null;
+    var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : {};
+    var d = Number(ref[key]), v = Number(value);
+    if(!(d > 0) || !(v > 0)) return null;
+    state.profile[key] = v;
+    var ratio = v / d;
+    function apply(stored, level){
+      if(!stored || typeof stored !== "object") return stored;
+      var lvl = api.EXPERIENCE_LEVELS[level] || api.EXPERIENCE_LEVELS.intermediaire;
+      var out = Object.assign({}, stored);
+      out[key] = ratio;
+      var keys = Object.keys(ref).filter(function(k){ return Number(out[k]) > 0; });
+      var nums = {};
+      keys.forEach(function(k){ nums[k] = Number(out[k]); });
+      var fam = familyRatios(nums, keys, lvl.fallbackRatio);
+      Object.keys(FAMILY_KEYS).forEach(function(f){
+        if(FAMILY_KEYS[f].indexOf(key) >= 0 && (f in out)) out[f] = fam[f];
+      });
+      if("_overall" in out) out._overall = fam._overall;
+      return out;
+    }
+    state.profile.scaleRatios = apply(state.profile.scaleRatios, state.profile.experienceLevel);
+    try{
+      var reg = (window.CoachProfiles && CoachProfiles.getActive) ? CoachProfiles.getActive() : null;
+      if(reg && reg.scaleRatios) CoachProfiles.update(reg.id, {scaleRatios: apply(reg.scaleRatios, reg.experienceLevel || state.profile.experienceLevel)});
+    }catch(e){}
+    if(typeof save === "function") save();
+    return {value: v, ratio: ratio, outOfBand: !inBand(ratio)};
+  };
+
   // Migration au chargement, idempotente : un second passage ne trouve plus
   // rien à changer. Répare la copie de travail (state.profile) ET la copie du
   // registre, qui sert de source de resynchronisation (scaling.js).

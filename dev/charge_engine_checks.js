@@ -1642,6 +1642,28 @@ try {
       'Second chargement : rien à réparer, aucune écriture.');
     assert(/migrateReferenceVersion\(\);\s*\n\s*if\(window\.CoachOnboarding&&CoachOnboarding\.migrateFamilyRatios\)CoachOnboarding\.migrateFamilyRatios\(\);/.test(read('app.js')),
       'app.js lance la réparation des familles au chargement, après la migration de référence.');
+
+    // Saisie du lest après l'onboarding (onglet Charge) : la valeur, son ratio
+    // et SEULEMENT les moyennes qui la contiennent.
+    saved = 0; regPatch = null;
+    o.state = {profile:{experienceLevel:'avance', latPulldown10RM:140, scaleRatios:Object.assign({}, fix.ratios)}};
+    o.CoachProfiles.getActive = function(){ return {id:'p1', experienceLevel:'avance', scaleRatios:Object.assign({}, fix.ratios)}; };
+    const before = Object.assign({}, o.state.profile.scaleRatios);
+    const set = o.CoachOnboarding.setCalibrationValue('latPulldown10RM', 30);
+    const after = o.state.profile.scaleRatios;
+    assert(set && set.outOfBand === false && o.state.profile.latPulldown10RM === 30 && after.latPulldown10RM === 1.5 && saved === 1,
+      'Saisie du lest : valeur 30, ratio 30/20 = 1,5, sauvegarde.');
+    assert(Math.abs(after._upperPull - (1.27 + 1.27 + 1.5) / 3) < 1e-9,
+      'La famille tirage intègre le lest dès qu\'il est dans la bande.');
+    assert(after._lowerBody === before._lowerBody && after._upperPush === before._upperPush && after.bench === before.bench,
+      'Les autres familles et composantes ne bougent pas.');
+    assert(regPatch && regPatch.patch.scaleRatios.latPulldown10RM === 1.5, 'Le registre suit la saisie.');
+    const odd = o.CoachOnboarding.setCalibrationValue('latPulldown10RM', 140);
+    assert(odd && odd.outOfBand === true && Math.abs(o.state.profile.scaleRatios._upperPull - 1.27) < 1e-9,
+      'Une saisie hors bande est enregistrée (avertissement) mais exclue de la moyenne.');
+    assert(o.CoachOnboarding.setCalibrationValue('latPulldown10RM', 0) === null, 'Une valeur nulle est refusée.');
+    assert(/CALIBRATION_FIELDS[\s\S]*latPulldown10RM/.test(read('app.js')) && read('index.html').indexOf('id="calibRefsGrid"') !== -1,
+      'Le lest de traction est modifiable dans l\'onglet Charge.');
   }
 
   // ── Garde : un ratio direct hors bande n'est pas une mesure ─────────────

@@ -2330,6 +2330,7 @@ function renderProfile(){
   // references vivantes (reflet des seances) + ajustements ponctuels.
   if(typeof renderTrophies==="function")renderTrophies();
   if(typeof renderWorkingRefs==="function")renderWorkingRefs();
+  if(typeof renderCalibrationRefs==="function")renderCalibrationRefs();
   if(typeof renderReferences==="function")renderReferences();
   if(typeof renderChargeSettings==="function")renderChargeSettings();
 }
@@ -2526,6 +2527,56 @@ function renderWorkingRefs(){
   Array.prototype.forEach.call(host.querySelectorAll("input.wref-input"),function(inp){
     inp.addEventListener("change",function(){saveWorkingRef(inp);});
   });
+}
+
+// ─── Repères de calibration modifiables après l'onboarding ────────────────
+// Clés de profil (scaleRatios) que seul l'onboarding savait écrire. Le lest
+// de traction n'y est même pas affiché (test « reps seulement ») : une valeur
+// fausse y restait pour toujours. Écriture via CoachOnboarding, qui recalcule
+// le ratio et les moyennes avec la même règle que le calcul initial.
+var CALIBRATION_FIELDS = [
+  {key:"latPulldown10RM", label:"Weighted Pull-up 10RM", hint:"Lest seul, pour 10 reps"}
+];
+function calibrationOutOfBand(key){
+  var max=(window.CoachOnboarding&&Number(CoachOnboarding.RATIO_COMPONENT_MAX))||0;
+  var r=state.profile&&state.profile.scaleRatios?Number(state.profile.scaleRatios[key]):0;
+  return max&&r>max;
+}
+function renderCalibrationRefs(){
+  var host=$("calibRefsGrid");if(!host)return;host.innerHTML="";
+  CALIBRATION_FIELDS.forEach(function(f){
+    var v=state.profile&&Number(state.profile[f.key])>0?String(state.profile[f.key]):"";
+    var row=document.createElement("div");row.className="wref-row";
+    row.innerHTML='<div class="wref-name">'+escapeHtml(f.label)+'</div><div class="wref-cells"><div class="wref-cell">'+
+      '<span class="wref-cell-label">'+escapeHtml(f.hint)+'</span>'+
+      '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="numeric" data-calib="'+f.key+'" value="'+escapeHtml(v)+'" placeholder="—"/>'+
+      '<span class="wref-unit">lb</span></span></div></div>';
+    host.appendChild(row);
+    row.querySelector("input").addEventListener("change",function(){saveCalibrationRef(this,f);});
+  });
+  var st=$("calibStatus");
+  var odd=CALIBRATION_FIELDS.filter(function(f){return calibrationOutOfBand(f.key);});
+  if(st){
+    st.textContent=odd.length?("⚠ "+odd.map(function(f){return f.label+" = "+state.profile[f.key];}).join(", ")+" : valeur à une autre échelle, ignorée par le moteur. Inscris ton lest."):"";
+    st.className="status-msg"+(odd.length?" warn":"");
+  }
+}
+function saveCalibrationRef(inp,f){
+  var st=$("calibStatus");
+  var val=parseLoad(inp.value);
+  if(!(val>0)||!window.CoachOnboarding||!CoachOnboarding.setCalibrationValue){
+    if(st){st.textContent="Valeur non enregistrée : un nombre positif est requis.";st.className="status-msg err";}
+    return;
+  }
+  var res=CoachOnboarding.setCalibrationValue(f.key,val);
+  if(!res){if(st){st.textContent="Valeur non enregistrée.";st.className="status-msg err";}return;}
+  if(typeof renderWorkout==="function")renderWorkout();
+  if(st){
+    st.textContent=res.outOfBand
+      ?("⚠ "+f.label+" = "+val+" lb enregistré, mais plus de "+CoachOnboarding.RATIO_COMPONENT_MAX+"× la référence : le moteur l'ignorera. Vérifie que c'est bien le lest seul.")
+      :("✅ "+f.label+" : "+val+" lb enregistré.");
+    st.className="status-msg "+(res.outOfBand?"warn":"ok");
+  }
 }
 
 function saveWorkingRef(inp){
