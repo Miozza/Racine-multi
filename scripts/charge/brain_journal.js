@@ -123,6 +123,29 @@
     return {title:'Journal Brain', text:line, summary:s};
   }
 
+  // ── Capacite estimee (scripts/charge/kalman.js) ──────────────────────────
+  // Journal EN MEMOIRE uniquement : la derniere lecture par mouvement, pour le
+  // (!) et le diagnostic. Rien n'est ecrit dans le stockage — l'etat Kalman se
+  // reconstruit depuis le journal brut, il n'a pas a etre memorise.
+  var kalmanLog={};
+  var KALMAN_LOG_MAX=60;
+  function recordKalman(label,k,shownLoad){
+    var key=norm(label);
+    if(!key||!k)return null;
+    var snap=(window.CoachKalman&&typeof CoachKalman.snapshot==='function')?CoachKalman.snapshot(k):null;
+    if(!snap)return null;
+    snap.movement=str(label);
+    snap.chargeAffichee=(shownLoad||shownLoad===0)?Number(shownLoad):null;
+    delete kalmanLog[key];
+    kalmanLog[key]=snap;
+    var keys=Object.keys(kalmanLog);
+    while(keys.length>KALMAN_LOG_MAX){ delete kalmanLog[keys.shift()]; }
+    return snap;
+  }
+  function kalmanFor(label){ return kalmanLog[norm(label)]||null; }
+
+  api.recordKalman=recordKalman;
+  api.kalmanFor=kalmanFor;
   api.profileFor=profileFor;
   api.journalFor=journalFor;
   api.summaryFor=summaryFor;

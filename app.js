@@ -1,5 +1,5 @@
-// Racine V5.1.9 — Phase 3 Pont Peak : nouveau programme entre Fable 5 et le Peak
-var APP_VERSION = "V5.1.9";
+// Racine V5.2.0 — Kalman × moteur de charges : capacité estimée (observation par défaut)
+var APP_VERSION = "V5.2.0";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2978,6 +2978,9 @@ function coachFullBoot(){
   load();
   coachSanitizeImplausibleLoads();
   coachMigratePrTrophyReferences();
+  // Capacite estimee (Kalman) : reconstruite en memoire depuis le journal brut,
+  // jamais lue ni ecrite dans le stockage. Consultatif, jamais bloquant.
+  try{ if(window.CoachKalman && typeof CoachKalman.rebuild==='function') CoachKalman.rebuild(); }catch(e){ /* jamais bloquant */ }
   // Auto-guérison : si le programme tracé par un ancien fallback est redevenu
   // disponible (permission accordée, app mise à jour), restaurer le cycle —
   // sauf si l'utilisateur a activé un autre programme entre-temps.

@@ -240,7 +240,14 @@
     try{
       if(window.CoachBrainJournal && typeof CoachBrainJournal.insightForHint==='function') journalInsight=CoachBrainJournal.insightForHint(h);
     }catch(e){ journalInsight=null; }
+    // Capacite estimee : une ligne qui RELIT ce que la suggestion a attache a
+    // l'indice. Jamais un recalcul — le (!) explique, il ne decide pas.
+    var capacity='';
+    try{
+      if(window.CoachKalman && typeof CoachKalman.explainLine==='function') capacity=CoachKalman.explainLine(h.kalman)||'';
+    }catch(e){ capacity=''; }
     return {
+      capacity: capacity,
       confidence: conf,
       confidenceText: confidenceText(conf),
       precision: prec.score,

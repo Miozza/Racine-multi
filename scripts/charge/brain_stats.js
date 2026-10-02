@@ -266,7 +266,13 @@ function coachBrainDampedRise(label,lastLoad,proposed){
   return Math.min(kept<lastLoad?lastLoad:kept,proposed);
 }
 
-function coachBrainApplyStatsGate(decision,label,history,context,targetReps,lastLoad,earnedFloor){
+// `kalmanGate` (optionnel, mode blend seulement) : {uncertain, sd, target}
+// fourni par CoachKalman.forSuggestion(). Il remplace les stats heuristiques
+// comme source de confiance, et rend le portail SYMETRIQUE : une hausse est
+// amortie quand l'incertitude est grande, et passe — jusqu'au saut max deja
+// applique en amont — quand l'estimation la soutient. Absent : portail d'avant,
+// a l'identique.
+function coachBrainApplyStatsGate(decision,label,history,context,targetReps,lastLoad,earnedFloor,kalmanGate){
   if(!decision||!(decision.loadNum>0)||!(lastLoad>0))return decision;
   var proposed=Number(decision.loadNum)||0;
   if(proposed<=lastLoad)return decision;
@@ -275,7 +281,21 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   var shouldGate=false;
   var level='watch';
   var extra='';
-  if(stats.confidenceRaw<coachBrainConfidenceFloor()){
+  var kalmanCap=0;
+  if(kalmanGate&&typeof kalmanGate==='object'&&kalmanGate.sd>0){
+    var sdPct=Math.round(kalmanGate.sd*1000)/10;
+    if(kalmanGate.uncertain){
+      shouldGate=true;
+      extra='Capacite estimee encore incertaine (±'+sdPct+' %).';
+    }else if(kalmanGate.target>0&&kalmanGate.target<proposed){
+      shouldGate=true;
+      kalmanCap=Number(kalmanGate.target)||0;
+      extra='Capacite estimee ~'+Math.round(kalmanGate.target)+' lb pour '+(Number(targetReps)||'?')+' reps : la hausse depasse ce qu\'elle soutient.';
+    }else{
+      // L'estimation soutient la hausse : le portail la laisse passer.
+      return decision;
+    }
+  }else if(stats.confidenceRaw<coachBrainConfidenceFloor()){
     shouldGate=true;
     extra='Confiance de prediction faible ('+stats.confidence+'%).';
   }else if(stats.validations<stats.requiredConfirmations && stats.ambitionRaw<0.78){
@@ -288,6 +308,12 @@ function coachBrainApplyStatsGate(decision,label,history,context,targetReps,last
   // RPE de l'athlete a merite : sinon la confiance statistique effacerait le
   // signal le plus direct dont dispose le moteur, celui de l'effort ressenti.
   var kept=coachBrainDampedRise(label,lastLoad,proposed);
+  // Estimation fiable mais plus basse que la proposition : on garde ce
+  // qu'elle soutient, arrondi vers le bas, jamais au-dessus de la proposition.
+  if(kalmanCap>kept){
+    var capRounded=(typeof roundLoadForExercise==='function')?roundLoadForExercise(label,kalmanCap,'down',String(lastLoad)):Math.floor(kalmanCap);
+    if(capRounded>kept)kept=Math.min(capRounded,proposed);
+  }
   var floor=Number(earnedFloor)||0;
   // L'evidence RPE couvre deja toute la hausse proposee : le portail n'a rien
   // a retenir. Sans cette sortie, une hausse entierement meritee etait quand

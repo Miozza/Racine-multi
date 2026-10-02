@@ -39,7 +39,7 @@
   var VERSION = 'tuning-override-v1';
   var SCHEMA = 1;
 
-  // ─── Les 23 parametres surchargeables ────────────────────────────────────
+  // ─── Les parametres surchargeables ────────────────────────────────────
   // `path` pointe dans COACH_MOVEMENT_TUNING. `min`/`max` sont les bornes de
   // l'app (regle 2 ci-dessus) : elles encadrent la valeur d'usine sans jamais
   // pretendre remplacer le jugement — au-dela, ce n'est plus un reglage,
@@ -67,7 +67,18 @@
     {path:'ceiling.families.accessory.minStagnant', group:'Plafond',          label:'Accessoire — seances sans progres',    min:2,    max:15,   step:1},
     {path:'ceiling.families.accessory.minRpe',      group:'Plafond',          label:'Accessoire — RPE de plafond',          min:6,    max:10,   step:0.5},
     {path:'ceiling.families.main.minStagnant',      group:'Plafond',          label:'Principal — seances sans progres',     min:3,    max:20,   step:1},
-    {path:'ceiling.families.main.minRpe',           group:'Plafond',          label:'Principal — RPE de plafond',           min:6,    max:10,   step:0.5}
+    {path:'ceiling.families.main.minRpe',           group:'Plafond',          label:'Principal — RPE de plafond',           min:6,    max:10,   step:0.5},
+    // Capacite estimee (scripts/charge/kalman.js). `mode` est un nombre et non
+    // une chaine — regle 1 ci-dessus : 0 = off, 1 = shadow, 2 = blend.
+    {path:'kalman.mode',                            group:'Kalman',           label:'Mode (0 off · 1 observation · 2 melange)', min:0, max:2,   step:1},
+    {path:'kalman.wMax',                            group:'Kalman',           label:'Poids maximal du melange',             min:0,    max:0.8,  step:0.05},
+    {path:'kalman.sdMax',                           group:'Kalman',           label:'Incertitude au-dela de laquelle il ne pese plus', min:0.02, max:0.20, step:0.01},
+    {path:'kalman.processSdPerWeek',                group:'Kalman',           label:'Bruit de processus par semaine',       min:0.005,max:0.05, step:0.005},
+    {path:'kalman.measurementSd.clean',             group:'Kalman',           label:'Bruit de mesure — succes propre',      min:0.01, max:0.10, step:0.005},
+    {path:'kalman.measurementSd.hard',              group:'Kalman',           label:'Bruit de mesure — serie dure',         min:0.01, max:0.12, step:0.005},
+    {path:'kalman.measurementSd.failed',            group:'Kalman',           label:'Bruit de mesure — echec',              min:0.02, max:0.20, step:0.005},
+    {path:'kalman.priorSd',                         group:'Kalman',           label:'Incertitude d’un a priori',            min:0.03, max:0.30, step:0.01},
+    {path:'kalman.gatePct',                         group:'Kalman',           label:'Porte du jour de test (part du 1RM)',  min:0.80, max:0.95, step:0.01}
   ];
   api.PARAMS = PARAMS;
   api.VERSION = VERSION;

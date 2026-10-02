@@ -26,6 +26,8 @@ node dev/charge_replay_phase2.js
 node dev/charge_suggestion_golden_master.js
 node dev/movement_tuning_boundary_checks.js
 node dev/ceiling_checks.js
+node dev/kalman_checks.js
+node dev/kalman_replay.js
 node dev/tuning_override_checks.js
 node dev/calibration_readout_checks.js
 node dev/rpe_ladder_checks.js
@@ -90,6 +92,10 @@ Documents d’implémentation associés à la sécurité des charges client :
   plafond de progression déduit par famille de mouvement et de la surcharge de
   tuning par profil — panneau ⚙ Réglages → Calibration du moteur ; garde-fous :
   `dev/ceiling_checks.js`, `dev/tuning_override_checks.js`)
+- `docs/BRAIN.md` § « Kalman : capacité estimée » (V5.2.0 — filtre de Kalman
+  sur l'e1RM, mode `shadow` par défaut, `blend` par profil ; garde-fous :
+  `dev/kalman_checks.js` ; rejeu d'un export : `dev/kalman_replay.js <export.json>`,
+  sans argument sur `dev/fixtures/kalman_strict_press.json`)
 
 Contrôles manuels minimum :
 
@@ -110,6 +116,7 @@ Contrôles manuels minimum :
 15. Basculer sur un profil client : les plafonds de l'admin ne l'ont pas suivi.
 16. Exporter le profil admin puis le réimporter : plafonds manuels et calibration revenus.
 17. ⚙ Réglages → Diagnostic charges → **Copier trace semaine** : le presse-papier contient un JSON avec, pour chaque mouvement, les séances retenues et le motif d'écart des autres.
+18. Bouton `(!)` d'un mouvement principal avec historique : la section **Capacité estimée** affiche « Capacité estimée (observation) : X lb ± Y » et la charge suggérée est la même qu'en V5.1.9.
 
 Règle de sécurité : les données vivantes d'un utilisateur réel doivent rester dans le cellulaire/localStorage ou dans un export JSON manuel. Le dossier `data/` du repo peut être inclus, mais il doit rester neutre et sans historique réel.
 

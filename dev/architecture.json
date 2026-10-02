@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 237,
+    "ACTIF": 241,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -764,6 +764,19 @@
       "consumes": []
     },
     {
+      "path": "dev/fixtures/kalman_strict_press.json",
+      "size": 5938,
+      "lines": 187,
+      "role": "Fixture minimale anonymisée : 6 lignes Strict Press (13 août → 17 sept 2026) d'un export réel, point d'ancrage du filtre de Kalman.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        "dev/kalman_checks.js",
+        "dev/kalman_replay.js"
+      ],
+      "consumes": []
+    },
+    {
       "path": "dev/gear_permissions_checks.js",
       "size": 5182,
       "lines": 86,
@@ -850,6 +863,35 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "dev/kalman_checks.js",
+      "size": 24101,
+      "lines": 357,
+      "role": "Garde-fou de la capacité estimée : maths (convergence, variance qui grandit, RIR, borne basse du jour de test), filtre de contexte réutilisé, déterminisme de rebuild, aucune écriture localStorage, shadow identique à off bit à bit, blend borné par le saut max / RPE >= 9 / plafonds, module absent ou en erreur sans effet, ligne (!) non vide, ancrage Strict Press 176 ± 3 lb.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/kalman.js",
+        "scripts/charge/suggestion.js",
+        "scripts/charge/brain_stats.js",
+        "scripts/charge/tuning_override.js",
+        "dev/fixtures/kalman_strict_press.json"
+      ]
+    },
+    {
+      "path": "dev/kalman_replay.js",
+      "size": 8132,
+      "lines": 137,
+      "role": "Rejeu en lecture seule d'un export JSON : erreur moyenne moteur vs Kalman vs mélange (global et lignes déviées), en excluant tests 1RM, deloads et séances limitées ; estimation finale par mouvement. Sans argument : fixture Strict Press et son ancrage.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": [
+        "scripts/charge/kalman.js",
+        "dev/fixtures/kalman_strict_press.json"
+      ]
     },
     {
       "path": "dev/migration_checks.js",
@@ -3013,7 +3055,9 @@
           "line": 343
         }
       ],
-      "consumes": []
+      "consumes": [
+        "scripts/charge/kalman.js"
+      ]
     },
     {
       "path": "scripts/charge/brain_journal.js",
@@ -3031,7 +3075,9 @@
           "line": 344
         }
       ],
-      "consumes": []
+      "consumes": [
+        "scripts/charge/kalman.js"
+      ]
     },
     {
       "path": "scripts/charge/brain_memory.js",
@@ -3150,7 +3196,41 @@
           "line": 354
         }
       ],
-      "consumes": []
+      "consumes": [
+        "scripts/charge/kalman.js"
+      ]
+    },
+    {
+      "path": "scripts/charge/kalman.js",
+      "size": 29867,
+      "lines": 642,
+      "role": "Domaine charge — capacité estimée par filtre de Kalman (x = ln e1RM, variance P), par mouvement. État DÉRIVÉ, reconstruit en mémoire depuis state.history de façon déterministe (empreinte), jamais stocké. Filtre de contexte délégué aux détecteurs existants (coachHistoryContextIsLimited, coachBrainIsDeloadRow, coachIsNonPerformanceSeed). Mode shadow par défaut (observation, (!) et journal) ; blend par profil : coachRuleKalmanBlend() avant les garde-fous, coachRuleKalmanTestGate() pour la porte d'un jour de test 1RM, et la confiance du portail Brain. Aucun seuil en dur : tout vient de COACH_MOVEMENT_TUNING.kalman.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachKalman",
+        "coachRuleKalmanBlend",
+        "coachRuleKalmanTestGate"
+      ],
+      "consumedBy": [
+        "scripts/charge/suggestion.js",
+        "scripts/charge/brain_explain.js",
+        "scripts/charge/brain_journal.js",
+        "scripts/charge/trace.js",
+        "scripts/charge/index.js",
+        "scripts/ui_modals.js",
+        "scripts/session/save.js",
+        "app.js",
+        "dev/kalman_checks.js",
+        "dev/kalman_replay.js"
+      ],
+      "consumes": [
+        "scripts/charge/movement_tuning.js",
+        "scripts/charge/historique.js",
+        "scripts/charge/mouvements.js",
+        "scripts/charge/brain_stats.js",
+        "scripts/charge/scaling.js",
+        "scripts/profiles/reference.js"
+      ]
     },
     {
       "path": "scripts/charge/ml_refinement.js",
@@ -3228,7 +3308,8 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 334
-        }
+        },
+        "scripts/charge/kalman.js"
       ],
       "consumes": []
     },
@@ -3287,7 +3368,9 @@
           "line": 348
         }
       ],
-      "consumes": []
+      "consumes": [
+        "scripts/charge/kalman.js"
+      ]
     },
     {
       "path": "scripts/charge/trace.js",
@@ -3305,7 +3388,8 @@
       "consumes": [
         "scripts/charge/suggestion.js",
         "scripts/charge/historique.js",
-        "scripts/charge/mouvements.js"
+        "scripts/charge/mouvements.js",
+        "scripts/charge/kalman.js"
       ]
     },
     {
@@ -4281,7 +4365,8 @@
         }
       ],
       "consumes": [
-        "findCoachBertinTutorial"
+        "findCoachBertinTutorial",
+        "scripts/charge/kalman.js"
       ]
     },
     {

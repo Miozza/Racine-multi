@@ -93,6 +93,7 @@ Fichiers du domaine :
 - `brain_memory.js` : mémoire Brain locale, isolée par profil actif.
 - `brain_explain.js` : moteur d’explication Brain (voir `docs/BRAIN.md`).
 - `brain_journal.js` : journal consultatif des apprentissages Brain, ne modifie jamais les charges.
+- `kalman.js` : capacité estimée par filtre de Kalman (`window.CoachKalman`) — e1RM et incertitude par mouvement, état **dérivé** reconstruit en mémoire depuis `state.history`, jamais stocké. Mode `shadow` par défaut (observation : `(!)`, trace, journal ; charge inchangée), `blend` par profil via `kalman.mode` de la surcharge de tuning. Chargé après `ceiling.js` et avant `suggestion.js`, branché défensivement dans la cascade (`coachRuleKalmanBlend`, `coachRuleKalmanTestGate`) et dans le portail Brain. Exposé aussi par `CoachCharge.kalman`. Voir `docs/BRAIN.md` § « Kalman : capacité estimée ».
 
 ## Domaine session
 

@@ -183,6 +183,62 @@ Règle de développement : les profils vivent dans `scripts/charge/movement_prof
 
 Brain Journal conserve et résume les apprentissages internes : prédictions testées, propositions trop prudentes, propositions trop ambitieuses, et décisions non testées. Il sert à expliquer ce que Brain apprend; il ne modifie jamais directement les charges.
 
+## Kalman : capacité estimée
+
+Le moteur à règles décide **quoi faire** (intention, reps, format, deload,
+plafonds, sécurité). Il ne tenait aucune estimation de **ce dont l'athlète est
+capable**, avec une incertitude : le portail Brain ne pouvait que freiner une
+hausse. `scripts/charge/kalman.js` (`window.CoachKalman`) tient cette
+estimation et travaille **avec** le moteur, pas à sa place.
+
+**Modèle.** Un état par mouvement, en espace log : `x = ln e1RM`, variance `P`.
+
+- Observation : `y = ln(epley1RM(charge, reps + RIR))`, `RIR = clamp(10 − RPE, 0, 4)` ; RPE absent → 8.
+- Bruit de mesure selon le statut : succès propre faible, série dure (`hard_success`) moyen, échec fort.
+- Processus : `P += Q² × jours / 7` — sans séance, l'incertitude grandit.
+- Jour de test (format « montée vers nRM ») : la meilleure rep réussie est une **borne basse** — elle tire fort au-dessus de l'estimation, n'apprend rien en dessous.
+- A priori pour un mouvement sans historique : mouvement apparenté qui a un état (table `related`), sinon ratio direct de `scaling.js` sur un mouvement de référence, sinon rien. Toujours avec une variance large ; un a priori seul ne pèse jamais sur la charge (poids nul sans mesure).
+
+**État dérivé, jamais stocké.** Aucune clé de stockage, aucun changement de
+schéma, export/import inchangés. L'état est reconstruit en mémoire depuis le
+journal brut (`state.history`), de façon déterministe, au chargement, après
+chaque sauvegarde, et dès que l'empreinte du journal change (édition de séance,
+import, bascule de profil).
+
+**Filtre de contexte.** Un résultat WOD, technique, léger, vitesse,
+récupération/deload, un seed de calibrage ou un lest sur le poids du corps ne
+met jamais l'état à jour. Le verdict vient des détecteurs existants
+(`coachHistoryContextIsLimited`, `coachBrainIsDeloadRow`,
+`coachIsNonPerformanceSeed`) — aucune copie dans le module.
+
+**Deux modes** (`kalman.mode` dans `COACH_MOVEMENT_TUNING`, surchargeable par
+profil via `tuning_override.js` : 0 off, 1 shadow, 2 blend).
+
+- `shadow` (défaut) : `ctx.kalman` est attaché à la suggestion, à l'indice du
+  `(!)` (« Capacité estimée (observation) : X lb ± Y »), à la trace
+  (`capaciteEstimee`) et au journal Brain en mémoire. **La charge affichée est
+  identique bit à bit** à celle du moteur seul — golden master inchangé.
+- `blend` : séance normale, `suggested += poids × (cible − suggested)` avec
+  `cible = loadFor(reps cibles, RPE 8)`, **avant** le saut max, les freins RPE,
+  les plafonds et l'arrondi, qui gardent le dernier mot. Le poids vaut
+  `wMax × (1 − sd/sdMax)`, nul sous deux mesures ou au-delà de `sdMax`. Le
+  portail Brain lit alors l'incertitude du filtre au lieu de ses stats
+  heuristiques et devient symétrique : il amortit une hausse si l'incertitude
+  est grande, la laisse passer si l'estimation la soutient. Jour de test 1RM :
+  porte = `0,90 × e1RM`, arrondie vers le bas, raison « 1RM estimé X (Y–Z) ».
+
+**Le `(!)` explique, il ne recalcule rien** : la ligne relit `hint.kalman`,
+posé par la suggestion elle-même.
+
+**Brain.js n'est pas concerné.** `ml_refinement.js` reste le point d'ancrage
+documenté de la couche ML différée ; Kalman est un module distinct, sans
+dépendance externe.
+
+**Ancrage de non-régression.** Strict Press, 6 lignes arrêtées au 17 sept 2026
+(`dev/fixtures/kalman_strict_press.json`) : e1RM estimé 176 ± 3 lb (IC95
+169–183). Le test terrain du 1er oct a donné 175 réussi, 185 raté. Garde-fous :
+`dev/kalman_checks.js` ; rejeu d'un export : `dev/kalman_replay.js <export.json>`.
+
 ## V3.1 / V3.3 — Avis IA Export + Import
 
 Avis IA est optionnel, universel et consultatif.

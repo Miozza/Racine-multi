@@ -24,6 +24,9 @@
     // Plafond de progression (deduit ou manuel) et calibration par profil :
     // deux modules du domaine charge, exposes par la meme porte publique.
     ceiling: window.CoachCeiling || null,
+    // Capacite estimee (e1RM + incertitude) : observation par defaut, melange
+    // sur reglage de profil. Etat derive, jamais stocke.
+    kalman: window.CoachKalman || null,
     // Extraction de diagnostic : l'historique avec ce que le moteur en a fait.
     trace: window.CoachChargeTrace || null,
     tuningOverride: window.CoachTuningOverride || null,

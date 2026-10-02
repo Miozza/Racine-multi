@@ -439,10 +439,12 @@ function coachReferenceSeedWorkingLoad(declaredRef,range){
 //  3. coachRuleLiftFromControlledHistory — programme sous l'historique reel controle : remonte (borne).
 //  4. coachRuleReferenceReelleValidee    — reference reelle plus haute deja validee : repart de la, pas de l'ancienne suggestion.
 //  5. coachRuleHistorySignalAdjustment   — tendance recente (stalled/blocked/watch) : plafonne ou avertit.
+//  5b. coachRuleKalmanBlend             — mode blend : melange vers la capacite estimee (scripts/charge/kalman.js), avant tous les garde-fous.
 //  6. coachRuleLastSetGuards             — dernier set reel : saut max prudent, hausse graduelle, freins RPE >=8.5/>=9, projection Epley si ecart de reps.
 //  6b. coachRuleRepSurplusLift           — reps DEPASSEES : projection Epley vers le HAUT (symetrique de la reduction du point 6).
 //  6c. coachRuleSpeedStimulusBand        — bloc vitesse : derive lente vers le pourcentage cible du bloc, dans les deux sens.
 //  7. coachRuleRecentHardBrake           — RPE eleve recent non resolu par une reference plus haute depuis : bloque.
+//  7b. coachRuleKalmanTestGate          — mode blend, jour de test 1RM : porte a 90 % de l'e1RM estime (scripts/charge/kalman.js).
 //  8. coachRuleFloorValidation           — plancher : un dernier set reellement reussi n'est jamais sous-suggere (dernier mot, place apres les freins).
 //  8b. coachRuleCeilingCap               — plafond deduit (pointe stable + effort eleve) ou manuel : la charge ne monte plus, la progression passe par les reps (scripts/charge/ceiling.js).
 //  9. coachRuleAthleteStateCap           — mouvement sous surveillance dans athlete_state : cap jusqu'a confirmation.
@@ -457,6 +459,14 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   var built=coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context);
   if(built.early)return built.decision;
   var ctx=built.ctx;
+  // Capacite estimee (scripts/charge/kalman.js). Lue une fois, attachee a ctx
+  // seulement : en mode shadow, rien de ce qui suit n'y touche et la decision
+  // reste identique bit a bit. Module absent ou en erreur : ctx.kalman reste
+  // nul et le moteur se comporte exactement comme avant.
+  ctx.kalman=null;
+  try{
+    if(window.CoachKalman&&typeof CoachKalman.forSuggestion==='function')ctx.kalman=CoachKalman.forSuggestion(ctx)||null;
+  }catch(e){ctx.kalman=null;}
 
   coachRuleUnprovenScaleWatch(ctx);
   coachRuleProgramScaleGuard(ctx);
@@ -465,11 +475,17 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleLiftFromControlledHistory(ctx);
   coachRuleReferenceReelleValidee(ctx);
   coachRuleHistorySignalAdjustment(ctx);
+  // Mode blend seulement : melange vers la capacite estimee, AVANT le saut
+  // max, les freins RPE, les plafonds et l'arrondi.
+  coachKalmanRule('coachRuleKalmanBlend',ctx);
   coachRuleLastSetGuards(ctx);
   coachRuleRepSurplusLift(ctx);
   coachRuleRepSurplusHold(ctx);
   coachRuleSpeedStimulusBand(ctx);
   coachRuleRecentHardBrake(ctx);
+  // Mode blend, jour de test 1RM : porte a gatePct x e1RM, avant le plancher,
+  // les plafonds, les caps et l'arrondi.
+  coachKalmanRule('coachRuleKalmanTestGate',ctx);
   coachRuleFloorValidation(ctx);
   if(typeof coachRuleCeilingCap==='function')coachRuleCeilingCap(ctx);
   coachRuleAthleteStateCap(ctx);
@@ -485,6 +501,19 @@ function guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context){
   coachRuleWeightedHistoryWatch(ctx);
 
   return coachFinalizeSuggestionDecision(ctx);
+}
+
+// Regle Kalman, appelee de facon defensive : absente, ou en erreur, elle ne
+// laisse aucune trace — la regle elle-meme calcule avant d'ecrire, et ses
+// seules ecritures sont restaurees si elle leve une exception.
+function coachKalmanRule(name,ctx){
+  var fn=window[name];
+  if(!ctx||!ctx.kalman||typeof fn!=='function')return;
+  var saved={suggested:ctx.suggested,mode:ctx.mode,reason:ctx.reason,severity:ctx.severity,brainAdjusted:ctx.brainAdjusted};
+  try{fn(ctx);}catch(e){
+    Object.keys(saved).forEach(function(k){ctx[k]=saved[k];});
+    ctx.kalman=null;
+  }
 }
 
 function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
@@ -1691,7 +1720,10 @@ function coachFinalizeSuggestionDecision(ctx){
   var gateOpen = (ctx.severity==='ok' || ctx.severity==='watch');
   var earnedFloor = (typeof coachRpeEarnedLoad==='function') ? coachRpeEarnedLoad(ctx) : 0;
   if(typeof coachBrainApplyStatsGate==='function' && ctx.lastHasValidLoad && ctx.rounded>ctx.lastLoad && gateOpen && !ctx.contextLimited && !ctx.isDeload){
-    decision=coachBrainApplyStatsGate(decision,ctx.label,ctx.hist,ctx.moveContext,ctx.target,ctx.lastLoad,earnedFloor);
+    // En blend, le portail lit l'incertitude du filtre au lieu de ses stats
+    // heuristiques. Hors blend, rien n'est transmis : portail d'avant.
+    var kalmanGate=(ctx.kalman&&ctx.kalman.mode==='blend'&&ctx.kalman.gate)?ctx.kalman.gate:null;
+    decision=coachBrainApplyStatsGate(decision,ctx.label,ctx.hist,ctx.moveContext,ctx.target,ctx.lastLoad,earnedFloor,kalmanGate);
     decision.loadText=coachFormatSuggestedLoad(ctx.label,decision.loadNum,ctx.originalText,'');
     if((decision.severity==='warning'||decision.severity==='critical')&&decision.loadText.indexOf('⚠')<0)decision.loadText+=' ⚠';
     ctx.brainAdjusted=true;
@@ -1702,6 +1734,15 @@ function coachFinalizeSuggestionDecision(ctx){
     if(decision.brainStats && window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
       var bk=coachNormalizeMoveText(ctx.label);
       if(window.__coachLoadHints[bk])window.__coachLoadHints[bk].brainStats=decision.brainStats;
+    }
+  }catch(e){}
+  // Capacite estimee : attachee a l'indice du (!) et au journal Brain, jamais
+  // a la decision — c'est ce qui garde le mode shadow identique bit a bit.
+  try{
+    if(ctx.kalman&&window.__coachLoadHints&&typeof coachNormalizeMoveText==='function'){
+      var kk=coachNormalizeMoveText(ctx.label);
+      if(window.__coachLoadHints[kk])window.__coachLoadHints[kk].kalman=ctx.kalman;
+      if(window.CoachBrainJournal&&typeof CoachBrainJournal.recordKalman==='function')CoachBrainJournal.recordKalman(ctx.label,ctx.kalman,decision.loadNum);
     }
   }catch(e){}
   return decision;
