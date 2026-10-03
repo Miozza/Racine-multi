@@ -1,5 +1,5 @@
-// Racine V5.2.1 — Pont Peak : Ab Wheel Rollout, Pull-Up et Shuttle Runs
-var APP_VERSION = "V5.2.1";
+// Racine V5.2.2 — Prompt Coach fidèle, garde des ratios, trophées 1RM automatiques
+var APP_VERSION = "V5.2.2";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2330,6 +2330,7 @@ function renderProfile(){
   // references vivantes (reflet des seances) + ajustements ponctuels.
   if(typeof renderTrophies==="function")renderTrophies();
   if(typeof renderWorkingRefs==="function")renderWorkingRefs();
+  if(typeof renderCalibrationRefs==="function")renderCalibrationRefs();
   if(typeof renderReferences==="function")renderReferences();
   if(typeof renderChargeSettings==="function")renderChargeSettings();
 }
@@ -2341,13 +2342,76 @@ function renderProfile(){
 // aussi reflétés dans state.profile[scaleKey] (ancien chemin / affichage).
 var TROPHY_FIELDS = [
   {key:'bench',        label:'Bench Press 1RM',  unit:'lb',   scaleKey:'bench'},
-  {key:'backSquat1RM', label:'Back Squat 1RM',   unit:'lb'},
+  {key:'closeGripBench1RM', label:'Close-Grip Bench 1RM', unit:'lb', single:/^close grip bench( press)?$/},
+  {key:'backSquat1RM', label:'Back Squat 1RM',   unit:'lb',   single:/^back squat$/},
   {key:'frontSquat',   label:'Front Squat 1RM',  unit:'lb',   scaleKey:'frontSquat'},
-  {key:'deadlift',     label:'Deadlift 1RM',     unit:'lb'},
+  {key:'deadlift',     label:'Deadlift 1RM',     unit:'lb',   single:/^deadlift$/},
   {key:'strictPress',  label:'Strict Press 1RM', unit:'lb',   scaleKey:'strictPress'},
   {key:'powerClean',   label:'Power Clean 1RM',  unit:'lb',   scaleKey:'powerClean'},
+  {key:'weightedPullup1RM', label:'Weighted Pull-up 1RM (lest)', unit:'lb', single:/^weighted pull ?up$/},
   {key:'maxPullup',    label:'Max tractions',    unit:'reps', scaleKey:'strictPullupReps'}
 ];
+
+// ─── Trophées automatiques : un VRAI single plus lourd que le record ────────
+// Seuls les champs portant `single` (nom exact du mouvement, normalisé) sont
+// concernés. Une variante n'écrase jamais un autre mouvement : « Tempo Back
+// Squat » n'est pas « Back Squat », « Close-Grip Bench » n'est pas « Bench ».
+// Pour le Weighted Pull-up, la charge saisie est le LEST seul. Écrit
+// uniquement state.profile.records : jamais athleteState, movementRefs ni
+// profile[clé de calibration] — un trophée ne touche pas le moteur.
+function trophyNameKey(name){
+  var s=String(chargeKeyFromName(name)||"").toLowerCase();
+  try{s=s.normalize("NFD").replace(/[\u0300-\u036f]/g,"");}catch(e){}
+  return s.replace(/[^a-z0-9]+/g," ").trim();
+}
+function trophyFieldForSingle(name){
+  var n=trophyNameKey(name);
+  for(var i=0;i<TROPHY_FIELDS.length;i++){var f=TROPHY_FIELDS[i];if(f.single&&f.single.test(n))return f;}
+  return null;
+}
+function isTrueSingle(key,r){
+  if(!r||r.isWod||String(key).indexOf("wod_")===0)return false;
+  if(String(r.skipped)==="1"||String(r.skipped).toLowerCase()==="true")return false;
+  return Number(r.reps)===1&&parseLoad(r.load)>0;
+}
+function detectTrophySingles(results,dateStr){
+  var updates=[];
+  if(!state.profile)return updates;
+  var recs=state.profile.records=state.profile.records||{};
+  Object.keys(results||{}).forEach(function(key){
+    var r=results[key];
+    if(!isTrueSingle(key,r))return;
+    var f=trophyFieldForSingle(key);if(!f)return;
+    var load=parseLoad(r.load), prev=recs[f.key], old=prev?Number(prev.value)||0:0;
+    if(load<=old)return;
+    recs[f.key]={value:load,date:dateStr,unit:f.unit,source:"auto"};
+    r.trophyPr={label:f.label,old:old||null,new:load};
+    updates.push({label:f.label,old:old||null,new:load,reps:1,key:key,trophy:true});
+  });
+  return updates;
+}
+// Migration unique (drapeau recordsBackfill) : relit le journal et inscrit le
+// meilleur vrai single des champs `single` encore VIDES. Un record existant
+// n'est jamais modifié ; un record effacé exprès n'est pas réinscrit ensuite.
+function backfillTrophySinglesFromHistory(){
+  if(!state.profile||state.profile.recordsBackfill===1)return false;
+  var recs=state.profile.records=state.profile.records||{};
+  var best={};
+  (state.history||[]).forEach(function(entry){
+    var results=(entry&&entry.results)||{};
+    Object.keys(results).forEach(function(key){
+      var r=results[key];
+      if(!isTrueSingle(key,r))return;
+      var f=trophyFieldForSingle(key);if(!f||recs[f.key])return;
+      var load=parseLoad(r.load);
+      if(!best[f.key]||load>best[f.key].value)best[f.key]={value:load,date:String(entry.actualDate||entry.date||"").slice(0,10),unit:f.unit,source:"historique"};
+    });
+  });
+  Object.keys(best).forEach(function(k){recs[k]=best[k];});
+  state.profile.recordsBackfill=1;
+  save();
+  return Object.keys(best).length>0;
+}
 
 function trophyRecord(key){var recs=(state.profile&&state.profile.records)||{};return recs[key]||null;}
 function trophyPrefillValue(f){
@@ -2463,6 +2527,56 @@ function renderWorkingRefs(){
   Array.prototype.forEach.call(host.querySelectorAll("input.wref-input"),function(inp){
     inp.addEventListener("change",function(){saveWorkingRef(inp);});
   });
+}
+
+// ─── Repères de calibration modifiables après l'onboarding ────────────────
+// Clés de profil (scaleRatios) que seul l'onboarding savait écrire. Le lest
+// de traction n'y est même pas affiché (test « reps seulement ») : une valeur
+// fausse y restait pour toujours. Écriture via CoachOnboarding, qui recalcule
+// le ratio et les moyennes avec la même règle que le calcul initial.
+var CALIBRATION_FIELDS = [
+  {key:"latPulldown10RM", label:"Weighted Pull-up 10RM", hint:"Lest seul, pour 10 reps"}
+];
+function calibrationOutOfBand(key){
+  var max=(window.CoachOnboarding&&Number(CoachOnboarding.RATIO_COMPONENT_MAX))||0;
+  var r=state.profile&&state.profile.scaleRatios?Number(state.profile.scaleRatios[key]):0;
+  return max&&r>max;
+}
+function renderCalibrationRefs(){
+  var host=$("calibRefsGrid");if(!host)return;host.innerHTML="";
+  CALIBRATION_FIELDS.forEach(function(f){
+    var v=state.profile&&Number(state.profile[f.key])>0?String(state.profile[f.key]):"";
+    var row=document.createElement("div");row.className="wref-row";
+    row.innerHTML='<div class="wref-name">'+escapeHtml(f.label)+'</div><div class="wref-cells"><div class="wref-cell">'+
+      '<span class="wref-cell-label">'+escapeHtml(f.hint)+'</span>'+
+      '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="numeric" data-calib="'+f.key+'" value="'+escapeHtml(v)+'" placeholder="—"/>'+
+      '<span class="wref-unit">lb</span></span></div></div>';
+    host.appendChild(row);
+    row.querySelector("input").addEventListener("change",function(){saveCalibrationRef(this,f);});
+  });
+  var st=$("calibStatus");
+  var odd=CALIBRATION_FIELDS.filter(function(f){return calibrationOutOfBand(f.key);});
+  if(st){
+    st.textContent=odd.length?("⚠ "+odd.map(function(f){return f.label+" = "+state.profile[f.key];}).join(", ")+" : valeur à une autre échelle, ignorée par le moteur. Inscris ton lest."):"";
+    st.className="status-msg"+(odd.length?" warn":"");
+  }
+}
+function saveCalibrationRef(inp,f){
+  var st=$("calibStatus");
+  var val=parseLoad(inp.value);
+  if(!(val>0)||!window.CoachOnboarding||!CoachOnboarding.setCalibrationValue){
+    if(st){st.textContent="Valeur non enregistrée : un nombre positif est requis.";st.className="status-msg err";}
+    return;
+  }
+  var res=CoachOnboarding.setCalibrationValue(f.key,val);
+  if(!res){if(st){st.textContent="Valeur non enregistrée.";st.className="status-msg err";}return;}
+  if(typeof renderWorkout==="function")renderWorkout();
+  if(st){
+    st.textContent=res.outOfBand
+      ?("⚠ "+f.label+" = "+val+" lb enregistré, mais plus de "+CoachOnboarding.RATIO_COMPONENT_MAX+"× la référence : le moteur l'ignorera. Vérifie que c'est bien le lest seul.")
+      :("✅ "+f.label+" : "+val+" lb enregistré.");
+    st.className="status-msg "+(res.outOfBand?"warn":"ok");
+  }
 }
 
 function saveWorkingRef(inp){
@@ -2610,7 +2724,7 @@ function detectAndApplyAutomaticPr(results,dateStr){
       updates.push({label:cfg.label,old:old||null,new:load,reps:cfg.reps,key:key});
     });
   });
-  return updates;
+  return updates.concat(detectTrophySingles(results,dateStr));
 }
 
 async function savePrProfile(){
@@ -3013,6 +3127,8 @@ function coachFullBoot(){
   if(!state.activeCycleStartDate)state.activeCycleStartDate=cycleStartDateForActive();
   if(window.CoachSeason)CoachSeason.ensure(state);
   if(window.CoachOnboarding&&CoachOnboarding.migrateReferenceVersion)CoachOnboarding.migrateReferenceVersion();
+  if(window.CoachOnboarding&&CoachOnboarding.migrateFamilyRatios)CoachOnboarding.migrateFamilyRatios();
+  backfillTrophySinglesFromHistory();
   ensureCurrentDay();
   loadCustomCharges();
   bind();

@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.1
+# ETAT ACTUEL — V5.2.2
 
-Version actuelle : V5.2.1
+Version actuelle : V5.2.2
 
 ## État courant
+
+### Prompt Coach fidèle (V5.2.2)
+
+Le contexte Coach IA n'envoie plus de pourcentages ×100, de metcons à zéro ni de notes de l'app présentées comme des notes de l'athlète. Les moyennes de famille des ratios stockés sont réparées au chargement (`CoachOnboarding.migrateFamilyRatios`, idempotente).
 
 ### Kalman × moteur de charges — capacité estimée
 

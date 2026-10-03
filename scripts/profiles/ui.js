@@ -490,6 +490,7 @@
         '<div class="racine-gate-title">Tes poids de départ estimés</div>'+
         '<div class="racine-gate-sub">Calculés à partir de ce que tu as testé. Tu peux ajuster chaque valeur avant de continuer — le moteur de charge prendra ensuite le relais à chaque séance.</div>'+
         '<div class="racine-review-grid">'+rows+'</div>'+
+        '<p class="status-msg" id="rcScaleWarn"></p>'+
         '<div class="btn-row">'+
           '<button class="btn-accent" id="rcNext">Suivant</button>'+
         '</div>'+
@@ -506,6 +507,25 @@
       });
       if(typeof api.ratiosFromValues==="function"){
         computed.ratios = api.ratiosFromValues(computed.values, wiz.meta.experienceLevel);
+      }
+      // Avertissement NON bloquant : une valeur à plus de RATIO_COMPONENT_MAX
+      // fois la référence est presque toujours saisie à une autre échelle
+      // (poulie vs lest, barre vs haltère par main). Elle est enregistrée si
+      // l'athlète confirme, mais le moteur l'ignorera (scaling.js).
+      var band = Number(api.RATIO_COMPONENT_MAX) || 0;
+      var odd = band ? Object.keys(computed.values).filter(function(k){
+        return k.charAt(0) !== "_" && Number((computed.ratios || {})[k]) > band;
+      }) : [];
+      var warn = card.querySelector("#rcScaleWarn");
+      if(odd.length && !card.__scaleWarned){
+        card.__scaleWarned = true;
+        if(warn){
+          warn.className = "status-msg warn";
+          warn.textContent = "⚠ " + odd.map(function(k){ return k + " = " + computed.values[k]; }).join(", ")
+            + " : plus de " + band + "× la référence. Valeur probablement à une autre échelle (ex. poulie au lieu de lest) — le moteur l'ignorera. Corrige-la ou continue.";
+        }
+        card.querySelector("#rcNext").textContent = "Continuer quand même";
+        return;
       }
       wiz.computed = computed;
       wiz.step = "aggressiveness";

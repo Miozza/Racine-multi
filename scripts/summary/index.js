@@ -120,6 +120,10 @@
       if(r.autoPr){
         summary.autoPrLines.push((r.prLabel || name) + ' : ' + (r.prOld ? r.prOld + ' → ' : '') + r.prNew + ' lb × ' + r.prReps);
       }
+      // Trophée 1RM (vrai single) : affiché, sans effet sur le moteur.
+      if(r.trophyPr){
+        summary.autoPrLines.push(r.trophyPr.label + ' : ' + (r.trophyPr.old ? r.trophyPr.old + ' → ' : '') + r.trophyPr.new + ' lb');
+      }
 
       if(progressSignal && progressSignal.progressLine){
         pushUnique(summary.progressionLines, progressSignal.progressLine);

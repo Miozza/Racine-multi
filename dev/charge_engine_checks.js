@@ -1595,6 +1595,121 @@ try {
     resetState();
   }
 
+  // ── Ratios de famille stockés : réparation idempotente au chargement ─────
+  // Cas réel (2026-10-02) : latPulldown10RM = 140 / 20 = 7 — une valeur de
+  // machine en lb contre une référence de lest. Le calcul actuel l'exclut des
+  // moyennes (RATIO_COMPONENT_MAX), mais un profil calibré avant cette bande
+  // gardait _upperPull 3,18 et _overall 1,56, jamais recalculés.
+  {
+    const o = {console, Math, JSON, Number, Object, Array, CoachLog:null};
+    o.window = o;
+    vm.createContext(o);
+    vm.runInContext(read('scripts/profiles/reference.js'), o, {filename:'reference.js'});
+    vm.runInContext(read('scripts/profiles/onboarding.js'), o, {filename:'onboarding.js'});
+    const comps = {bench:1.2, frontSquat:0.815, strictPress:1.19, powerClean:1.15, backSquat5RM:0.87, hipThrust8RM:0.9,
+      bulgarianDb:0.88, dbRdl:1, row8RM:1.27, chestRow8RM:1.27, latPulldown10RM:7, inclineDb10RM:1.1};
+    const poisoned = Object.assign({}, comps, {_upperPush:1.163, _upperPull:3.18, _lowerBody:0.855, _hinge:0.95, _olympic:1.15, _overall:1.56});
+    const fix = o.CoachOnboarding.repairFamilyRatios(poisoned, 'avance');
+    assert(Math.abs(fix.ratios._upperPull - 1.27) < 1e-9,
+      'La moyenne _upperPull exclut la composante hors bande (obtenu ' + fix.ratios._upperPull + ').');
+    const sane = Object.keys(comps).filter(k => k !== 'latPulldown10RM').map(k => comps[k]);
+    assert(Math.abs(fix.ratios._overall - sane.reduce((a,b) => a+b, 0) / sane.length) < 1e-9,
+      '_overall est recalculé sans la composante hors bande.');
+    assert(fix.ratios.latPulldown10RM === 7 && fix.ratios.row8RM === 1.27,
+      'Les composantes (mesures de l\'athlète) ne sont jamais réécrites.');
+    assert(o.CoachOnboarding.repairFamilyRatios(fix.ratios, 'avance').changed.length === 0,
+      'La réparation est idempotente : un second passage ne change rien.');
+    const healthy = Object.assign({}, comps, {latPulldown10RM:1.6, _upperPull:1.6, _overall:1.5});
+    const untouched = o.CoachOnboarding.repairFamilyRatios(healthy, 'avance');
+    assert(untouched.ratios === healthy && untouched.changed.length === 0,
+      'Un profil sans composante hors bande n\'est pas réécrit (ratios ajustés à la main conservés).');
+    assert(!('_hinge' in o.CoachOnboarding.repairFamilyRatios({dbRdl:1, latPulldown10RM:7, _overall:2}, 'avance').ratios),
+      'La réparation n\'ajoute jamais une famille absente du stockage.');
+
+    // Migration au chargement : copie de travail ET copie du registre.
+    let saved = 0, regPatch = null;
+    o.state = {profile:{experienceLevel:'avance', scaleRatios:Object.assign({}, poisoned)}};
+    o.save = function(){ saved++; };
+    o.CoachProfiles = {getActive(){ return {id:'p1', experienceLevel:'avance', scaleRatios:Object.assign({}, poisoned)}; },
+      update(id, patch){ regPatch = {id, patch}; return true; }};
+    assert(o.CoachOnboarding.migrateFamilyRatios() === true && saved === 1,
+      'migrateFamilyRatios répare le profil stocké et sauvegarde.');
+    assert(regPatch && regPatch.id === 'p1' && Math.abs(regPatch.patch.scaleRatios._upperPull - 1.27) < 1e-9,
+      'La copie du registre (source de resynchronisation) est réparée aussi.');
+    o.CoachProfiles.getActive = function(){ return {id:'p1', experienceLevel:'avance', scaleRatios:regPatch.patch.scaleRatios}; };
+    regPatch = null;
+    assert(o.CoachOnboarding.migrateFamilyRatios() === false && saved === 1 && regPatch === null,
+      'Second chargement : rien à réparer, aucune écriture.');
+    assert(/migrateReferenceVersion\(\);\s*\n\s*if\(window\.CoachOnboarding&&CoachOnboarding\.migrateFamilyRatios\)CoachOnboarding\.migrateFamilyRatios\(\);/.test(read('app.js')),
+      'app.js lance la réparation des familles au chargement, après la migration de référence.');
+
+    // Saisie du lest après l'onboarding (onglet Charge) : la valeur, son ratio
+    // et SEULEMENT les moyennes qui la contiennent.
+    saved = 0; regPatch = null;
+    o.state = {profile:{experienceLevel:'avance', latPulldown10RM:140, scaleRatios:Object.assign({}, fix.ratios)}};
+    o.CoachProfiles.getActive = function(){ return {id:'p1', experienceLevel:'avance', scaleRatios:Object.assign({}, fix.ratios)}; };
+    const before = Object.assign({}, o.state.profile.scaleRatios);
+    const set = o.CoachOnboarding.setCalibrationValue('latPulldown10RM', 30);
+    const after = o.state.profile.scaleRatios;
+    assert(set && set.outOfBand === false && o.state.profile.latPulldown10RM === 30 && after.latPulldown10RM === 1.5 && saved === 1,
+      'Saisie du lest : valeur 30, ratio 30/20 = 1,5, sauvegarde.');
+    assert(Math.abs(after._upperPull - (1.27 + 1.27 + 1.5) / 3) < 1e-9,
+      'La famille tirage intègre le lest dès qu\'il est dans la bande.');
+    assert(after._lowerBody === before._lowerBody && after._upperPush === before._upperPush && after.bench === before.bench,
+      'Les autres familles et composantes ne bougent pas.');
+    assert(regPatch && regPatch.patch.scaleRatios.latPulldown10RM === 1.5, 'Le registre suit la saisie.');
+    const odd = o.CoachOnboarding.setCalibrationValue('latPulldown10RM', 140);
+    assert(odd && odd.outOfBand === true && Math.abs(o.state.profile.scaleRatios._upperPull - 1.27) < 1e-9,
+      'Une saisie hors bande est enregistrée (avertissement) mais exclue de la moyenne.');
+    assert(o.CoachOnboarding.setCalibrationValue('latPulldown10RM', 0) === null, 'Une valeur nulle est refusée.');
+    assert(/CALIBRATION_FIELDS[\s\S]*latPulldown10RM/.test(read('app.js')) && read('index.html').indexOf('id="calibRefsGrid"') !== -1,
+      'Le lest de traction est modifiable dans l\'onglet Charge.');
+  }
+
+  // ── Garde : un ratio direct hors bande n'est pas une mesure ─────────────
+  // Choix de l'athlète (2026-10-02) : seuil = RATIO_COMPONENT_MAX (2,0) de
+  // l'onboarding, déjà utilisé pour les moyennes. Avant : latPulldown10RM = 7
+  // était borné à 1,6 et pris pour une MESURE — 20 lb de lest sortaient à
+  // 30 lb, et la règle des lests n'était jamais atteinte. Le 1RM d'ancrage
+  // relisait aussi 140 lb de poulie comme un 10RM de lest (~187 lb).
+  {
+    resetState();
+    const appSrc = read('app.js');
+    vm.runInContext(read('scripts/profiles/reference.js'), ctx, {filename:'reference.js'});
+    vm.runInContext(read('scripts/profiles/onboarding.js'), ctx, {filename:'onboarding.js'});
+    vm.runInContext(appSrc.match(/var PR_FIELD_MAP = \{[\s\S]*?\n\};/)[0].replace('var PR_FIELD_MAP', 'PR_FIELD_MAP'), ctx);
+    vm.runInContext(appSrc.match(/function normalizePrCompareName[\s\S]*?\n\}/)[0], ctx);
+    vm.runInContext(appSrc.match(/function prCfgMatchesResult[\s\S]*?\n\}/)[0], ctx);
+    ctx.movements.latPulldown = {name:'Weighted pull-up', profile:null};
+
+    ctx.state.profile = {onboarded:true, latPulldown10RM:140,
+      scaleRatios:{row8RM:1.27, chestRow8RM:1.27, latPulldown10RM:7, _upperPull:1.27, _overall:1.05}};
+    const wp = ctx.coachUserLoadRatioSource('Weighted Pull-up');
+    assert(wp.ratio === 1 && wp.source === 'lest sur poids du corps',
+      'Ratio direct 7 hors bande : le Weighted Pull-up retombe sur la règle des lests (obtenu ' + wp.ratio + ', « ' + wp.source + ' »).');
+    const pu = ctx.coachUserLoadRatioSource('Pull-Up');
+    assert(pu.source === 'tirage' && pu.borrowed === true && Math.abs(pu.ratio - 1.27) < 1e-9,
+      'Ratio direct hors bande : Pull-Up emprunte sa famille au lieu du 7 borné à 1,6 (obtenu ' + pu.ratio + ').');
+    assert(ctx.coachStrengthAnchorOneRm('Weighted Pull-up', null) === null,
+      'Le 1RM d\'ancrage ne relit pas 140 lb de poulie comme un 10RM de lest.');
+
+    // Dans la bande, rien ne change : c'est une mesure.
+    ctx.state.profile = {onboarded:true, latPulldown10RM:32,
+      scaleRatios:{latPulldown10RM:1.6, _upperPull:1.27, _overall:1.05}};
+    const ok = ctx.coachUserLoadRatioSource('Pull-Up');
+    assert(ok.source === 'latPulldown10RM' && ok.borrowed === false && ok.ratio === 1.6,
+      'Un ratio direct dans la bande reste une mesure (obtenu ' + ok.ratio + ', « ' + ok.source + ' »).');
+    const anchor = ctx.coachStrengthAnchorOneRm('Weighted Pull-up', null);
+    assert(anchor && anchor.source === 'profil' && anchor.oneRm > 32,
+      'Un lest dans la bande sert toujours d\'ancrage 1RM.');
+
+    // Le bac à sable des autres blocs n'a ni PR_FIELD_MAP ni onboarding.
+    delete ctx.PR_FIELD_MAP; delete ctx.CoachOnboarding; delete ctx.RacineProfileReference;
+    delete ctx.prCfgMatchesResult; delete ctx.normalizePrCompareName;
+    delete ctx.RACINE_REFERENCE_PROFILE; delete ctx.RACINE_REFERENCE_REFS;
+    resetState();
+  }
+
   // ── Un lest sur le poids du corps n'emprunte le ratio de personne ────────
   // Le ratio d'une famille dit « cet athlete souleve X fois la reference » sur
   // une charge TOTALE. Un Weighted Pull-up et un Weighted Dip portent le
