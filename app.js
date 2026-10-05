@@ -1,5 +1,5 @@
-// Racine V5.2.2 — Prompt Coach fidèle, garde des ratios, trophées 1RM automatiques
-var APP_VERSION = "V5.2.2";
+// Racine V5.2.3 — Onglet Charge en sous-onglets : Travail · Records · Forcer
+var APP_VERSION = "V5.2.3";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2326,13 +2326,46 @@ function renderProfile(){
   });
   var d=$("prDate");if(d&&!d.value)d.value=todayDateString();
   var st=$("prStatus");if(st){st.textContent="";st.className="status-msg";}
-  // Onglet « Charge » unifie : trophees + references de travail editables +
-  // references vivantes (reflet des seances) + ajustements ponctuels.
+  // Onglet « Charge » : sous-onglets Travail (références + calibrage),
+  // Records (trophées) et Forcer (charges imposées).
   if(typeof renderTrophies==="function")renderTrophies();
   if(typeof renderWorkingRefs==="function")renderWorkingRefs();
   if(typeof renderCalibrationRefs==="function")renderCalibrationRefs();
   if(typeof renderReferences==="function")renderReferences();
   if(typeof renderChargeSettings==="function")renderChargeSettings();
+  setupChargeTabs();
+}
+
+// ─── Sous-onglets de l'onglet Charge : Travail · Records · Forcer ──────────
+// Un seul panneau visible. Le dernier ouvert est retenu par appareil (simple
+// confort d'affichage : clé UI à part, jamais dans le state ni l'export).
+var CHARGE_TABS=["travail","records","forcer"];
+function chargeTabStored(){
+  var v=(window.CoachState&&CoachState.readUiPref)?CoachState.readUiPref("chargeTab"):null;
+  return CHARGE_TABS.indexOf(v)>=0?v:"travail";
+}
+function setChargeTab(tab){
+  if(CHARGE_TABS.indexOf(tab)<0)tab="travail";
+  if(window.CoachState&&CoachState.writeUiPref)CoachState.writeUiPref("chargeTab",tab);
+  Array.prototype.forEach.call(document.querySelectorAll("#profileView [data-ctab]"),function(b){
+    var on=b.getAttribute("data-ctab")===tab;
+    b.classList.toggle("active",on);b.setAttribute("aria-selected",on?"true":"false");
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#profileView [data-cpanel]"),function(p){
+    p.classList.toggle("ctab-visible",p.getAttribute("data-cpanel")===tab);
+  });
+}
+function setupChargeTabs(){
+  Array.prototype.forEach.call(document.querySelectorAll("#profileView [data-ctab]"),function(b){
+    b.onclick=function(){setChargeTab(b.getAttribute("data-ctab"));};
+  });
+  var help=$("chargeHelpBtn"),box=$("chargeHelp");
+  if(help&&box)help.onclick=function(){
+    var open=box.hasAttribute("hidden");
+    if(open)box.removeAttribute("hidden");else box.setAttribute("hidden","");
+    help.setAttribute("aria-expanded",open?"true":"false");
+  };
+  setChargeTab(chargeTabStored());
 }
 
 // ─── Trophées : records personnels datés (hors calcul) ───────────────────────
@@ -2422,52 +2455,71 @@ function trophyPrefillValue(f){
 }
 function trophyPrefillDate(f){var r=trophyRecord(f.key);return (r&&r.date)?r.date:'';}
 
+// Liste lisible : une ligne par record. Un toucher ouvre la ligne en édition
+// (valeur + date) ; rien ne s'enregistre sans « OK ». Vider la valeur puis OK
+// retire le record. Une seule ligne ouverte à la fois.
+var trophyEditing=null;
+function trophyDateText(iso){
+  var m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m)return "";
+  var mois=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  return Number(m[3])+" "+mois[Number(m[2])-1]+" "+m[1];
+}
 function renderTrophies(){
   var host=$("trophyGrid");if(!host)return;host.innerHTML="";
   TROPHY_FIELDS.forEach(function(f){
     var v=trophyPrefillValue(f), d=trophyPrefillDate(f);
-    var card=document.createElement("div");card.className="trophy-card";
-    card.innerHTML=
-      '<div class="trophy-label">'+escapeHtml(f.label)+'</div>'+
-      '<div class="trophy-value-row">'+
-        '<input class="trophy-input" type="number" inputmode="numeric" data-tro="'+f.key+'" value="'+escapeHtml(String(v))+'" placeholder="—"/>'+
-        '<span class="trophy-unit">'+f.unit+'</span>'+
-      '</div>'+
-      '<input class="trophy-date" type="date" data-tro-date="'+f.key+'" value="'+escapeHtml(String(d))+'"/>';
-    host.appendChild(card);
+    var has=(v||v===0)&&String(v)!=="";
+    if(trophyEditing===f.key){
+      var box=document.createElement("div");box.className="trophy-edit";
+      box.innerHTML=
+        '<div class="trophy-row-name">'+escapeHtml(f.label)+'</div>'+
+        '<div class="trophy-edit-fields">'+
+          '<span class="trophy-value-row"><input class="trophy-input" type="number" inputmode="decimal" data-tro="'+f.key+'" value="'+escapeHtml(has?String(v):"")+'" placeholder="—"/>'+
+          '<span class="trophy-unit">'+f.unit+'</span></span>'+
+          '<input class="trophy-date" type="date" data-tro-date="'+f.key+'" value="'+escapeHtml(String(d||todayDateString()))+'"/>'+
+        '</div>'+
+        '<div class="trophy-edit-actions">'+
+          '<button type="button" class="btn-ghost" data-tro-cancel>Annuler</button>'+
+          '<button type="button" class="btn-accent" data-tro-ok>OK</button>'+
+        '</div>';
+      host.appendChild(box);
+      box.querySelector("[data-tro-cancel]").onclick=function(){trophyEditing=null;renderTrophies();};
+      box.querySelector("[data-tro-ok]").onclick=function(){saveTrophyRow(f,box);};
+      return;
+    }
+    var row=document.createElement("button");row.type="button";
+    row.className="trophy-row"+(has?"":" is-empty");
+    row.innerHTML=
+      '<span class="trophy-row-name">'+escapeHtml(f.label)+'</span>'+
+      '<span class="trophy-row-value">'+(has?escapeHtml(String(v))+' '+f.unit:'—')+'</span>'+
+      (has&&d?'<span class="trophy-row-date">'+escapeHtml(trophyDateText(d))+'</span>':'');
+    row.onclick=function(){trophyEditing=f.key;renderTrophies();};
+    host.appendChild(row);
   });
 }
 
-function saveTrophies(){
+function saveTrophyRow(f,box){
   if(!state.profile)state.profile={};
   if(!state.profile.records)state.profile.records={};
-  var today=todayDateString();
-  var changed=0;
-  TROPHY_FIELDS.forEach(function(f){
-    var vi=document.querySelector('[data-tro="'+f.key+'"]');
-    var di=document.querySelector('[data-tro-date="'+f.key+'"]');
-    if(!vi)return;
-    var raw=String(vi.value||"").trim();
-    if(raw===""){
-      if(state.profile.records[f.key]){delete state.profile.records[f.key];changed++;}
-      return;
-    }
-    var val=(f.unit==='reps')?(parseInt(raw,10)||0):parseLoad(raw);
-    if(!(val>0))return;
-    var date=(di&&di.value)?di.value:(trophyPrefillDate(f)||today);
-    var prev=state.profile.records[f.key];
-    if(!prev||Number(prev.value)!==Number(val)||prev.date!==date){
-      state.profile.records[f.key]={value:val,date:date,unit:f.unit};
-      // Miroir vers profile[scaleKey] (affichage / ancien chemin). N'ecrit
-      // JAMAIS athleteState/movementRefs : un trophee ne touche pas le moteur.
-      if(f.scaleKey)state.profile[f.scaleKey]=val;
-      changed++;
-    }
-  });
   var st=$("prStatus");
-  if(!changed){if(st){st.textContent="Aucun record modifié.";st.className="status-msg";}return;}
-  save();
-  if(st){st.textContent="✅ Records sauvegardés (datés, hors calcul).";st.className="status-msg ok";}
+  var vi=box.querySelector('[data-tro="'+f.key+'"]'), di=box.querySelector('[data-tro-date="'+f.key+'"]');
+  var raw=String(vi&&vi.value||"").trim();
+  if(raw===""){
+    if(state.profile.records[f.key])delete state.profile.records[f.key];
+    save();trophyEditing=null;renderTrophies();
+    if(st){st.textContent=f.label+" : record retiré.";st.className="status-msg ok";}
+    return;
+  }
+  var val=(f.unit==='reps')?(parseInt(raw,10)||0):parseLoad(raw);
+  if(!(val>0)){if(st){st.textContent="Valeur invalide : un nombre positif est requis.";st.className="status-msg err";}return;}
+  var date=(di&&di.value)?di.value:todayDateString();
+  state.profile.records[f.key]={value:val,date:date,unit:f.unit};
+  // Miroir vers profile[scaleKey] (affichage / ancien chemin). N'ecrit
+  // JAMAIS athleteState/movementRefs : un trophee ne touche pas le moteur.
+  if(f.scaleKey)state.profile[f.scaleKey]=val;
+  save();trophyEditing=null;renderTrophies();
+  if(st){st.textContent="✅ "+f.label+" : "+val+" "+f.unit+" ("+trophyDateText(date)+").";st.className="status-msg ok";}
 }
 
 // ─── Références de travail (éditables) : source de vérité que le moteur lit ───
@@ -2506,22 +2558,39 @@ function workingRefPrefill(mvKey,label,range){
   return null;
 }
 
+// Tableau compact : une ligne par mouvement, les plages en colonnes, en-têtes
+// une seule fois. Sous chaque case : date et RPE de la référence — ce que
+// montrait l'ancien bloc « Ce que le moteur retient », même source
+// (state.movementRefs).
+function workingRefMeta(mvKey,range){
+  var ref=state.movementRefs&&state.movementRefs[mvKey+"__"+range];
+  if(!ref||ref.implausible||!(ref.load||ref.load===0))return "";
+  var parts=[];
+  var d=trophyDateText(ref.date);if(d)parts.push(d.replace(/ \d{4}$/,""));
+  if(ref.rpe||ref.rpe===0)parts.push("RPE "+ref.rpe);
+  return parts.join(" · ");
+}
 function renderWorkingRefs(){
   var host=$("workingRefsGrid");if(!host)return;host.innerHTML="";
+  var headLabels={strength:"Force<br>5",hypertrophy:"Hypertro<br>8-12",endurance:"Endur.<br>15+"};
+  var head=document.createElement("div");head.className="wref-trow is-head";
+  head.innerHTML='<span></span>'+REFERENCE_RANGES.map(function(rg){
+    return '<span class="wref-th r-'+rg.range+'">'+headLabels[rg.range]+'</span>';
+  }).join("");
+  host.appendChild(head);
   REFERENCE_MOVEMENTS.forEach(function(m){
     var cells=REFERENCE_RANGES.map(function(rg){
       var pre=workingRefPrefill(m.mvKey,m.label,rg.range);
       var val=(pre||pre===0)?String(pre):"";
-      return '<div class="wref-cell">'+
-        '<span class="wref-cell-label">'+rg.label+'</span>'+
-        '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="numeric" '+
+      return '<div class="wref-tcell">'+
+        '<input class="wref-input" type="number" inputmode="decimal" aria-label="'+escapeHtml(m.label+" "+rg.label)+'" '+
           'data-mvkey="'+escapeHtml(m.mvKey)+'" data-label="'+escapeHtml(m.label)+'" '+
           'data-range="'+rg.range+'" data-reps="'+rg.reps+'" value="'+escapeHtml(val)+'" placeholder="—"/>'+
-          '<span class="wref-unit">lb</span></span>'+
+        '<span class="wref-meta">'+escapeHtml(workingRefMeta(m.mvKey,rg.range))+'</span>'+
         '</div>';
     }).join("");
-    var row=document.createElement("div");row.className="wref-row";
-    row.innerHTML='<div class="wref-name">'+escapeHtml(m.label)+'</div><div class="wref-cells">'+cells+'</div>';
+    var row=document.createElement("div");row.className="wref-trow";
+    row.innerHTML='<div class="wref-tname">'+escapeHtml(m.label)+'</div>'+cells;
     host.appendChild(row);
   });
   Array.prototype.forEach.call(host.querySelectorAll("input.wref-input"),function(inp){
@@ -2546,11 +2615,10 @@ function renderCalibrationRefs(){
   var host=$("calibRefsGrid");if(!host)return;host.innerHTML="";
   CALIBRATION_FIELDS.forEach(function(f){
     var v=state.profile&&Number(state.profile[f.key])>0?String(state.profile[f.key]):"";
-    var row=document.createElement("div");row.className="wref-row";
-    row.innerHTML='<div class="wref-name">'+escapeHtml(f.label)+'</div><div class="wref-cells"><div class="wref-cell">'+
-      '<span class="wref-cell-label">'+escapeHtml(f.hint)+'</span>'+
-      '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="numeric" data-calib="'+f.key+'" value="'+escapeHtml(v)+'" placeholder="—"/>'+
-      '<span class="wref-unit">lb</span></span></div></div>';
+    var row=document.createElement("div");row.className="charge-line";
+    row.innerHTML='<div class="charge-line-name">'+escapeHtml(f.label)+'<span class="charge-line-base">'+escapeHtml(f.hint)+'</span></div>'+
+      '<span class="wref-input-wrap"><input class="wref-input" type="number" inputmode="decimal" data-calib="'+f.key+'" value="'+escapeHtml(v)+'" placeholder="—"/>'+
+      '<span class="wref-unit">lb</span></span>';
     host.appendChild(row);
     row.querySelector("input").addEventListener("change",function(){saveCalibrationRef(this,f);});
   });
@@ -2834,15 +2902,45 @@ function applyChargeOverrideToAthleteState(key,loadNum,dateStr){
   ast.updatedAt=nowIso();ast.version=APP_VERSION;
 }
 
-function renderChargeSettings(){
-  var c=$("chargeSettingsList");if(!c)return;c.innerHTML="";
-  chargeList().forEach(function(key){
-    var div=document.createElement("div");div.className="charge-row";
-    var val=(customCharges[key]!==undefined)?customCharges[key]:"";
-    var official=officialCharges()[key]||"—";
-    div.innerHTML='<label>'+key+'<br><small style="font-weight:400;color:var(--muted)">Base: '+official+'</small></label><input class="charge-input" data-charge-key="'+key+'" type="text" value="'+String(val).replace(/"/g,"&quot;")+'" placeholder="'+String(official).replace(/"/g,"&quot;")+'" />';
-    c.appendChild(div);
+// Forcer une charge : les mouvements du programme ACTIF (toutes ses semaines),
+// une recherche pour les autres, et la liste des charges forcées hors
+// programme — une charge forcée reste active même quand on ne la voit pas,
+// elle ne doit donc jamais être invisible. Clé = chargeKeyFromName(nom),
+// la même que lit charge() (scripts/charge/utilitaires.js).
+// Seuls les mouvements CHARGÉS comptent : une charge écrite dans le programme,
+// une base dans charges.js ou une charge déjà forcée. Un Burpee, un Bike ou
+// des « Transitions » n'ont rien à forcer.
+function activeProgramChargeKeys(){
+  var seen={},out=[];
+  function add(name,load){
+    var k=chargeKeyFromName(name);if(!k)return;
+    var loaded=/\d\s*(lb|kg|%)|^\s*\d+(\.\d+)?\s*$/i.test(String(load||""))||officialCharges()[k]!==undefined||String(customCharges[k]||"").trim()!=="";
+    if(!loaded||seen[k])return;
+    seen[k]=true;out.push(k);
+  }
+  var weeks=(typeof totalWeeks==="function")?totalWeeks():4;
+  currentDayOrder().forEach(function(day){
+    for(var w=1;w<=weeks;w++){
+      var wk=null;
+      try{wk=buildWorkout(day,w);}catch(e){wk=null;}
+      ((wk&&wk.blocks)||[]).forEach(function(b){
+        (b.exercises||[]).forEach(function(e){if(e&&e.name)add(e.name,e.load);});
+        (b.progress||[]).forEach(function(mvKey){if(movements[mvKey])add(movements[mvKey].name,"1");});
+      });
+    }
   });
+  return out;
+}
+function chargeLineHtml(key){
+  var val=(customCharges[key]!==undefined)?customCharges[key]:"";
+  var official=officialCharges()[key];
+  var forced=String(val).trim()!=="";
+  return '<div class="charge-line'+(forced?' is-forced':'')+'">'+
+    '<div class="charge-line-name">'+escapeHtml(key)+'<span class="charge-line-base">'+(official?'Base : '+escapeHtml(String(official)):'Pas de base · moteur')+'</span></div>'+
+    '<input class="charge-input" data-charge-key="'+escapeHtml(key)+'" type="text" value="'+escapeHtml(String(val))+'" placeholder="'+escapeHtml(String(official||"—"))+'" />'+
+    '</div>';
+}
+function bindChargeInputs(c){
   Array.prototype.forEach.call(c.querySelectorAll("input[data-charge-key]"),function(inp){
     inp.addEventListener("change",function(){
       var key=inp.getAttribute("data-charge-key"),val=inp.value.trim();
@@ -2855,8 +2953,37 @@ function renderChargeSettings(){
       }
       saveCustomCharges();save();renderWorkout();
       if($("phoneView")&&$("phoneView").classList.contains("view-active"))renderPhoneWod();
+      renderChargeSettings();
     });
   });
+}
+function renderChargeSearch(){
+  var box=$("chargeSearchResults"),inp=$("chargeSearch");if(!box)return;box.innerHTML="";
+  var q=String(inp&&inp.value||"").trim().toLowerCase();
+  if(q.length<2)return;
+  var inProgram={};activeProgramChargeKeys().forEach(function(k){inProgram[k]=true;});
+  var pool={};chargeList().concat(Object.keys(customCharges)).forEach(function(k){if(!inProgram[k])pool[k]=true;});
+  var hits=Object.keys(pool).filter(function(k){return k.toLowerCase().indexOf(q)>=0;}).sort().slice(0,8);
+  box.innerHTML=hits.length?hits.map(chargeLineHtml).join(""):'<div class="charge-empty">Aucun autre mouvement ne correspond.</div>';
+  bindChargeInputs(box);
+}
+function renderChargeSettings(){
+  var c=$("chargeSettingsList");if(!c)return;
+  var keys=activeProgramChargeKeys();
+  var title=$("chargeProgramTitle");
+  if(title){var lbl="";try{lbl=focus()&&focus().label;}catch(e){}title.textContent="Programme actif"+(lbl?" · "+lbl:"");}
+  c.innerHTML=keys.length?keys.map(chargeLineHtml).join(""):'<div class="charge-empty">Aucun mouvement chargé dans ce programme.</div>';
+  bindChargeInputs(c);
+  var inProgram={};keys.forEach(function(k){inProgram[k]=true;});
+  var others=Object.keys(customCharges).filter(function(k){return !inProgram[k]&&String(customCharges[k]).trim()!=="";}).sort();
+  var wrap=$("chargeOtherWrap"),list=$("chargeOtherList");
+  if(wrap&&list){
+    if(others.length){wrap.removeAttribute("hidden");list.innerHTML=others.map(chargeLineHtml).join("");bindChargeInputs(list);}
+    else{wrap.setAttribute("hidden","");list.innerHTML="";}
+  }
+  var search=$("chargeSearch");
+  if(search&&!search.__bound){search.__bound=true;search.addEventListener("input",renderChargeSearch);}
+  renderChargeSearch();
 }
 function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalisées?")){customCharges={};if(typeof resetManualChargeOverridesFromAthleteState==="function")resetManualChargeOverridesFromAthleteState();saveCustomCharges();save();renderChargeSettings();renderWorkout();}}
 
@@ -2969,7 +3096,6 @@ function bind(){
   // Sélecteur de profil déplacé dans Gear / réglages : aucun mini bouton dans la topnav.
   var sc=$("saveCycleBtn");if(sc)sc.onclick=saveCycle;
   var nc=$("newCycleBtn");if(nc)nc.onclick=newCycle;
-  var spr=$("savePrBtn");if(spr)spr.onclick=saveTrophies;
   var cg=$("cycleGoal");if(cg)cg.onchange=function(){resetPreviewPosition(cg.value);var csi=$("cycleStartDateInput");if(csi)csi.value=todayIsoDate();renderCycle();};
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};

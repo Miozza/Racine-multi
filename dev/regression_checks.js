@@ -397,6 +397,57 @@ assert(/value="'\+escHtml\(getGuidedResult\(item\.key,'note',''\)\)\+'"/.test(re
     'La détection est branchée sur la sauvegarde de séance, la migration sur le chargement.');
 }
 
+// ── Onglet Charge : trois sous-onglets (choix de l'athlète, 2026-10-05) ─────
+// Travail (tableau + calibrage, ex-« Ce que le moteur retient » fusionné),
+// Records (liste, OK par ligne), Forcer (programme actif + recherche +
+// charges forcées hors programme, jamais invisibles).
+{
+  const vm = require('vm');
+  const html = read('index.html');
+  const pv = (html.match(/<main id="profileView">[\s\S]*?<\/main>/) || [''])[0];
+  ['travail', 'records', 'forcer'].forEach(t => {
+    assert(pv.indexOf('data-ctab="' + t + '"') !== -1 && pv.indexOf('data-cpanel="' + t + '"') !== -1,
+      'Charge : sous-onglet ' + t + ' (bouton + panneau).');
+  });
+  assert(pv.indexOf('id="referencesList"') === -1 && pv.indexOf('id="savePrBtn"') === -1,
+    'Charge : plus de bloc « Ce que le moteur retient » (fusionné dans Travail) ni de bouton global de records.');
+  ['workingRefsGrid', 'calibRefsGrid', 'trophyGrid', 'chargeSettingsList', 'chargeOtherList', 'chargeSearch', 'chargeHelp'].forEach(id => {
+    assert(pv.indexOf('id="' + id + '"') !== -1, 'Charge : #' + id + ' présent.');
+  });
+  const app = read('app.js');
+  assert(/setupChargeTabs\(\);\s*\n\}/.test(app) && /CoachState\.readUiPref\("chargeTab"\)/.test(app),
+    'Le sous-onglet s\'installe au rendu et se souvient du dernier ouvert via CoachState (pas de localStorage dans app.js).');
+  const saveRow = ((app.match(/function saveTrophyRow[\s\S]*?\n\}/) || [''])[0]).replace(/\/\/[^\n]*/g, '');
+  assert(saveRow && !/athleteState|movementRefs|updateMovementRef|updateAthleteState/.test(saveRow),
+    'Enregistrer un record (OK) n\'écrit jamais le moteur.');
+
+  // Forcer : seuls les mouvements CHARGÉS du programme actif.
+  const c = {console, Object, String, Number, RegExp};
+  c.window = c;
+  vm.createContext(c);
+  vm.runInContext(read('scripts/charge/utilitaires.js').match(/function chargeKeyFromName[^\n]*\n/)[0], c);
+  vm.runInContext((app.match(/function activeProgramChargeKeys[\s\S]*?\n\}/) || [''])[0], c);
+  c.DEFAULT_CHARGES = {'Face Pull':'60-70 lb'};
+  c.officialCharges = function(){ return c.DEFAULT_CHARGES; };
+  c.customCharges = {'Wall Ball':'20 lb'};
+  c.movements = {};
+  c.totalWeeks = function(){ return 2; };
+  c.currentDayOrder = function(){ return ['lundi', 'jeudi']; };
+  c.buildWorkout = function(day, w){
+    return {blocks:[{exercises:[
+      {name:'A. Back Squat', load:'230 lb'}, {name:'Face Pull', load:'léger'}, {name:'Burpee', load:'PdC'},
+      {name:'Bike', load:'15 cal'}, {name:'Transitions', load:'6 reps / mouvement'}, {name:'Wall Ball', load:'—'},
+      {name:'Weighted Pull-up', load:'80%'}, {name:'DB Row', load: w === 2 ? '70' : 'modéré'}
+    ]}]};
+  };
+  const keys = c.activeProgramChargeKeys();
+  assert(JSON.stringify(keys) === JSON.stringify(['Back Squat', 'Face Pull', 'Wall Ball', 'Weighted Pull-up', 'DB Row']),
+    'Forcer : charge écrite, base charges.js ou charge déjà forcée — ni Burpee, ni Bike, ni Transitions (obtenu ' + keys.join(', ') + ').');
+  const render = (app.match(/function renderChargeSettings[\s\S]*?\n\}/) || [''])[0];
+  assert(/Object\.keys\(customCharges\)\.filter\(function\(k\)\{return !inProgram\[k\]/.test(render) && /chargeOtherWrap/.test(render),
+    'Forcer : une charge forcée hors programme reste visible (« Autres charges forcées »).');
+}
+
 if(errors.length){
   console.error('\nÉCHEC regression_checks.js');
   errors.forEach((e,i) => console.error((i+1) + '. ' + e));
