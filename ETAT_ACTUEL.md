@@ -1,10 +1,14 @@
-# ETAT ACTUEL — V5.2.2
+# ETAT ACTUEL — V5.2.3
 
-Version actuelle : V5.2.2
+Version actuelle : V5.2.3
 
 ## État courant
 
-### Prompt Coach fidèle (V5.2.2)
+### Onglet Charge en sous-onglets
+
+Travail (tableau compact + date/RPE + calibrage), Records (liste, OK par ligne), Forcer (programme actif, recherche, charges forcées hors programme). Le dernier sous-onglet ouvert est retenu par appareil.
+
+### Prompt Coach fidèle
 
 Le contexte Coach IA n'envoie plus de pourcentages ×100, de metcons à zéro ni de notes de l'app présentées comme des notes de l'athlète. Les moyennes de famille des ratios stockés sont réparées au chargement (`CoachOnboarding.migrateFamilyRatios`, idempotente).
 

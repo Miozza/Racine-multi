@@ -77,6 +77,17 @@
     }
   };
 
+  // Préférences d'affichage par appareil (ex. dernier sous-onglet ouvert).
+  // Hors state, hors export : un simple confort, perdu sans conséquence.
+  // Silencieux par construction — jamais d'alerte pour une préférence d'UI.
+  var UI_PREFIX = "racine::ui::";
+  api.readUiPref = function(name){
+    try{ return localStorage.getItem(UI_PREFIX + name); }catch(e){ return null; }
+  };
+  api.writeUiPref = function(name, value){
+    try{ localStorage.setItem(UI_PREFIX + name, String(value)); return true; }catch(e){ return false; }
+  };
+
   api.storageKeys = function(){
     var k = currentKeys();
     return {

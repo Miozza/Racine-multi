@@ -1,3 +1,18 @@
+## V5.2.3 — Onglet Charge : Travail · Records · Forcer
+
+**Pourquoi** : sur iPhone, l'onglet Charge faisait environ 7,5 écrans de défilement (6 blocs, 12 cartes de mouvement, ~40 cartes « Forcer »). Choix de l'athlète, une question à la fois (2026-10-05).
+
+**Ce qui change** (`index.html`, `app.js`, `styles.css`, `scripts/state/storage.js`)
+
+- **Trois sous-onglets** en haut : Travail · Records · Forcer. Un seul visible à la fois ; le dernier ouvert est retenu par appareil (`CoachState.readUiPref/writeUiPref`, clé `racine::ui::chargeTab`, hors state et hors export).
+- **Travail** : tableau compact, une ligne par mouvement, en-têtes Force 5 · Hypertro 8-12 · Endur. 15+ une seule fois. Sous chaque case : date et RPE de la référence — l'ancien bloc « Ce que le moteur retient » montrait la même source (`state.movementRefs`) et disparaît. L'explication de priorité du moteur passe derrière un bouton « ? ». Le calibrage du lest de traction est sous le tableau.
+- **Records** : liste lisible (« Back Squat 1RM · 300 lb · 28 sept. 2026 »). Un toucher ouvre la ligne en édition avec OK / Annuler ; rien ne s'enregistre sans OK, valeur vidée + OK retire le record. Le bouton global « Sauvegarder les records » disparaît. Toujours aucune écriture moteur.
+- **Forcer** : les mouvements **chargés** du programme actif (charge écrite, base `charges.js` ou charge déjà forcée — pas de Burpee, Bike, Transitions), une recherche pour les autres, et une section « Autres charges forcées · hors programme » pour qu'aucune charge forcée ne reste invisible.
+
+**Aucun changement de données** : mêmes clés, mêmes écritures (`movementRefs`, `profile.records`, `customCharges`).
+
+**Garde-fou** : `dev/regression_checks.js` (structure des sous-onglets, mémoire du dernier ouvert via CoachState, OK de record sans écriture moteur, filtre des mouvements chargés, charges forcées hors programme visibles).
+
 ## V5.2.2 — Prompt Coach fidèle, garde des ratios, trophées 1RM automatiques
 
 **Pourquoi** : le prompt Coach (`RACINE_COACH_START`) envoyait à l'IA des données fausses ou trompeuses (rapport de l'athlète du 2026-10-02).

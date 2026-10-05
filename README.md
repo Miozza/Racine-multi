@@ -1,6 +1,6 @@
 # Racine — prototype multi-utilisateur
 
-- Version : `V5.2.2`
+- Version : `V5.2.3`
 
 La version courante ajoute au moteur de charges une **capacité estimée** (filtre de Kalman sur l'e1RM, avec son incertitude), reconstruite en mémoire depuis l'historique : en observation par défaut — la charge suggérée ne change pas, le bouton `(!)` affiche la capacité — et en mélange sur réglage de profil.
 
