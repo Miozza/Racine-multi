@@ -360,6 +360,20 @@ function coachCycleProgress01(){
 
 // Reference de travail declaree pour une plage (PR exclus). Cherche d'abord la
 // plage exacte ; sinon derive via 1RM Epley depuis une autre plage disponible.
+//
+// Une plage couvre plusieurs nombres de reps (strength = 1 a 5). Une reference
+// de la bonne plage mais a d'autres reps n'est PAS une charge de la cible :
+// un single a 300 lb n'est pas un 5RM a 300 lb. Mesure avant correction :
+// case Force = 300 x 1, Back Squat 5x5 sans historique -> 270 lb suggeres
+// (90 % du 1RM pour 5 reps). On la ramene donc aux reps cibles par Epley
+// (300 x 1 -> ~265 en 5RM -> ~240 en debut de rampe).
+function coachRefAtTargetReps(load,reps,targetReps){
+  var t=Number(targetReps)||0;
+  reps=Number(reps)||0;
+  if(!(load>0)||!reps||!t||reps===t)return {load:load,reps:reps||t,converted:false};
+  var derived=estimateLoadForRepsFrom1RM(epley1RM(load,reps),t);
+  return (derived>0)?{load:derived,reps:t,converted:true,fromLoad:load,fromReps:reps}:{load:load,reps:reps,converted:false};
+}
 function coachDeclaredRangeReference(mv,range,targetReps,label){
   // 1. athleteState (references saisies dans la grille + seances). Peut etre
   //    absent pour un client onboardé (voir fallback movementRefs plus bas).
@@ -370,7 +384,7 @@ function coachDeclaredRangeReference(mv,range,targetReps,label){
     if(direct&&!isPrRef(direct)){
       var l=refLoad(direct);
       var reps=Number(direct.currentReps)||Number(direct.actualReps)||0;
-      if(l>0)return {load:l,reps:reps||Number(targetReps)||0,range:range,exact:true};
+      if(l>0){var at=coachRefAtTargetReps(l,reps,targetReps);return {load:at.load,reps:at.reps,range:range,exact:!at.converted,from:at.converted?{load:l,reps:reps}:null};}
     }
     /** @type {any} — rempli plus bas avec {oneRM}. */
     var best=null;
@@ -412,7 +426,7 @@ function coachDeclaredRangeReference(mv,range,targetReps,label){
       if(eRange===range&&!rExact)rExact={load:eLoad,reps:eReps};
       if(eReps>0){var oneRMr=epley1RM(eLoad,eReps);if(oneRMr>0&&(!rBest||oneRMr>rBest.oneRM))rBest={oneRM:oneRMr};}
     }
-    if(rExact)return {load:rExact.load,reps:rExact.reps||Number(targetReps)||0,range:range,exact:true};
+    if(rExact){var atR=coachRefAtTargetReps(rExact.load,rExact.reps,targetReps);return {load:atR.load,reps:atR.reps,range:range,exact:!atR.converted,from:atR.converted?{load:rExact.load,reps:rExact.reps}:null};}
     if(rBest){var dRef=estimateLoadForRepsFrom1RM(rBest.oneRM,Number(targetReps)||8);if(dRef>0)return {load:dRef,reps:Number(targetReps)||8,range:range,exact:false};}
   }
   return null;
@@ -774,7 +788,8 @@ function coachRuleReferenceDeTravail(ctx){
       ctx.suggested=refSeed.load;
       ctx.mode="nearest";
       ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
-      ctx.reason="Reference de travail "+Math.round(declaredRef.load)+" lb"+(declaredRef.exact?"":" (derivee)")
+      ctx.reason="Reference de travail "+Math.round(declaredRef.load)+" lb"
+        +(declaredRef.from?" (convertie depuis "+Math.round(declaredRef.from.load)+" lb x "+declaredRef.from.reps+")":(declaredRef.exact?"":" (derivee)"))
         +" : semaine "+(refSeed.wIdx+1)+"/"+refSeed.loadingWeeks+" a ~"+Math.round(refSeed.pct*100)+"% ("
         +Math.round(refSeed.load)+" lb), sous le RM. Rampe planifiee : pas de charge proche du RM pour un travail en "+ctx.range+".";
       ctx.brainAdjusted=true;

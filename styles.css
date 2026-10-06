@@ -8750,10 +8750,10 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   opacity: .85;
 }
 
-/* ════ Onglet « Charge » : sous-onglets Travail · Records · Forcer ════
+/* ════ Onglet « Charge » : sous-onglets Travail · Records ════
    Un seul panneau visible à la fois ; le dernier ouvert est retenu. */
 #profileView .ctab-panel { padding-bottom: 12px; }
-.ctab-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ctab-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 .ctab {
   font-family: var(--font-hud);
   font-size: 12px;
@@ -8817,8 +8817,8 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 #profileView .wref-tcell input.wref-input { font-size: 15px; padding: 8px 6px; text-align: center; }
 .wref-meta { font-size: 10px; color: var(--muted); text-align: center; line-height: 1.2; min-height: 12px; }
 
-/* Calibrage + Forcer : une ligne par mouvement (nom | champ) */
-.calib-list, .charge-list { display: grid; gap: 5px; }
+/* Calibrage : une ligne par repère (nom | champ) */
+.calib-list { display: grid; gap: 5px; }
 .charge-line {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 120px);
@@ -8829,18 +8829,10 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   border-radius: 8px;
   padding: 7px 9px;
 }
-.charge-line.is-forced { border-color: var(--cyan); }
 .charge-line-name { font-size: 14px; font-weight: 700; color: var(--text2); line-height: 1.25; overflow-wrap: anywhere; }
 .charge-line-base { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
 #profileView .charge-line input.charge-input,
 #profileView .charge-line input.wref-input { font-size: 15px; padding: 8px; }
-.charge-search {
-  width: 100%; box-sizing: border-box;
-  background: var(--bg); color: var(--text);
-  border: 1px solid var(--border); border-radius: 8px;
-  padding: 10px 12px; font-size: 15px; margin-bottom: 6px;
-}
-.charge-empty { font-size: 13px; color: var(--muted); padding: 4px 2px; }
 
 /* Records : liste lisible, toucher pour modifier, OK / Annuler par ligne */
 .trophy-list { display: grid; gap: 5px; }

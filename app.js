@@ -1,5 +1,5 @@
-// Racine V5.2.3 — Onglet Charge en sous-onglets : Travail · Records · Forcer
-var APP_VERSION = "V5.2.3";
+// Racine V5.2.4 — Single ≠ 5RM dans les références de travail ; « Forcer » retiré
+var APP_VERSION = "V5.2.4";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2326,20 +2326,19 @@ function renderProfile(){
   });
   var d=$("prDate");if(d&&!d.value)d.value=todayDateString();
   var st=$("prStatus");if(st){st.textContent="";st.className="status-msg";}
-  // Onglet « Charge » : sous-onglets Travail (références + calibrage),
-  // Records (trophées) et Forcer (charges imposées).
+  // Onglet « Charge » : sous-onglets Travail (références + calibrage) et
+  // Records (trophées).
   if(typeof renderTrophies==="function")renderTrophies();
   if(typeof renderWorkingRefs==="function")renderWorkingRefs();
   if(typeof renderCalibrationRefs==="function")renderCalibrationRefs();
   if(typeof renderReferences==="function")renderReferences();
-  if(typeof renderChargeSettings==="function")renderChargeSettings();
   setupChargeTabs();
 }
 
-// ─── Sous-onglets de l'onglet Charge : Travail · Records · Forcer ──────────
+// ─── Sous-onglets de l'onglet Charge : Travail · Records ──────────────────
 // Un seul panneau visible. Le dernier ouvert est retenu par appareil (simple
 // confort d'affichage : clé UI à part, jamais dans le state ni l'export).
-var CHARGE_TABS=["travail","records","forcer"];
+var CHARGE_TABS=["travail","records"];
 function chargeTabStored(){
   var v=(window.CoachState&&CoachState.readUiPref)?CoachState.readUiPref("chargeTab"):null;
   return CHARGE_TABS.indexOf(v)>=0?v:"travail";
@@ -2565,14 +2564,17 @@ function workingRefPrefill(mvKey,label,range){
 function workingRefMeta(mvKey,range){
   var ref=state.movementRefs&&state.movementRefs[mvKey+"__"+range];
   if(!ref||ref.implausible||!(ref.load||ref.load===0))return "";
+  // Les reps d'abord : une plage couvre plusieurs nombres de reps, et
+  // « 300 » sous Force ne dit pas si c'est un single ou un 5RM.
   var parts=[];
+  if(Number(ref.reps)>0)parts.push("× "+Number(ref.reps));
   var d=trophyDateText(ref.date);if(d)parts.push(d.replace(/ \d{4}$/,""));
   if(ref.rpe||ref.rpe===0)parts.push("RPE "+ref.rpe);
   return parts.join(" · ");
 }
 function renderWorkingRefs(){
   var host=$("workingRefsGrid");if(!host)return;host.innerHTML="";
-  var headLabels={strength:"Force<br>5",hypertrophy:"Hypertro<br>8-12",endurance:"Endur.<br>15+"};
+  var headLabels={strength:"Force<br>1-5",hypertrophy:"Hypertro<br>6-12",endurance:"Endur.<br>13+"};
   var head=document.createElement("div");head.className="wref-trow is-head";
   head.innerHTML='<span></span>'+REFERENCE_RANGES.map(function(rg){
     return '<span class="wref-th r-'+rg.range+'">'+headLabels[rg.range]+'</span>';
@@ -2902,90 +2904,6 @@ function applyChargeOverrideToAthleteState(key,loadNum,dateStr){
   ast.updatedAt=nowIso();ast.version=APP_VERSION;
 }
 
-// Forcer une charge : les mouvements du programme ACTIF (toutes ses semaines),
-// une recherche pour les autres, et la liste des charges forcées hors
-// programme — une charge forcée reste active même quand on ne la voit pas,
-// elle ne doit donc jamais être invisible. Clé = chargeKeyFromName(nom),
-// la même que lit charge() (scripts/charge/utilitaires.js).
-// Seuls les mouvements CHARGÉS comptent : une charge écrite dans le programme,
-// une base dans charges.js ou une charge déjà forcée. Un Burpee, un Bike ou
-// des « Transitions » n'ont rien à forcer.
-function activeProgramChargeKeys(){
-  var seen={},out=[];
-  function add(name,load){
-    var k=chargeKeyFromName(name);if(!k)return;
-    var loaded=/\d\s*(lb|kg|%)|^\s*\d+(\.\d+)?\s*$/i.test(String(load||""))||officialCharges()[k]!==undefined||String(customCharges[k]||"").trim()!=="";
-    if(!loaded||seen[k])return;
-    seen[k]=true;out.push(k);
-  }
-  var weeks=(typeof totalWeeks==="function")?totalWeeks():4;
-  currentDayOrder().forEach(function(day){
-    for(var w=1;w<=weeks;w++){
-      var wk=null;
-      try{wk=buildWorkout(day,w);}catch(e){wk=null;}
-      ((wk&&wk.blocks)||[]).forEach(function(b){
-        (b.exercises||[]).forEach(function(e){if(e&&e.name)add(e.name,e.load);});
-        (b.progress||[]).forEach(function(mvKey){if(movements[mvKey])add(movements[mvKey].name,"1");});
-      });
-    }
-  });
-  return out;
-}
-function chargeLineHtml(key){
-  var val=(customCharges[key]!==undefined)?customCharges[key]:"";
-  var official=officialCharges()[key];
-  var forced=String(val).trim()!=="";
-  return '<div class="charge-line'+(forced?' is-forced':'')+'">'+
-    '<div class="charge-line-name">'+escapeHtml(key)+'<span class="charge-line-base">'+(official?'Base : '+escapeHtml(String(official)):'Pas de base · moteur')+'</span></div>'+
-    '<input class="charge-input" data-charge-key="'+escapeHtml(key)+'" type="text" value="'+escapeHtml(String(val))+'" placeholder="'+escapeHtml(String(official||"—"))+'" />'+
-    '</div>';
-}
-function bindChargeInputs(c){
-  Array.prototype.forEach.call(c.querySelectorAll("input[data-charge-key]"),function(inp){
-    inp.addEventListener("change",function(){
-      var key=inp.getAttribute("data-charge-key"),val=inp.value.trim();
-      if(val){
-        customCharges[key]=val;
-        var loadNum=parseLoad(val);
-        if(loadNum||loadNum===0)applyChargeOverrideToAthleteState(key,loadNum,todayDateString());
-      }else{
-        delete customCharges[key];
-      }
-      saveCustomCharges();save();renderWorkout();
-      if($("phoneView")&&$("phoneView").classList.contains("view-active"))renderPhoneWod();
-      renderChargeSettings();
-    });
-  });
-}
-function renderChargeSearch(){
-  var box=$("chargeSearchResults"),inp=$("chargeSearch");if(!box)return;box.innerHTML="";
-  var q=String(inp&&inp.value||"").trim().toLowerCase();
-  if(q.length<2)return;
-  var inProgram={};activeProgramChargeKeys().forEach(function(k){inProgram[k]=true;});
-  var pool={};chargeList().concat(Object.keys(customCharges)).forEach(function(k){if(!inProgram[k])pool[k]=true;});
-  var hits=Object.keys(pool).filter(function(k){return k.toLowerCase().indexOf(q)>=0;}).sort().slice(0,8);
-  box.innerHTML=hits.length?hits.map(chargeLineHtml).join(""):'<div class="charge-empty">Aucun autre mouvement ne correspond.</div>';
-  bindChargeInputs(box);
-}
-function renderChargeSettings(){
-  var c=$("chargeSettingsList");if(!c)return;
-  var keys=activeProgramChargeKeys();
-  var title=$("chargeProgramTitle");
-  if(title){var lbl="";try{lbl=focus()&&focus().label;}catch(e){}title.textContent="Programme actif"+(lbl?" · "+lbl:"");}
-  c.innerHTML=keys.length?keys.map(chargeLineHtml).join(""):'<div class="charge-empty">Aucun mouvement chargé dans ce programme.</div>';
-  bindChargeInputs(c);
-  var inProgram={};keys.forEach(function(k){inProgram[k]=true;});
-  var others=Object.keys(customCharges).filter(function(k){return !inProgram[k]&&String(customCharges[k]).trim()!=="";}).sort();
-  var wrap=$("chargeOtherWrap"),list=$("chargeOtherList");
-  if(wrap&&list){
-    if(others.length){wrap.removeAttribute("hidden");list.innerHTML=others.map(chargeLineHtml).join("");bindChargeInputs(list);}
-    else{wrap.setAttribute("hidden","");list.innerHTML="";}
-  }
-  var search=$("chargeSearch");
-  if(search&&!search.__bound){search.__bound=true;search.addEventListener("input",renderChargeSearch);}
-  renderChargeSearch();
-}
-function resetCustomCharges(){if(confirm("Réinitialiser les charges personnalisées?")){customCharges={};if(typeof resetManualChargeOverridesFromAthleteState==="function")resetManualChargeOverridesFromAthleteState();saveCustomCharges();save();renderChargeSettings();renderWorkout();}}
 
 // ─── Paramètres locaux ──────────────────────────────────────────────────────
 
@@ -2993,7 +2911,6 @@ function renderSettings(){
   if(window.CoachOnboarding && CoachOnboarding.renderSettingsPanel)CoachOnboarding.renderSettingsPanel();
   if(window.RacineAdminPrograms && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminPrograms.render();
   if(window.RacineAdminTuning && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminTuning.render();
-  renderChargeSettings();
   if(typeof renderChargeDiagnosticPanel==="function")renderChargeDiagnosticPanel();
 }
 function setupSettingsSave(){
@@ -3104,7 +3021,6 @@ function bind(){
   var hts=$("historySubtabSessions");if(hts)hts.onclick=function(){historyActiveSubtab="sessions";renderHistory();};
   var htp=$("historySubtabProgress");if(htp)htp.onclick=function(){historyActiveSubtab="progress";renderHistory();};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique ? Le moteur de charge oubliera aussi les references apprises (athleteState, RPE) pour repartir a zero.")){state.history=[];rebuildRefsFromHistory();save();renderHistory();renderWorkout();renderReferences();renderWeekProgress();}};
-  var rcb=$("resetCustomChargesBtn");if(rcb)rcb.onclick=resetCustomCharges;
   // Export/import de profil unifiés : un seul couple de boutons dans le panneau
   // « Profil » des Réglages (CoachOnboarding.renderSettingsPanel). La sauvegarde
   // « état brut » et la vue Backup dédiée ont été retirées (doublons).

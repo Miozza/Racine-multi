@@ -1,12 +1,16 @@
-# ETAT ACTUEL — V5.2.3
+# ETAT ACTUEL — V5.2.4
 
-Version actuelle : V5.2.3
+Version actuelle : V5.2.4
 
 ## État courant
 
 ### Onglet Charge en sous-onglets
 
-Travail (tableau compact + date/RPE + calibrage), Records (liste, OK par ligne), Forcer (programme actif, recherche, charges forcées hors programme). Le dernier sous-onglet ouvert est retenu par appareil.
+Travail (tableau compact : charge, reps, date et RPE + calibrage) et Records (liste, OK par ligne). Le dernier sous-onglet ouvert est retenu par appareil. « Forcer » a été retiré : les charges forcées sont désactivées (`charge()` ne les lit plus) mais restent stockées et exportées.
+
+### Référence de travail ramenée aux reps cibles
+
+Une case de la bonne plage mais à d'autres reps (ex. 300 × 1 dans Force 1-5) est convertie par Epley avant la rampe (`coachRefAtTargetReps`, `scripts/charge/suggestion.js`).
 
 ### Prompt Coach fidèle
 

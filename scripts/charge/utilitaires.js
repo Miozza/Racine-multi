@@ -6,10 +6,13 @@ function chargeKeyFromName(n){return String(n||"").replace(/^[A-Z][0-9]?\.\s*/,"
 
 function officialCharges(){return window.DEFAULT_CHARGES||{};}
 
+// Les charges « forcées » (customCharges) ne sont plus lues : décision de
+// l'athlète (2026-10-06). Elles ne forçaient pas vraiment — avec historique,
+// le moteur gardait sa suggestion — et personne ne savait plus pourquoi elles
+// étaient là. Désactivées SANS être effacées : elles restent dans le stockage
+// et l'export (CLAUDE.md §2.1), réactivables en rétablissant ces deux lignes.
 function charge(name,fallback){
   var key=chargeKeyFromName(name);
-  var c=customCharges[key];
-  if(c!==undefined&&String(c).trim()!=="")return String(c).trim();
   var o=officialCharges()[key];
   if(o!==undefined&&String(o).trim()!=="")return String(o).trim();
   return fallback||"—";
