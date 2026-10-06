@@ -29,7 +29,8 @@ function collectSessionExercises(opts){
       });
     } else if(b.kind==="wod"){
       var wodText=b.text||"";
-      var durMin=parseTimeToSeconds(b.time)/60;
+      // Même durée que le chrono : celle du format (« AMRAP 6 ») avant le créneau du bloc.
+      var durMin=(typeof wodFormatMinutes==="function"&&wodFormatMinutes(wodText))||parseTimeToSeconds(b.time)/60;
       var moves=parseWodStructure(wodText);
       var rounds=estimateWodRounds(wodText,durMin);
       items.push({

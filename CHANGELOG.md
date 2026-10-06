@@ -1,3 +1,15 @@
+## V5.2.5 — WOD : tous les mouvements, et le bon chrono
+
+**Pourquoi** : rapport de l'athlète (2026-10-06). Le metcon du jour (« AMRAP 6 : 10 Box Jumps, 30 Double-Unders », Pont Peak S1 mardi) s'affichait « AMRAP 8 min · 10 Box Jumps » : un seul mouvement, et un chrono de 8 minutes. Même défaut sur plusieurs jours.
+
+**Ce qui change** (`app.js`, `scripts/session/results.js`)
+
+- **Pastilles** : `splitWodSegments` coupe aussi sur la virgule — hors parenthèses et seulement devant un mouvement (nombre, « cal », majuscule, « min2 »). Les 28 metcons de Pont Peak, écrits en listes à virgules, n'affichaient que le premier mouvement. « minutes impaires 12 cal Ski ; minutes paires 10 … » (EMOM sans deux-points) et les stations « 1) cal Row, 2) Wall Balls » sont reconnus. Un repos (« 2 min repos ») ou une durée (« 10-12 min, intensité libre ») ne devient jamais une pastille.
+- **Chrono** : `wodFormatMinutes` lit la durée du FORMAT (« AMRAP 6 », « EMOM 10 », « cap 9 » d'un For time / RFT) avant le créneau du bloc (`time`), qui est le temps réservé dans la séance. 114 WOD sur 408, tous programmes confondus, avaient un chrono différent de leur format — jusqu'à 20 min pour un AMRAP 8. Les intervalles gardent leur propre calcul. La saisie des rounds (`results.js`) utilise la même durée.
+- Comparaison avant/après sur les 408 WOD de tous les programmes : seules les pastilles de Pont Peak et un EMOM client changent, toutes pour le mieux.
+
+**Garde-fou** : `dev/wod_moves_checks.js` § 7.
+
 ## V5.2.4 — Un single n'est pas un 5RM ; « Forcer » retiré
 
 **Pourquoi** : rapport de l'athlète (2026-10-06). Son Back Squat 300 × 1 (un vrai 1RM) s'affichait dans la colonne « Force » du tableau Travail comme s'il s'agissait d'une charge de 5 reps, et l'onglet « Forcer » n'avait plus de sens pour lui.

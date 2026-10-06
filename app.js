@@ -1,5 +1,5 @@
-// Racine V5.2.4 — Single ≠ 5RM dans les références de travail ; « Forcer » retiré
-var APP_VERSION = "V5.2.4";
+// Racine V5.2.5 — WOD : tous les mouvements affichés, chrono à la durée du format
+var APP_VERSION = "V5.2.5";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -622,8 +622,20 @@ function bipRestDone(){playBeep(660,0.2,0.5);setTimeout(function(){playBeep(880,
 
 var wodTimer={duration:0,remaining:0,elapsed:0,running:false,interval:null,mode:"down",label:"",isEmom:false,countdownActive:false};
 
+// Durée écrite dans le FORMAT du WOD (« AMRAP 6 », « EMOM 8 », « cap 10 »),
+// en minutes, ou 0. Elle prime sur le créneau du bloc (b.time), qui est le
+// temps réservé dans la séance : programs/pont_peak.js réserve « 8 min » au
+// metcon du mardi pour un « AMRAP 6 » — le chrono comptait alors 8 minutes.
+function wodFormatMinutes(text){
+  var t=String(text||"");
+  var m=t.match(/\b(?:AMRAP|EMOM)\s*(\d{1,2})\b/i)||(/for time|pour le temps|\bRFT\b|21-15-9/i.test(t)?t.match(/\bcap\s*[:=]?\s*(\d{1,2})\b/i):null);
+  var n=m?Number(m[1]):0;
+  return (n>=1&&n<=60)?n:0;
+}
 function wodTimerConfig(block){
   var txt=String((block&&block.text)||""),seconds=parseTimeToSeconds(block&&block.time),label="Timer",mode="down",isEmom=false;
+  var fmtMin=wodFormatMinutes(txt);
+  if(fmtMin)seconds=fmtMin*60;
   // Intervalles travail/repos (« 10 × (20 s fort / 40 s facile) », « 4 × 3 min
   // / 1 min repos ») : la durée vient du FORMAT, jamais du créneau du bloc.
   // Sur « 4 × 3 min / 1 min » le créneau écrit vaut 15 ou 16 min selon qu'on
@@ -934,7 +946,26 @@ function buildRpeChips(){
 // (pastille « 8 » suivie de quatre lignes de texte) et le second n'avait jamais
 // sa propre pastille.
 function splitWodSegments(text){
-  return String(text||'').split(/\s*\+\s*|\s*;\s*|\s+puis\s+/i);
+  var out=[];
+  String(text||'').split(/\s*\+\s*|\s*;\s*|\s+puis\s+/i).forEach(function(seg){
+    // La virgule sépare aussi les mouvements (« AMRAP 6 : 10 Box Jumps, 30
+    // Double-Unders » — style de programs/pont_peak.js) : sans elle, seule la
+    // première pastille s'affichait. On ne coupe que hors parenthèses
+    // (« (aller-retour, ≈ 200 m) » reste une consigne) et seulement devant ce
+    // qui ressemble à un mouvement : un nombre, « cal », ou une majuscule
+    // (« Wall Balls, Burpees »). « , pace régulier » reste collé à son mouvement.
+    var depth=0, start=0;
+    for(var i=0;i<seg.length;i++){
+      var ch=seg.charAt(i);
+      if(ch==='(')depth++;
+      else if(ch===')')depth=Math.max(0,depth-1);
+      else if(ch===','&&depth===0&&/^\s*(?:\d|cal\s|min(?:utes?)?\s*\d|minutes?\s+(?:paires|impaires)|[A-ZÀ-Ý])/.test(seg.slice(i+1))){
+        out.push(seg.slice(start,i));start=i+1;
+      }
+    }
+    out.push(seg.slice(start));
+  });
+  return out.map(function(x){return x.trim();}).filter(Boolean);
 }
 
 // « minutes paires : 6 burpees », « station 3 : 12 wall balls » — l'étiquette
@@ -943,7 +974,11 @@ function splitWodSegments(text){
 function stripWodSegmentLabel(part){
   var s = String(part||'').trim();
   var m = s.match(/^([^:]{1,40}):\s*(\d.*)$/);
-  return m ? m[2].trim() : s;
+  if(m) return m[2].trim();
+  // Même étiquette sans deux-points : « minutes impaires 12 cal Ski »,
+  // « minute 3 10 burpees » (EMOM de programs/pont_peak.js).
+  var e = s.match(/^(?:minutes?\s+(?:paires|impaires)|min(?:utes?)?\s*\d+(?:\s*[-–]\s*\d+)?)\s*[:=]?\s*(\d.*)$/i);
+  return e ? e[1].trim() : s;
 }
 
 // Unité de temps derrière le nombre. La frontière est un lookahead et non `\b` :
@@ -968,7 +1003,9 @@ function parseWodLeadingReps(part){
   var unit = rest.match(WOD_TIME_UNIT_RE);
   if(unit){
     var after = rest.slice(unit[0].length).trim();
-    if(!after || WOD_DURATION_PREP_RE.test(after)) return null; // durée pure
+    // Durée pure : rien derrière, une préposition, ou une ponctuation
+    // (« 10-12 min, intensité libre » n'est pas un mouvement).
+    if(!after || /^[,;.:]/.test(after) || WOD_DURATION_PREP_RE.test(after)) return null;
     rest = after;
   }
   var nums = (m[1].match(/\d+/g) || []).map(Number);
@@ -1044,6 +1081,8 @@ function parseWodStructure(text){
   function addMove(reps,name,isCal){
     name = cleanMoveName(name,isCal);
     if(!name || name.length<2) return;
+    // Un repos n'est pas un mouvement (« 2 min repos » dans un intervalle).
+    if(/^(?:repos|rest|récup|recup)\b/i.test(name)) return;
     var key = (String(reps)+'_'+name).toLowerCase();
     if(seen.has(key)) return;
     seen.add(key);
@@ -1090,6 +1129,10 @@ function parseWodStructure(text){
   }
 
   splitWodSegments(main).forEach(function(part){
+    // Stations numérotées sans reps (« 1) cal Row, 2) Wall Balls ») : le
+    // numéro de station tient la place des reps, le nom reste propre.
+    var station = String(part).trim().match(/^(\d)\)\s*(.+)$/);
+    if(station){ addMove('#'+station[1], station[2], /^cal\s/i.test(station[2])); return; }
     var lead = parseWodLeadingReps(stripWodSegmentLabel(part));
     if(!lead) return;
     var name = cleanMoveName(lead.name, lead.isCal);
