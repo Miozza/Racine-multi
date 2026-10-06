@@ -6,8 +6,8 @@
   la vue séance et la capture de résultats, donc une erreur d'analyse se voit
   deux fois :
 
-    1. Une pastille = UN mouvement. Le texte se découpe sur « + », « ; » et
-       « puis ». Sans ça, « 8 calories vélo ou rameur ; minutes paires :
+    1. Une pastille = UN mouvement. Le texte se découpe sur « + », « ; »,
+       « puis » et la virgule (hors parenthèses, devant un mouvement). Sans ça, « 8 calories vélo ou rameur ; minutes paires :
        6 burpees » ne faisait qu'une pastille dont le nom débordait, et le
        burpee — la moitié du WOD — n'apparaissait nulle part.
     2. Une étiquette de position (« minutes paires : », « station 3 : ») n'est
@@ -50,7 +50,7 @@ function extractFunction(src, name){
   return null;
 }
 
-const NAMES = ['splitWodSegments','stripWodSegmentLabel','parseWodLeadingReps','boundWodMoveName','parseWodStructure'];
+const NAMES = ['splitWodSegments','stripWodSegmentLabel','parseWodLeadingReps','boundWodMoveName','parseWodStructure','wodFormatMinutes'];
 const CONSTS = [
   ['WOD_TIME_UNIT_RE',     /var WOD_TIME_UNIT_RE\s*=\s*[^\n]+\n/],
   ['WOD_DURATION_PREP_RE', /var WOD_DURATION_PREP_RE\s*=\s*[^\n]+\n/],
@@ -138,6 +138,44 @@ const results = read('scripts/session/results.js');
 assert(/function wodMoveMaxReps\(/.test(results), 'results.js : wodMoveMaxReps() existe');
 assert(/wodMoveMaxReps\(mv\.reps\)/.test(results),
   'results.js : les pastilles de reps du dernier round passent par wodMoveMaxReps (sinon NaN sur « 21-15-9 »)');
+
+// ── 7. Listes à virgules, EMOM « minutes paires », durée du format ──────────
+// Rapport de l'athlète (2026-10-06) : « AMRAP 6 : 10 Box Jumps, 30
+// Double-Unders » (programs/pont_peak.js) n'affichait que la première pastille,
+// et le chrono comptait 8 min — le créneau du bloc — au lieu de 6.
+{
+const pills = r => r ? r.map(m => m.reps + ' ' + m.name) : null;
+const pp = parse("AMRAP 6 : 10 Box Jumps, 30 Double-Unders. Mardi : monostructural et bas du corps seulement.");
+assert(JSON.stringify(pills(pp)) === JSON.stringify(['10 Box Jumps', '30 Double-Unders']),
+  'Liste à virgules : deux pastilles (obtenu ' + JSON.stringify(pills(pp)) + ')');
+const shuttle = parse("3 RFT : 10 Shuttle Runs de 10 m (aller-retour, ≈ 200 m), 15 Air Squats.");
+assert(shuttle && shuttle.length === 2 && shuttle[1].name === 'Air Squats',
+  'La virgule dans une parenthèse ne coupe pas ; celle qui suit, oui');
+const emom = parse("EMOM 8 : minutes impaires 40 Double-Unders ; minutes paires 8 Box Jumps.");
+assert(JSON.stringify(pills(emom)) === JSON.stringify(['40 Double-Unders', '8 Box Jumps']),
+  'EMOM « minutes impaires / paires » sans deux-points : deux pastilles');
+const emomMin = parse("EMOM 10 léger : min1 8 Hang Cleans, min2 10 Burpees contrôlés.");
+assert(emomMin && emomMin.length === 2, 'EMOM « min1 …, min2 … » : deux pastilles');
+const stations = parse("EMOM 14 en 4 stations : 1) cal Row, 2) Wall Balls, 3) Burpees over the bar, 4) Double-Unders.");
+assert(stations && stations.length === 4 && stations[0].reps === '#1' && stations[0].name === 'Cal Row',
+  'Stations numérotées : le numéro tient la place des reps, le nom reste propre');
+assert(parse("Intervalles 3×4 min : Bike ou row, effort soutenu, 2 min repos.") === null,
+  'Un repos n\'est jamais une pastille');
+assert(parse("WOD célébration au choix, 10-12 min, intensité libre.") === null,
+  '« 10-12 min, intensité libre » est une durée, pas un mouvement');
+assert(pills(parse("AMRAP 10 : 10 wall balls, garde le buste droit")).length === 1,
+  'Une consigne en minuscules après la virgule reste collée à son mouvement');
+
+const fm = sandbox.wodFormatMinutes;
+assert(fm("AMRAP 6 : 10 Box Jumps, 30 Double-Unders.") === 6, 'Durée du format : AMRAP 6 → 6 min');
+assert(fm("EMOM 10 : minutes impaires 12 cal Ski") === 10, 'Durée du format : EMOM 10 → 10 min');
+assert(fm("3 RFT : 15 cal Bike, 10 Burpees (cap 9).") === 9, 'Durée du format : RFT cap 9 → 9 min');
+assert(fm("8 min Bike, conversation possible.") === 0, 'Sans format, aucune durée : le créneau du bloc reste la référence');
+assert(/var fmtMin=wodFormatMinutes\(txt\);\s*\n\s*if\(fmtMin\)seconds=fmtMin\*60;/.test(app),
+  'wodTimerConfig : le chrono prend la durée du format avant le créneau du bloc');
+assert(/wodFormatMinutes\(wodText\)/.test(read('scripts/session/results.js')),
+  'results.js : la saisie des rounds utilise la même durée que le chrono');
+}
 
 console.log(failures ? '\n' + failures + ' échec(s).' : '\nTous les garde-fous passent.');
 process.exit(failures ? 1 : 0);
