@@ -1,3 +1,19 @@
+## V5.2.4 — Un single n'est pas un 5RM ; « Forcer » retiré
+
+**Pourquoi** : rapport de l'athlète (2026-10-06). Son Back Squat 300 × 1 (un vrai 1RM) s'affichait dans la colonne « Force » du tableau Travail comme s'il s'agissait d'une charge de 5 reps, et l'onglet « Forcer » n'avait plus de sens pour lui.
+
+**Moteur** (`scripts/charge/suggestion.js`)
+
+- **Bug corrigé** : `coachDeclaredRangeReference` prenait une référence de la bonne plage (strength = 1 à 5 reps) telle quelle, sans regarder ses reps. Mesuré : case Force = 300 × 1, Back Squat 5×5 sans historique → **270 lb** suggérés (90 % du 1RM pour 5 reps). La référence est désormais ramenée aux reps cibles par Epley (`coachRefAtTargetReps`) : 300 × 1 → ~266 lb en 5RM, même rampe qu'un 265 × 5. Le `(!)` dit « convertie depuis 300 lb × 1 ».
+- Sans effet avec historique réel (vérifié : 265 × 5 puis 300 × 1 → toujours 265 lb pour le 5×5).
+
+**Onglet Charge**
+
+- **Travail** : chaque case montre ses reps (« × 1 · 28 sept. · RPE 9.5 ») et les en-têtes donnent les vraies plages (1-5 · 6-12 · 13+). L'aide « ? » explique qu'un single est converti et que ces cases ne servent qu'aux mouvements sans historique.
+- **« Forcer » retiré.** Les charges forcées sont **désactivées, pas effacées** : `charge()` (`scripts/charge/utilitaires.js`) ne lit plus `customCharges`, qui restent dans le stockage et l'export. Elles ne forçaient pas vraiment (avec historique, le moteur gardait sa suggestion) et inscrivaient une fausse séance « override » — que la progression ignorait déjà (`coachFilterHistoryForProgression`).
+
+**Garde-fous** : `dev/charge_engine_checks.js` (conversion Epley, même rampe pour 300 × 1 et 265 × 5), `dev/regression_checks.js` (sous-onglets, reps affichées, `charge()` ignore les charges forcées sans les effacer), `dev/client_charge_safety_checks.js` (plus de saisie d'override depuis l'onglet).
+
 ## V5.2.3 — Onglet Charge : Travail · Records · Forcer
 
 **Pourquoi** : sur iPhone, l'onglet Charge faisait environ 7,5 écrans de défilement (6 blocs, 12 cartes de mouvement, ~40 cartes « Forcer »). Choix de l'athlète, une question à la fois (2026-10-05).

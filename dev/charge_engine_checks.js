@@ -1710,6 +1710,40 @@ try {
     resetState();
   }
 
+  // ── Référence de travail : un single n'est pas un 5RM ──────────────────
+  // Rapport de l'athlète (2026-10-06) : 300 x 1 au Back Squat rangé dans la
+  // plage Force (1-5). Sans historique, la règle « référence de travail » le
+  // prenait tel quel pour un 5x5 : 270 lb suggérés (90 % du 1RM pour 5 reps).
+  // La référence est désormais ramenée aux reps cibles par Epley.
+  {
+    resetState();
+    ctx.movements.backSquat = {name:'Back Squat', profile:'backSquat5RM'};
+    const at = ctx.coachRefAtTargetReps(300, 1, 5);
+    assert(at.converted === true && Math.round(at.load) === 266,
+      '300 x 1 ramené à 5 reps par Epley : ~266 lb (obtenu ' + Math.round(at.load) + ').');
+    assert(ctx.coachRefAtTargetReps(265, 5, 5).converted === false,
+      'Une référence déjà aux reps cibles n\'est pas convertie.');
+
+    ctx.state.movementRefs = {backSquat__strength:{movement:'backSquat', range:'strength', load:300, reps:1, date:'2026-09-28', rpe:9.5, status:'hard'}};
+    const ref = ctx.coachDeclaredRangeReference(null, 'strength', 5, 'Back Squat');
+    assert(ref && Math.round(ref.load) === 266 && ref.exact === false && ref.from && ref.from.reps === 1,
+      'movementRefs : la case Force 300 x 1 devient ~266 lb pour une cible de 5 reps, avec sa provenance.');
+
+    const mvState = {ranges:{strength:{currentLoad:300, currentReps:1, actualReps:1, planned:{source:'session'}}}};
+    const refA = ctx.coachDeclaredRangeReference(mvState, 'strength', 5, 'Back Squat');
+    assert(refA && Math.round(refA.load) === 266 && refA.exact === false,
+      'athleteState : même conversion pour une plage dont les reps diffèrent de la cible.');
+
+    const seed1 = ctx.coachReferenceSeedWorkingLoad(ref, 'strength').load;
+    ctx.state.movementRefs = {backSquat__strength:{movement:'backSquat', range:'strength', load:265, reps:5, date:'2026-09-21', rpe:8, status:'success'}};
+    const seed5 = ctx.coachReferenceSeedWorkingLoad(ctx.coachDeclaredRangeReference(null, 'strength', 5, 'Back Squat'), 'strength').load;
+    const before = 300 * ctx.coachReferenceSeedWorkingLoad({load:1}, 'strength').pct;
+    assert(Math.abs(seed1 - seed5) < 3 && seed1 < before - 25,
+      'Un single à 300 et un 265 x 5 donnent la même rampe en 5x5 (' + Math.round(seed1) + ' vs ' + Math.round(seed5) + ' lb) ; avant : ' + Math.round(before) + ' lb.');
+    ctx.state.movementRefs = {};
+    resetState();
+  }
+
   // ── Un lest sur le poids du corps n'emprunte le ratio de personne ────────
   // Le ratio d'une famille dit « cet athlete souleve X fois la reference » sur
   // une charge TOTALE. Un Weighted Pull-up et un Weighted Dip portent le

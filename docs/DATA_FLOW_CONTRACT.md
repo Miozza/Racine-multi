@@ -97,6 +97,8 @@ racineCharges::<id>                   → bloc `customCharges`
 racineState::<id>::<suffixe>          → bloc `stateExtras` (mémoire Brain…)
 ```
 
+`customCharges` n'est plus lu par le moteur depuis V5.2.4 (charges forcées désactivées) mais reste exporté et réimporté tel quel : désactiver n'est pas effacer.
+
 `stateExtras` est balayé **par préfixe**, jamais par nom de clé : le suffixe
 porte une version (`brain-memory-v1`) et une version future doit être emportée
 sans que `storage.js` ait à la connaître.

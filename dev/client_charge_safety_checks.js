@@ -382,7 +382,11 @@ try{
   const movement = engine.state.athleteState.movements['Bench Press'];
   assert(movement.history.length === 2 && movement.history.includes(realA) && movement.history.includes(realB), 'Le reset conserve toutes les vraies séances.');
   assert(!movement.ranges.hypertrophy, 'Le reset neutralise la capacité issue d’un override manuel.');
-  assert(/resetManualChargeOverridesFromAthleteState\(\)/.test(read('app.js')), 'resetCustomCharges appelle le nettoyage ciblé des overrides.');
+  // V5.2.4 : l'onglet « Forcer » est retiré et les charges forcées ne sont
+  // plus lues (décision de l'athlète). Elles restent stockées, jamais effacées.
+  const appSrc = read('app.js');
+  assert(!/function resetCustomCharges/.test(appSrc) && !/applyChargeOverrideToAthleteState\(key,loadNum,todayDateString/.test(appSrc),
+    'Plus de bouton qui vide les charges forcées ni de saisie qui inscrit un override depuis l\'onglet Charge.');
 }catch(error){
   errors.push('Test override manuel impossible : ' + (error && error.stack ? error.stack : error));
 }
