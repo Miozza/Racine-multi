@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.5
+# ETAT ACTUEL — V5.2.6
 
-Version actuelle : V5.2.5
+Version actuelle : V5.2.6
 
 ## État courant
+
+### Coach IA économique
+
+Par l'API, Coach IA tourne par défaut sur Haiku 4.5 (cible < 1 $/mois). Plafond mensuel réglable (1 $ par défaut), dépense du mois affichée dans Réglages → Coach IA, comptée d'après le `usage` déclaré par l'API. Les poids restent au moteur ; le copier-coller reste le chemin par défaut sans clé.
 
 ### Onglet Charge en sous-onglets
 

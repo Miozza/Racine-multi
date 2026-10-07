@@ -93,6 +93,7 @@ et que l'Avis IA existant (`do_not_auto_apply`).
 | Semaines générées + ajustements | `state.aiPlan` (donc `racineState::<profil>`) | Isolation par profil **par construction**, même choix que `movementSwaps`. Aucun nouveau chemin de persistance : l'écriture passe par `save()`. |
 | Conversation | `racine_coach_ai_chat_v1::<profil>`, plafonnée | Hors du state : l'export sert à restaurer un athlète, pas à archiver un chat. Le quota local n'a **aucune copie serveur** — entre une séance de 2024 et une conversation de la semaine dernière, la séance gagne. |
 | Journal des propositions | `racine_coach_ai_patch_log_v1`, plafonné | Consultatif. Perdu sans bruit si le quota sature. |
+| Dépense API estimée | `racine_coach_ai_usage_v1`, **hors** state de profil, 12 mois max | Comme la clé : c'est la dépense de cette clé sur cet appareil, pas une donnée d'athlète. |
 
 `state.aiPlan` porte un numéro de **schéma** et une migration ascendante
 (CLAUDE.md §2.1). Un plan écrit par une version antérieure garde ses semaines.
@@ -189,6 +190,19 @@ distant » de CLAUDE.md §3.4 pour ce domaine **seulement**.
   aucun réseau) et le reste de Racine fonctionne normalement. C'est non
   négociable : l'app est une PWA de terrain.
 - La boucle d'outils est bornée (`MAX_TOOL_ROUNDS`) — garde-fou de coût.
+- **Modèle par défaut : Haiku 4.5** (décision du 2026-10-07, cible < 1 $/mois).
+  La conversation courante n'a pas besoin d'un gros modèle, et les poids
+  restent au moteur quel que soit le modèle (§2). Sonnet et Opus restent
+  sélectionnables. Haiku 4.5 refuse `output_config.effort` et la réflexion
+  adaptative : `client.js` ne les envoie qu'aux modèles qui les acceptent
+  (`CoachAIConfig.modelInfo(model).effort`). Migration schéma 1 → 2 : l'ancien
+  défaut `claude-opus-5`, que l'écran ne permettait pas de choisir, passe à
+  Haiku ; tout autre modèle est conservé.
+- **Plafond mensuel** (`monthlyBudget`, 1 $ par défaut, 0 = aucun). Chaque
+  réponse est comptée d'après le `usage` qu'elle déclare, aux prix de la table
+  `MODELS` de `config.js` ; le plafond est vérifié avant **chaque** appel, y
+  compris au milieu de la boucle d'outils. C'est une estimation locale : la
+  vraie limite reste un crédit prépayé sans recharge automatique.
 
 Le contexte athlète est envoyé dans un bloc système **mis en cache**
 (`cache_control`) : il est long et stable d'un message à l'autre, et se place

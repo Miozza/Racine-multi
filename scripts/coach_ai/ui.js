@@ -305,6 +305,11 @@
     if(!host) return;
     var cfg = CoachAIConfig.get();
     var hasKey = !!str(cfg.apiKey);
+    var info = CoachAIConfig.modelInfo(cfg.model);
+    var spend = CoachAIConfig.monthSpend();
+    // Un modèle saisi hors liste reste sélectionnable tel quel.
+    var models = CoachAIConfig.models();
+    if(!models.some(function(m){ return m.id === cfg.model; })) models.push({id: cfg.model, label: cfg.model});
 
     host.innerHTML = ""
       + "<label class='cai-label' for='caiAssistant'>Quelle IA tu utilises</label>"
@@ -323,13 +328,29 @@
       +   "Elle n'a d'intérêt que si tu veux la conversation directe dans l'app.</p>"
       + "<p class='cai-hint'>Elle reste sur cet appareil : elle n'entre jamais dans un export de profil ni dans un lien de prescription. "
       +   "Efface-la si tu prêtes ton téléphone.</p>"
-      + "<label class='cai-label' for='caiEffort'>Profondeur de réflexion</label>"
-      + "<select id='caiEffort' class='cai-input'>"
-      +   ["low","medium","high","xhigh"].map(function(e){
-            return "<option value='" + e + "'" + (cfg.effort === e ? " selected" : "") + ">" + e + "</option>";
+      + "<label class='cai-label' for='caiModel'>Modèle</label>"
+      + "<select id='caiModel' class='cai-input'>"
+      +   models.map(function(m){
+            return "<option value='" + esc(m.id) + "'" + (cfg.model === m.id ? " selected" : "") + ">" + esc(m.label) + "</option>";
           }).join("")
       + "</select>"
-      + "<p class='cai-hint'>« medium » suffit pour discuter. Monte à « high » pour faire écrire une semaine complète.</p>"
+      + "<p class='cai-hint'>Haiku suffit pour discuter et commenter une suggestion : les poids viennent toujours du moteur, "
+      +   "quel que soit le modèle. Pour écrire une semaine complète, le copier-coller passe par ton abonnement.</p>"
+      + (info.effort
+          ? "<label class='cai-label' for='caiEffort'>Profondeur de réflexion</label>"
+            + "<select id='caiEffort' class='cai-input'>"
+            +   ["low","medium","high","xhigh"].map(function(e){
+                  return "<option value='" + e + "'" + (cfg.effort === e ? " selected" : "") + ">" + e + "</option>";
+                }).join("")
+            + "</select>"
+            + "<p class='cai-hint'>« medium » suffit pour discuter. Plus haut = plus cher.</p>"
+          : "")
+      + "<label class='cai-label' for='caiBudget'>Plafond mensuel ($)</label>"
+      + "<input id='caiBudget' class='cai-input' type='number' inputmode='decimal' min='0' step='0.5' value='" + esc(String(cfg.monthlyBudget)) + "'>"
+      + "<p class='cai-hint'>Ce mois : <strong>" + spend.usd.toFixed(2) + " $</strong> · " + spend.calls + " appel(s)"
+      +   (cfg.monthlyBudget > 0 ? " sur " + Number(cfg.monthlyBudget).toFixed(2) + " $" : " · sans plafond")
+      +   ". Estimation calculée sur cet appareil ; la facture Anthropic fait foi. "
+      +   "La vraie limite : un crédit prépayé sans recharge automatique.</p>"
       + "<div class='cai-settings-actions'>"
       +   "<button type='button' class='cai-btn' id='caiSaveCfg'>Enregistrer</button>"
       +   (hasKey ? "<button type='button' class='cai-btn cai-btn-refuse' id='caiClearKey'>Effacer la clé</button>" : "")
@@ -344,6 +365,9 @@
     // pour changer l'effort effacerait la clé au passage.
     if(key && str(key.value)) patch.apiKey = str(key.value);
     if(effort) patch.effort = effort.value;
+    var model = $("caiModel"), budget = $("caiBudget");
+    if(model) patch.model = model.value;
+    if(budget && str(budget.value) !== "") patch.monthlyBudget = Number(budget.value);
     var assistant = $("caiAssistant");
     if(assistant) patch.assistant = assistant.value;
     CoachAIConfig.set(patch);
