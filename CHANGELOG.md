@@ -1,3 +1,17 @@
+## V5.2.6 — Coach IA économique : Haiku et plafond mensuel
+
+**Pourquoi** : rendre la conversation directe (clé API) pratiquement gratuite — cible : moins de 1 $ par mois pour quelques messages par semaine. Le défaut Opus 5 coûtait environ 5 fois plus cher en entrée et en sortie, plus la réflexion facturée.
+
+**Ce qui change** (`scripts/coach_ai/config.js`, `client.js`, `ui.js`)
+
+- **Haiku 4.5 par défaut.** Sonnet 5.5 et Opus 5 restent au choix dans Réglages → Coach IA. Les poids restent calculés par le moteur, quel que soit le modèle.
+- **Requête adaptée au modèle** : Haiku 4.5 refuse l'effort et la réflexion adaptative (erreur 400) ; `client.js` ne les envoie qu'aux modèles qui les acceptent.
+- **Plafond mensuel** (1 $ par défaut, 0 = aucun), vérifié avant chaque appel. Au-delà, rien ne part et l'écran renvoie au copier-coller.
+- **Dépense du mois affichée**, comptée d'après le `usage` déclaré par chaque réponse. Clé d'appareil `racine_coach_ai_usage_v1`, hors profil, 12 mois max.
+- **Migration de la config, schéma 1 → 2** : clé et réglages conservés ; l'ancien défaut `claude-opus-5`, que l'écran ne permettait pas de choisir, passe à Haiku.
+
+**Garde-fou** : `dev/coach_ai_checks.js` § Modèle économique et plafond mensuel.
+
 ## V5.2.5 — WOD : tous les mouvements, et le bon chrono
 
 **Pourquoi** : rapport de l'athlète (2026-10-06). Le metcon du jour (« AMRAP 6 : 10 Box Jumps, 30 Double-Unders », Pont Peak S1 mardi) s'affichait « AMRAP 8 min · 10 Box Jumps » : un seul mouvement, et un chrono de 8 minutes. Même défaut sur plusieurs jours.

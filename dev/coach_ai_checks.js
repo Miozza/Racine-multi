@@ -173,6 +173,60 @@ assert(configSrc.indexOf('racine_coach_ai_device_v1') !== -1, 'La clé vit dans 
   assert(code(f).indexOf('CoachAIConfig') === -1, f + ' n\'a pas accès à la configuration Coach IA.');
 });
 
+// ── Modèle économique et plafond mensuel (V5.2.6) ──────────────────────────
+//
+// Cible : moins de 1 $ par mois. Haiku 4.5 par défaut, un compteur de dépense
+// d'appareil, et un plafond vérifié avant chaque appel.
+{
+  const store = fakeStorage();
+  const c = {window:{}, console:console, localStorage:store, Date:Date, JSON:JSON, Number:Number, Object:Object, String:String, isFinite:isFinite};
+  c.window.window = c.window;
+  vm.createContext(c);
+  // Config schéma 1 telle qu'écrite par V5.2.5 : ancien défaut Opus, clé présente.
+  store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:1, apiKey:'sk-ant-test', model:'claude-opus-5', effort:'high', assistant:'claude', enabled:true}));
+  vm.runInContext(configSrc, c, {filename:'config.js'});
+  const Cfg = c.window.CoachAIConfig;
+
+  let cfg = Cfg.get();
+  assert(cfg.schema === 2, 'La config porte le schéma 2.');
+  assert(cfg.apiKey === 'sk-ant-test' && cfg.effort === 'high', 'Migration 1 → 2 : clé et réglages conservés.');
+  assert(cfg.model === 'claude-haiku-4-5', 'Migration 1 → 2 : l\'ancien défaut Opus (jamais choisi à la main) passe à Haiku.');
+  assert(cfg.monthlyBudget === 1, 'Plafond mensuel par défaut : 1 $.');
+
+  store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:1, apiKey:'k', model:'claude-sonnet-5-5'}));
+  assert(Cfg.get().model === 'claude-sonnet-5-5', 'Un modèle autre que l\'ancien défaut n\'est pas écrasé par la migration.');
+  store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:2, apiKey:'k', model:'claude-opus-5', monthlyBudget:3}));
+  assert(Cfg.get().model === 'claude-opus-5', 'Opus choisi APRÈS le schéma 2 est un vrai choix : conservé.');
+
+  assert(Cfg.modelInfo('claude-haiku-4-5').effort === false, 'Haiku 4.5 : ni effort ni réflexion adaptative (sinon 400).');
+  assert(Cfg.modelInfo('modele-inconnu').input >= 5, 'Modèle inconnu : compté au prix fort (plafond prudent).');
+
+  const usage = {input_tokens:10000, output_tokens:1000, cache_creation_input_tokens:0, cache_read_input_tokens:0};
+  assert(Math.abs(Cfg.costOf('claude-haiku-4-5', usage) - 0.015) < 1e-9, 'Coût Haiku : 10k entrée + 1k sortie = 0,015 $.');
+  assert(Math.abs(Cfg.costOf('claude-haiku-4-5', {cache_read_input_tokens:10000}) - 0.001) < 1e-9, 'Lecture en cache comptée à 0,1×.');
+
+  Cfg.set({monthlyBudget: 0.02});
+  Cfg.recordUsage('claude-haiku-4-5', usage);
+  assert(!Cfg.overBudget() && Cfg.monthSpend().calls === 1, 'Sous le plafond : l\'appel passe.');
+  Cfg.recordUsage('claude-haiku-4-5', usage);
+  assert(Cfg.overBudget(), 'Plafond atteint : overBudget() le dit.');
+  Cfg.set({monthlyBudget: 0});
+  assert(!Cfg.overBudget(), 'Plafond 0 = pas de plafond.');
+  assert(JSON.parse(store.getItem('racine_coach_ai_device_v1')).apiKey === 'k', 'Enregistrer le plafond ne touche pas la clé.');
+  assert(configSrc.indexOf('racine_coach_ai_usage_v1') !== -1 && /USAGE_MONTHS\s*=\s*\d+/.test(configSrc)
+    && configSrc.indexOf('slice(-USAGE_MONTHS)') !== -1,
+    'Le compteur de dépense vit dans une clé d\'appareil, plafonnée.');
+}
+{
+  const cl = code('scripts/coach_ai/client.js');
+  assert(cl.indexOf('CoachAIConfig.overBudget()') !== -1 && cl.indexOf('CoachAIConfig.overBudget()') < cl.indexOf('fetch('),
+    'client.js vérifie le plafond AVANT l\'appel réseau.');
+  assert(/if\(CoachAIConfig\.modelInfo\(model\)\.effort\)\{\s*body\.thinking/.test(cl),
+    'Effort et réflexion ne sont envoyés qu\'aux modèles qui les acceptent.');
+  assert(cl.indexOf('CoachAIConfig.recordUsage(model, payload.usage)') !== -1,
+    'Chaque réponse est comptée d\'après le `usage` déclaré par l\'API.');
+}
+
 // ── Le contexte envoyé au modèle est en lecture seule ──────────────────────
 const contextSrc = read('scripts/coach_ai/context.js');
 assert(code('scripts/coach_ai/context.js').indexOf('localStorage.setItem') === -1 && code('scripts/coach_ai/context.js').indexOf('save()') === -1,

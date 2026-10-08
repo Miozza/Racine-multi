@@ -1,5 +1,5 @@
-// Racine V5.2.5 — WOD : tous les mouvements affichés, chrono à la durée du format
-var APP_VERSION = "V5.2.5";
+// Racine V5.2.6 — Coach IA économique : Haiku par défaut, plafond mensuel
+var APP_VERSION = "V5.2.6";
 
 // Architecture stable
 // programs/*.js = plan prévu

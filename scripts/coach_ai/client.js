@@ -48,17 +48,28 @@
     var key = String(c.apiKey || "").trim();
     if(!key) throw new Error("Aucune clé API enregistrée.");
 
+    // Plafond mensuel : vérifié avant CHAQUE appel, y compris au milieu de la
+    // boucle d'outils. Au-delà, rien ne part — le copier-coller reste gratuit.
+    if(CoachAIConfig.overBudget()){
+      throw new Error("Plafond du mois atteint (" + CoachAIConfig.monthSpend().usd.toFixed(2)
+        + " $). Coach IA repasse par le copier-coller, ou monte le plafond dans Réglages → Coach IA.");
+    }
+
+    var model = String(opts.model || c.model || CoachAIConfig.DEFAULT_MODEL);
     var body = {
-      model: String(opts.model || c.model || CoachAIConfig.DEFAULT_MODEL),
+      model: model,
       // Non-streaming : une réponse de coaching tient largement dedans, et le
       // streaming SSE à la main coûterait plus qu'il ne rapporte ici.
       max_tokens: Number(opts.maxTokens || 16000),
-      messages: opts.messages || [],
-      // Opus 5 réfléchit par défaut ; on le déclare explicitement pour que le
-      // comportement ne dépende pas d'un défaut d'API qui peut bouger.
-      thinking: {type: "adaptive"},
-      output_config: {effort: String(opts.effort || c.effort || "medium")}
+      messages: opts.messages || []
     };
+    // Effort et réflexion adaptative : seulement pour les modèles qui les
+    // acceptent. Haiku 4.5 répond 400 aux deux — sans réflexion, il répond
+    // aussi moins cher, ce qui est le but de ce modèle ici.
+    if(CoachAIConfig.modelInfo(model).effort){
+      body.thinking = {type: "adaptive"};
+      body.output_config = {effort: String(opts.effort || c.effort || "medium")};
+    }
     if(opts.system) body.system = opts.system;
     if(opts.tools && opts.tools.length) body.tools = opts.tools;
 
@@ -88,6 +99,8 @@
 
     if(!res.ok) throw new Error(errorMessage(res.status, payload));
     if(!payload) throw new Error("Réponse illisible de l'API.");
+    // Compté d'après ce que l'API déclare avoir consommé, pas d'une estimation.
+    try{ CoachAIConfig.recordUsage(model, payload.usage); }catch(e){}
     return payload;
   };
 
