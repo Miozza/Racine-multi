@@ -91,10 +91,18 @@
   // la suggestion actuelle, recalculée après la séance : le coach les
   // mélangeait (« suggéré 155 » alors que 155 était la suggestion d'après,
   // et 140 celle d'avant — rapport de l'athlète, 2026-10-08).
+  // Sans suggestion figée (séances d'avant juillet 2026, mouvement ajouté hors
+  // programme, saisie manuelle), on le DIT : un silence laissait le coach
+  // combler le trou avec la suggestion actuelle — l'erreur d'origine.
   function plannedNote(r){
     var p = r && r.planned;
     var n = p ? positive(p.load) : null;
-    return n != null ? " (suggéré avant la séance : " + n + " lb)" : "";
+    if(n != null) return " (suggéré avant la séance : " + n + " lb)";
+    if(r && positive(r.load) != null){
+      var extra = str(r.extra) === "1" || r.extra === true;
+      return " (aucune suggestion enregistrée" + (extra ? " : mouvement ajouté hors programme" : "") + ")";
+    }
+    return "";
   }
   function rowLabel(key, r){
     return isWodKey(key) ? str(key).slice(WOD_PREFIX.length) + " (metcon)" : label(key, r);

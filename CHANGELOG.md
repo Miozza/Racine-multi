@@ -2,7 +2,7 @@
 
 **Pourquoi** : rapport de l'athlète (2026-10-08). Front Squat du jour : 140 lb suggérés avant la séance, 150 lb faits. Le coach a répondu « suggéré 155 » — la suggestion actuelle, recalculée APRÈS la séance. La suggestion d'origine est figée dans chaque résultat (`planned.load`) mais n'était pas transmise au coach.
 
-- Historique, `consulter_historique`, `consulter_mouvement` : chaque ligne porte « (suggéré avant la séance : X lb) ».
+- Historique, `consulter_historique`, `consulter_mouvement` : chaque ligne, **tous mouvements confondus**, porte « (suggéré avant la séance : X lb) » — ou « (aucune suggestion enregistrée) » quand il n'y en a pas (séances de juin, mouvement ajouté hors programme, saisie manuelle), pour que le coach ne comble jamais le trou avec la suggestion actuelle. Historique réel : 236 séries sur 259 ont leur suggestion d'origine.
 - Semaine en cours : pour un jour déjà fait, chaque exercice montre **FAIT** (charge × reps × RPE), la suggestion **d'avant** la séance, puis la **suggestion actuelle, recalculée après la séance** — trois chiffres étiquetés.
 - Manuel du coach : la différence entre les deux suggestions, et laquelle utiliser pour comparer suggéré et fait.
 

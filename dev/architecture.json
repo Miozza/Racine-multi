@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 39542,
-      "lines": 577,
+      "size": 40155,
+      "lines": 583,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -3485,7 +3485,7 @@
     },
     {
       "path": "scripts/coach_ai/chat.js",
-      "size": 25458,
+      "size": 25578,
       "lines": 456,
       "role": "Coach IA : conversation et mémoire. Fil compact (texte seul, 40 messages / 60 Ko, racine_coach_ai_thread_v2), carnet du coach (20 faits, racine_coach_ai_memory_v1, outil `retenir`), fenêtre de 12 messages envoyée au modèle, boucle d'outils bornée, archive des échanges pour la sauvegarde GitHub. Ne référence jamais CoachAIPatch.apply.",
       "category": "ACTIF",
@@ -3539,8 +3539,8 @@
     },
     {
       "path": "scripts/coach_ai/context.js",
-      "size": 41313,
-      "lines": 786,
+      "size": 41771,
+      "lines": 794,
       "role": "Coach IA : construit le texte d'état de l'athlète envoyé au modèle (séances récentes, notes, mémoire Brain, contraintes matériel, remplacements actifs). LECTURE SEULE et borné. Sert aussi l'outil consulter_mouvement.",
       "category": "ACTIF",
       "exposes": [

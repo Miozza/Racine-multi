@@ -471,6 +471,12 @@ function fakeStorage(){
     && withDone.indexOf('suggestion actuelle, recalculée après la séance : 202 lb') !== -1,
     'Séance faite : fait, suggéré AVANT la séance et suggestion actuelle sont trois chiffres distincts et étiquetés.');
   ctxPlanned.state.history.pop();
+  ctxPlanned.state.history.push({date:'2026-10-02', week:2, day:'mardi', results:{'Push Press':{load:'215', reps:'3', extra:'1'}, 'Strict Press':{load:'175', reps:'2'}}});
+  const noPlan = C.read('consulter_historique', {depuis:'2026-10-02', jusqua:'2026-10-02'});
+  assert(noPlan.indexOf('215 lb × 3 reps (aucune suggestion enregistrée : mouvement ajouté hors programme)') !== -1
+    && noPlan.indexOf('175 lb × 2 reps (aucune suggestion enregistrée)') !== -1,
+    'Série sans suggestion figée : le coach est prévenu, il ne la comble pas avec la suggestion actuelle.');
+  ctxPlanned.state.history.pop();
   const juin = C.read('consulter_historique', {depuis:'2026-06-01', jusqua:'2026-06-30'});
   assert(juin.indexOf('premier jour') !== -1 && juin.indexOf('185') === -1, 'consulter_historique lit une période ancienne, et seulement elle.');
   assert(C.read('consulter_historique', {semaine:3}).indexOf('185') !== -1, 'consulter_historique filtre par semaine du programme.');
