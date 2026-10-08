@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.13
+# ETAT ACTUEL — V5.2.14
 
-Version actuelle : V5.2.13
+Version actuelle : V5.2.14
 
 ## État courant
+
+### Coach IA : affichage du mode copier-coller
+
+En copier-coller, l'écran défile comme une page (fil complet, étapes dessous) ; les panneaux ne rétrécissent plus ; effacer la clé API demande confirmation.
 
 ### Coach IA : suggéré vs fait
 
