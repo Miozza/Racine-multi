@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.12
+# ETAT ACTUEL — V5.2.13
 
-Version actuelle : V5.2.12
+Version actuelle : V5.2.13
 
 ## État courant
+
+### Coach IA : suggéré vs fait
+
+Le coach voit, pour chaque série enregistrée, la charge suggérée avant la séance (`planned.load`) à côté de la charge faite ; la suggestion actuelle du moteur est étiquetée « recalculée après la séance ».
 
 ### Coach IA lit tout l'historique
 

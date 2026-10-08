@@ -1,5 +1,5 @@
-// Racine V5.2.12 — Coach IA lit tout l'historique (consulter_historique) et sait ce qu'il peut lire
-var APP_VERSION = "V5.2.12";
+// Racine V5.2.13 — Coach IA distingue la charge suggérée avant la séance, la charge faite et la suggestion actuelle
+var APP_VERSION = "V5.2.13";
 
 // Architecture stable
 // programs/*.js = plan prévu

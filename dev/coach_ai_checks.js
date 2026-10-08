@@ -465,6 +465,12 @@ function fakeStorage(){
   const over = C.build();
   assert(over.indexOf('2 séances enregistrées, du 2026-06-02') !== -1 && over.indexOf('consulter_historique') !== -1,
     'Le contexte dit jusqu\'où remonte l\'historique et comment lire le reste.');
+  ctxPlanned.state.history.push({date:'2026-10-08', week:2, day:'lundi', results:{'Mvt_lundi_S2':{load:'150', reps:'4', rpe:'7', planned:{load:140}}}});
+  const withDone = C.build();
+  assert(withDone.indexOf('FAIT : 150 lb × 4 reps × RPE 7 (suggéré avant la séance : 140 lb)') !== -1
+    && withDone.indexOf('suggestion actuelle, recalculée après la séance : 202 lb') !== -1,
+    'Séance faite : fait, suggéré AVANT la séance et suggestion actuelle sont trois chiffres distincts et étiquetés.');
+  ctxPlanned.state.history.pop();
   const juin = C.read('consulter_historique', {depuis:'2026-06-01', jusqua:'2026-06-30'});
   assert(juin.indexOf('premier jour') !== -1 && juin.indexOf('185') === -1, 'consulter_historique lit une période ancienne, et seulement elle.');
   assert(C.read('consulter_historique', {semaine:3}).indexOf('185') !== -1, 'consulter_historique filtre par semaine du programme.');

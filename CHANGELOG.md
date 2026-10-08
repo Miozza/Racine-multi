@@ -1,3 +1,11 @@
+## V5.2.13 — Coach IA : suggéré avant la séance, fait, suggestion actuelle
+
+**Pourquoi** : rapport de l'athlète (2026-10-08). Front Squat du jour : 140 lb suggérés avant la séance, 150 lb faits. Le coach a répondu « suggéré 155 » — la suggestion actuelle, recalculée APRÈS la séance. La suggestion d'origine est figée dans chaque résultat (`planned.load`) mais n'était pas transmise au coach.
+
+- Historique, `consulter_historique`, `consulter_mouvement` : chaque ligne porte « (suggéré avant la séance : X lb) ».
+- Semaine en cours : pour un jour déjà fait, chaque exercice montre **FAIT** (charge × reps × RPE), la suggestion **d'avant** la séance, puis la **suggestion actuelle, recalculée après la séance** — trois chiffres étiquetés.
+- Manuel du coach : la différence entre les deux suggestions, et laquelle utiliser pour comparer suggéré et fait.
+
 ## V5.2.12 — Coach IA lit tout l'historique
 
 **Pourquoi** : rapport de l'athlète (2026-10-08). Le coach disait n'avoir « pas de données avant septembre » ni « S2 à S7 en détail ». L'historique remonte à juin (58 séances) et `consulter_seance` lit toutes les semaines, mais rien ne le lui disait.

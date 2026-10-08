@@ -86,6 +86,16 @@
     if(positive(r.rounds) != null) parts.push(positive(r.rounds) + " rounds");
     return parts;
   }
+  // La charge que le moteur proposait AU MOMENT de la séance, figée dans le
+  // résultat (`planned.load`, posé à la sauvegarde). À ne pas confondre avec
+  // la suggestion actuelle, recalculée après la séance : le coach les
+  // mélangeait (« suggéré 155 » alors que 155 était la suggestion d'après,
+  // et 140 celle d'avant — rapport de l'athlète, 2026-10-08).
+  function plannedNote(r){
+    var p = r && r.planned;
+    var n = p ? positive(p.load) : null;
+    return n != null ? " (suggéré avant la séance : " + n + " lb)" : "";
+  }
   function rowLabel(key, r){
     return isWodKey(key) ? str(key).slice(WOD_PREFIX.length) + " (metcon)" : label(key, r);
   }
@@ -236,9 +246,10 @@
     text = str(text);
     return text.length > max ? text.slice(0, max) + " […]" : text;
   }
-  function exerciseLine(ex, block, day, week){
+  function exerciseLine(ex, block, day, week, done){
     ex = ex || {};
     var bits = [];
+    var result = done ? doneResultFor(done, ex.name) : null;
     if(str(ex.format)) bits.push(str(ex.format));
     if(str(ex.rest)) bits.push("repos " + str(ex.rest));
     var load = "";
@@ -247,9 +258,43 @@
         load = str(CoachCharge.suggestForExercise(ex, block, {day: day, week: week}));
       }
     }catch(e){ load = ""; }
-    if(load) bits.push("charge du moteur : " + load + (/[a-z]/i.test(load) ? "" : " lb"));
+    var unit = /[a-z]/i.test(load) ? "" : " lb";
+    if(result){
+      // Séance déjà faite : ce qui a été réellement fait, la suggestion d'AVANT
+      // (figée dans le résultat), et la suggestion actuelle, étiquetée comme
+      // telle — c'est celle de la prochaine fois, pas celle d'aujourd'hui.
+      var did = liftParts(result).join(" × ");
+      bits.push("FAIT : " + (did || "aucun chiffre") + plannedNote(result));
+      if(load) bits.push("suggestion actuelle, recalculée après la séance : " + load + unit);
+    } else if(load){
+      bits.push("charge du moteur : " + load + unit);
+    }
     return "      · " + str(ex.name) + (bits.length ? " — " + bits.join(" · ") : "")
       + (str(ex.note) ? "  [consigne : " + clip(ex.note, 200) + "]" : "");
+  }
+  // La séance enregistrée pour ce jour et cette semaine du programme actif,
+  // s'il y en a une — la plus récente gagne.
+  function doneSessionFor(day, week){
+    var programId = "";
+    try{ programId = (typeof activeProgramId === "function") ? str(activeProgramId()) : ""; }catch(e){}
+    var rows = hist();
+    for(var i = rows.length - 1; i >= 0; i--){
+      var s = rows[i] || {};
+      if(str(s.day).toLowerCase() !== day || Number(s.week) !== Number(week)) continue;
+      if(programId && str(s.cycle) && str(s.cycle) !== programId) continue;
+      return s;
+    }
+    return null;
+  }
+  function doneResultFor(session, name){
+    var wanted = norm(name);
+    var results = (session && session.results) || {};
+    var keys = Object.keys(results);
+    for(var i = 0; i < keys.length; i++){
+      if(isWodKey(keys[i])) continue;
+      if(norm(keys[i]) === wanted || norm(label(keys[i], results[keys[i]])) === wanted) return results[keys[i]];
+    }
+    return null;
   }
   function workoutLines(day, week){
     day = str(day).toLowerCase();
@@ -258,6 +303,8 @@
     var w = null;
     try{ w = buildWorkout(day, week); }catch(e){ return ["  (séance illisible : " + (e && e.message ? e.message : String(e)) + ")"]; }
     var lines = [];
+    var done = doneSessionFor(day, week);
+    if(done) lines.push("  (Séance faite le " + str(done.date) + " : chaque exercice montre ce qui a été FAIT et la charge suggérée AVANT la séance.)");
     var meta = (w && w.day) || {};
     var head = [str(meta.label), str(meta.focus)].filter(Boolean).join(" — ");
     if(head) lines.push("  Séance : " + head);
@@ -265,7 +312,7 @@
       b = b || {};
       lines.push("    - " + [str(b.title), str(b.kind) ? "(" + str(b.kind) + ")" : "", str(b.time)].filter(Boolean).join(" "));
       if(Array.isArray(b.exercises) && b.exercises.length){
-        b.exercises.forEach(function(ex){ lines.push(exerciseLine(ex, b, day, week)); });
+        b.exercises.forEach(function(ex){ lines.push(exerciseLine(ex, b, day, week, done)); });
       } else if(str(b.text)){
         clip(b.text, BLOCK_TEXT_LIMIT).split(/\n+/).forEach(function(t){ if(str(t)) lines.push("      " + str(t)); });
       }
@@ -394,7 +441,7 @@
           if(wod) lines.push("    · " + rowLabel(key, r) + " — metcon non enregistré");
           return;
         }
-        var line = "    · " + rowLabel(key, r) + (parts.length ? " — " + parts.join(wod ? " · " : " × ") : "");
+        var line = "    · " + rowLabel(key, r) + (parts.length ? " — " + parts.join(wod ? " · " : " × ") : "") + (wod ? "" : plannedNote(r));
         if(notes.athlete) line += "  [note de l'athlète : " + notes.athlete + "]";
         if(notes.system) line += "  [note de l'app : " + notes.system + "]";
         lines.push(line);
@@ -616,7 +663,7 @@
         if(norm(label(keys[j], r)) !== wanted) continue;
         var parts = liftParts(r);
         var notes = splitNote(r);
-        lines.push("- " + str(s.date) + " · S" + str(s.week) + " · " + (parts.join(" × ") || "aucun chiffre")
+        lines.push("- " + str(s.date) + " · S" + str(s.week) + " · " + (parts.join(" × ") || "aucun chiffre") + plannedNote(r)
           + (notes.athlete ? "  [note de l'athlète : " + notes.athlete + "]" : "")
           + (notes.system ? "  [note de l'app : " + notes.system + "]" : ""));
         found++;
