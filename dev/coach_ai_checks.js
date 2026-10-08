@@ -435,9 +435,13 @@ function fakeStorage(){
   vm.runInContext(contextSrc, ctxPlanned, {filename:'context.js'});
   const C = ctxPlanned.CoachAIContext;
   const built = C.build();
-  assert(built.indexOf("Aujourd'hui : " + wd) !== -1 && built.indexOf('Mvt_' + wd + '_S2') !== -1,
+  assert(built.indexOf('### ' + wd + ' — AUJOURD\'HUI') !== -1 && built.indexOf('Mvt_' + wd + '_S2') !== -1,
     'Le contexte contient la séance d\'aujourd\'hui, construite par buildWorkout().');
-  assert(built.indexOf('Demain : ' + tomorrow) !== -1, 'Le contexte contient la séance de demain.');
+  assert(tomorrow === 'lundi' || built.indexOf('### ' + tomorrow + ' — DEMAIN') !== -1, 'Le contexte marque la séance de demain.');
+  assert(built.indexOf('### lundi') !== -1 && built.indexOf('Mvt_lundi_S2') !== -1, 'Toute la semaine en cours est détaillée, pas seulement aujourd\'hui et demain.');
+  const nextWeek = built.slice(built.indexOf('## Semaine suivante'));
+  assert(nextWeek.indexOf('Mvt_lundi_S3 5×5') !== -1 && nextWeek.indexOf('charge du moteur') === -1,
+    'La semaine suivante est en aperçu : mouvements et formats, sans faire tourner le moteur de charges.');
   assert(built.indexOf('charge du moteur : 202') !== -1 && built.indexOf('75%') === -1,
     'La charge montrée est celle du moteur, jamais le %1RM brut du programme.');
   assert(built.indexOf('S4 : Deload') !== -1, 'La carte du programme liste chaque semaine.');

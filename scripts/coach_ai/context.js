@@ -284,9 +284,28 @@
     return bits.length ? " (" + bits.join(", ") + ")" : "";
   }
 
-  // Aujourd'hui et demain au calendrier, plus la prochaine séance à faire.
-  // `opts.planned === "week"` (le pont, sans outils) : toute la semaine en
-  // cours, puisque le modèle ne pourra pas demander le détail ensuite.
+  // Version courte d'une séance : un bloc par ligne, mouvements et formats,
+  // sans charge ni consigne. Sert à la semaine SUIVANTE : le coach voit où va
+  // le programme sans payer le détail (et sans faire tourner le moteur de
+  // charges sur des séances lointaines). Le détail reste à `consulter_seance`.
+  function compactWorkoutLines(day, week){
+    if(typeof buildWorkout !== "function") return [];
+    var w = null;
+    try{ w = buildWorkout(day, week); }catch(e){ return ["    (séance illisible)"]; }
+    return ((w && w.blocks) || []).filter(function(b){ return b && b.kind !== "warmup" && b.kind !== "mobility"; }).map(function(b){
+      var body = (Array.isArray(b.exercises) && b.exercises.length)
+        ? b.exercises.map(function(ex){ return str(ex.name) + (str(ex.format) ? " " + str(ex.format) : ""); }).join(", ")
+        : clip(str(b.text).replace(/\s+/g, " "), 140);
+      return "    - " + str(b.title) + (body ? " : " + body : "");
+    });
+  }
+
+  // La semaine en cours EN DÉTAIL (tous les jours d'entraînement, charge du
+  // moteur comprise), puis la semaine suivante en version courte. Demande de
+  // l'athlète (2026-10-08) : « la semaine au complet, et plus si ce n'est pas
+  // trop lourd ». Poids mesuré sur un vrai profil (4 jours) : ≈ 9 Ko pour la
+  // semaine, ≈ 2 Ko pour la suivante — dans le bloc système mis en cache, donc relu
+  // presque gratuitement d'un message à l'autre.
   function plannedLines(opts){
     opts = opts || {};
     var days = dayList();
@@ -294,38 +313,37 @@
     var week = 0;
     try{ week = Number(state.week) || 1; }catch(e){ week = 1; }
     var maxWeek = weekCount();
-    var lines = ["", "## Séances prévues (telles que l'athlète les voit dans l'app)"];
-    var shown = {};
-    function show(title, day, wk){
-      if(!day) return;
-      var key = wk + "|" + day;
-      if(shown[key]){ lines.push(title + " : " + day + " S" + wk + " — voir plus haut."); return; }
-      shown[key] = true;
-      if(maxWeek && wk > maxWeek){ lines.push(title + " : " + day + " — au-delà de la dernière semaine du programme (S" + maxWeek + ")."); return; }
-      if(days.indexOf(day) < 0){ lines.push(title + " : " + day + " — jour de repos dans ce programme."); return; }
-      lines.push(title + " : " + day + " · S" + wk + dayStatus(day, wk));
-      lines = lines.concat(workoutLines(day, wk));
-    }
-
     var today = todayInfo().day;
     var ti = ALL_DAYS.indexOf(today);
     var tomorrow = ti >= 0 ? ALL_DAYS[(ti + 1) % 7] : "";
-    // La semaine du cycle avance par un geste de l'athlète, pas par le
-    // calendrier : dimanche → lundi est la seule bascule supposée.
-    var tomorrowWeek = (tomorrow === "lundi") ? week + 1 : week;
+    var lines = ["", "## Semaine en cours : S" + week + " (en détail, telle que l'athlète la voit dans l'app)"];
 
-    if(opts.planned === "week"){
-      days.forEach(function(d){ show(d === today ? "Aujourd'hui" : (d === tomorrow && tomorrowWeek === week ? "Demain" : "Séance"), d, week); });
-      if(tomorrowWeek !== week) show("Demain", tomorrow, tomorrowWeek);
+    if(days.indexOf(today) < 0) lines.push("Aujourd'hui (" + today + ") : jour de repos dans ce programme.");
+    days.forEach(function(d){
+      var tags = [];
+      if(d === today) tags.push("AUJOURD'HUI");
+      // La semaine du cycle avance par un geste de l'athlète, pas par le
+      // calendrier : demain dimanche → lundi appartient à la semaine suivante.
+      if(d === tomorrow && tomorrow !== "lundi") tags.push("DEMAIN");
+      lines.push("### " + d + (tags.length ? " — " + tags.join(", ") : "") + dayStatus(d, week));
+      lines = lines.concat(workoutLines(d, week));
+    });
+    if(tomorrow && days.indexOf(tomorrow) < 0 && tomorrow !== "lundi") lines.push("Demain (" + tomorrow + ") : jour de repos dans ce programme.");
+
+    var next = week + 1;
+    if(!maxWeek || next <= maxWeek){
+      var wi = null;
+      try{ wi = (typeof buildWeekInfo === "function") ? (buildWeekInfo() || {})[next] : null; }catch(e){}
+      lines.push("", "## Semaine suivante : S" + next + (wi ? " — " + [str(wi.label), str(wi.goal)].filter(Boolean).join(" — ") : "") + " (aperçu : mouvements et formats, sans charge)");
+      if(tomorrow === "lundi") lines.push("Demain (lundi) ouvre normalement cette semaine, si l'athlète a passé à S" + next + ".");
+      days.forEach(function(d){
+        lines.push("### " + d);
+        lines = lines.concat(compactWorkoutLines(d, next));
+      });
     } else {
-      show("Aujourd'hui", today, week);
-      show("Demain", tomorrow, tomorrowWeek);
-      var done = [];
-      try{ done = state.completedDays || []; }catch(e){}
-      var next = days.filter(function(d){ return done.indexOf(d) < 0; })[0];
-      if(next && next !== today && next !== tomorrow) show("Prochaine séance à faire", next, week);
-      lines.push("Pour une autre journée ou une autre semaine : outil `consulter_seance`. Pour la carte complète du programme : `consulter_programme`.");
+      lines.push("", "S" + week + " est la dernière semaine du programme.");
     }
+    if(opts.planned !== "week") lines.push("Détail complet d'une autre journée ou d'une autre semaine (charges comprises) : outil `consulter_seance`.");
     return lines;
   }
 
@@ -407,7 +425,7 @@
   // S2 à S7 » alors qu'il pouvait les lire.
   function accessLines(){
     return ["", "## Ce que tu peux lire à la demande (outils, sans demander la permission)",
-      "- `consulter_seance` : N'IMPORTE QUELLE séance du programme, toutes semaines confondues (ex. semaine 5, mardi), en détail complet.",
+      "- `consulter_seance` : N'IMPORTE QUELLE séance du programme, toutes semaines confondues (ex. semaine 5, mardi), en détail complet — y compris la semaine suivante, dont tu n'as ci-dessus qu'un aperçu.",
       "- `consulter_programme` : objectif, règles du cycle, intention de chaque journée, carte des semaines, programmes disponibles.",
       "- `consulter_historique` : les séances réellement faites sur une période (TOUT l'historique, pas seulement les récentes ci-dessous).",
       "- `consulter_mouvement` : l'historique complet d'un mouvement, la charge suggérée par le moteur et son explication.",

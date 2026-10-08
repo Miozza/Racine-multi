@@ -219,8 +219,9 @@ distant » de CLAUDE.md §3.4 pour ce domaine **seulement**.
 
 **Ce qui est prévu fait partie du contexte** (V5.2.10). Avant, le coach ne
 voyait que le passé et ne savait pas répondre à « qu'est-ce que j'ai
-aujourd'hui ? ». Le contexte contient maintenant la séance d'aujourd'hui et de
-demain au calendrier (plus la prochaine séance à faire), lues par
+aujourd'hui ? ». Le contexte contient maintenant toute la semaine en cours en
+détail, aujourd'hui et demain marqués (V5.2.12), et un aperçu de la semaine
+suivante (mouvements et formats, sans charge), lus par
 `buildWorkout()` — donc avec remplacements et ajustements, comme l'athlète les
 voit — et la carte du programme. La charge affichée vient de
 `CoachCharge.suggestForExercise(ex, bloc, {day, week})` : le chiffre brut d'un

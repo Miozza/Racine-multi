@@ -6,6 +6,7 @@
 - Le contexte annonce l'**étendue de l'historique** (nombre de séances, première et dernière date, séances par mois).
 - Le contexte liste explicitement **ce que le coach peut lire à la demande**, avec la consigne de ne jamais dire qu'une donnée manque avant d'avoir appelé l'outil.
 - Le pont (sans outils) reçoit l'étendue, sans promesse d'outil.
+- **Toute la semaine en cours en détail** dans le contexte (tous les jours d'entraînement, charge du moteur comprise ; aujourd'hui et demain marqués), plus un **aperçu de la semaine suivante** (mouvements et formats, sans charge). Mesuré sur un vrai profil : ≈ 9 Ko + 2 Ko, dans le bloc système mis en cache.
 
 ## V5.2.11 — Coach IA : mémoire et interface
 
