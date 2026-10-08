@@ -3,8 +3,10 @@
 // POURQUOI. Le stockage local est la seule source de vérité et n'a aucune
 // copie serveur (CLAUDE.md §2.1) : un Safari qui purge, et tout est perdu.
 // L'export JSON manuel protège, mais il faut y penser après chaque séance.
-// Ce module fait CET export tout seul, après chaque séance sauvegardée, et le
-// dépose dans un dépôt GitHub privé de l'athlète.
+// Ce module dépose tout seul, après chaque séance sauvegardée, l'historique
+// d'entraînement dans un dépôt GitHub privé de l'athlète — en JSON brut, en
+// résumé lisible, et en export complet pour la restauration. Effet voulu :
+// un Claude qui a accès au dépôt connaît l'historique sans extraction.
 //
 // Décision explicite du 2026-10-08 (CLAUDE.md §3.4) — portée stricte :
 //   - UN SEUL PROFIL : celui qui a enregistré le jeton, et seulement s'il est
@@ -80,14 +82,25 @@
     var c = read();
     return api.isConfigured() && isAdmin() && activeId() === c.profileId;
   };
-  function filePath(c){
-    var p = str(c.path).replace(/^\/+/, "");
-    if(p) return p;
+  // Trois fichiers, un seul commit par séance :
+  //  - <profil>-historique.json : l'historique d'entraînement brut
+  //    (state.history), le journal qui fait foi (docs/DATA_FLOW_CONTRACT.md).
+  //    C'est lui qu'on veut garder, et lui que Claude lit directement.
+  //  - <profil>-resume.md : le même état, rédigé pour être LU (séances,
+  //    notes, séances prévues, mémoire Brain) — CoachAIContext.build(), le
+  //    texte que Coach IA reçoit déjà. Un Claude qui a accès au dépôt connaît
+  //    l'athlète sans extraction ni copier-coller.
+  //  - <profil>-profil.json : l'export complet, celui que « Restaurer » relit.
+  function folder(c){ return str(c.path).replace(/^\/+|\/+$/g, "") || "racine"; }
+  function files(c){
     var name = "";
     try{ var prof = CoachProfiles.get(c.profileId); name = prof && prof.name; }catch(e){}
-    return "racine/" + slug(name) + ".json";
+    var base = folder(c) + "/" + slug(name);
+    return {historique: base + "-historique.json", resume: base + "-resume.md", profil: base + "-profil.json"};
   }
+  function filePath(c){ return files(c).profil; }
   api.filePath = function(){ return filePath(read()); };
+  api.files = function(){ return files(read()); };
 
   // Enregistre les réglages. Le profil sauvegardé est le profil ACTIF au
   // moment de l'enregistrement — il faut donc être sur son profil admin.
@@ -150,18 +163,68 @@
     return "/repos/" + encodeURIComponent(c.owner) + "/" + encodeURIComponent(c.repo)
       + "/contents/" + filePath(c).split("/").map(encodeURIComponent).join("/");
   }
-  async function currentSha(c){
-    var res = await gh(c, "GET", contentsUrl(c) + "?ref=" + encodeURIComponent(c.branch || "main"));
-    if(res.status === 404) return "";
-    var body = null; try{ body = await res.json(); }catch(e){}
-    if(!res.ok) throw new Error(errorMessage(res.status, body));
-    return str(body && body.sha);
+  function repoUrl(c){ return "/repos/" + encodeURIComponent(c.owner) + "/" + encodeURIComponent(c.repo); }
+  async function json(res){ try{ return await res.json(); }catch(e){ return null; } }
+
+  // Les trois fichiers en UN commit (API Git Data) : ref → commit parent →
+  // arbre → commit → déplacement de la ref. Le contenu part en texte UTF-8
+  // dans l'arbre, sans étape base64. La ref n'avance que si personne ne l'a
+  // déplacée entre-temps (force: false) : sinon on recommence une fois.
+  async function commitFiles(c, entries, message){
+    var branch = c.branch || "main";
+    var refUrl = repoUrl(c) + "/git/ref/heads/" + encodeURIComponent(branch);
+    var res = await gh(c, "GET", refUrl);
+    var ref = await json(res);
+    if(res.status === 404 || res.status === 409) throw new Error("Branche « " + branch + " » introuvable : le dépôt est peut-être vide. Crée-le avec un README, puis réessaie.");
+    if(!res.ok) throw new Error(errorMessage(res.status, ref));
+    var parentSha = ref.object.sha;
+    res = await gh(c, "GET", repoUrl(c) + "/git/commits/" + parentSha);
+    var parent = await json(res);
+    if(!res.ok) throw new Error(errorMessage(res.status, parent));
+    res = await gh(c, "POST", repoUrl(c) + "/git/trees", {
+      base_tree: parent.tree.sha,
+      tree: entries.map(function(e){ return {path: e.path, mode: "100644", type: "blob", content: e.content}; })
+    });
+    var tree = await json(res);
+    if(!res.ok) throw new Error(errorMessage(res.status, tree));
+    if(tree.sha === parent.tree.sha) return {unchanged: true};
+    res = await gh(c, "POST", repoUrl(c) + "/git/commits", {message: message, tree: tree.sha, parents: [parentSha]});
+    var commit = await json(res);
+    if(!res.ok) throw new Error(errorMessage(res.status, commit));
+    res = await gh(c, "PATCH", repoUrl(c) + "/git/refs/heads/" + encodeURIComponent(branch), {sha: commit.sha, force: false});
+    var moved = await json(res);
+    if(res.status === 422 || res.status === 409){ var err = new Error(errorMessage(res.status, moved)); err.conflict = true; throw err; }
+    if(!res.ok) throw new Error(errorMessage(res.status, moved));
+    return {sha: commit.sha};
   }
-  function toBase64(text){
-    // UTF-8 → base64 (accents, emoji des notes). btoa seul refuse l'Unicode.
-    var bytes = new TextEncoder().encode(text), bin = "";
-    for(var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-    return btoa(bin);
+
+  function historyPayload(blob, name){
+    var history = (blob && blob.state && Array.isArray(blob.state.history)) ? blob.state.history : [];
+    return {
+      schema: "racine-history-v1",
+      exportedAt: nowIso(),
+      appVersion: (blob && blob.appVersion) || null,
+      profile: name || null,
+      sessions: history.length,
+      note: "Journal brut des séances (state.history), la plus ancienne en premier. Les charges sont en livres. Restauration : utiliser le fichier -profil.json.",
+      history: history
+    };
+  }
+  function summaryText(blob, name){
+    var body = "";
+    // Le contexte Coach IA décrit le profil ACTIF : c'est le profil
+    // sauvegardé (isActiveTarget), sauf envoi forcé — alors on s'abstient.
+    try{
+      if(window.CoachAIContext && activeId() === read().profileId){
+        body = CoachAIContext.build({sessions: 60, notes: 40, planned: "week"});
+      }
+    }catch(e){ body = ""; }
+    var history = (blob && blob.state && Array.isArray(blob.state.history)) ? blob.state.history : [];
+    return "# Racine — " + (name || "profil") + "\n\n"
+      + "Mis à jour : " + nowIso().slice(0, 16).replace("T", " ") + " UTC · " + history.length + " séance(s) · " + ((blob && blob.appVersion) || "") + "\n\n"
+      + "Résumé écrit par Racine pour être lu tel quel. L'historique complet est dans le fichier -historique.json voisin. "
+      + "Les charges suggérées viennent du moteur de Racine : un poids conseillé ailleurs est un conseil, l'athlète le saisit lui-même.\n\n"
+      + (body || "(Résumé indisponible pour cet envoi : voir -historique.json.)") + "\n";
   }
 
   // Vérifie le jeton et le dépôt sans rien écrire.
@@ -192,26 +255,30 @@
       try{
         var blob = CoachProfiles.exportProfileBlob(c.profileId);
         if(!blob) throw new Error("Export du profil impossible.");
-        var content = toBase64(JSON.stringify(blob, null, 2));
-        var message = "Sauvegarde Racine " + nowIso().slice(0, 16).replace("T", " ")
+        var name = (blob.profile && blob.profile.name) || "";
+        var f = files(c);
+        var entries = [
+          {path: f.historique, content: JSON.stringify(historyPayload(blob, name), null, 2) + "\n"},
+          {path: f.resume, content: summaryText(blob, name)},
+          {path: f.profil, content: JSON.stringify(blob, null, 2) + "\n"}
+        ];
+        var count = (blob.state && Array.isArray(blob.state.history)) ? blob.state.history.length : 0;
+        var message = "Historique Racine : " + count + " séance(s) · " + nowIso().slice(0, 16).replace("T", " ")
           + (blob.appVersion ? " (" + blob.appVersion + ")" : "");
-        // Deux essais : un conflit de sha (autre appareil, envoi croisé) se
-        // règle en relisant le sha courant. Le contenu envoyé reste le local.
+        // Deux essais : si la branche a bougé entre-temps (autre appareil),
+        // on reconstruit sur la nouvelle tête. Le contenu envoyé reste le local.
         for(var attempt = 0; attempt < 2; attempt++){
-          var sha = await currentSha(c);
-          var body = {message: message, content: content, branch: c.branch || "main"};
-          if(sha) body.sha = sha;
-          var res = await gh(c, "PUT", contentsUrl(c), body);
-          var out = null; try{ out = await res.json(); }catch(e){}
-          if(res.ok){
+          try{
+            await commitFiles(c, entries, message);
             write({lastPushAt: nowIso(), lastError: "", pending: false});
             // Compte comme un export : le rappel « jamais exporté » se tait.
             try{ if(CoachProfiles.markExported) CoachProfiles.markExported(c.profileId); }catch(e){}
             try{ var b = document.getElementById("exportReminderBanner"); if(b) b.remove(); }catch(e){}
             return {ok:true, at: nowIso()};
+          }catch(e){
+            if(e.conflict && attempt === 0) continue;
+            throw e;
           }
-          if((res.status === 409 || res.status === 422) && attempt === 0) continue;
-          throw new Error(errorMessage(res.status, out));
         }
         throw new Error("Conflit d'écriture persistant.");
       }catch(e){
@@ -281,7 +348,8 @@
     var other = c.profileId && c.profileId !== activeId();
     host.innerHTML = ""
       + (api.isConfigured()
-          ? "<p>Profil sauvegardé : <strong>" + esc(target || "?") + "</strong> → <code>" + esc(c.owner + "/" + c.repo + " : " + filePath(c)) + "</code><br>"
+          ? "<p>Profil sauvegardé : <strong>" + esc(target || "?") + "</strong> → <code>" + esc(c.owner + "/" + c.repo + " : " + folder(c) + "/") + "</code><br>"
+            + "Fichiers : <code>" + esc(files(c).historique.split("/").pop()) + "</code> (historique), <code>" + esc(files(c).resume.split("/").pop()) + "</code> (résumé lisible), <code>" + esc(files(c).profil.split("/").pop()) + "</code> (restauration)<br>"
             + "Dernier envoi : <strong>" + esc(when(c.lastPushAt)) + "</strong>"
             + (c.pending ? " · <strong>envoi en attente</strong>" : "")
             + (c.lastError ? "<br><span class='status-msg err'>" + esc(c.lastError) + "</span>" : "") + "</p>"

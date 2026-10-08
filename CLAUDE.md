@@ -256,8 +256,10 @@ persiste persiste toujours localement.
 
 - Racine fonctionne en local. Export/import JSON = mécanisme de sauvegarde de référence.
 - **Sauvegarde GitHub du profil admin — décision du 2026-10-08.** `scripts/sync/github_backup.js`
-  (`window.RacineGitHubBackup`) dépose, après chaque séance, l'export JSON ordinaire
-  du profil admin dans un dépôt GitHub **privé séparé**. Portée stricte, tenue par
+  (`window.RacineGitHubBackup`) dépose, après chaque séance et en un commit,
+  l'historique d'entraînement du profil admin dans un dépôt GitHub **privé séparé** :
+  `<profil>-historique.json` (journal brut), `<profil>-resume.md` (contexte Coach IA,
+  lisible par Claude sans extraction), `<profil>-profil.json` (export de restauration). Portée stricte, tenue par
   `dev/github_backup_checks.js` :
   - un seul profil (celui qui a enregistré le jeton, admin) ; jamais un profil client ;
   - **sens unique** : rien n'est relu automatiquement ; « Restaurer » importe comme

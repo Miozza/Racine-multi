@@ -62,7 +62,10 @@ const B = ctx.RacineGitHubBackup;
 
 assert(B.configure({token:'t', owner:'Miozza', repo:'Racine-multi'}).ok === false, 'Le dépôt de code est refusé (Pages publierait la sauvegarde).');
 assert(B.configure({token:'t', owner:'Miozza', repo:'racine-sauvegarde'}).ok && B.isActiveTarget(), 'Un dépôt séparé est accepté pour le profil actif.');
-assert(B.filePath() === 'racine/bertin.json', 'Chemin par défaut lisible : racine/<profil>.json.');
+assert(B.filePath() === 'racine/bertin-profil.json' && B.files().historique === 'racine/bertin-historique.json' && B.files().resume === 'racine/bertin-resume.md',
+  'Trois fichiers lisibles : historique brut, résumé, export de restauration.');
+assert(/history: history/.test(src) && /CoachAIContext\.build\(/.test(src), 'L\'historique brut et le résumé Coach IA partent avec la sauvegarde.');
+assert(/force: false/.test(src), 'La branche n\'est jamais déplacée de force : un conflit se rejoue, il n\'écrase pas.');
 assert(JSON.stringify(B.get()).indexOf('"t"') === -1, 'get() ne rend jamais le jeton en clair.');
 active = 'p_client';
 assert(!B.isActiveTarget() && B.schedule() === false, 'Un autre profil n\'est jamais envoyé.');

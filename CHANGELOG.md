@@ -12,7 +12,7 @@
 
 **Sauvegarde GitHub** (`scripts/sync/github_backup.js`, Réglages → Sauvegarde GitHub, admin)
 
-- Après chaque séance sauvegardée, l'export JSON du profil admin est déposé dans un dépôt GitHub **privé** séparé (`racine/<profil>.json`). Hors-ligne : envoi en attente, repart au retour du réseau.
+- Après chaque séance sauvegardée, l'historique d'entraînement du profil admin part dans un dépôt GitHub **privé** séparé, en un seul commit : `racine/<profil>-historique.json` (journal brut), `racine/<profil>-resume.md` (résumé lisible, le contexte de Coach IA — Claude le lit sans extraction) et `racine/<profil>-profil.json` (export complet, pour restaurer). Hors-ligne : envoi en attente, repart au retour du réseau.
 - Un seul profil (celui qui a enregistré le jeton). Jeton au niveau appareil, hors export. Le dépôt de code est refusé (Pages publierait la sauvegarde).
 - Sens unique : Racine ne relit jamais GitHub tout seul. « Restaurer » importe le fichier comme **nouveau** profil.
 - Garde-fou : `dev/github_backup_checks.js`.

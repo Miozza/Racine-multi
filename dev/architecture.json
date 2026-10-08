@@ -794,8 +794,8 @@
     },
     {
       "path": "dev/github_backup_checks.js",
-      "size": 4843,
-      "lines": 80,
+      "size": 5264,
+      "lines": 83,
       "role": "Garde-fous de la sauvegarde GitHub : réseau confiné à deux fichiers, un seul profil admin, jeton hors export, dépôt de code refusé, restauration sans écrasement.",
       "category": "ACTIF",
       "exposes": [],
@@ -4283,9 +4283,9 @@
     },
     {
       "path": "scripts/sync/github_backup.js",
-      "size": 19341,
-      "lines": 370,
-      "role": "Sauvegarde GitHub du profil admin (décision 2026-10-08, CLAUDE.md §3.4) : après chaque séance, dépose l'export JSON ordinaire (CoachProfiles.exportProfileBlob) dans un dépôt GitHub privé séparé. Un seul profil, jeton au niveau appareil hors export, dépôt de code refusé, sens unique (restaurer = import comme nouveau profil). Seul fichier du runtime, avec scripts/coach_ai/client.js, à appeler fetch().",
+      "size": 23976,
+      "lines": 438,
+      "role": "Sauvegarde GitHub du profil admin (décision 2026-10-08, CLAUDE.md §3.4) : après chaque séance, dépose en un commit l'historique d'entraînement (JSON brut), un résumé lisible par Claude (CoachAIContext.build) et l'export de restauration (CoachProfiles.exportProfileBlob) dans un dépôt GitHub privé séparé. Un seul profil, jeton au niveau appareil hors export, dépôt de code refusé, sens unique (restaurer = import comme nouveau profil). Seul fichier du runtime, avec scripts/coach_ai/client.js, à appeler fetch().",
       "category": "ACTIF",
       "exposes": [
         "window.RacineGitHubBackup"

@@ -10,7 +10,7 @@ Le coach voit la séance d'aujourd'hui et de demain (telle qu'affichée, charge 
 
 ### Sauvegarde GitHub du profil admin
 
-Réglages → Sauvegarde GitHub. Après chaque séance, l'export JSON du profil admin part dans un dépôt GitHub privé séparé. Sens unique ; restaurer crée un nouveau profil.
+Réglages → Sauvegarde GitHub. Après chaque séance, l'historique d'entraînement du profil admin part dans un dépôt GitHub privé séparé (historique brut, résumé lisible par Claude, export de restauration). Sens unique ; restaurer crée un nouveau profil.
 
 ### Pont Peak : fillers pendant les pauses
 
