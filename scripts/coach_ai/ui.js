@@ -565,6 +565,8 @@
   function renderAvailability(){
     var banner = $("caiUnavailable"), composer = $("caiComposer"), bridge = $("caiBridge");
     if(!banner || !composer || !bridge) return;
+    var view = $("coachaiView");
+    if(view) view.classList.toggle("cai-pont", mode() !== "api");
 
     if(mode() === "api"){
       // Clé enregistrée : conversation directe.
@@ -575,8 +577,8 @@
       // Pas de clé : le pont. Ce n'est PAS une indisponibilité — c'est le
       // chemin normal, et il passe par l'abonnement déjà payé.
       banner.style.display = "";
-      banner.innerHTML = "<p><strong>Mode copier-coller.</strong> Racine écrit le prompt, tu le colles dans "
-        + esc(ia()) + ", tu recolles sa réponse. Rien de plus à payer : ça passe par ton abonnement.</p>";
+      banner.innerHTML = "<p><strong>Copier-coller</strong> — aucune clé API sur cet appareil. Le prompt passe par ton abonnement "
+        + esc(ia()) + ". Pour la conversation directe : ⚙ → Clé API.</p>";
       composer.style.display = "none";
       bridge.style.display = "";
       renderBridge();
@@ -637,6 +639,8 @@
       }
       if(t.id === "caiSaveCfg"){ saveSettings(); return; }
       if(t.id === "caiClearKey"){
+        // Geste destructif (la clé ne se réaffiche jamais) : confirmé.
+        if(!confirm("Effacer la clé API de cet appareil ? Coach IA repassera en copier-coller jusqu'à ce que tu en recolles une.")) return;
         CoachAIConfig.clearKey();
         renderSettings(); renderAvailability();
         return;

@@ -8821,8 +8821,21 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 #coachaiView > .cai-composer,
 #coachaiView > .cai-banner,
 #coachaiView > .cai-bridge { flex: 0 0 auto; }
-#coachaiView > .cai-settings { flex: 0 1 auto; max-height: 52dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-#coachaiView > .cai-bridge { max-height: 48dvh; overflow-y: auto; }
+/* Un panneau ouvert ne rétrécit JAMAIS (il était écrasé en une bande
+   illisible) ; s'il est long, il défile lui-même. */
+#coachaiView > .cai-settings { flex: 0 0 auto; max-height: 45dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* Mode copier-coller : trois étapes + bandeau + fil ne tiennent pas dans
+   une hauteur d'écran fixe — le fil finissait écrasé en quelques lignes,
+   coupé entre le bandeau et l'étape 1 (rapport de l'athlète, iPhone).
+   L'écran devient une page normale qui défile : le fil prend sa hauteur
+   naturelle, les étapes suivent en dessous. Le mode API garde la mise en
+   page de messagerie (fil qui défile, saisie en bas). */
+#coachaiView.cai-pont { height: auto; min-height: calc(100dvh - var(--nav-h) - var(--safe-top) - var(--safe-bot)); padding-bottom: calc(16px + var(--safe-bot)); }
+#coachaiView.cai-pont > .cai-messages { flex: 0 0 auto; overflow: visible; }
+#coachaiView.cai-pont > .cai-bridge { max-height: none; overflow: visible; }
+#coachaiView.cai-pont > .cai-settings { max-height: none; }
+.cai-banner { padding: 8px 12px; font-size: 12.5px; line-height: 1.45; }
 
 .cai-day {
   display: flex;

@@ -1,5 +1,5 @@
-// Racine V5.2.13 — Coach IA distingue la charge suggérée avant la séance, la charge faite et la suggestion actuelle
-var APP_VERSION = "V5.2.13";
+// Racine V5.2.14 — Coach IA : affichage du mode copier-coller réparé, effacement de la clé confirmé
+var APP_VERSION = "V5.2.14";
 
 // Architecture stable
 // programs/*.js = plan prévu

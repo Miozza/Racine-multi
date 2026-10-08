@@ -354,6 +354,10 @@ const uiSrc = code('scripts/coach_ai/ui.js');
 assert(uiSrc.indexOf('function mode()') !== -1 && uiSrc.indexOf('CoachAIConfig.isReady()') !== -1,
   'L\'écran choisit son mode selon la présence d\'une clé.');
 assert(uiSrc.indexOf('renderBridge()') !== -1, 'Le mode pont est rendu quand aucune clé n\'est enregistrée.');
+assert(uiSrc.indexOf('classList.toggle("cai-pont"') !== -1 && read('styles.css').indexOf('#coachaiView.cai-pont { height: auto;') !== -1,
+  'Mode copier-coller : l\'écran défile comme une page, le fil n\'est plus écrasé entre le bandeau et les étapes.');
+assert(read('styles.css').indexOf('#coachaiView > .cai-settings { flex: 0 0 auto;') !== -1, 'Un panneau ouvert ne rétrécit jamais.');
+assert(/caiClearKey[\s\S]{0,200}confirm\(/.test(uiSrc), 'Effacer la clé API demande confirmation.');
 
 // ── Le contexte dit vrai : unités, metcons, notes, jour ────────────────────
 // Rapport d'anomalies du 2026-10-02 sur le prompt Coach : courbe à 8000 %,

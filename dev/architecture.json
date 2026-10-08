@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 40155,
-      "lines": 583,
+      "size": 40653,
+      "lines": 587,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -3618,8 +3618,8 @@
     },
     {
       "path": "scripts/coach_ai/ui.js",
-      "size": 32992,
-      "lines": 679,
+      "size": 33302,
+      "lines": 683,
       "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
       "category": "ACTIF",
       "exposes": [
@@ -4459,8 +4459,8 @@
     },
     {
       "path": "styles.css",
-      "size": 293905,
-      "lines": 8746,
+      "size": 307912,
+      "lines": 9160,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],

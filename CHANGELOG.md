@@ -1,3 +1,13 @@
+## V5.2.14 — Coach IA : affichage du mode copier-coller réparé
+
+**Pourquoi** : capture de l'athlète (iPhone, 2026-10-08). En mode copier-coller, l'écran avait une hauteur fixe : en-tête, panneau de réglages, bandeau et trois étapes s'y empilaient, et le fil de conversation, seul à pouvoir rétrécir, finissait écrasé en quelques lignes entre le bandeau et l'étape 1. Le panneau de réglages était lui-même coupé en une bande illisible.
+
+- Mode copier-coller : l'écran devient une page qui défile — le fil prend sa hauteur naturelle, les trois étapes suivent dessous.
+- Panneaux (réglages, carnet) : ne rétrécissent plus ; s'ils sont longs, ils défilent eux-mêmes.
+- Bandeau copier-coller plus court, et il dit pourquoi on y est (aucune clé API sur l'appareil) et où en mettre une.
+- « Effacer la clé » demande confirmation : la clé ne se réaffiche jamais, un toucher de travers suffisait à la perdre.
+- Mode API inchangé (messagerie, saisie en bas).
+
 ## V5.2.13 — Coach IA : suggéré avant la séance, fait, suggestion actuelle
 
 **Pourquoi** : rapport de l'athlète (2026-10-08). Front Squat du jour : 140 lb suggérés avant la séance, 150 lb faits. Le coach a répondu « suggéré 155 » — la suggestion actuelle, recalculée APRÈS la séance. La suggestion d'origine est figée dans chaque résultat (`planned.load`) mais n'était pas transmise au coach.
