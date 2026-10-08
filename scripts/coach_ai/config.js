@@ -20,29 +20,39 @@
   // Clé volontairement HORS des clés namespacées par profil
   // (CoachProfiles.storageKeysFor) : appareil, pas athlète.
   var KEY = "racine_coach_ai_device_v1";
-  var SCHEMA = 2;
+  var SCHEMA = 3;
 
-  // Modèle par défaut : Haiku 4.5. Décision du 2026-10-07 : la conversation
-  // courante (lire l'historique, commenter une suggestion du moteur, proposer
-  // un remplacement) n'a pas besoin d'un gros modèle, et la cible est « moins
-  // de 1 $ par mois ». Les poids restent calculés par le moteur quel que soit
-  // le modèle (CLAUDE.md §3.5). Pour écrire une semaine complète, le pont
-  // copier-coller passe par l'abonnement, déjà payé.
-  var DEFAULT_MODEL = "claude-haiku-4-5";
+  // Modèle par défaut : Haiku 5.5 (V5.2.12, remplace Haiku 4.5 choisi le
+  // 2026-10-07). Même logique — la conversation courante n'a pas besoin d'un
+  // gros modèle, cible « moins de 1 $ par mois » — mais Haiku 5.5 suit mieux
+  // les consignes et se sert mieux de ses outils, pour 10 fois moins cher
+  // ($0,10 / $0,50 le million de jetons contre $1 / $5). Les poids restent
+  // calculés par le moteur quel que soit le modèle (CLAUDE.md §3.5).
+  var DEFAULT_MODEL = "claude-haiku-5-5";
   // Ancien défaut, jamais choisi à la main : l'écran n'offrait pas de choix
   // de modèle avant le schéma 2. La migration le remplace donc par le défaut.
   var LEGACY_DEFAULT_MODEL = "claude-opus-5";
 
   // Prix en $ par million de jetons (entrée / sortie), tarifs publics
-  // Anthropic relevés le 2026-10-07. Servent au compteur local et au plafond
-  // mensuel — une estimation, pas une facture : la facture fait foi.
+  // Anthropic relevés le 2026-10-08 (Haiku 5.5 : tarif des prompts ≤ 100 k
+  // jetons — ceux de Racine en font ≈ 8 k). Servent au compteur local et au
+  // plafond mensuel — une estimation, pas une facture : la facture fait foi.
   // `effort` : le modèle accepte output_config.effort et la réflexion
   // adaptative. Haiku 4.5 refuse les deux (erreur 400).
+  // `fallback` : le modèle accepte le repli serveur `fallbacks: "default"`
+  // quand un filtre de sécurité décline (Opus 5.5, Sonnet 5.5 ; pas Haiku).
+  // `legacy` : gardé pour compter la dépense passée et lire une config
+  // ancienne, mais plus proposé dans la liste.
   var MODELS = {
-    "claude-haiku-4-5":  {label: "Économique — Haiku 4.5",  input: 1, output: 5,  effort: false},
-    "claude-sonnet-5-5": {label: "Équilibré — Sonnet 5.5",  input: 2, output: 10, effort: true},
-    "claude-opus-5":     {label: "Fort — Opus 5",           input: 5, output: 25, effort: true}
+    "claude-haiku-5-5":  {label: "Économique — Haiku 5.5",  input: 0.1, output: 0.5, effort: true},
+    "claude-sonnet-5-5": {label: "Équilibré — Sonnet 5.5",  input: 2,   output: 10,  effort: true, fallback: true},
+    "claude-opus-5-5":   {label: "Fort — Opus 5.5",         input: 4,   output: 20,  effort: true, fallback: true},
+    "claude-haiku-4-5":  {label: "Haiku 4.5 (ancien)",      input: 1,   output: 5,   effort: false, legacy: true},
+    "claude-opus-5":     {label: "Opus 5 (ancien)",         input: 5,   output: 25,  effort: true,  legacy: true}
   };
+  // Schéma 2 → 3 : les modèles remplacés par leur successeur direct, moins
+  // cher et meilleur. Rien d'autre n'est touché.
+  var SUCCESSORS = {"claude-haiku-4-5": "claude-haiku-5-5", "claude-opus-5": "claude-opus-5-5"};
   // Modèle inconnu (saisi à la main) : on compte au prix le plus haut, pour
   // que le plafond se déclenche trop tôt plutôt que trop tard.
   var UNKNOWN_MODEL = {label: "", input: 5, output: 25, effort: true};
@@ -110,6 +120,8 @@
     out.schema = SCHEMA;
     // Schéma 1 → 2 : l'ancien défaut n'était pas un choix de l'athlète.
     if(fromSchema < 2 && str(out.model) === LEGACY_DEFAULT_MODEL) out.model = DEFAULT_MODEL;
+    // Schéma 2 → 3 : successeur direct (Haiku 4.5 → 5.5, Opus 5 → 5.5).
+    if(fromSchema < 3 && SUCCESSORS[str(out.model)]) out.model = SUCCESSORS[str(out.model)];
     if(!str(out.model)) out.model = DEFAULT_MODEL;
     // Une clé déjà enregistrée avec un caractère invisible est réparée à la
     // lecture : pas besoin de la recoller.
@@ -187,7 +199,7 @@
     return Object.assign({id: id}, MODELS[id] || UNKNOWN_MODEL);
   };
   api.models = function(){
-    return Object.keys(MODELS).map(function(k){ return {id: k, label: MODELS[k].label}; });
+    return Object.keys(MODELS).filter(function(k){ return !MODELS[k].legacy; }).map(function(k){ return {id: k, label: MODELS[k].label}; });
   };
 
   // ── Compteur de dépense ──────────────────────────────────────────────

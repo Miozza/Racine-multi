@@ -188,15 +188,23 @@ assert(configSrc.indexOf('racine_coach_ai_device_v1') !== -1, 'La clé vit dans 
   const Cfg = c.window.CoachAIConfig;
 
   let cfg = Cfg.get();
-  assert(cfg.schema === 2, 'La config porte le schéma 2.');
+  assert(cfg.schema === 3, 'La config porte le schéma 3.');
   assert(cfg.apiKey === 'sk-ant-test' && cfg.effort === 'high', 'Migration 1 → 2 : clé et réglages conservés.');
-  assert(cfg.model === 'claude-haiku-4-5', 'Migration 1 → 2 : l\'ancien défaut Opus (jamais choisi à la main) passe à Haiku.');
+  assert(cfg.model === 'claude-haiku-5-5', 'Migration 1 → 3 : l\'ancien défaut Opus (jamais choisi à la main) passe à Haiku, puis à son successeur Haiku 5.5.');
   assert(cfg.monthlyBudget === 1, 'Plafond mensuel par défaut : 1 $.');
 
   store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:1, apiKey:'k', model:'claude-sonnet-5-5'}));
   assert(Cfg.get().model === 'claude-sonnet-5-5', 'Un modèle autre que l\'ancien défaut n\'est pas écrasé par la migration.');
   store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:2, apiKey:'k', model:'claude-opus-5', monthlyBudget:3}));
-  assert(Cfg.get().model === 'claude-opus-5', 'Opus choisi APRÈS le schéma 2 est un vrai choix : conservé.');
+  assert(Cfg.get().model === 'claude-opus-5-5', 'Opus choisi au schéma 2 reste Opus : il passe à son successeur direct, Opus 5.5.');
+  store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:2, apiKey:'k', model:'claude-haiku-4-5'}));
+  assert(Cfg.get().model === 'claude-haiku-5-5', 'Migration 2 → 3 : Haiku 4.5 passe à Haiku 5.5 (meilleur, 10× moins cher).');
+  store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:3, apiKey:'k', model:'claude-haiku-4-5'}));
+  assert(Cfg.get().model === 'claude-haiku-4-5', 'Un modèle choisi APRÈS le schéma 3 est un vrai choix : conservé.');
+  assert(Cfg.models().every(function(m){ return !/4-5|opus-5$/.test(m.id); }) && Cfg.models().length === 3,
+    'La liste propose les trois modèles actuels, pas les anciens.');
+  assert(Cfg.modelInfo('claude-haiku-5-5').effort === true && !Cfg.modelInfo('claude-haiku-5-5').fallback
+    && Cfg.modelInfo('claude-opus-5-5').fallback === true, 'Haiku 5.5 : effort oui, repli serveur non ; Opus 5.5 : repli serveur.');
 
   assert(Cfg.modelInfo('claude-haiku-4-5').effort === false, 'Haiku 4.5 : ni effort ni réflexion adaptative (sinon 400).');
   assert(Cfg.modelInfo('modele-inconnu').input >= 5, 'Modèle inconnu : compté au prix fort (plafond prudent).');
@@ -230,7 +238,7 @@ assert(configSrc.indexOf('racine_coach_ai_device_v1') !== -1, 'La clé vit dans 
     'client.js vérifie le plafond AVANT l\'appel réseau.');
   assert(/if\(CoachAIConfig\.modelInfo\(model\)\.effort\)\{\s*body\.thinking/.test(cl),
     'Effort et réflexion ne sont envoyés qu\'aux modèles qui les acceptent.');
-  assert(cl.indexOf('CoachAIConfig.recordUsage(model, payload.usage)') !== -1,
+  assert(/CoachAIConfig\.recordUsage\((payload\.model \|\| )?model, payload\.usage\)/.test(cl),
     'Chaque réponse est comptée d\'après le `usage` déclaré par l\'API.');
 }
 
@@ -517,9 +525,47 @@ assert(JSON.stringify(CoachAIPatch.tools()).indexOf('"retenir"') !== -1 && !Coac
 assert(read('scripts/coach_ai/ui.js').indexOf('CoachAIChat.turns()') !== -1,
   'L\'écran relit le fil depuis la mémoire (réponses du coach comprises).');
 
-if(errors.length){
-  console.error('\n✗ coach_ai_checks — ' + errors.length + ' échec(s) :');
-  errors.forEach(function(e){ console.error('  ✗ ' + e); });
-  process.exit(1);
+// ── Modèles 5.5 : consigne figée par message, refus, repli serveur ─────────
+{
+  const chatSrc55 = code('scripts/coach_ai/chat.js');
+  assert(chatSrc55.indexOf('var system = systemBlocks();') !== -1 && chatSrc55.indexOf('system: systemBlocks()') === -1,
+    'La consigne est construite une fois par message : `retenir` ne change pas le préfixe sous des blocs de réflexion (400 sur les modèles 5.5).');
+  assert(chatSrc55.indexOf('stop_reason === "refusal"') !== -1, 'Un refus de filtre de sécurité est expliqué, pas rendu comme une réponse vide.');
+  assert(chatSrc55.indexOf('MANUEL DE RACINE') !== -1, 'Le coach reçoit le manuel de l\'application.');
+  const calls = [];
+  const cc = {console:console, JSON:JSON, Object:Object, String:String, Number:Number};
+  cc.window = cc;
+  cc.CoachAIConfig = {get:function(){ return {apiKey:'sk-ant-api03-x', model:'claude-opus-5-5', effort:'medium'}; },
+    overBudget:function(){ return false; }, modelInfo:function(m){ return m === 'claude-opus-5-5' ? {effort:true, fallback:true} : {effort:true}; },
+    recordUsage:function(){}, ENDPOINT:'x', API_VERSION:'v', DEFAULT_MODEL:'claude-haiku-5-5', keyPreview:function(){ return ''; }, monthSpend:function(){ return {usd:0}; }};
+  let reject = true;
+  cc.fetch = async function(url, init){
+    const body = JSON.parse(init.body);
+    calls.push({beta: init.headers['anthropic-beta'] || '', fallbacks: body.fallbacks, thinking: body.thinking});
+    if(body.fallbacks && reject) return {ok:false, status:400, json: async function(){ return {error:{message:'fallbacks: unsupported'}}; }};
+    return {ok:true, status:200, json: async function(){ return {model:'claude-opus-5-5', content:[], usage:{}}; }};
+  };
+  vm.createContext(cc);
+  vm.runInContext(read('scripts/coach_ai/client.js'), cc, {filename:'client.js'});
+  (async function(){
+    await cc.CoachAIClient.send({messages:[{role:'user', content:'x'}]});
+    assert(calls.length === 2 && calls[0].fallbacks === 'default' && calls[0].beta === 'server-side-fallback-2026-07-01'
+      && calls[1].fallbacks === undefined && calls[1].beta === '',
+      'Opus 5.5 : repli serveur demandé ; s\'il est refusé, la requête repart sans lui (Coach IA reste utilisable).');
+    assert(calls.every(function(c){ return c.thinking && c.thinking.type === 'adaptive'; }), 'Jamais de `thinking: disabled` (refusé par Opus 5.5).');
+    calls.length = 0; cc.CoachAIConfig.get = function(){ return {apiKey:'k', model:'claude-haiku-5-5', effort:'medium'}; };
+    await cc.CoachAIClient.send({messages:[{role:'user', content:'x'}]});
+    assert(calls.length === 1 && calls[0].fallbacks === undefined, 'Haiku 5.5 : pas de repli serveur (il n\'en a pas).');
+    finish();
+  })().catch(function(e){ errors.push('Test client : ' + e.message); finish(); });
 }
-console.log('✓ coach_ai_checks — ' + notes.length + ' vérifications passées.');
+
+// Le test du client est asynchrone : le bilan attend sa fin.
+function finish(){
+  if(errors.length){
+    console.error('\n✗ coach_ai_checks — ' + errors.length + ' échec(s) :');
+    errors.forEach(function(e){ console.error('  ✗ ' + e); });
+    process.exit(1);
+  }
+  console.log('✓ coach_ai_checks — ' + notes.length + ' vérifications passées.');
+}

@@ -6,7 +6,7 @@ Version actuelle : V5.2.12
 
 ### Coach IA lit tout l'historique
 
-`consulter_historique` donne accès à toutes les séances faites (par période ou semaine). Le contexte annonce l'étendue de l'historique et la liste des outils de lecture, détaille toute la semaine en cours et donne un aperçu de la suivante.
+`consulter_historique` donne accès à toutes les séances faites (par période ou semaine). Le contexte annonce l'étendue de l'historique et la liste des outils de lecture, détaille toute la semaine en cours et donne un aperçu de la suivante. Modèle par défaut : Haiku 5.5 (Sonnet 5.5 et Opus 5.5 au choix) ; le coach reçoit un manuel de l'application.
 
 ### Coach IA : mémoire et interface
 

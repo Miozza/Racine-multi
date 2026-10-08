@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 35118,
-      "lines": 525,
+      "size": 38997,
+      "lines": 571,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -3485,8 +3485,8 @@
     },
     {
       "path": "scripts/coach_ai/chat.js",
-      "size": 21731,
-      "lines": 424,
+      "size": 25066,
+      "lines": 455,
       "role": "Coach IA : conversation et mémoire. Fil compact (texte seul, 40 messages / 60 Ko, racine_coach_ai_thread_v2), carnet du coach (20 faits, racine_coach_ai_memory_v1, outil `retenir`), fenêtre de 12 messages envoyée au modèle, boucle d'outils bornée, archive des échanges pour la sauvegarde GitHub. Ne référence jamais CoachAIPatch.apply.",
       "category": "ACTIF",
       "exposes": [
@@ -3504,8 +3504,8 @@
     },
     {
       "path": "scripts/coach_ai/client.js",
-      "size": 4610,
-      "lines": 109,
+      "size": 7844,
+      "lines": 160,
       "role": "Coach IA : SEUL fichier du dépôt qui appelle le réseau. POST vers l'API Messages en fetch brut (pas de SDK : aucun bundler, zéro import ES). En-tête anthropic-dangerous-direct-browser-access requis pour CORS. Traduit les erreurs HTTP en français lisible et dégrade proprement hors-ligne.",
       "category": "ACTIF",
       "exposes": [
@@ -3520,8 +3520,8 @@
     },
     {
       "path": "scripts/coach_ai/config.js",
-      "size": 5176,
-      "lines": 130,
+      "size": 12527,
+      "lines": 270,
       "role": "Coach IA : configuration de l'accès API. Clé stockée au niveau APPAREIL (racine_coach_ai_device_v1), jamais dans le state d'un profil — donc jamais dans un export JSON ni un lien de prescription. Porte la garde admin et la raison lisible d'indisponibilité.",
       "category": "ACTIF",
       "exposes": [
@@ -3618,8 +3618,8 @@
     },
     {
       "path": "scripts/coach_ai/ui.js",
-      "size": 32862,
-      "lines": 678,
+      "size": 32992,
+      "lines": 679,
       "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
       "category": "ACTIF",
       "exposes": [

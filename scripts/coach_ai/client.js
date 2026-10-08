@@ -82,8 +82,9 @@
       messages: opts.messages || []
     };
     // Effort et réflexion adaptative : seulement pour les modèles qui les
-    // acceptent. Haiku 4.5 répond 400 aux deux — sans réflexion, il répond
-    // aussi moins cher, ce qui est le but de ce modèle ici.
+    // acceptent (Haiku 5.5, Sonnet 5.5, Opus 5.5). Haiku 4.5 répond 400 aux
+    // deux. Jamais de `thinking: disabled` : Opus 5.5 le refuse, et l'effort
+    // suffit à régler la dépense.
     if(CoachAIConfig.modelInfo(model).effort){
       body.thinking = {type: "adaptive"};
       body.output_config = {effort: String(opts.effort || c.effort || "medium")};
@@ -91,36 +92,55 @@
     if(opts.system) body.system = opts.system;
     if(opts.tools && opts.tools.length) body.tools = opts.tools;
 
-    var res;
+    // Repli serveur : sur Sonnet 5.5 et Opus 5.5, si un filtre de sécurité
+    // décline (faux positif possible sur un sujet de santé ou de blessure),
+    // l'API relance la même requête sur un autre modèle, dans le même appel.
+    // Haiku n'a pas de repli serveur : son refus est rendu tel quel (chat.js).
+    var info = CoachAIConfig.modelInfo(model);
+    var res = await post(key, body, !!info.fallback);
+    var payload = await readJson(res);
+    // Si l'API refuse le paramètre de repli lui-même, on renvoie la requête
+    // sans lui plutôt que de rendre Coach IA inutilisable.
+    if(!res.ok && res.status === 400 && info.fallback && /fallback/i.test(JSON.stringify(payload || {}))){
+      res = await post(key, body, false);
+      payload = await readJson(res);
+    }
+
+    if(!res.ok) throw new Error(errorMessage(res.status, payload, key));
+    if(!payload) throw new Error("Réponse illisible de l'API.");
+    // Compté d'après ce que l'API déclare avoir consommé, pas d'une estimation,
+    // et au prix du modèle qui a réellement répondu (un repli peut changer).
+    try{ CoachAIConfig.recordUsage(payload.model || model, payload.usage); }catch(e){}
+    return payload;
+  };
+
+  async function readJson(res){
+    try{ return await res.json(); }catch(e){ return null; }
+  }
+
+  async function post(key, body, withFallback){
+    var headers = {
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": CoachAIConfig.API_VERSION,
+      // Sans cet en-tête, l'API refuse toute requête venue d'un navigateur
+      // (CORS). Il assume explicitement que la clé est exposée côté client
+      // — acceptable ici : app perso, clé locale, profil admin seulement.
+      "anthropic-dangerous-direct-browser-access": "true"
+    };
+    var payload = body;
+    if(withFallback){
+      headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
+      payload = Object.assign({}, body, {fallbacks: "default"});
+    }
     try{
-      res = await fetch(CoachAIConfig.ENDPOINT, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": key,
-          "anthropic-version": CoachAIConfig.API_VERSION,
-          // Sans cet en-tête, l'API refuse toute requête venue d'un navigateur
-          // (CORS). Il assume explicitement que la clé est exposée côté client
-          // — acceptable ici : app perso, clé locale, profil admin seulement.
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify(body)
-      });
+      return await fetch(CoachAIConfig.ENDPOINT, {method: "POST", headers: headers, body: JSON.stringify(payload)});
     }catch(e){
       // Hors-ligne, coupure, DNS. Racine doit continuer à fonctionner sans
       // réseau : c'est une erreur de Coach IA, pas une panne de l'app.
       throw new Error("Pas de connexion. Coach IA a besoin du réseau ; le reste de Racine fonctionne normalement.");
     }
-
-    var payload = null;
-    try{ payload = await res.json(); }catch(e){ payload = null; }
-
-    if(!res.ok) throw new Error(errorMessage(res.status, payload, key));
-    if(!payload) throw new Error("Réponse illisible de l'API.");
-    // Compté d'après ce que l'API déclare avoir consommé, pas d'une estimation.
-    try{ CoachAIConfig.recordUsage(model, payload.usage); }catch(e){}
-    return payload;
-  };
+  }
 
   // Extraction du texte visible d'une réponse. Les blocs `thinking` ne sont
   // jamais affichés : ce n'est pas au coach de montrer son brouillon.
