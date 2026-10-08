@@ -118,7 +118,7 @@
     var contexte = "";
     try{
       contexte = window.CoachAIContext
-        ? window.CoachAIContext.build({sessions: 14, notes: 16})
+        ? window.CoachAIContext.build({sessions: 14, notes: 16, planned: "week"})
         : "(contexte indisponible)";
     }catch(e){ contexte = "(contexte illisible : " + (e && e.message) + ")"; }
 
