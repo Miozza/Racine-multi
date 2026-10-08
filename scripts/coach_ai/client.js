@@ -33,7 +33,8 @@
         return "Clé refusée : tu as collé l'APERÇU masqué de la clé (avec « … »). La clé complète ne s'affiche qu'une fois, à la création : crée-en une nouvelle et copie-la à ce moment-là." + why;
       }
       if(!/^sk-ant-api/.test(key)){
-        return "Clé refusée : elle devrait commencer par sk-ant-api. Recolle la clé complète affichée à la création (la liste des clés n'en montre qu'un aperçu)." + why;
+        return "Clé refusée : elle devrait commencer par sk-ant-api, la tienne commence par "
+          + CoachAIConfig.keyPreview() + ". Recolle la clé complète affichée à la création (la liste des clés n'en montre qu'un aperçu)." + why;
       }
       return "Clé refusée (401). Elle est peut-être incomplète, désactivée ou supprimée : crée-en une nouvelle et recolle-la en entier." + why;
     }

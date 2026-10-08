@@ -213,6 +213,13 @@ assert(configSrc.indexOf('racine_coach_ai_device_v1') !== -1, 'La clé vit dans 
   Cfg.set({monthlyBudget: 0});
   assert(!Cfg.overBudget(), 'Plafond 0 = pas de plafond.');
   assert(JSON.parse(store.getItem('racine_coach_ai_device_v1')).apiKey === 'k', 'Enregistrer le plafond ne touche pas la clé.');
+  Cfg.set({apiKey: '\u200B "sk-ant-api03-abc\u00A0def" \n'});
+  assert(Cfg.get().apiKey === 'sk-ant-api03-abcdef', 'Clé collée : espaces, guillemets et caractères invisibles retirés.');
+  store.setItem('racine_coach_ai_device_v1', JSON.stringify({schema:2, apiKey:'\uFEFFsk-ant-api03-xyz ', model:'claude-haiku-4-5'}));
+  assert(Cfg.get().apiKey === 'sk-ant-api03-xyz', 'Une clé déjà enregistrée avec un caractère invisible est réparée à la lecture.');
+  const preview = Cfg.keyPreview();
+  assert(preview.indexOf('sk-ant-api') !== -1 && preview.indexOf('xyz') === -1 && preview.indexOf('16 caractères') !== -1,
+    'L\'aperçu de la clé montre son préfixe et sa longueur, jamais la partie secrète.');
   assert(configSrc.indexOf('racine_coach_ai_usage_v1') !== -1 && /USAGE_MONTHS\s*=\s*\d+/.test(configSrc)
     && configSrc.indexOf('slice(-USAGE_MONTHS)') !== -1,
     'Le compteur de dépense vit dans une clé d\'appareil, plafonnée.');

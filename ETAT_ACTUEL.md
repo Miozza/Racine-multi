@@ -1,6 +1,6 @@
-# ETAT ACTUEL — V5.2.7
+# ETAT ACTUEL — V5.2.8
 
-Version actuelle : V5.2.7
+Version actuelle : V5.2.8
 
 ## État courant
 
