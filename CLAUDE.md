@@ -259,7 +259,10 @@ persiste persiste toujours localement.
   (`window.RacineGitHubBackup`) dépose, après chaque séance et en un commit,
   l'historique d'entraînement du profil admin dans un dépôt GitHub **privé séparé** :
   `<profil>-historique.json` (journal brut), `<profil>-resume.md` (contexte Coach IA,
-  lisible par Claude sans extraction), `<profil>-profil.json` (export de restauration). Portée stricte, tenue par
+  lisible par Claude sans extraction), `<profil>-profil.json` (export de restauration).
+  Plus, à chaque échange Coach IA, une archive `coach/<AAAA-MM>/<profil>-<horodatage>.md`
+  (décision du 2026-10-08 : le téléphone garde un fil court, GitHub garde tout) —
+  jamais réécrite ni relue. Portée stricte, tenue par
   `dev/github_backup_checks.js` :
   - un seul profil (celui qui a enregistré le jeton, admin) ; jamais un profil client ;
   - **sens unique** : rien n'est relu automatiquement ; « Restaurer » importe comme

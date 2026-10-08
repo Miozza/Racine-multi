@@ -1,3 +1,24 @@
+## V5.2.11 — Coach IA : mémoire et interface
+
+**Pourquoi** : demande de l'athlète (2026-10-08). Coach IA semblait tout oublier, et l'écran manquait de tenue. Contrainte : ne pas alourdir la mémoire du téléphone.
+
+**Ce qui n'allait pas**
+- Les réponses du coach n'étaient jamais réaffichées en revenant sur l'écran : seules les questions de l'athlète l'étaient.
+- La conversation gardait 30 messages API bruts, blocs d'outils compris : une coupe au milieu d'une paire `tool_use` / `tool_result` pouvait faire refuser la requête suivante.
+- Le mode copier-coller n'avait aucun fil.
+
+**Mémoire** (`scripts/coach_ai/chat.js`)
+- **Fil** (`racine_coach_ai_thread_v2::<profil>`) : 40 messages max, **texte seul**, plafonné à 60 Ko. Les propositions y restent avec leur décision (acceptée / refusée). Le modèle reçoit les 12 derniers, jamais de bloc d'outil stocké. Migration automatique de la v1 (réponses récupérées).
+- **Carnet du coach** (`racine_coach_ai_memory_v1::<profil>`) : 20 faits durables (blessure, contrainte, objectif, préférence). Le coach les note lui-même (outil `retenir`, ou clé `retenir` en copier-coller) ; l'athlète en ajoute ou en efface. Relu à chaque message. N'écrit jamais dans l'entraînement.
+- **Archive GitHub** (si la sauvegarde est active) : chaque échange part dans `racine/coach/<AAAA-MM>/<profil>-<horodatage>.md`, jamais réécrit ni relu. « Nouveau » archive avant d'effacer le fil.
+- Le pont reçoit les 6 derniers échanges et le carnet.
+
+**Interface** (`scripts/coach_ai/ui.js`, `styles.css`)
+- En-tête avec état (direct / copier-coller, modèle), **Carnet** (avec compteur) et **Nouveau**.
+- Fil daté (Aujourd'hui, Hier…), auteur et heure sur chaque message, propositions intégrées au fil avec leur décision, faits retenus visibles.
+- Raccourcis : séance d'aujourd'hui, de demain, bilan de la semaine, ce qui stagne. Zone de saisie qui s'agrandit, indicateur de frappe.
+- Réglages : taille réelle de la mémoire sur l'appareil.
+
 ## V5.2.10 — Coach IA lit le programme ; sauvegarde GitHub du profil admin
 
 **Pourquoi** : rapport de l'athlète (2026-10-08). Coach IA ne savait pas ce qui était prévu aujourd'hui ni demain — il ne voyait que l'historique. Et l'export manuel après chaque séance est pénible.

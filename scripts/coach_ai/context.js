@@ -515,10 +515,22 @@
     return lines;
   }
 
+  // ── Bloc 0 : le carnet du coach ────────────────────────────────────────
+  // La mémoire longue de la conversation (scripts/coach_ai/chat.js), lue ici
+  // en lecture seule. Placée en tête : ce sont les faits que le coach doit
+  // avoir en tête avant de lire les chiffres.
+  function memoryLines(){
+    try{
+      var text = (window.CoachAIChat && typeof CoachAIChat.memoryText === "function") ? CoachAIChat.memoryText() : "";
+      return text ? ["## Carnet du coach (faits durables retenus des conversations précédentes)", text, ""] : [];
+    }catch(e){ return []; }
+  }
+
   // ── Assemblage ─────────────────────────────────────────────────────────
   api.build = function(opts){
     opts = opts || {};
     var lines = []
+      .concat(memoryLines())
       .concat(profileLines())
       .concat(plannedLines(opts))
       .concat(programMapLines())

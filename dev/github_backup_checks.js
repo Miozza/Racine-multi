@@ -65,6 +65,8 @@ assert(B.configure({token:'t', owner:'Miozza', repo:'racine-sauvegarde'}).ok && 
 assert(B.filePath() === 'racine/bertin-profil.json' && B.files().historique === 'racine/bertin-historique.json' && B.files().resume === 'racine/bertin-resume.md',
   'Trois fichiers lisibles : historique brut, résumé, export de restauration.');
 assert(/history: history/.test(src) && /CoachAIContext\.build\(/.test(src), 'L\'historique brut et le résumé Coach IA partent avec la sauvegarde.');
+assert(/coachOnly/.test(src) && /\/coach\//.test(src) && /markArchived/.test(src),
+  'Les échanges Coach IA partent dans une archive à part, sans renvoyer le profil complet.');
 assert(/force: false/.test(src), 'La branche n\'est jamais déplacée de force : un conflit se rejoue, il n\'écrase pas.');
 assert(JSON.stringify(B.get()).indexOf('"t"') === -1, 'get() ne rend jamais le jeton en clair.');
 active = 'p_client';

@@ -149,7 +149,7 @@ assert(read('scripts/coach_ai/ui.js').indexOf('data-cai-accept') !== -1,
 DOMAIN.concat(['programs/ai_custom.js']).forEach(function(f){
   const src = code(f);
   assert(src.indexOf('localStorage.clear') === -1, 'Aucun localStorage.clear() dans ' + f + '.');
-  assert(!/\.removeItem\((?!\s*(storageKey\(\)|KEY))/.test(src),
+  assert(!/\.removeItem\((?!\s*(storageKey\(\)|legacyKey\(\)|memoryKey\(\)|KEY))/.test(src),
     'Aucune suppression de clé non ciblée dans ' + f + '.');
 });
 assert(code('scripts/coach_ai/chat.js').indexOf('localStorage.removeItem(storageKey())') !== -1,
@@ -452,6 +452,55 @@ function fakeStorage(){
 const chatSrcPlanned = code('scripts/coach_ai/chat.js');
 assert(chatSrcPlanned.indexOf('CoachAIContext.read(name') !== -1,
   'chat.js aiguille TOUS les outils de lecture par CoachAIContext.read.');
+
+// ── Mémoire : le fil se relit, le carnet tient, rien ne déborde ────────────
+//
+// V5.2.11 : les réponses du coach n'étaient pas réaffichées, et la coupe à 30
+// messages bruts pouvait tomber au milieu d'une paire tool_use / tool_result.
+{
+  const store = fakeStorage();
+  const ctxM = {console:console, Date:Date, JSON:JSON, Math:Math, localStorage:store};
+  ctxM.window = ctxM;
+  ctxM.CoachProfiles = {getActiveId:function(){ return 'p1'; }};
+  vm.createContext(ctxM);
+  // Une conversation v1 (messages API bruts, blocs d'outils compris).
+  store.setItem('racine_coach_ai_chat_v1::p1', JSON.stringify([
+    {role:'user', content:'Ma séance ?'},
+    {role:'assistant', content:[{type:'text', text:'Tu as squat.'}, {type:'tool_use', id:'x', name:'consulter_seance', input:{}}]},
+    {role:'user', content:[{type:'tool_result', tool_use_id:'x', content:'…'}]}
+  ]));
+  vm.runInContext(read('scripts/coach_ai/chat.js'), ctxM, {filename:'chat.js'});
+  const Chat = ctxM.CoachAIChat;
+  const migrated = Chat.turns();
+  assert(migrated.length === 2 && migrated[1].role === 'coach' && migrated[1].text === 'Tu as squat.',
+    'Migration v1 → v2 : questions ET réponses gardées, rouages d\'outils jetés.');
+  assert(store.getItem('racine_coach_ai_chat_v1::p1') === null && store.getItem('racine_coach_ai_thread_v2::p1') !== null,
+    'La clé v1 n\'est retirée qu\'après l\'écriture de la v2.');
+  for(let i = 0; i < 60; i++) Chat.addTurn({role: i % 2 ? 'coach' : 'user', text: 'x'.repeat(3000)});
+  const u = Chat.usage();
+  assert(u.turns <= Chat.MAX_MESSAGES && store.getItem('racine_coach_ai_thread_v2::p1').length <= 60000,
+    'Le fil est plafonné en nombre ET en octets (le téléphone reste léger).');
+  const coachTurn = Chat.addTurn({role:'coach', text:'Propose.', proposals:[{name:'proposer_remplacement', input:{de:'A', vers:'B', raison:'r'}}]});
+  assert(Chat.findProposal(coachTurn.id, 0).status === 'pending' && Chat.setProposalStatus(coachTurn.id, 0, 'accepted')
+    && Chat.findProposal(coachTurn.id, 0).status === 'accepted', 'La décision sur une proposition est gardée dans le fil.');
+  for(let i = 0; i < 30; i++) Chat.remember('Fait numéro ' + i, 'coach');
+  Chat.remember('fait numéro 29', 'athlete');
+  assert(Chat.memory().length === Chat.MAX_FACTS, 'Le carnet est plafonné et ne duplique pas un fait déjà noté.');
+  assert(Chat.memoryText().indexOf('fait numéro 29') !== -1, 'Le carnet est rendu au modèle.');
+  const arch = Chat.pendingArchive();
+  assert(arch && arch.count > 0 && arch.markdown.indexOf('acceptée') !== -1, 'L\'archive GitHub porte les échanges et les décisions.');
+  Chat.markArchived(arch.upTo);
+  assert(Chat.pendingArchive() === null, 'Un échange archivé ne repart pas deux fois.');
+  Chat.clear();
+  assert(Chat.turns().length === 0 && Chat.memory().length === Chat.MAX_FACTS, 'Nouvelle conversation : le fil repart, le carnet reste.');
+}
+const chatMemSrc = code('scripts/coach_ai/chat.js');
+assert(chatMemSrc.indexOf('windowMessages()') !== -1 && /API_WINDOW\s*=\s*\d+/.test(chatMemSrc),
+  'Le modèle reçoit une fenêtre de texte bornée, jamais de blocs d\'outils stockés.');
+assert(JSON.stringify(CoachAIPatch.tools()).indexOf('"retenir"') !== -1 && !CoachAIPatch.isProposal('retenir'),
+  'L\'outil `retenir` existe et n\'est pas une proposition d\'entraînement.');
+assert(read('scripts/coach_ai/ui.js').indexOf('CoachAIChat.turns()') !== -1,
+  'L\'écran relit le fil depuis la mémoire (réponses du coach comprises).');
 
 if(errors.length){
   console.error('\n✗ coach_ai_checks — ' + errors.length + ' échec(s) :');

@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.10
+# ETAT ACTUEL — V5.2.11
 
-Version actuelle : V5.2.10
+Version actuelle : V5.2.11
 
 ## État courant
+
+### Coach IA : mémoire et interface
+
+Le fil est réaffiché tel quel (réponses et décisions comprises), plafonné à 40 messages / 60 Ko, texte seul. Le carnet du coach garde 20 faits durables. Avec la sauvegarde GitHub active, chaque échange est archivé dans `racine/coach/`. Interface : en-tête d'état, carnet, nouvelle conversation, fil daté, raccourcis.
 
 ### Coach IA lit le programme
 

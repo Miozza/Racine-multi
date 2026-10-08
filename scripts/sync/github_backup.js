@@ -36,6 +36,7 @@
   var SCHEMA = 1;
   var API_ROOT = "https://api.github.com";
   var DEBOUNCE_MS = 4000;
+  var COACH_DEBOUNCE_MS = 45000;
   // Dépôts de CODE : une sauvegarde n'y a pas sa place (Pages la publierait).
   var CODE_REPOS = ["racine-multi", "coach-beurt-dev", "coach-beurt"];
 
@@ -91,6 +92,10 @@
   //    texte que Coach IA reçoit déjà. Un Claude qui a accès au dépôt connaît
   //    l'athlète sans extraction ni copier-coller.
   //  - <profil>-profil.json : l'export complet, celui que « Restaurer » relit.
+  // Plus, à chaque échange avec Coach IA, un fichier d'archive de conversation
+  // (coach/<AAAA-MM>/<profil>-<horodatage>.md) : les tours postérieurs à la
+  // dernière archive. Jamais réécrit, jamais relu — le téléphone peut donc
+  // oublier les vieux échanges sans qu'ils soient perdus (décision 2026-10-08).
   function folder(c){ return str(c.path).replace(/^\/+|\/+$/g, "") || "racine"; }
   function files(c){
     var name = "";
@@ -99,6 +104,19 @@
     return {historique: base + "-historique.json", resume: base + "-resume.md", profil: base + "-profil.json"};
   }
   function filePath(c){ return files(c).profil; }
+  function coachArchive(c){
+    // Le fil Coach IA est celui du profil ACTIF : on n'archive que s'il s'agit
+    // du profil sauvegardé.
+    if(!(window.CoachAIChat && CoachAIChat.pendingArchive) || activeId() !== c.profileId) return null;
+    var a = CoachAIChat.pendingArchive();
+    if(!a) return null;
+    var name = "";
+    try{ var prof = CoachProfiles.get(c.profileId); name = prof && prof.name; }catch(e){}
+    var stamp = str(a.upTo).replace(/[^0-9]/g, "").slice(0, 14);
+    var path = folder(c) + "/coach/" + str(a.upTo).slice(0, 7) + "/" + slug(name) + "-" + stamp.slice(0, 8) + "-" + stamp.slice(8, 14) + ".md";
+    return {path: path, upTo: a.upTo, content: "# Coach IA — " + (name || "profil") + "\n\n" + a.count + " message(s), du "
+      + str(a.from).slice(0, 16).replace("T", " ") + " au " + str(a.upTo).slice(0, 16).replace("T", " ") + " UTC.\n\n" + a.markdown};
+  }
   api.filePath = function(){ return filePath(read()); };
   api.files = function(){ return files(read()); };
 
@@ -253,24 +271,37 @@
 
     running = (async function(){
       try{
-        var blob = CoachProfiles.exportProfileBlob(c.profileId);
+        // Un échange Coach IA n'a pas besoin de l'export complet (≈ 1 Mo).
+        var blob = opts.coachOnly
+          ? {profile: (CoachProfiles.get && CoachProfiles.get(c.profileId)) || {}, appVersion: window.APP_VERSION || null}
+          : CoachProfiles.exportProfileBlob(c.profileId);
         if(!blob) throw new Error("Export du profil impossible.");
         var name = (blob.profile && blob.profile.name) || "";
         var f = files(c);
-        var entries = [
-          {path: f.historique, content: JSON.stringify(historyPayload(blob, name), null, 2) + "\n"},
-          {path: f.resume, content: summaryText(blob, name)},
-          {path: f.profil, content: JSON.stringify(blob, null, 2) + "\n"}
-        ];
+        var archive = coachArchive(c);
+        var entries = [];
+        // coachOnly : un échange de conversation ne renvoie pas 1 Mo de
+        // profil — seulement son archive. La séance, elle, envoie tout.
+        if(!opts.coachOnly){
+          entries.push(
+            {path: f.historique, content: JSON.stringify(historyPayload(blob, name), null, 2) + "\n"},
+            {path: f.resume, content: summaryText(blob, name)},
+            {path: f.profil, content: JSON.stringify(blob, null, 2) + "\n"}
+          );
+        }
+        if(archive) entries.push({path: archive.path, content: archive.content});
+        if(!entries.length){ write({pending: false}); return {ok:true, unchanged:true}; }
         var count = (blob.state && Array.isArray(blob.state.history)) ? blob.state.history.length : 0;
-        var message = "Historique Racine : " + count + " séance(s) · " + nowIso().slice(0, 16).replace("T", " ")
-          + (blob.appVersion ? " (" + blob.appVersion + ")" : "");
+        var message = (opts.coachOnly ? "Conversation Coach IA · " : "Historique Racine : " + count + " séance(s) · ")
+          + nowIso().slice(0, 16).replace("T", " ") + (blob.appVersion ? " (" + blob.appVersion + ")" : "");
         // Deux essais : si la branche a bougé entre-temps (autre appareil),
         // on reconstruit sur la nouvelle tête. Le contenu envoyé reste le local.
         for(var attempt = 0; attempt < 2; attempt++){
           try{
             await commitFiles(c, entries, message);
-            write({lastPushAt: nowIso(), lastError: "", pending: false});
+            // Un envoi de conversation seule ne solde pas une séance en attente.
+            write(opts.coachOnly ? {lastPushAt: nowIso(), lastError: ""} : {lastPushAt: nowIso(), lastError: "", pending: false});
+            if(archive) try{ CoachAIChat.markArchived(archive.upTo); }catch(e){}
             // Compte comme un export : le rappel « jamais exporté » se tait.
             try{ if(CoachProfiles.markExported) CoachProfiles.markExported(c.profileId); }catch(e){}
             try{ var b = document.getElementById("exportReminderBanner"); if(b) b.remove(); }catch(e){}
@@ -294,13 +325,19 @@
 
   // Appelé après chaque séance sauvegardée (scripts/session/save.js). Jamais
   // bloquant : un échec réseau ne doit pas gêner la fin de séance.
-  var timer = null;
-  api.schedule = function(){
+  // kind === "coach" : un échange Coach IA — seule son archive part, après
+  // un délai plus long pour regrouper une rafale de messages en un commit.
+  // Une séance programmée entre-temps l'emporte et embarque l'archive.
+  var timer = null, timerKind = "";
+  api.schedule = function(kind){
     try{
       if(!api.isActiveTarget() || !read().auto) return false;
-      write({pending: true});
+      var coach = kind === "coach";
+      if(timer && timerKind === "session" && coach) return true;
+      if(!coach) write({pending: true});
       if(timer) clearTimeout(timer);
-      timer = setTimeout(function(){ timer = null; api.push(); }, DEBOUNCE_MS);
+      timerKind = coach ? "coach" : "session";
+      timer = setTimeout(function(){ timer = null; timerKind = ""; api.push({coachOnly: coach}); }, coach ? COACH_DEBOUNCE_MS : DEBOUNCE_MS);
       return true;
     }catch(e){ return false; }
   };

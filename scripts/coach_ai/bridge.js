@@ -80,6 +80,8 @@
       "RAPPEL IMPORTANT : si tu écris quand même une charge dans le bloc JSON, Racine l'effacera sans le dire et calculera le poids lui-même. Ce n'est pas une punition, c'est la conception — une charge chiffrée est ambiguë entre « pourcentage d'un athlète de référence » et « poids réel », et la confondre donne des poids absurdes.",
       "",
       "Si tu n'as rien de concret à proposer, réponds seulement en texte, sans bloc.",
+      "",
+      "CARNET : si l'athlète t'apprend un fait durable (blessure, contrainte d'horaire ou de matériel, objectif, préférence), ajoute dans le même bloc une clé `retenir` : une liste de phrases courtes. Racine les gardera dans le carnet du coach. Exemple : { \"retenir\": [\"Épaule gauche sensible au strict press depuis octobre 2026\"] }. Pas de résultat de séance, pas de charge.",
       ""
     ].join("\n");
   }
@@ -125,6 +127,11 @@
     var contrat = "";
     try{ contrat = window.CoachAIPatch ? window.CoachAIPatch.contractText() : ""; }catch(e){}
 
+    // Le pont n'a pas de fil côté IA : chaque prompt repart de zéro. On lui
+    // rend donc les derniers échanges, gardés dans Racine.
+    var recent = "";
+    try{ recent = window.CoachAIChat ? window.CoachAIChat.recentText(6) : ""; }catch(e){}
+
     return [
       consigne(),
       contrat,
@@ -135,6 +142,7 @@
       "",
       contexte,
       "",
+      recent ? "──────────────────────────────────────────\nNOTRE CONVERSATION RÉCENTE (la plus ancienne en premier)\n──────────────────────────────────────────\n\n" + recent + "\n" : "",
       "──────────────────────────────────────────",
       "SA DEMANDE",
       "──────────────────────────────────────────",
@@ -211,6 +219,9 @@
       };
     }
 
+    // Faits à retenir : de simples phrases, jamais appliquées à l'entraînement.
+    var memos = (parsed && Array.isArray(parsed.retenir)) ? parsed.retenir.map(str).filter(Boolean).slice(0, 5) : [];
+
     var list = [];
     if(parsed && Array.isArray(parsed.propositions)) list = parsed.propositions;
     else if(Array.isArray(parsed)) list = parsed;
@@ -231,6 +242,7 @@
       ok: true,
       text: prose,
       proposals: proposals,
+      memos: memos,
       source: source,
       rejected: rejected
     };
