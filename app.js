@@ -1,5 +1,5 @@
-// Racine V5.2.8 — Coach IA : clé API nettoyée au collage, aperçu de la clé
-var APP_VERSION = "V5.2.8";
+// Racine V5.2.9 — Pont Peak : fillers pendant les pauses
+var APP_VERSION = "V5.2.9";
 
 // Architecture stable
 // programs/*.js = plan prévu

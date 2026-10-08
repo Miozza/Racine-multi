@@ -1,3 +1,16 @@
+## V5.2.9 — Pont Peak : fillers pendant les pauses
+
+**Pourquoi** : demande de l'athlète (2026-10-08) : « plus de pause que de travail ». Les 2:00-2:30 du mouvement principal se passaient à attendre.
+
+**Ce qui change** (`programs/pont_peak.js`)
+
+- **Lundi, A2 : Tibialis Raise** (3×15, 2×15 en S6-S7) pendant les pauses du Tempo Back Squat / Back Squat. Repos : 1:00 avant A2, 1:00 après.
+- **Jeudi, A2 : Single-Leg Calf Raise** (3×12/jambe) pendant les pauses du Landmine Press / Strict Press. Repos : 1:00 avant A2, 0:45 après.
+- **Vendredi, B2 : Dead Bug** (3×8/côté) pendant les pauses du DB Bench / Close-Grip Bench. Repos : 0:45 avant B2, 0:45 après.
+- Mardi inchangé : le bench y est déjà en superset avec le tirage. Vendredi, le Power Clean reste en EMOM, sans filler.
+
+Les fillers sont au poids du corps et choisis pour ne fatiguer ni le mouvement principal, ni la veille, ni le lendemain. Les charges du moteur ne changent pas.
+
 ## V5.2.8 — Coach IA : clé nettoyée au collage, aperçu de la clé
 
 **Pourquoi** : rapport de l'athlète (2026-10-08). « Clé refusée : elle devrait commencer par sk-ant-api » (API : *API key is invalid*), sans moyen de voir ce qui avait réellement été enregistré — le champ est masqué.
