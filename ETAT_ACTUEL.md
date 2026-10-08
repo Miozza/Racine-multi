@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.8
+# ETAT ACTUEL — V5.2.9
 
-Version actuelle : V5.2.8
+Version actuelle : V5.2.9
 
 ## État courant
+
+### Pont Peak : fillers pendant les pauses
+
+Les pauses du mouvement principal sont remplies par un filler léger au poids du corps : Tibialis Raise le lundi (A2), Single-Leg Calf Raise le jeudi (A2), Dead Bug le vendredi (B2, pendant le bench). Mardi est déjà en superset bench/tirage.
 
 ### Coach IA économique
 

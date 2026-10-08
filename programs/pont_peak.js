@@ -211,7 +211,9 @@
     if(day === "lundi") return [
       {time:"8 min", title:"Échauffement squat", tag:"Préparation", kind:"warmup", text:"Bike 2 min + ankle rocks 10/côté + glute bridge 15 + goblet squat 10 + 90/90 hanches. Montée progressive longue sur le mouvement A."},
       {time:"16 min", title:"A. " + p.monMain, tag:"Squat lourd", kind:"main", exercises:[
-        ex(p.monMain, p.monFormat, p.monLoad, "2:00-2:30", p.monNote)
+        ex(p.monMain, p.monFormat, p.monLoad, "1:00 avant A2", p.monNote),
+        // Filler : remplit la pause du squat sans le fatiguer, ni le RDL, ni le bench du mardi.
+        ex("Tibialis Raise", light ? "2×15" : "3×15", "poids du corps", "1:00 après A2", "Pendant la pause du squat. Dos au mur, talons en avant, orteils vers les tibias. Lent, sans élan. Genoux et chevilles, zéro fatigue pour la série suivante.")
       ]},
       {time:"10 min", title:"B. Volume quadriceps", tag:"Masse jambes", kind:"hypertrophy", exercises:[
         light ? ex("Bulgarian Split Squat", "2×10/jambe", "30-35 lb / main", "1:00", "Léger, amplitude complète. On entretient, on ne charge pas.")
@@ -273,7 +275,9 @@
     if(day === "jeudi") return [
       {time:"8 min", title:"Échauffement épaules + thoracique", tag:"Préparation", kind:"warmup", text:"Row 2 min. Puis 2 tours : Band External Rotation 12/côté + Scap Push-Up 10 + Wall Slide 8 + extension thoracique sur rouleau 60 sec. Montée progressive sur le mouvement A."},
       {time:"14 min", title:"A. " + p.thuMain, tag:"Épaules lourd", kind:"main", exercises:[
-        ex(p.thuMain, p.thuFormat, p.thuLoad, "2:00", p.thuNote)
+        ex(p.thuMain, p.thuFormat, p.thuLoad, "1:00 avant A2", p.thuNote),
+        // Filler : aucun travail d'épaule ni de triceps, rien qui pèse sur le Front Squat.
+        ex("Single-Leg Calf Raise", light ? "2×12/jambe" : "3×12/jambe", "poids du corps", "0:45 après A2", "Pendant la pause du press. Sur une marche, amplitude complète, 1 s en haut. Main au mur pour l'équilibre, pas pour pousser.")
       ]},
       {time:"10 min", title:"B. Front Squat", tag:"Amorce du Peak", kind:"secondary", exercises:[
         light ? ex("Front Squat", "3×3", "160 lb", "1:30", "Léger. Coudes hauts, torse droit.")
@@ -307,9 +311,11 @@
         ex("Power Clean", p.cleanFormat, p.cleanLoad, "le reste de la minute", p.cleanNote)
       ]},
       {time:"10 min", title:"B. Bench volume", tag:"Bench", kind:"hypertrophy", exercises:[
-        light ? ex("DB Bench Press", "2×10", "40 lb / main", "1:00", "Léger, amplitude complète.")
-        : rotA ? ex("DB Bench Press", "4×8-10", "55-60 lb / main", "1:30", "Amplitude complète, omoplates serrées. Dernière série à 1-2 reps de l'échec.")
-        : ex("Close-Grip Bench Press", "4×5", "175 lb", "1:30", "Prise largeur d'épaules, coudes proches du corps, pause touchée à la poitrine.")
+        light ? ex("DB Bench Press", "2×10", "40 lb / main", "0:30 avant B2", "Léger, amplitude complète.")
+        : rotA ? ex("DB Bench Press", "4×8-10", "55-60 lb / main", "0:45 avant B2", "Amplitude complète, omoplates serrées. Dernière série à 1-2 reps de l'échec.")
+        : ex("Close-Grip Bench Press", "4×5", "175 lb", "0:45 avant B2", "Prise largeur d'épaules, coudes proches du corps, pause touchée à la poitrine."),
+        // Filler : gainage doux au sol, ne fatigue ni le rowing qui suit ni le squat du lundi.
+        ex("Dead Bug", light ? "2×8/côté" : "3×8/côté", "poids du corps", light ? "0:30 après B2" : "0:45 après B2", "Pendant la pause du bench. Côtes basses, bas du dos collé au sol, bras et jambe opposés qui s'allongent lentement.")
       ]},
       {time:"8 min", title:"C. Rowing", tag:"Superset", kind:"accessory", exercises:[
         light ? ex("One-Arm DB Row", "2×10/côté", "55 lb", "0:30 avant C2", "Coude vers la hanche, zéro rotation du tronc.")
@@ -342,13 +348,14 @@
     "Chaque variation garde son propre historique : ne jamais comparer un 3RM de Tempo Back Squat à un Back Squat, ni un Paused Bench Press à un Bench Press.",
     "Mardi : metcon monostructural ou bas du corps seulement — ni traction, ni rameur, ni wall balls, ni burpees, ni toes-to-bar, ni ski. Jeudi : aucune poussée au-dessus de la tête dans le metcon.",
     "60 minutes max par séance : lundi et jeudi courts, vendredi avec le metcon long, style Peak.",
+    "Fillers pendant les pauses : Tibialis Raise (lundi, A2), Single-Leg Calf Raise (jeudi, A2), Dead Bug (vendredi, B2). Légers et sans conflit avec le mouvement principal ni avec la veille ou le lendemain.",
     "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Test bench, Back Squat S7, Weighted Pull-up et Power Clean en pourcentage, résolus sur la capacité mesurée."
   ];
   P.dayIntentions = {
-    lundi: "Squat lourd : variation de squat en rotation, volume quadriceps unilatéral, Barbell RDL, gainage anti-extension, metcon court.",
+    lundi: "Squat lourd : variation de squat en rotation avec Tibialis Raise pendant les pauses, volume quadriceps unilatéral, Barbell RDL, gainage anti-extension, metcon court.",
     mardi: "Bench lourd + tirage : variation de bench en rotation en superset avec un tirage, Pull-Up, DB Pullover, Face Pull, Cable Curl, 100 Band Pull-Apart, metcon qui épargne épaules et lats.",
-    jeudi: "Épaules : press en rotation, Front Squat d'amorce du Peak, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps, metcon sans poussée au-dessus de la tête.",
-    vendredi: "Bench volume + transition Peak : Power Clean en EMOM, bench d'accessoire, rowing, DB Pullover cross-bench, metcon long style Peak."
+    jeudi: "Épaules : press en rotation avec Single-Leg Calf Raise pendant les pauses, Front Squat d'amorce du Peak, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps, metcon sans poussée au-dessus de la tête.",
+    vendredi: "Bench volume + transition Peak : Power Clean en EMOM, bench d'accessoire avec Dead Bug pendant les pauses, rowing, DB Pullover cross-bench, metcon long style Peak."
   };
   P.dayMeta = {
     lundi:   {label:"Lundi",   base:"Squat lourd",            focus:"Tempo Back Squat / Back Squat en rotation, split squat, Barbell RDL, Ab Wheel Rollout, metcon court."},
