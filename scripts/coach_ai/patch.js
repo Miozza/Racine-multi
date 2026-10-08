@@ -96,6 +96,19 @@
         }
       },
       {
+        name: "consulter_historique",
+        description: "Lire les séances réellement faites sur une période, dans TOUT l'historique (le contexte n'en détaille que les plus récentes) : mouvements, charges, reps, RPE, scores de metcon, notes de l'athlète. "
+                   + "Filtrer par dates (AAAA-MM-JJ) et/ou par numéro de semaine du programme. 20 séances max par appel.",
+        input_schema: {
+          type: "object",
+          properties: {
+            depuis: {type: "string", description: "Date de début incluse, AAAA-MM-JJ."},
+            jusqua: {type: "string", description: "Date de fin incluse, AAAA-MM-JJ."},
+            semaine: {type: "integer", description: "Numéro de semaine du programme, optionnel."}
+          }
+        }
+      },
+      {
         name: "consulter_programme",
         description: "Lire la carte du programme actif : objectif, règles du cycle, intention de chaque journée, libellé et objectif de chaque semaine, programmes disponibles, remplacements actifs.",
         input_schema: {type: "object", properties: {}}
@@ -201,7 +214,7 @@
   }
 
   var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_semaine", "proposer_retrait_remplacement", "proposer_retrait_ajustement"];
-  var READS = ["consulter_mouvement", "consulter_seance", "consulter_programme"];
+  var READS = ["consulter_mouvement", "consulter_seance", "consulter_programme", "consulter_historique"];
 
   api.tools = tools;
   api.isProposal = function(name){ return PROPOSALS.indexOf(str(name)) >= 0; };

@@ -39,7 +39,7 @@
   var API_WINDOW = 12;       // tours renvoyés au modèle à chaque message
   var MAX_FACTS = 20;        // carnet du coach
   var MAX_FACT_LEN = 240;
-  var MAX_TOOL_ROUNDS = 5;   // garde-fou de coût : borne la boucle d'outils
+  var MAX_TOOL_ROUNDS = 8;   // garde-fou de coût : borne la boucle d'outils (lire semaine + historique + mouvement tient dedans)
 
   function str(v){ return String(v==null?"":v).trim(); }
   function nowIso(){ try{ return new Date().toISOString(); }catch(e){ return String(Date.now()); } }
@@ -267,6 +267,21 @@
   // l'autre, et se place donc AVANT tout ce qui varie (prompt caching = match
   // de préfixe). La question de l'athlète, elle, vit dans `messages`.
 
+  // Le manuel de l'application : ce qu'un coach intégré doit savoir de son
+  // environnement sans avoir à le deviner. Texte fixe, donc dans le préfixe
+  // mis en cache. À tenir à jour quand un écran ou un outil change.
+  var MANUEL = [
+    "MANUEL DE RACINE — ton environnement.",
+    "- Racine est une application web (PWA) de CrossFit et de force. Les données de l'athlète vivent sur son téléphone ; une copie part sur GitHub après chaque séance. Tu parles au profil admin.",
+    "- Écrans : WOD (la séance du jour et la séance guidée, où l'athlète saisit charges, reps et RPE), Charge (charges de travail et records), Cycle (programme actif, semaine en cours, choix du programme), Historique (séances faites, progression), Coach IA (toi), Réglages.",
+    "- Un programme = des semaines × des jours d'entraînement. Une séance = des blocs (échauffement, principal, secondaire, accessoires, metcon/WOD, mobilité). Un exercice = nom, format (séries × reps), repos, consigne. La semaine du cycle avance quand l'athlète la passe dans l'app, pas avec le calendrier.",
+    "- Les charges viennent du moteur : e1RM calculés sur l'historique réel, RPE (pas de hausse après un RPE ≥ 9), ratios de force du profil, arrondi au matériel disponible. Un % écrit dans un programme est un % d'un athlète de référence, ramené au niveau réel par le moteur. Une semaine dont le libellé dit deload/récupération/facile, ou une consigne technique/léger/facile, coupe la progression automatique.",
+    "- Brain est la mémoire du moteur : il note si chaque charge prédite était juste, trop ambitieuse ou trop prudente, et corrige la suivante.",
+    "- Ce que tu fais : LIRE (outils consulter_*, sans permission), RETENIR un fait durable (outil retenir, carnet visible par l'athlète), PROPOSER (outils proposer_*, carte Accepter / Refuser).",
+    "- Ce qu'une proposition acceptée change : un remplacement s'applique partout jusqu'à son retrait ; un ajustement modifie un exercice d'une séance précise ; une semaine écrite va dans le programme « Semaines Coach IA », que l'athlète doit choisir dans l'onglet Cycle pour la suivre. Tout est réversible.",
+    "- Ce que tu ne peux pas faire : écrire une charge, changer de programme ou de semaine, saisir ou corriger un résultat, modifier l'historique. Quand l'athlète le demande, dis-lui où le faire dans l'app (écran et geste)."
+  ].join("\n");
+
   function systemBlocks(){
     var contexte = "";
     try{ contexte = window.CoachAIContext ? CoachAIContext.build() : ""; }catch(e){}
@@ -287,7 +302,7 @@
       "Si l'athlète te demande explicitement un poids, réponds-lui dans la conversation — c'est un conseil, il reste libre de le saisir — mais ne le mets pas dans un patch.",
       "",
       "TA MÉTHODE :",
-      "- Le contexte ci-dessous contient la séance d'aujourd'hui et celle de demain, telles qu'elles s'affichent dans l'app. Pour une autre journée ou une autre semaine, appelle `consulter_seance` ; pour la carte du programme, `consulter_programme`. Ne réponds jamais « je ne sais pas ce qui est prévu » sans avoir lu.",
+      "- Le contexte ci-dessous contient TOUTE la semaine en cours en détail (aujourd'hui et demain sont marqués) et un aperçu de la semaine suivante, tels qu'ils s'affichent dans l'app. Pour le détail d'une autre journée ou une autre semaine, appelle `consulter_seance` ; pour la carte du programme, `consulter_programme`. Ne réponds jamais « je ne sais pas ce qui est prévu » sans avoir lu.",
       "- Avant de te prononcer sur un mouvement précis, appelle `consulter_mouvement`. Le contexte n'est qu'un résumé ; l'outil te donne le détail et la suggestion courante du moteur.",
       "- Lire ne demande aucune permission. Écrire, si : quand tu proposes un changement (remplacer, ajuster, retirer, écrire une semaine), appelle l'outil `proposer_*` correspondant. L'athlète verra une carte Accepter / Refuser. Tu ne peux rien appliquer toi-même, et c'est voulu.",
       "- Une proposition à la fois, sauf si l'athlète en demande plusieurs.",
@@ -295,6 +310,9 @@
       "- Les échanges précédents de cette conversation te sont rendus ; ce qui est plus ancien n'est que dans le carnet. Ne prétends pas te souvenir de ce qui n'y est pas.",
       "- Si les données sont trop minces pour conclure, dis-le. Ne comble pas un trou par une supposition présentée comme un fait.",
       "- Ne propose jamais d'ajustement pour un jour marqué manqué. Si des jours manqués ont une raison liée à la santé, adapte la reprise de la semaine suivante.",
+      "",
+      "",
+      MANUEL,
       "",
       "Tu ne parles que d'entraînement. Tu n'es pas médecin : devant une douleur qui persiste ou qui inquiète, dis-le simplement et suggère un professionnel, puis propose l'adaptation d'entraînement qui évite la zone."
     ].join("\n");
@@ -333,6 +351,12 @@
     // Messages de travail : vivent le temps de la boucle, jamais stockés.
     var messages = windowMessages();
     var tools = window.CoachAIPatch ? CoachAIPatch.tools() : [];
+    // Consigne construite UNE fois par message : `retenir` modifie le carnet
+    // au milieu de la boucle, et le carnet est dans le contexte. Reconstruire
+    // le système entre deux tours changerait le préfixe sous des blocs de
+    // réflexion déjà rendus — Haiku/Sonnet/Opus 5.5 refusent alors la requête
+    // (400, « preserved thinking ») et le cache serait perdu.
+    var system = systemBlocks();
     var proposals = [];
     var memos = [];
     var texts = [];
@@ -342,7 +366,7 @@
       rounds++;
 
       var reply = await CoachAIClient.send({
-        system: systemBlocks(),
+        system: system,
         messages: messages,
         tools: tools,
         effort: opts.effort
@@ -350,6 +374,13 @@
 
       var text = CoachAIClient.textOf(reply);
       if(text) texts.push(text);
+
+      // Refus d'un filtre de sécurité (faux positif possible sur une blessure
+      // ou un médicament) : on le dit, plutôt qu'une « réponse vide ».
+      if(reply.stop_reason === "refusal"){
+        texts.push("Le modèle a décliné cette question (filtre de sécurité). Reformule-la en parlant d'entraînement, ou passe à un autre modèle dans les réglages.");
+        break;
+      }
 
       // Toujours réinjecter le contenu complet : un tool_use sans son bloc
       // d'origine dans l'historique rend la requête suivante invalide.

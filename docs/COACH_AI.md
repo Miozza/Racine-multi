@@ -73,7 +73,7 @@ jamais modifiée automatiquement (règle inchangée depuis V3.3).
 Les outils sont de deux natures :
 
 - **Lecture** (`consulter_mouvement`, `consulter_seance`,
-  `consulter_programme`) — exécuté immédiatement, la boucle continue. Lire ne
+  `consulter_programme`, `consulter_historique`) — exécuté immédiatement, la boucle continue. Lire ne
   change rien. Aiguillage unique : `CoachAIContext.read(name, input)`.
 - **Carnet** (`retenir`) — exécuté immédiatement : il n'écrit que dans le
   carnet du coach (§4), jamais dans l'entraînement. Le fait apparaît dans le
@@ -203,7 +203,16 @@ distant » de CLAUDE.md §3.4 pour ce domaine **seulement**.
   aucun réseau) et le reste de Racine fonctionne normalement. C'est non
   négociable : l'app est une PWA de terrain.
 - La boucle d'outils est bornée (`MAX_TOOL_ROUNDS`) — garde-fou de coût.
-- **Modèle par défaut : Haiku 4.5** (décision du 2026-10-07, cible < 1 $/mois).
+- **Modèle par défaut : Haiku 5.5** (V5.2.12 ; Haiku 4.5 depuis le 2026-10-07,
+  cible < 1 $/mois). Haiku 5.5 suit mieux les consignes et les outils pour
+  10× moins cher ; il accepte l'effort et la réflexion adaptative. Sonnet 5.5
+  et Opus 5.5 restent sélectionnables, avec le repli serveur `fallbacks:
+  "default"` (retiré si l'API le refuse). Jamais de `thinking: disabled`
+  (Opus 5.5 le refuse). La consigne système est construite **une fois par
+  message** : les modèles 5.5 refusent une requête dont le préfixe a changé
+  sous un bloc de réflexion, et `retenir` modifie le carnet en cours de
+  boucle. Migration schéma 2 → 3 : Haiku 4.5 → 5.5, Opus 5 → 5.5.
+- *Historique de la décision précédente :* Haiku 4.5 (2026-10-07).
   La conversation courante n'a pas besoin d'un gros modèle, et les poids
   restent au moteur quel que soit le modèle (§2). Sonnet et Opus restent
   sélectionnables. Haiku 4.5 refuse `output_config.effort` et la réflexion
@@ -219,8 +228,9 @@ distant » de CLAUDE.md §3.4 pour ce domaine **seulement**.
 
 **Ce qui est prévu fait partie du contexte** (V5.2.10). Avant, le coach ne
 voyait que le passé et ne savait pas répondre à « qu'est-ce que j'ai
-aujourd'hui ? ». Le contexte contient maintenant la séance d'aujourd'hui et de
-demain au calendrier (plus la prochaine séance à faire), lues par
+aujourd'hui ? ». Le contexte contient maintenant toute la semaine en cours en
+détail, aujourd'hui et demain marqués (V5.2.12), et un aperçu de la semaine
+suivante (mouvements et formats, sans charge), lus par
 `buildWorkout()` — donc avec remplacements et ajustements, comme l'athlète les
 voit — et la carte du programme. La charge affichée vient de
 `CoachCharge.suggestForExercise(ex, bloc, {day, week})` : le chiffre brut d'un

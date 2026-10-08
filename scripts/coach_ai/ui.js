@@ -496,8 +496,9 @@
             return "<option value='" + esc(m.id) + "'" + (cfg.model === m.id ? " selected" : "") + ">" + esc(m.label) + "</option>";
           }).join("")
       + "</select>"
-      + "<p class='cai-hint'>Haiku suffit pour discuter et commenter une suggestion : les poids viennent toujours du moteur, "
-      +   "quel que soit le modèle. Pour écrire une semaine complète, le copier-coller passe par ton abonnement.</p>"
+      + "<p class='cai-hint'><strong>Haiku 5.5</strong> (≈ 0,1 ¢ par message) suffit pour discuter, lire ton programme et ton historique. "
+      +   "<strong>Sonnet 5.5</strong> (≈ 2 ¢) raisonne mieux sur une semaine à réécrire ; <strong>Opus 5.5</strong> (≈ 4 ¢) est le plus fort. "
+      +   "Les poids viennent toujours du moteur, quel que soit le modèle.</p>"
       + (info.effort
           ? "<label class='cai-label' for='caiEffort'>Profondeur de réflexion</label>"
             + "<select id='caiEffort' class='cai-input'>"

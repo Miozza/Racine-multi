@@ -1,3 +1,17 @@
+## V5.2.12 — Coach IA lit tout l'historique
+
+**Pourquoi** : rapport de l'athlète (2026-10-08). Le coach disait n'avoir « pas de données avant septembre » ni « S2 à S7 en détail ». L'historique remonte à juin (58 séances) et `consulter_seance` lit toutes les semaines, mais rien ne le lui disait.
+
+- Nouvel outil de lecture **`consulter_historique`** : les séances réellement faites sur une période (dates et/ou semaine), dans tout l'historique, 20 par appel.
+- Le contexte annonce l'**étendue de l'historique** (nombre de séances, première et dernière date, séances par mois).
+- Le contexte liste explicitement **ce que le coach peut lire à la demande**, avec la consigne de ne jamais dire qu'une donnée manque avant d'avoir appelé l'outil.
+- Le pont (sans outils) reçoit l'étendue, sans promesse d'outil.
+- **Modèles actuels** (config schéma 3) : défaut **Haiku 5.5** (meilleur suivi des consignes et des outils, 0,10 $ / 0,50 $ le million de jetons, 10× moins cher que Haiku 4.5), **Sonnet 5.5** et **Opus 5.5** (4 $ / 20 $). Migration : Haiku 4.5 → Haiku 5.5, Opus 5 → Opus 5.5 ; les anciens restent comptés mais ne sont plus proposés.
+- **Manuel de Racine** dans la consigne du coach : écrans, structure d'un programme, fonctionnement des charges et du deload, Brain, effet exact d'une proposition acceptée, ce qu'il ne peut pas faire et où l'athlète le fait.
+- Consigne système **figée pour toute la boucle d'outils** : `retenir` changeait le carnet, donc le préfixe, sous des blocs de réflexion — les modèles 5.5 refusent alors la requête. Boucle d'outils portée à 8 tours.
+- **Refus d'un filtre de sécurité** expliqué au lieu d'une « réponse vide » ; sur Sonnet et Opus 5.5, **repli serveur** (`fallbacks: "default"`), retiré automatiquement si l'API le refuse.
+- **Toute la semaine en cours en détail** dans le contexte (tous les jours d'entraînement, charge du moteur comprise ; aujourd'hui et demain marqués), plus un **aperçu de la semaine suivante** (mouvements et formats, sans charge). Mesuré sur un vrai profil : ≈ 9 Ko + 2 Ko, dans le bloc système mis en cache.
+
 ## V5.2.11 — Coach IA : mémoire et interface
 
 **Pourquoi** : demande de l'athlète (2026-10-08). Coach IA semblait tout oublier, et l'écran manquait de tenue. Contrainte : ne pas alourdir la mémoire du téléphone.
