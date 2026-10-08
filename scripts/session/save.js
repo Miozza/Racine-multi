@@ -88,6 +88,9 @@ function setupSessionSave(){
       try{ if(window.CoachRetention)CoachRetention.recordSession(state, results, entry.date); }catch(e){ /* jamais bloquant */ }
       state.history.push(entry);
       save();
+      // Copie GitHub du profil admin (scripts/sync/github_backup.js) : différée,
+      // jamais bloquante, inerte sans jeton ou sur un autre profil.
+      try{ if(window.RacineGitHubBackup)RacineGitHubBackup.schedule(); }catch(e){ /* jamais bloquant */ }
     }
     // Capacite estimee (Kalman) : reconstruite depuis le journal brut qui vient
     // de recevoir la seance. Etat derive en memoire, aucune ecriture.

@@ -21,7 +21,9 @@ Trois capacités, et pas une de plus :
 | Il peut | Il ne peut pas |
 |---|---|
 | Lire l'historique, les notes, la progression, la mémoire Brain | Écrire une charge |
-| Proposer un remplacement de mouvement | Appliquer quoi que ce soit lui-même |
+| Lire les séances prévues (aujourd'hui, demain, n'importe quel jour) et la carte du programme | Changer de programme ou de semaine active |
+| Proposer un remplacement de mouvement, ou en retirer un | Appliquer quoi que ce soit lui-même |
+| Proposer d'annuler un ajustement déjà accepté | |
 | Proposer un changement de format / repos / consigne | Toucher `resultats`, `athlete_state`, `charges.js` |
 | Proposer une semaine complète | Modifier un programme de `programs/` |
 
@@ -70,8 +72,9 @@ jamais modifiée automatiquement (règle inchangée depuis V3.3).
 
 Les outils sont de deux natures :
 
-- **Lecture** (`consulter_mouvement`) — exécuté immédiatement, la boucle
-  continue. Lire ne change rien.
+- **Lecture** (`consulter_mouvement`, `consulter_seance`,
+  `consulter_programme`) — exécuté immédiatement, la boucle continue. Lire ne
+  change rien. Aiguillage unique : `CoachAIContext.read(name, input)`.
 - **Proposition** (`proposer_*`) — **jamais** exécuté par le modèle. On lui
   rend un `tool_result` qui dit « affiché, en attente de décision », la boucle
   s'arrête, et une carte Accepter / Refuser apparaît.
@@ -203,6 +206,17 @@ distant » de CLAUDE.md §3.4 pour ce domaine **seulement**.
   `MODELS` de `config.js` ; le plafond est vérifié avant **chaque** appel, y
   compris au milieu de la boucle d'outils. C'est une estimation locale : la
   vraie limite reste un crédit prépayé sans recharge automatique.
+
+**Ce qui est prévu fait partie du contexte** (V5.2.10). Avant, le coach ne
+voyait que le passé et ne savait pas répondre à « qu'est-ce que j'ai
+aujourd'hui ? ». Le contexte contient maintenant la séance d'aujourd'hui et de
+demain au calendrier (plus la prochaine séance à faire), lues par
+`buildWorkout()` — donc avec remplacements et ajustements, comme l'athlète les
+voit — et la carte du programme. La charge affichée vient de
+`CoachCharge.suggestForExercise(ex, bloc, {day, week})` : le chiffre brut d'un
+programme est un %1RM de l'athlète de référence et ne doit jamais être montré
+comme un poids. Le pont reçoit toute la semaine (`planned: "week"`), puisqu'il
+n'a pas d'outils pour demander le détail.
 
 Le contexte athlète est envoyé dans un bloc système **mis en cache**
 (`cache_control`) : il est long et stable d'un message à l'autre, et se place

@@ -7,7 +7,7 @@
 // (scripts/ai/ai_import.js, `do_not_auto_apply`).
 //
 // Les outils sont de deux natures, et c'est la distinction structurante :
-//   - LECTURE (`consulter_mouvement`) : exécuté tout de suite, sans demander.
+//   - LECTURE (`consulter_*`) : exécuté tout de suite, sans demander.
 //     Lire l'historique ne change rien, donc rien à valider.
 //   - PROPOSITION (`proposer_*`) : jamais exécuté. On rend au modèle un
 //     tool_result qui dit « affiché, l'athlète décidera », et la conversation
@@ -84,6 +84,23 @@
         }
       },
       {
+        name: "consulter_seance",
+        description: "Lire une séance prévue du programme actif, telle que l'athlète la voit dans l'app (remplacements et ajustements déjà appliqués) : blocs, mouvements, format, repos, consignes, charge calculée par le moteur. "
+                   + "Utilise-le dès que l'athlète parle d'une séance précise (« aujourd'hui », « jeudi », « la semaine prochaine »). Sans argument : la séance d'aujourd'hui.",
+        input_schema: {
+          type: "object",
+          properties: {
+            semaine: {type: "integer", description: "Numéro de semaine du programme. Par défaut : la semaine courante."},
+            jour: {type: "string", description: "Jour en minuscules (« lundi », « mardi »…). Par défaut : aujourd'hui."}
+          }
+        }
+      },
+      {
+        name: "consulter_programme",
+        description: "Lire la carte du programme actif : objectif, règles du cycle, intention de chaque journée, libellé et objectif de chaque semaine, programmes disponibles, remplacements actifs.",
+        input_schema: {type: "object", properties: {}}
+      },
+      {
         name: "proposer_remplacement",
         description: "Proposer de remplacer un mouvement par un autre, partout où il apparaît, jusqu'à ce que l'athlète retire le remplacement. "
                    + "Sert quand un mouvement pose problème (douleur, matériel indisponible, exécution qui ne passe pas).",
@@ -141,11 +158,38 @@
           },
           required: ["semaine", "jours"]
         }
+      },
+      {
+        name: "proposer_retrait_remplacement",
+        description: "Proposer de retirer un remplacement de mouvement actif : le mouvement d'origine du programme revient partout.",
+        input_schema: {
+          type: "object",
+          properties: {
+            de: {type: "string", description: "Mouvement d'origine du remplacement à retirer, nom exact."},
+            raison: {type: "string", description: "Pourquoi, en une phrase."}
+          },
+          required: ["de", "raison"]
+        }
+      },
+      {
+        name: "proposer_retrait_ajustement",
+        description: "Proposer d'annuler un ajustement Coach IA déjà accepté (format / repos / consigne) : l'exercice revient à ce que le programme prévoit.",
+        input_schema: {
+          type: "object",
+          properties: {
+            semaine: {type: "integer", description: "Semaine de l'ajustement."},
+            jour: {type: "string", description: "Jour de l'ajustement, en minuscules."},
+            mouvement: {type: "string", description: "Mouvement ajusté, tel qu'il s'affiche."},
+            raison: {type: "string", description: "Pourquoi, en une phrase."}
+          },
+          required: ["semaine", "jour", "mouvement", "raison"]
+        }
       }
     ];
   }
 
-  var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_semaine"];
+  var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_semaine", "proposer_retrait_remplacement", "proposer_retrait_ajustement"];
+  var READS = ["consulter_mouvement", "consulter_seance", "consulter_programme"];
 
   api.tools = tools;
   api.isProposal = function(name){ return PROPOSALS.indexOf(str(name)) >= 0; };
@@ -188,7 +232,7 @@
     });
     return lines.join("\n");
   };
-  api.isRead = function(name){ return str(name) === "consulter_mouvement"; };
+  api.isRead = function(name){ return READS.indexOf(str(name)) >= 0; };
 
   // ── Rendu lisible d'une proposition ────────────────────────────────────
   // L'athlète doit pouvoir décider sans lire du JSON.
@@ -238,6 +282,22 @@
         title: "Semaine " + str(input.semaine) + (str(input.label) ? " — " + str(input.label) : ""),
         lines: lines,
         footer: "Remplace le programme pour cette semaine. Réversible : « Retirer la semaine »."
+      };
+    }
+
+    if(name === "proposer_retrait_remplacement"){
+      return {
+        title: "Retirer un remplacement",
+        lines: [str(input.de) + " revient dans le programme", str(input.raison)].filter(Boolean),
+        footer: "Le mouvement d'origine reprend sa place partout."
+      };
+    }
+
+    if(name === "proposer_retrait_ajustement"){
+      return {
+        title: "Annuler l'ajustement de " + str(input.mouvement),
+        lines: ["Semaine " + str(input.semaine) + " · " + str(input.jour), str(input.raison)].filter(Boolean),
+        footer: "L'exercice revient à ce que le programme prévoit."
       };
     }
 
@@ -298,6 +358,26 @@
           message: "Semaine " + out.week + " écrite (" + out.days.join(", ") + "). "
                  + "Pour la suivre, choisis le programme « Semaines Coach IA » dans l'onglet Cycle."
         };
+      }
+
+      if(name === "proposer_retrait_remplacement"){
+        if(!window.RacineMovementSwaps) return {ok:false, error:"Module de remplacements indisponible."};
+        var pid = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
+        var key = function(v){ return str(v).toLowerCase(); };
+        var exists = (RacineMovementSwaps.listFor(pid) || []).some(function(s){ return key(s.from) === key(input.de); });
+        if(!exists) return {ok:false, error:"Aucun remplacement actif pour " + str(input.de) + "."};
+        var gone = RacineMovementSwaps.remove(pid, str(input.de));
+        if(!gone || !gone.ok) return {ok:false, error:(gone && gone.error) || "Retrait impossible."};
+        logPatch(patch, "accepted");
+        return {ok:true, message:"Remplacement retiré : " + str(input.de) + " revient."};
+      }
+
+      if(name === "proposer_retrait_ajustement"){
+        if(!window.CoachAIPlan) return {ok:false, error:"Module de plan indisponible."};
+        var rm = CoachAIPlan.removeAdjustment(input.semaine, input.jour, input.mouvement);
+        if(!rm.ok) return rm;
+        logPatch(patch, "accepted");
+        return {ok:true, message:"Ajustement annulé sur " + str(input.mouvement) + "."};
       }
     }catch(e){
       return {ok:false, error:"Application impossible : " + (e && e.message ? e.message : String(e))};

@@ -274,8 +274,13 @@ assert(contract.indexOf('intention') !== -1, 'Le contrat texte décrit bien le c
 ['proposer_semaine', 'proposer_remplacement', 'proposer_ajustement'].forEach(function(n){
   assert(contract.indexOf(n) !== -1, 'Le contrat texte décrit ' + n + '.');
 });
-assert(contract.indexOf('consulter_mouvement') === -1,
-  'Le contrat texte n\'annonce pas un outil de lecture qui n\'existe pas hors API.');
+['consulter_mouvement', 'consulter_seance', 'consulter_programme'].forEach(function(n){
+  assert(contract.indexOf(n) === -1,
+    'Le contrat texte n\'annonce pas un outil de lecture qui n\'existe pas hors API : ' + n + '.');
+});
+['proposer_retrait_remplacement', 'proposer_retrait_ajustement'].forEach(function(n){
+  assert(contract.indexOf(n) !== -1, 'Le contrat texte décrit ' + n + '.');
+});
 
 // Le prompt doit porter l'interdiction en toutes lettres, en plus du schéma.
 const promptSrc = bridgeSrc;
@@ -407,6 +412,46 @@ function fakeStorage(){
     removeItem: function(k){ delete store[k]; }
   };
 }
+
+// ── Le coach voit ce qui est PRÉVU, pas seulement le passé ─────────────────
+//
+// Bug d'origine : « qu'est-ce que j'ai aujourd'hui ? » restait sans réponse,
+// le contexte ne contenait que l'historique. La séance prévue est lue par
+// buildWorkout() (l'entonnoir unique), la charge par le moteur.
+{
+  const ctxPlanned = {console:console, Date:Date};
+  ctxPlanned.window = ctxPlanned;
+  ctxPlanned.state = {week:2, day:'lundi', history:[], completedDays:['lundi'], missedDays:[], profile:{name:'Test'}};
+  const wd = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][new Date().getDay()];
+  const tomorrow = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'][(['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'].indexOf(wd) + 1) % 7];
+  ctxPlanned.currentDayOrder = function(){ return [wd, tomorrow, 'lundi'].filter(function(d, i, a){ return a.indexOf(d) === i; }); };
+  ctxPlanned.totalWeeks = function(){ return 4; };
+  ctxPlanned.buildWeekInfo = function(){ return {1:{label:'Base',goal:'x'},2:{label:'Volume',goal:'y'},3:{label:'Intensité',goal:'z'},4:{label:'Deload',goal:'récupération'}}; };
+  ctxPlanned.buildWorkout = function(day, week){
+    return {day:{label:'Séance ' + day}, blocks:[{title:'A. Force', kind:'main', exercises:[{name:'Mvt_' + day + '_S' + week, format:'5×5', load:'75%'}]}]};
+  };
+  ctxPlanned.CoachCharge = {suggestForExercise: function(ex, b, o){ return o && o.week ? 200 + o.week : ''; }};
+  vm.createContext(ctxPlanned);
+  vm.runInContext(contextSrc, ctxPlanned, {filename:'context.js'});
+  const C = ctxPlanned.CoachAIContext;
+  const built = C.build();
+  assert(built.indexOf("Aujourd'hui : " + wd) !== -1 && built.indexOf('Mvt_' + wd + '_S2') !== -1,
+    'Le contexte contient la séance d\'aujourd\'hui, construite par buildWorkout().');
+  assert(built.indexOf('Demain : ' + tomorrow) !== -1, 'Le contexte contient la séance de demain.');
+  assert(built.indexOf('charge du moteur : 202') !== -1 && built.indexOf('75%') === -1,
+    'La charge montrée est celle du moteur, jamais le %1RM brut du programme.');
+  assert(built.indexOf('S4 : Deload') !== -1, 'La carte du programme liste chaque semaine.');
+  const seance = C.read('consulter_seance', {semaine:3, jour:'lundi'});
+  assert(seance.indexOf('Mvt_lundi_S3') !== -1 && seance.indexOf('charge du moteur : 203') !== -1,
+    'consulter_seance lit n\'importe quelle journée, charge du moteur comprise.');
+  assert(C.read('consulter_seance', {semaine:9, jour:'lundi'}).indexOf('hors programme') !== -1,
+    'consulter_seance refuse une semaine hors programme au lieu d\'inventer.');
+  const bridgeCtx = C.build({planned:'week'});
+  assert(bridgeCtx.indexOf('Mvt_lundi_S2') !== -1, 'Le pont (sans outils) reçoit toute la semaine prévue.');
+}
+const chatSrcPlanned = code('scripts/coach_ai/chat.js');
+assert(chatSrcPlanned.indexOf('CoachAIContext.read(name') !== -1,
+  'chat.js aiguille TOUS les outils de lecture par CoachAIContext.read.');
 
 if(errors.length){
   console.error('\n✗ coach_ai_checks — ' + errors.length + ' échec(s) :');

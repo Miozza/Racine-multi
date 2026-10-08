@@ -1,3 +1,22 @@
+## V5.2.10 — Coach IA lit le programme ; sauvegarde GitHub du profil admin
+
+**Pourquoi** : rapport de l'athlète (2026-10-08). Coach IA ne savait pas ce qui était prévu aujourd'hui ni demain — il ne voyait que l'historique. Et l'export manuel après chaque séance est pénible.
+
+**Coach IA** (`scripts/coach_ai/`)
+
+- Le contexte contient la **séance d'aujourd'hui et celle de demain**, lues par `buildWorkout()` (remplacements et ajustements compris), avec la charge calculée par le moteur — jamais le %1RM brut du programme. Plus la carte du programme (une ligne par semaine) et les ajustements actifs.
+- Deux outils de **lecture** : `consulter_seance` (n'importe quel jour / semaine) et `consulter_programme` (objectif, règles, intentions, semaines, programmes disponibles).
+- Deux propositions d'**écriture**, toujours avec la carte Accepter / Refuser : `proposer_retrait_remplacement`, `proposer_retrait_ajustement`.
+- Le pont copier-coller reçoit toute la semaine prévue (il n'a pas d'outils).
+- Toujours aucun champ de charge : le moteur garde la main sur les poids.
+
+**Sauvegarde GitHub** (`scripts/sync/github_backup.js`, Réglages → Sauvegarde GitHub, admin)
+
+- Après chaque séance sauvegardée, l'export JSON du profil admin est déposé dans un dépôt GitHub **privé** séparé (`racine/<profil>.json`). Hors-ligne : envoi en attente, repart au retour du réseau.
+- Un seul profil (celui qui a enregistré le jeton). Jeton au niveau appareil, hors export. Le dépôt de code est refusé (Pages publierait la sauvegarde).
+- Sens unique : Racine ne relit jamais GitHub tout seul. « Restaurer » importe le fichier comme **nouveau** profil.
+- Garde-fou : `dev/github_backup_checks.js`.
+
 ## V5.2.9 — Pont Peak : fillers pendant les pauses
 
 **Pourquoi** : demande de l'athlète (2026-10-08) : « plus de pause que de travail ». Les 2:00-2:30 du mouvement principal se passaient à attendre.

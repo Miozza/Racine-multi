@@ -1,8 +1,16 @@
-# ETAT ACTUEL — V5.2.9
+# ETAT ACTUEL — V5.2.10
 
-Version actuelle : V5.2.9
+Version actuelle : V5.2.10
 
 ## État courant
+
+### Coach IA lit le programme
+
+Le coach voit la séance d'aujourd'hui et de demain (telle qu'affichée, charge du moteur comprise), la carte du programme, et peut lire n'importe quelle journée (`consulter_seance`, `consulter_programme`). Il peut proposer de retirer un remplacement ou un ajustement ; rien ne s'applique sans Accepter.
+
+### Sauvegarde GitHub du profil admin
+
+Réglages → Sauvegarde GitHub. Après chaque séance, l'export JSON du profil admin part dans un dépôt GitHub privé séparé. Sens unique ; restaurer crée un nouveau profil.
 
 ### Pont Peak : fillers pendant les pauses
 

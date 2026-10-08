@@ -1,5 +1,5 @@
-// Racine V5.2.9 — Pont Peak : fillers pendant les pauses
-var APP_VERSION = "V5.2.9";
+// Racine V5.2.10 — Coach IA lit le programme (aujourd'hui, demain, toute séance) ; sauvegarde GitHub du profil admin
+var APP_VERSION = "V5.2.10";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -2955,6 +2955,7 @@ function renderSettings(){
   if(window.RacineAdminPrograms && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminPrograms.render();
   if(window.RacineAdminTuning && window.CoachProfiles && CoachProfiles.isActiveAdmin && CoachProfiles.isActiveAdmin())RacineAdminTuning.render();
   if(typeof renderChargeDiagnosticPanel==="function")renderChargeDiagnosticPanel();
+  if(window.RacineGitHubBackup)RacineGitHubBackup.renderPanel();
 }
 function setupSettingsSave(){
   // V1 multi-utilisateur : plus de token GitHub. Le panneau profil/agressivité

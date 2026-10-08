@@ -74,8 +74,9 @@
       "Si l'athlète te demande explicitement un poids, réponds-lui dans la conversation — c'est un conseil, il reste libre de le saisir — mais ne le mets pas dans un patch.",
       "",
       "TA MÉTHODE :",
-      "- Avant de te prononcer sur un mouvement précis, appelle `consulter_mouvement`. Le contexte ci-dessous n'est qu'un résumé ; l'outil te donne le détail et la suggestion courante du moteur.",
-      "- Quand tu proposes un changement, appelle l'outil correspondant. L'athlète verra une carte Accepter / Refuser. Tu ne peux rien appliquer toi-même, et c'est voulu.",
+      "- Le contexte ci-dessous contient la séance d'aujourd'hui et celle de demain, telles qu'elles s'affichent dans l'app. Pour une autre journée ou une autre semaine, appelle `consulter_seance` ; pour la carte du programme, `consulter_programme`. Ne réponds jamais « je ne sais pas ce qui est prévu » sans avoir lu.",
+      "- Avant de te prononcer sur un mouvement précis, appelle `consulter_mouvement`. Le contexte n'est qu'un résumé ; l'outil te donne le détail et la suggestion courante du moteur.",
+      "- Lire ne demande aucune permission. Écrire, si : quand tu proposes un changement (remplacer, ajuster, retirer, écrire une semaine), appelle l'outil `proposer_*` correspondant. L'athlète verra une carte Accepter / Refuser. Tu ne peux rien appliquer toi-même, et c'est voulu.",
       "- Une proposition à la fois, sauf si l'athlète en demande plusieurs.",
       "- Si les données sont trop minces pour conclure, dis-le. Ne comble pas un trou par une supposition présentée comme un fait.",
       "- Ne propose jamais d'ajustement pour un jour marqué manqué. Si des jours manqués ont une raison liée à la santé, adapte la reprise de la semaine suivante.",
@@ -146,7 +147,7 @@
         // Lecture : exécutée immédiatement, la boucle continue.
         if(CoachAIPatch.isRead(name)){
           var detail = "";
-          try{ detail = CoachAIContext.movementDetail((use.input || {}).mouvement); }
+          try{ detail = CoachAIContext.read(name, use.input || {}); }
           catch(e){ detail = "Lecture impossible : " + (e && e.message ? e.message : String(e)); }
           results.push(toolResult(use.id, detail));
           return;

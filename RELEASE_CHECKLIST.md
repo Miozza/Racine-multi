@@ -48,6 +48,7 @@ node dev/phase2_fable5_checks.js
 node dev/pont_peak_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
+node dev/github_backup_checks.js
 node dev/movement_swaps_checks.js
 node dev/prescription_checks.js
 node dev/repro_bug1_charges_client.js

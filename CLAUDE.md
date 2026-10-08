@@ -238,9 +238,10 @@ Deux sens du mot **« Brain »**, à ne pas confondre :
   construite**. Ne pas l'implémenter : la décision se prend sur la courbe d'erreur,
   pas sur une date (voir § 8).
 
-Détail persistance : la **sauvegarde est locale uniquement**. Le flux GitHub
-(`saveToGitHub`) a été retiré du code ; les mentions résiduelles dans
-`docs/DATA_FLOW_CONTRACT.md` et `docs/CHARGE_ENGINE_TESTS.md` sont **périmées**.
+Détail persistance : la source de vérité reste **locale**. L'ancien flux
+`saveToGitHub` a été retiré ; ses mentions dans `docs/DATA_FLOW_CONTRACT.md` et
+`docs/CHARGE_ENGINE_TESTS.md` sont **périmées**. La copie GitHub actuelle (§3.4)
+est une sauvegarde à sens unique de l'export JSON, pas une synchronisation.
 Coach IA (§3.5) appelle le réseau mais ne synchronise aucune donnée : ce qui
 persiste persiste toujours localement.
 
@@ -253,9 +254,19 @@ persiste persiste toujours localement.
 
 ### 3.4 Données et synchronisation
 
-- Pas de module de sync GitHub — retiré délibérément. Racine fonctionne en local.
-- Export/import JSON local uniquement.
-- Ne pas réintroduire de sync **de données** sans décision explicite.
+- Racine fonctionne en local. Export/import JSON = mécanisme de sauvegarde de référence.
+- **Sauvegarde GitHub du profil admin — décision du 2026-10-08.** `scripts/sync/github_backup.js`
+  (`window.RacineGitHubBackup`) dépose, après chaque séance, l'export JSON ordinaire
+  du profil admin dans un dépôt GitHub **privé séparé**. Portée stricte, tenue par
+  `dev/github_backup_checks.js` :
+  - un seul profil (celui qui a enregistré le jeton, admin) ; jamais un profil client ;
+  - **sens unique** : rien n'est relu automatiquement ; « Restaurer » importe comme
+    **nouveau** profil via `importProfileBlob` — aucune donnée locale écrasée ;
+  - jeton au niveau appareil (`racine_github_backup_v1`), hors export et hors `#rx=` ;
+  - jamais le dépôt de code (Pages publierait la sauvegarde) ;
+  - hors-ligne : envoi en attente, l'app fonctionne normalement.
+- Étendre cette copie (autres profils, relecture automatique, fusion) demande une
+  nouvelle décision explicite.
 
 **Coach IA — chemin par défaut : copier-coller, pas de réseau.**
 Un abonnement Claude Pro **ne couvre pas l'API** : la facturation API est
@@ -271,9 +282,10 @@ Le domaine peut aussi appeler l'API Claude directement depuis le navigateur,
 s'active jamais et ne coûte rien. La décision est prise, elle n'a pas à être
 redemandée. Sa portée est stricte :
 
-- **Un seul fichier** fait du réseau : `scripts/coach_ai/client.js`. Un
-  `fetch()` ailleurs dans le runtime reste une violation, et
-  `dev/coach_ai_checks.js` échoue dessus.
+- **Un seul fichier** du domaine fait du réseau : `scripts/coach_ai/client.js`.
+  Dans tout le runtime, seuls ce fichier et `scripts/sync/github_backup.js`
+  (§3.4) appellent `fetch()` ; ailleurs c'est une violation, et
+  `dev/coach_ai_checks.js` / `dev/github_backup_checks.js` échouent dessus.
 - **Aucune donnée n'est synchronisée.** Rien n'est stocké à distance, rien
   n'est relu depuis un serveur. Le contexte part dans un prompt, la réponse
   revient, et tout ce qui persiste persiste localement. Un profil ne voyage
@@ -292,8 +304,9 @@ Contrat complet : `docs/COACH_AI.md`.
 ### 3.5 Coach IA — il propose, l'athlète décide
 
 Domaine `scripts/coach_ai/`, porte publique `window.CoachAI`. Conversation avec
-un modèle qui lit l'état réel de l'athlète et **propose** des changements
-d'entraînement. Lire `docs/COACH_AI.md` avant d'y toucher.
+un modèle qui lit l'état réel de l'athlète — historique **et** séances prévues
+(aujourd'hui, demain, toute journée via `consulter_seance`) — et **propose** des
+changements d'entraînement. Lire `docs/COACH_AI.md` avant d'y toucher.
 
 **La règle qui gouverne le domaine : le moteur garde la main sur les poids.**
 

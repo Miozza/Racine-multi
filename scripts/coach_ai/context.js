@@ -8,7 +8,8 @@
 //     athlete_state, ni resultats, ni charges.js (CLAUDE.md §2.2).
 //  2. BORNÉ. Tout est plafonné. Un historique de deux ans ne doit pas partir
 //     dans un prompt : on envoie une vue récente + des agrégats, et le modèle
-//     demande le détail d'un mouvement via l'outil `consulter_mouvement`.
+//     demande le détail via les outils de lecture (`consulter_mouvement`,
+//     `consulter_seance`, `consulter_programme`).
 //  3. PAS DE SECRET. La clé API vit ailleurs (config.js) et n'entre jamais
 //     dans un contexte. Rien d'identifiant non plus : un prénom de profil
 //     suffit, on n'envoie ni email ni identifiant d'appareil.
@@ -20,6 +21,9 @@
   var SESSIONS_LIMIT = 8;      // séances détaillées envoyées d'office
   var NOTES_LIMIT = 8;         // notes d'athlète récentes
   var MOVEMENT_ROWS_LIMIT = 12; // lignes rendues par consulter_mouvement
+  var BLOCK_TEXT_LIMIT = 700;   // texte d'un bloc (metcon, consigne) rendu tel quel
+  var WEEKS_MAP_LIMIT = 16;     // semaines listées dans la carte du programme
+  var ALL_DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
 
   function str(v){ return String(v==null?"":v).trim(); }
   function num(v){
@@ -212,6 +216,137 @@
     return lines;
   }
 
+  // ── Bloc 1b : ce qui est PRÉVU ─────────────────────────────────────────
+  // Sans ce bloc, le coach ne voyait que le passé : « qu'est-ce que j'ai
+  // aujourd'hui ? » restait sans réponse. La séance est lue par
+  // buildWorkout(), l'entonnoir unique de toutes les vues — donc avec les
+  // remplacements et les ajustements déjà appliqués, exactement comme
+  // l'athlète la voit. La charge affichée est celle du moteur
+  // (CoachCharge.suggestForExercise), jamais un chiffre du programme brut :
+  // un chiffre de programme est un %1RM de l'athlète de référence (CLAUDE.md
+  // §3.1), le montrer tel quel induirait le modèle en erreur.
+  function dayList(){
+    try{ return (typeof currentDayOrder === "function") ? (currentDayOrder() || []) : []; }
+    catch(e){ return []; }
+  }
+  function weekCount(){
+    try{ return (typeof totalWeeks === "function") ? (Number(totalWeeks()) || 0) : 0; }catch(e){ return 0; }
+  }
+  function clip(text, max){
+    text = str(text);
+    return text.length > max ? text.slice(0, max) + " […]" : text;
+  }
+  function exerciseLine(ex, block, day, week){
+    ex = ex || {};
+    var bits = [];
+    if(str(ex.format)) bits.push(str(ex.format));
+    if(str(ex.rest)) bits.push("repos " + str(ex.rest));
+    var load = "";
+    try{
+      if(window.CoachCharge && typeof CoachCharge.suggestForExercise === "function"){
+        load = str(CoachCharge.suggestForExercise(ex, block, {day: day, week: week}));
+      }
+    }catch(e){ load = ""; }
+    if(load) bits.push("charge du moteur : " + load + (/[a-z]/i.test(load) ? "" : " lb"));
+    return "      · " + str(ex.name) + (bits.length ? " — " + bits.join(" · ") : "")
+      + (str(ex.note) ? "  [consigne : " + clip(ex.note, 200) + "]" : "");
+  }
+  function workoutLines(day, week){
+    day = str(day).toLowerCase();
+    week = Number(week);
+    if(typeof buildWorkout !== "function") return ["  (séance illisible : programme non chargé)"];
+    var w = null;
+    try{ w = buildWorkout(day, week); }catch(e){ return ["  (séance illisible : " + (e && e.message ? e.message : String(e)) + ")"]; }
+    var lines = [];
+    var meta = (w && w.day) || {};
+    var head = [str(meta.label), str(meta.focus)].filter(Boolean).join(" — ");
+    if(head) lines.push("  Séance : " + head);
+    ((w && w.blocks) || []).forEach(function(b){
+      b = b || {};
+      lines.push("    - " + [str(b.title), str(b.kind) ? "(" + str(b.kind) + ")" : "", str(b.time)].filter(Boolean).join(" "));
+      if(Array.isArray(b.exercises) && b.exercises.length){
+        b.exercises.forEach(function(ex){ lines.push(exerciseLine(ex, b, day, week)); });
+      } else if(str(b.text)){
+        clip(b.text, BLOCK_TEXT_LIMIT).split(/\n+/).forEach(function(t){ if(str(t)) lines.push("      " + str(t)); });
+      }
+    });
+    if(!lines.length) lines.push("  (aucun bloc)");
+    return lines;
+  }
+  function dayStatus(day, week){
+    var bits = [];
+    try{
+      if(Number(week) === Number(state.week)){
+        if((state.completedDays || []).indexOf(day) >= 0) bits.push("déjà faite cette semaine");
+        if((state.missedDays || []).some(function(x){ return x && x.day === day && Number(x.week) === Number(week); })) bits.push("marquée manquée");
+      }
+    }catch(e){}
+    return bits.length ? " (" + bits.join(", ") + ")" : "";
+  }
+
+  // Aujourd'hui et demain au calendrier, plus la prochaine séance à faire.
+  // `opts.planned === "week"` (le pont, sans outils) : toute la semaine en
+  // cours, puisque le modèle ne pourra pas demander le détail ensuite.
+  function plannedLines(opts){
+    opts = opts || {};
+    var days = dayList();
+    if(!days.length) return [];
+    var week = 0;
+    try{ week = Number(state.week) || 1; }catch(e){ week = 1; }
+    var maxWeek = weekCount();
+    var lines = ["", "## Séances prévues (telles que l'athlète les voit dans l'app)"];
+    var shown = {};
+    function show(title, day, wk){
+      if(!day) return;
+      var key = wk + "|" + day;
+      if(shown[key]){ lines.push(title + " : " + day + " S" + wk + " — voir plus haut."); return; }
+      shown[key] = true;
+      if(maxWeek && wk > maxWeek){ lines.push(title + " : " + day + " — au-delà de la dernière semaine du programme (S" + maxWeek + ")."); return; }
+      if(days.indexOf(day) < 0){ lines.push(title + " : " + day + " — jour de repos dans ce programme."); return; }
+      lines.push(title + " : " + day + " · S" + wk + dayStatus(day, wk));
+      lines = lines.concat(workoutLines(day, wk));
+    }
+
+    var today = todayInfo().day;
+    var ti = ALL_DAYS.indexOf(today);
+    var tomorrow = ti >= 0 ? ALL_DAYS[(ti + 1) % 7] : "";
+    // La semaine du cycle avance par un geste de l'athlète, pas par le
+    // calendrier : dimanche → lundi est la seule bascule supposée.
+    var tomorrowWeek = (tomorrow === "lundi") ? week + 1 : week;
+
+    if(opts.planned === "week"){
+      days.forEach(function(d){ show(d === today ? "Aujourd'hui" : (d === tomorrow && tomorrowWeek === week ? "Demain" : "Séance"), d, week); });
+      if(tomorrowWeek !== week) show("Demain", tomorrow, tomorrowWeek);
+    } else {
+      show("Aujourd'hui", today, week);
+      show("Demain", tomorrow, tomorrowWeek);
+      var done = [];
+      try{ done = state.completedDays || []; }catch(e){}
+      var next = days.filter(function(d){ return done.indexOf(d) < 0; })[0];
+      if(next && next !== today && next !== tomorrow) show("Prochaine séance à faire", next, week);
+      lines.push("Pour une autre journée ou une autre semaine : outil `consulter_seance`. Pour la carte complète du programme : `consulter_programme`.");
+    }
+    return lines;
+  }
+
+  // Carte du programme actif : une ligne par semaine. Le libellé et
+  // l'objectif sont là où un deload se déclare : le coach doit voir où il va.
+  function programMapLines(){
+    var lines = [];
+    try{
+      var info = (typeof buildWeekInfo === "function") ? (buildWeekInfo() || {}) : {};
+      var nums = Object.keys(info).map(Number).filter(function(n){ return !isNaN(n); }).sort(function(a, b){ return a - b; });
+      if(!nums.length) return lines;
+      lines.push("", "## Carte du programme actif (" + nums.length + " semaines)");
+      nums.slice(0, WEEKS_MAP_LIMIT).forEach(function(n){
+        var wi = info[n] || {};
+        var cur = (Number(state.week) === n) ? "  ← semaine courante" : "";
+        lines.push("- S" + n + " : " + [str(wi.label), str(wi.goal)].filter(Boolean).join(" — ") + cur);
+      });
+    }catch(e){}
+    return lines;
+  }
+
   // ── Bloc 2 : les séances récentes, telles qu'elles ont été vécues ───────
   // Le journal brut prime sur l'état dérivé (docs/DATA_FLOW_CONTRACT.md) :
   // on montre ce que l'athlète a réellement inscrit, pas une reconstruction.
@@ -360,12 +495,24 @@
 
   // ── Bloc 6 : la semaine générée en cours, s'il y en a une ──────────────
   function planLines(){
+    var lines = [];
     try{
-      if(!window.CoachAIPlan || typeof CoachAIPlan.summary !== "function") return [];
-      var s = CoachAIPlan.summary();
-      if(!s) return [];
-      return ["", "## Semaines déjà générées par Coach IA", s];
-    }catch(e){ return []; }
+      if(!window.CoachAIPlan) return lines;
+      var s = (typeof CoachAIPlan.summary === "function") ? CoachAIPlan.summary() : "";
+      if(s) lines = lines.concat(["", "## Semaines déjà générées par Coach IA", s]);
+      var adj = (typeof CoachAIPlan.listAdjustments === "function") ? CoachAIPlan.listAdjustments() : [];
+      if(adj && adj.length){
+        lines.push("", "## Ajustements Coach IA actifs (acceptés par l'athlète)");
+        adj.slice(-20).forEach(function(a){
+          var bits = [];
+          if(str(a.format)) bits.push("format " + str(a.format));
+          if(str(a.rest)) bits.push("repos " + str(a.rest));
+          if(str(a.note)) bits.push("note « " + clip(a.note, 120) + " »");
+          lines.push("- S" + str(a.week) + " · " + str(a.day) + " · " + str(a.movement) + " : " + bits.join(" · "));
+        });
+      }
+    }catch(e){}
+    return lines;
   }
 
   // ── Assemblage ─────────────────────────────────────────────────────────
@@ -373,6 +520,8 @@
     opts = opts || {};
     var lines = []
       .concat(profileLines())
+      .concat(plannedLines(opts))
+      .concat(programMapLines())
       .concat(sessionLines(opts.sessions))
       .concat(missedLines(opts.notes))
       .concat(noteLines(opts.notes))
@@ -427,6 +576,77 @@
     }catch(e){}
 
     return lines.join("\n");
+  };
+
+  // ── Outil `consulter_seance` : n'importe quelle journée du programme ────
+  api.sessionDetail = function(input){
+    input = input || {};
+    var days = dayList();
+    var day = norm(input.jour);
+    var week = Number(input.semaine);
+    try{ if(!week || isNaN(week)) week = Number(state.week) || 1; }catch(e){ week = 1; }
+    if(!day) day = todayInfo().day;
+    if(ALL_DAYS.indexOf(day) < 0) return "Jour inconnu : « " + str(input.jour) + " ». Jours valides : " + ALL_DAYS.join(", ") + ".";
+    var maxWeek = weekCount();
+    if(week < 1 || (maxWeek && week > maxWeek)) return "Semaine hors programme : le programme actif a " + (maxWeek || "?") + " semaines.";
+    if(days.indexOf(day) < 0) return day + " n'est pas un jour d'entraînement dans ce programme. Jours d'entraînement : " + days.join(", ") + ".";
+    var lines = [day + " · S" + week + dayStatus(day, week)];
+    try{
+      var wi = (typeof buildWeekInfo === "function") ? (buildWeekInfo() || {})[week] : null;
+      if(wi) lines.push("Semaine : " + [str(wi.label), str(wi.goal)].filter(Boolean).join(" — "));
+    }catch(e){}
+    return lines.concat(workoutLines(day, week)).join("\n");
+  };
+
+  // ── Outil `consulter_programme` : la carte et les options ──────────────
+  api.programDetail = function(){
+    var lines = [];
+    var programId = "";
+    try{ programId = (typeof activeProgramId === "function") ? activeProgramId() : ""; }catch(e){}
+    try{
+      var cfg = (typeof focus === "function") ? (focus() || {}) : {};
+      lines.push("Programme actif : " + (str(cfg.label) || programId) + (programId ? " (id " + programId + ")" : ""));
+      if(str(cfg.objective)) lines.push("Objectif : " + str(cfg.objective));
+      if(Array.isArray(cfg.cycleRules) && cfg.cycleRules.length) lines.push("Règles du cycle : " + cfg.cycleRules.map(str).join(" · "));
+      var days = dayList();
+      if(days.length) lines.push("Jours d'entraînement : " + days.join(", "));
+      if(cfg.dayIntentions && typeof cfg.dayIntentions === "object"){
+        lines.push("Intention de chaque journée :");
+        days.forEach(function(d){
+          var it = cfg.dayIntentions[d];
+          var txt = (it && typeof it === "object") ? [str(it.title || it.label), str(it.intent || it.text || it.goal)].filter(Boolean).join(" — ") : str(it);
+          if(txt) lines.push("  - " + d + " : " + clip(txt, 200));
+        });
+      }
+    }catch(e){}
+    lines = lines.concat(programMapLines());
+    try{
+      var all = (typeof focusConfigs === "object" && focusConfigs) ? focusConfigs : {};
+      var ids = Object.keys(all);
+      if(ids.length){
+        lines.push("", "Programmes disponibles sur ce profil (changer de programme se fait par l'athlète, dans l'onglet Cycle) :");
+        ids.forEach(function(id){ lines.push("  - " + str((all[id] || {}).label || id) + " (id " + id + ")" + (id === programId ? " ← actif" : "")); });
+      }
+    }catch(e){}
+    try{
+      var activeId = window.CoachProfiles ? CoachProfiles.getActiveId() : null;
+      var swaps = window.RacineMovementSwaps ? RacineMovementSwaps.listFor(activeId) : [];
+      if(swaps && swaps.length){
+        lines.push("", "Remplacements actifs :");
+        swaps.forEach(function(s){ lines.push("  - " + s.from + " → " + s.to); });
+      }
+    }catch(e){}
+    return lines.join("\n") || "Programme illisible.";
+  };
+
+  // Aiguillage unique des outils de lecture : chat.js n'a pas à connaître
+  // chaque outil, et aucun d'eux n'écrit quoi que ce soit.
+  api.read = function(name, input){
+    input = input || {};
+    if(name === "consulter_mouvement") return api.movementDetail(input.mouvement);
+    if(name === "consulter_seance") return api.sessionDetail(input);
+    if(name === "consulter_programme") return api.programDetail();
+    return "Outil de lecture inconnu : " + str(name);
   };
 
   api.SESSIONS_LIMIT = SESSIONS_LIMIT;
