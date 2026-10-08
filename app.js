@@ -1,5 +1,5 @@
-// Racine V5.2.6 — Coach IA économique : Haiku par défaut, plafond mensuel
-var APP_VERSION = "V5.2.6";
+// Racine V5.2.7 — Coach IA : la vraie raison d'une clé refusée
+var APP_VERSION = "V5.2.7";
 
 // Architecture stable
 // programs/*.js = plan prévu

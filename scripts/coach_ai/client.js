@@ -18,12 +18,29 @@
 
   // Messages d'erreur écrits pour quelqu'un debout dans un gym avec un
   // iPhone, pas pour une console : ce qui s'est passé, et quoi faire.
-  function errorMessage(status, body){
+  function errorMessage(status, body, key){
     var detail = "";
     try{ detail = (body && body.error && body.error.message) ? String(body.error.message) : ""; }catch(e){}
+    var why = detail ? " (API : " + detail + ")" : "";
 
-    if(status === 401 || status === 403){
-      return "Clé API refusée. Vérifie-la dans Réglages → Coach IA.";
+    // 401 : la clé elle-même. Les causes vues en pratique, de la plus
+    // fréquente à la plus rare, d'après la forme de la clé collée.
+    if(status === 401){
+      if(/^sk-ant-admin/.test(key)){
+        return "Clé refusée : c'est une clé ADMIN. Coach IA a besoin d'une clé API normale (elle commence par sk-ant-api). Crée-la dans API Keys." + why;
+      }
+      if(/…|\.\.\.|\*{3}/.test(key)){
+        return "Clé refusée : tu as collé l'APERÇU masqué de la clé (avec « … »). La clé complète ne s'affiche qu'une fois, à la création : crée-en une nouvelle et copie-la à ce moment-là." + why;
+      }
+      if(!/^sk-ant-api/.test(key)){
+        return "Clé refusée : elle devrait commencer par sk-ant-api. Recolle la clé complète affichée à la création (la liste des clés n'en montre qu'un aperçu)." + why;
+      }
+      return "Clé refusée (401). Elle est peut-être incomplète, désactivée ou supprimée : crée-en une nouvelle et recolle-la en entier." + why;
+    }
+    // 403 : la clé est reconnue, mais le compte n'a pas le droit de faire cet
+    // appel (modèle non autorisé dans l'espace de travail, compte non activé).
+    if(status === 403){
+      return "Clé reconnue, mais accès refusé (403)" + (detail ? " : " + detail : ". Vérifie l'espace de travail de la clé et la facturation du compte.");
     }
     if(status === 400){
       return "Requête refusée par l'API" + (detail ? " : " + detail : ".");
@@ -97,7 +114,7 @@
     var payload = null;
     try{ payload = await res.json(); }catch(e){ payload = null; }
 
-    if(!res.ok) throw new Error(errorMessage(res.status, payload));
+    if(!res.ok) throw new Error(errorMessage(res.status, payload, key));
     if(!payload) throw new Error("Réponse illisible de l'API.");
     // Compté d'après ce que l'API déclare avoir consommé, pas d'une estimation.
     try{ CoachAIConfig.recordUsage(model, payload.usage); }catch(e){}
