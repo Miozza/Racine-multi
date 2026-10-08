@@ -1,3 +1,11 @@
+## V5.2.7 — Coach IA : la vraie raison d'une clé refusée
+
+**Pourquoi** : premier essai de clé API (2026-10-08), message « Clé API refusée » sans autre indice. Un 401 et un 403 donnaient le même texte, et la raison renvoyée par l'API était cachée.
+
+**Ce qui change** (`scripts/coach_ai/client.js`)
+
+- **Clé refusée : la vraie raison.** Un 401 ou 403 affichait le même message vague. L'écran distingue maintenant une clé admin, un aperçu masqué collé à la place de la clé, une clé mal formée, une clé invalide (401) et un accès refusé (403), avec le message renvoyé par l'API.
+
 ## V5.2.6 — Coach IA économique : Haiku et plafond mensuel
 
 **Pourquoi** : rendre la conversation directe (clé API) pratiquement gratuite — cible : moins de 1 $ par mois pour quelques messages par semaine. Le défaut Opus 5 coûtait environ 5 fois plus cher en entrée et en sortie, plus la réflexion facturée.
