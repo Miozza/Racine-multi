@@ -55,6 +55,24 @@
 
   function str(v){ return String(v==null?"":v).trim(); }
 
+  // Une clé API ne contient ni espace ni guillemet. Un collage depuis Notes,
+  // un courriel ou le presse-papiers iOS peut pourtant en ajouter, ainsi que
+  // des caractères invisibles (espace insécable, largeur nulle) qui font
+  // refuser la clé sans que rien ne se voie à l'écran.
+  function cleanKey(v){
+    return String(v==null?"":v)
+      .replace(/[\s\u00A0\u200B-\u200D\u2060\uFEFF]/g, "")
+      .replace(/^["'«»“”‘’`]+|["'«»“”‘’`]+$/g, "");
+  }
+
+  // Aperçu sans danger d'une clé : le préfixe (public, identique pour toutes
+  // les clés d'un même type) et la longueur. Jamais la partie secrète.
+  function keyPreview(key){
+    key = String(key || "");
+    if(!key) return "aucune clé";
+    return "« " + key.slice(0, 10) + "… » (" + key.length + " caractères)";
+  }
+
   // Quel assistant l'athlète colle-t-il son prompt dans. PUREMENT COSMÉTIQUE :
   // ça change les libellés de l'écran, jamais le prompt ni la lecture de la
   // réponse. Le pont est indépendant du fournisseur par construction — il
@@ -93,6 +111,9 @@
     // Schéma 1 → 2 : l'ancien défaut n'était pas un choix de l'athlète.
     if(fromSchema < 2 && str(out.model) === LEGACY_DEFAULT_MODEL) out.model = DEFAULT_MODEL;
     if(!str(out.model)) out.model = DEFAULT_MODEL;
+    // Une clé déjà enregistrée avec un caractère invisible est réparée à la
+    // lecture : pas besoin de la recoller.
+    out.apiKey = cleanKey(out.apiKey);
     var budget = Number(out.monthlyBudget);
     out.monthlyBudget = (isFinite(budget) && budget >= 0) ? budget : DEFAULT_BUDGET;
     if(["low","medium","high","xhigh","max"].indexOf(str(out.effort)) < 0) out.effort = "medium";
@@ -114,7 +135,7 @@
   api.set = function(patch){
     var cfg = read();
     if(patch && typeof patch === "object"){
-      if("apiKey" in patch) cfg.apiKey = str(patch.apiKey);
+      if("apiKey" in patch) cfg.apiKey = cleanKey(patch.apiKey);
       if("model"  in patch) cfg.model  = str(patch.model) || DEFAULT_MODEL;
       if("effort" in patch) cfg.effort = str(patch.effort);
       if("monthlyBudget" in patch) cfg.monthlyBudget = Number(patch.monthlyBudget);
@@ -127,6 +148,9 @@
   // Efface la clé seule. Volontairement pas de removeItem sur tout le bloc :
   // on garde modèle/effort choisis, on ne réinitialise que le secret.
   api.clearKey = function(){ return api.set({apiKey:""}); };
+
+  api.keyPreview = function(){ return keyPreview(read().apiKey); };
+  api.cleanKey = cleanKey;
 
   api.isAdmin = function(){
     try{

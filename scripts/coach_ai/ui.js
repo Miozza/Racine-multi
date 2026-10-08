@@ -322,7 +322,10 @@
       +   "il marche pareil avec Claude, ChatGPT ou autre chose.</p>"
       + "<label class='cai-label' for='caiKey'>Clé API Anthropic</label>"
       + "<input id='caiKey' class='cai-input' type='password' autocomplete='off' spellcheck='false' "
-      +   "placeholder='" + (hasKey ? "Clé enregistrée — laisser vide pour la garder" : "sk-ant-…") + "'>"
+      +   "placeholder='" + (hasKey ? "Clé enregistrée — laisser vide pour la garder" : "sk-ant-api03-…") + "'>"
+      + (hasKey ? "<p class='cai-hint'>Clé enregistrée : " + esc(CoachAIConfig.keyPreview())
+          + (/^sk-ant-api/.test(cfg.apiKey) ? "." : " — <strong>ce n'est pas une clé API Anthropic</strong> (elle commence par sk-ant-api).")
+          + "</p>" : "")
       + "<p class='cai-hint'><strong>Optionnelle.</strong> Sans clé, Coach IA fonctionne en copier-coller et ne coûte rien de plus "
       +   "que ton abonnement. Une clé API se facture séparément, à l'usage — un abonnement Pro ne la couvre pas. "
       +   "Elle n'a d'intérêt que si tu veux la conversation directe dans l'app.</p>"

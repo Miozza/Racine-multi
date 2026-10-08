@@ -1,5 +1,5 @@
-// Racine V5.2.7 — Coach IA : la vraie raison d'une clé refusée
-var APP_VERSION = "V5.2.7";
+// Racine V5.2.8 — Coach IA : clé API nettoyée au collage, aperçu de la clé
+var APP_VERSION = "V5.2.8";
 
 // Architecture stable
 // programs/*.js = plan prévu

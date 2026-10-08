@@ -1,3 +1,14 @@
+## V5.2.8 — Coach IA : clé nettoyée au collage, aperçu de la clé
+
+**Pourquoi** : rapport de l'athlète (2026-10-08). « Clé refusée : elle devrait commencer par sk-ant-api » (API : *API key is invalid*), sans moyen de voir ce qui avait réellement été enregistré — le champ est masqué.
+
+**Ce qui change** (`scripts/coach_ai/config.js`, `client.js`, `ui.js`)
+
+- **Collage nettoyé** : espaces, retours à la ligne, guillemets et caractères invisibles (espace insécable, largeur nulle, BOM) sont retirés de la clé. Une clé déjà enregistrée est réparée à la lecture, sans la recoller.
+- **Aperçu sans danger** : les réglages et le message d'erreur montrent le début de la clé enregistrée (10 caractères, le préfixe public) et sa longueur, jamais la partie secrète. Une clé qui n'est pas une clé API Anthropic est signalée dans les réglages.
+
+**Garde-fou** : `dev/coach_ai_checks.js` (nettoyage, réparation à la lecture, aperçu sans la partie secrète).
+
 ## V5.2.7 — Coach IA : la vraie raison d'une clé refusée
 
 **Pourquoi** : premier essai de clé API (2026-10-08), message « Clé API refusée » sans autre indice. Un 401 et un 403 donnaient le même texte, et la raison renvoyée par l'API était cachée.
