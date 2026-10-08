@@ -1,3 +1,12 @@
+## V5.2.12 — Coach IA lit tout l'historique
+
+**Pourquoi** : rapport de l'athlète (2026-10-08). Le coach disait n'avoir « pas de données avant septembre » ni « S2 à S7 en détail ». L'historique remonte à juin (58 séances) et `consulter_seance` lit toutes les semaines, mais rien ne le lui disait.
+
+- Nouvel outil de lecture **`consulter_historique`** : les séances réellement faites sur une période (dates et/ou semaine), dans tout l'historique, 20 par appel.
+- Le contexte annonce l'**étendue de l'historique** (nombre de séances, première et dernière date, séances par mois).
+- Le contexte liste explicitement **ce que le coach peut lire à la demande**, avec la consigne de ne jamais dire qu'une donnée manque avant d'avoir appelé l'outil.
+- Le pont (sans outils) reçoit l'étendue, sans promesse d'outil.
+
 ## V5.2.11 — Coach IA : mémoire et interface
 
 **Pourquoi** : demande de l'athlète (2026-10-08). Coach IA semblait tout oublier, et l'écran manquait de tenue. Contrainte : ne pas alourdir la mémoire du téléphone.

@@ -73,7 +73,7 @@ jamais modifiée automatiquement (règle inchangée depuis V3.3).
 Les outils sont de deux natures :
 
 - **Lecture** (`consulter_mouvement`, `consulter_seance`,
-  `consulter_programme`) — exécuté immédiatement, la boucle continue. Lire ne
+  `consulter_programme`, `consulter_historique`) — exécuté immédiatement, la boucle continue. Lire ne
   change rien. Aiguillage unique : `CoachAIContext.read(name, input)`.
 - **Carnet** (`retenir`) — exécuté immédiatement : il n'écrit que dans le
   carnet du coach (§4), jamais dans l'entraînement. Le fait apparaît dans le

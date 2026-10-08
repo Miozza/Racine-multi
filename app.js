@@ -1,5 +1,5 @@
-// Racine V5.2.11 — Coach IA : fil réaffiché, carnet du coach, archive GitHub des échanges, interface refaite
-var APP_VERSION = "V5.2.11";
+// Racine V5.2.12 — Coach IA lit tout l'historique (consulter_historique) et sait ce qu'il peut lire
+var APP_VERSION = "V5.2.12";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 33640,
-      "lines": 510,
+      "size": 34623,
+      "lines": 521,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -3539,8 +3539,8 @@
     },
     {
       "path": "scripts/coach_ai/context.js",
-      "size": 33974,
-      "lines": 666,
+      "size": 37593,
+      "lines": 721,
       "role": "Coach IA : construit le texte d'état de l'athlète envoyé au modèle (séances récentes, notes, mémoire Brain, contraintes matériel, remplacements actifs). LECTURE SEULE et borné. Sert aussi l'outil consulter_mouvement.",
       "category": "ACTIF",
       "exposes": [
@@ -3580,8 +3580,8 @@
     },
     {
       "path": "scripts/coach_ai/patch.js",
-      "size": 21355,
-      "lines": 436,
+      "size": 22158,
+      "lines": 449,
       "role": "Coach IA : schémas des outils exposés au modèle, rendu lisible d'une proposition, et application sur geste de l'athlète. AUCUN champ de charge dans les schémas — la règle « le moteur garde la main » est tenue dans le schéma, pas dans une consigne de prompt. Journal des propositions plafonné.",
       "category": "ACTIF",
       "exposes": [

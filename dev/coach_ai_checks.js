@@ -446,7 +446,18 @@ function fakeStorage(){
     'consulter_seance lit n\'importe quelle journée, charge du moteur comprise.');
   assert(C.read('consulter_seance', {semaine:9, jour:'lundi'}).indexOf('hors programme') !== -1,
     'consulter_seance refuse une semaine hors programme au lieu d\'inventer.');
+  ctxPlanned.state.history = [
+    {date:'2026-06-02', week:1, day:'lundi', results:{back_squat:{load:'200', reps:'5', rpe:'7', note:'premier jour'}}},
+    {date:'2026-09-15', week:3, day:'mardi', results:{bench:{load:'185', reps:'5', rpe:'8'}}}
+  ];
+  const over = C.build();
+  assert(over.indexOf('2 séances enregistrées, du 2026-06-02') !== -1 && over.indexOf('consulter_historique') !== -1,
+    'Le contexte dit jusqu\'où remonte l\'historique et comment lire le reste.');
+  const juin = C.read('consulter_historique', {depuis:'2026-06-01', jusqua:'2026-06-30'});
+  assert(juin.indexOf('premier jour') !== -1 && juin.indexOf('185') === -1, 'consulter_historique lit une période ancienne, et seulement elle.');
+  assert(C.read('consulter_historique', {semaine:3}).indexOf('185') !== -1, 'consulter_historique filtre par semaine du programme.');
   const bridgeCtx = C.build({planned:'week'});
+  assert(bridgeCtx.indexOf('consulter_historique') === -1, 'Le pont, sans outils, ne se voit pas promettre un outil de lecture.');
   assert(bridgeCtx.indexOf('Mvt_lundi_S2') !== -1, 'Le pont (sans outils) reçoit toute la semaine prévue.');
 }
 const chatSrcPlanned = code('scripts/coach_ai/chat.js');

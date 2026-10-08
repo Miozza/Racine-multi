@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.11
+# ETAT ACTUEL — V5.2.12
 
-Version actuelle : V5.2.11
+Version actuelle : V5.2.12
 
 ## État courant
+
+### Coach IA lit tout l'historique
+
+`consulter_historique` donne accès à toutes les séances faites (par période ou semaine). Le contexte annonce l'étendue de l'historique et la liste des outils de lecture.
 
 ### Coach IA : mémoire et interface
 

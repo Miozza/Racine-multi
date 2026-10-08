@@ -354,7 +354,11 @@
     var lines = ["", "## Séances récentes (la plus récente en premier)"];
     var rows = hist().slice(-(limit || SESSIONS_LIMIT)).reverse();
     if(!rows.length){ lines.push("Aucune séance enregistrée."); return lines; }
+    return lines.concat(renderSessions(rows));
+  }
 
+  function renderSessions(rows){
+    var lines = [];
     rows.forEach(function(s){
       var head = "- " + str(s.date) + " · S" + str(s.week) + " · " + str(s.day);
       if(str(s.focus)) head += " · " + str(s.focus);
@@ -379,6 +383,35 @@
       });
     });
     return lines;
+  }
+
+  // ── Bloc 2a : l'étendue de l'historique ────────────────────────────────
+  // Le contexte ne montre que les dernières séances. Sans ce bloc, le coach
+  // croyait l'historique limité à elles (« pas de données avant
+  // septembre ») alors qu'il remontait à juin.
+  function historyOverviewLines(bridge){
+    var all = hist();
+    if(!all.length) return [];
+    var byMonth = {};
+    all.forEach(function(s){ var m = str(s && s.date).slice(0, 7); if(m) byMonth[m] = (byMonth[m] || 0) + 1; });
+    return ["", "## Étendue de l'historique",
+      all.length + " séances enregistrées, du " + str(all[0].date) + " au " + str(all[all.length - 1].date) + ".",
+      "Par mois : " + Object.keys(byMonth).sort().map(function(m){ return m + " (" + byMonth[m] + ")"; }).join(", ") + ".",
+      bridge ? "Seules les plus récentes sont détaillées ci-dessous. Si l'athlète a besoin d'une période plus ancienne, dis-lui laquelle : il pourra te la recoller."
+             : "Seules les plus récentes sont détaillées ci-dessous ; les autres se lisent avec `consulter_historique`."];
+  }
+
+  // ── Bloc 2c : ce que le coach peut lire à la demande ───────────────────
+  // Rappel explicite : un petit modèle n'infère pas toujours la portée de
+  // ses outils depuis leur seule définition, et répondait « je n'ai pas
+  // S2 à S7 » alors qu'il pouvait les lire.
+  function accessLines(){
+    return ["", "## Ce que tu peux lire à la demande (outils, sans demander la permission)",
+      "- `consulter_seance` : N'IMPORTE QUELLE séance du programme, toutes semaines confondues (ex. semaine 5, mardi), en détail complet.",
+      "- `consulter_programme` : objectif, règles du cycle, intention de chaque journée, carte des semaines, programmes disponibles.",
+      "- `consulter_historique` : les séances réellement faites sur une période (TOUT l'historique, pas seulement les récentes ci-dessous).",
+      "- `consulter_mouvement` : l'historique complet d'un mouvement, la charge suggérée par le moteur et son explication.",
+      "Ne dis jamais qu'une donnée te manque avant d'avoir appelé l'outil qui la lit."];
   }
 
   // ── Bloc 2b : les jours manqués, semaines passées comprises ────────────
@@ -534,6 +567,8 @@
       .concat(profileLines())
       .concat(plannedLines(opts))
       .concat(programMapLines())
+      .concat(opts.planned === "week" ? [] : accessLines())
+      .concat(historyOverviewLines(opts.planned === "week"))
       .concat(sessionLines(opts.sessions))
       .concat(missedLines(opts.notes))
       .concat(noteLines(opts.notes))
@@ -651,6 +686,25 @@
     return lines.join("\n") || "Programme illisible.";
   };
 
+  // ── Outil `consulter_historique` : n'importe quelle période ────────────
+  var HISTORY_ROWS_LIMIT = 20;
+  api.historyDetail = function(input){
+    input = input || {};
+    var from = str(input.depuis), to = str(input.jusqua);
+    var week = Number(input.semaine);
+    var rows = hist().filter(function(s){
+      var d = str(s && s.date);
+      if(from && d < from) return false;
+      if(to && d > to) return false;
+      if(week && Number(s && s.week) !== week) return false;
+      return true;
+    });
+    if(!rows.length) return "Aucune séance sur cette période." + (hist().length ? " L'historique va du " + str(hist()[0].date) + " au " + str(hist()[hist().length - 1].date) + "." : "");
+    var shown = rows.slice(-HISTORY_ROWS_LIMIT).reverse();
+    return [rows.length + " séance(s) trouvée(s)" + (rows.length > shown.length ? ", les " + shown.length + " plus récentes affichées — resserre la période pour voir les autres" : "") + " (la plus récente en premier) :"]
+      .concat(renderSessions(shown)).join("\n");
+  };
+
   // Aiguillage unique des outils de lecture : chat.js n'a pas à connaître
   // chaque outil, et aucun d'eux n'écrit quoi que ce soit.
   api.read = function(name, input){
@@ -658,6 +712,7 @@
     if(name === "consulter_mouvement") return api.movementDetail(input.mouvement);
     if(name === "consulter_seance") return api.sessionDetail(input);
     if(name === "consulter_programme") return api.programDetail();
+    if(name === "consulter_historique") return api.historyDetail(input);
     return "Outil de lecture inconnu : " + str(name);
   };
 
