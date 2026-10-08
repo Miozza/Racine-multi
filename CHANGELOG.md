@@ -5,9 +5,11 @@
 **Ce qui change** (`programs/pont_peak.js`)
 
 - **Lundi, A2 : Tibialis Raise** (3×15, 2×15 en S6-S7) pendant les pauses du Tempo Back Squat / Back Squat. Repos : 1:00 avant A2, 1:00 après.
+- **Mardi, B2 : Hip Airplane** (3×5/côté) dans la pause après le Pendlay Row / Weighted Pull-up, avant le bench suivant. Repos : 0:45 avant, 0:45 après.
 - **Jeudi, A2 : Single-Leg Calf Raise** (3×12/jambe) pendant les pauses du Landmine Press / Strict Press. Repos : 1:00 avant A2, 0:45 après.
+- **Jeudi, B2 : Front Rack Stretch** (3×30 s/côté) pendant les pauses du Front Squat. Repos : 0:45 avant, 0:45 après.
 - **Vendredi, B2 : Dead Bug** (3×8/côté) pendant les pauses du DB Bench / Close-Grip Bench. Repos : 0:45 avant B2, 0:45 après.
-- Mardi inchangé : le bench y est déjà en superset avec le tirage. Vendredi, le Power Clean reste en EMOM, sans filler.
+- Sans filler, volontairement : Pull-Up et DB Pullover du mardi (1:00), split squat du lundi (unilatéral), DB Pullover du vendredi (0:45), Power Clean (EMOM). Le test bench de S7 garde son repos complet.
 
 Les fillers sont au poids du corps et choisis pour ne fatiguer ni le mouvement principal, ni la veille, ni le lendemain. Les charges du moteur ne changent pas.
 

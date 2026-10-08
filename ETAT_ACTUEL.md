@@ -6,7 +6,7 @@ Version actuelle : V5.2.9
 
 ### Pont Peak : fillers pendant les pauses
 
-Les pauses du mouvement principal sont remplies par un filler léger au poids du corps : Tibialis Raise le lundi (A2), Single-Leg Calf Raise le jeudi (A2), Dead Bug le vendredi (B2, pendant le bench). Mardi est déjà en superset bench/tirage.
+Les pauses du mouvement principal sont remplies par un filler léger au poids du corps : Tibialis Raise le lundi (A2), Hip Airplane le mardi (B2, après le tirage), Single-Leg Calf Raise et Front Rack Stretch le jeudi, Dead Bug le vendredi (B2, pendant le bench).
 
 ### Coach IA économique
 

@@ -245,10 +245,12 @@
           ex(p.tueMain, p.tueFormat, p.tueLoad, "1:00 avant A2", p.tueNote)
         ]});
         mardi.push({time:"8 min", title:"B. " + p.pull + " — superset avec A", tag:"Tirage", kind:"secondary", exercises:[
-          ex(p.pull, p.pullFormat, p.pullLoad, "1:30 après A1",
+          ex(p.pull, p.pullFormat, p.pullLoad, "0:45 avant B2",
             p.pull === "Weighted Pull-up" ? "Lest ajouté, départ bras tendus, menton au-dessus de la barre. Aucun kip."
             : light ? "Léger. Dos plat, barre qui repart du sol à chaque rep."
-            : "Barre qui repart du sol à chaque rep, dos parallèle au sol, tirage vers le bas du sternum.")
+            : "Barre qui repart du sol à chaque rep, dos parallèle au sol, tirage vers le bas du sternum."),
+          // Filler : hanches seulement, rien pour les épaules, les pecs ou les lats avant le bench suivant.
+          ex("Hip Airplane", light ? "2×4/côté" : "3×5/côté", "poids du corps", "0:45 après B2, puis bench", "Pendant la pause avant le bench. Main au rack, sur une jambe, torse parallèle au sol : ouvre puis ferme le bassin lentement. Contrôle, pas d'effort.")
         ]});
         // Volume vertical en S1-S5, aussi en rotation B pour tenir le ratio
         // tirage:poussée ≥ 1,5 (voir dev/pont_peak_checks.js). « Pull-Up » et
@@ -280,8 +282,10 @@
         ex("Single-Leg Calf Raise", light ? "2×12/jambe" : "3×12/jambe", "poids du corps", "0:45 après A2", "Pendant la pause du press. Sur une marche, amplitude complète, 1 s en haut. Main au mur pour l'équilibre, pas pour pousser.")
       ]},
       {time:"10 min", title:"B. Front Squat", tag:"Amorce du Peak", kind:"secondary", exercises:[
-        light ? ex("Front Squat", "3×3", "160 lb", "1:30", "Léger. Coudes hauts, torse droit.")
-        : ex("Front Squat", "4×4", "200 lb", "1:30", "RPE 7, jamais au-delà : amorce du Peak, pas un test. Coudes hauts, torse droit.")
+        light ? ex("Front Squat", "3×3", "160 lb", "0:45 avant B2", "Léger. Coudes hauts, torse droit.")
+        : ex("Front Squat", "4×4", "200 lb", "0:45 avant B2", "RPE 7, jamais au-delà : amorce du Peak, pas un test. Coudes hauts, torse droit."),
+        // Filler : mobilité de la position rack, prépare la série suivante et le Power Clean du vendredi.
+        ex("Front Rack Stretch", light ? "2×30 s/côté" : "3×30 s/côté", "bande ou barre", "0:45 après B2", "Pendant la pause du front squat. Coude levé, main sur la barre ou dans une bande : étire lats et triceps. Aucune force, seulement de l'amplitude.")
       ]},
       {time:"9 min", title:"C. Masse épaules", tag:"Superset", kind:"hypertrophy", exercises:
         light ? [
@@ -348,13 +352,13 @@
     "Chaque variation garde son propre historique : ne jamais comparer un 3RM de Tempo Back Squat à un Back Squat, ni un Paused Bench Press à un Bench Press.",
     "Mardi : metcon monostructural ou bas du corps seulement — ni traction, ni rameur, ni wall balls, ni burpees, ni toes-to-bar, ni ski. Jeudi : aucune poussée au-dessus de la tête dans le metcon.",
     "60 minutes max par séance : lundi et jeudi courts, vendredi avec le metcon long, style Peak.",
-    "Fillers pendant les pauses : Tibialis Raise (lundi, A2), Single-Leg Calf Raise (jeudi, A2), Dead Bug (vendredi, B2). Légers et sans conflit avec le mouvement principal ni avec la veille ou le lendemain.",
+    "Fillers pendant les pauses : Tibialis Raise (lundi, A2), Hip Airplane (mardi, B2 après le tirage), Single-Leg Calf Raise (jeudi, A2), Front Rack Stretch (jeudi, B2), Dead Bug (vendredi, B2). Légers et sans conflit avec le mouvement principal ni avec la veille ou le lendemain.",
     "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Test bench, Back Squat S7, Weighted Pull-up et Power Clean en pourcentage, résolus sur la capacité mesurée."
   ];
   P.dayIntentions = {
     lundi: "Squat lourd : variation de squat en rotation avec Tibialis Raise pendant les pauses, volume quadriceps unilatéral, Barbell RDL, gainage anti-extension, metcon court.",
-    mardi: "Bench lourd + tirage : variation de bench en rotation en superset avec un tirage, Pull-Up, DB Pullover, Face Pull, Cable Curl, 100 Band Pull-Apart, metcon qui épargne épaules et lats.",
-    jeudi: "Épaules : press en rotation avec Single-Leg Calf Raise pendant les pauses, Front Squat d'amorce du Peak, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps, metcon sans poussée au-dessus de la tête.",
+    mardi: "Bench lourd + tirage : variation de bench en rotation en superset avec un tirage et Hip Airplane, Pull-Up, DB Pullover, Face Pull, Cable Curl, 100 Band Pull-Apart, metcon qui épargne épaules et lats.",
+    jeudi: "Épaules : press en rotation avec Single-Leg Calf Raise pendant les pauses, Front Squat d'amorce du Peak avec Front Rack Stretch pendant les pauses, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps, metcon sans poussée au-dessus de la tête.",
     vendredi: "Bench volume + transition Peak : Power Clean en EMOM, bench d'accessoire avec Dead Bug pendant les pauses, rowing, DB Pullover cross-bench, metcon long style Peak."
   };
   P.dayMeta = {
