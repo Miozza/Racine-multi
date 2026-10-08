@@ -645,8 +645,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 18187,
-      "lines": 299,
+      "size": 33640,
+      "lines": 510,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -794,8 +794,8 @@
     },
     {
       "path": "dev/github_backup_checks.js",
-      "size": 5264,
-      "lines": 83,
+      "size": 5443,
+      "lines": 85,
       "role": "Garde-fous de la sauvegarde GitHub : réseau confiné à deux fichiers, un seul profil admin, jeton hors export, dépôt de code refusé, restauration sans écrasement.",
       "category": "ACTIF",
       "exposes": [],
@@ -3468,8 +3468,8 @@
     },
     {
       "path": "scripts/coach_ai/bridge.js",
-      "size": 10625,
-      "lines": 239,
+      "size": 12057,
+      "lines": 253,
       "role": "Coach IA : pont copier-coller, le chemin PAR DÉFAUT du domaine (un abonnement Claude Pro ne couvre pas l'API, facturée séparément). Construit le prompt à coller dans Claude — contexte élargi, car aucune facturation au jeton ici — et lit la réponse recollée. Le contrat envoyé au modèle est engendré depuis CoachAIPatch.tools() : une seule définition de ce qui est proposable, donc un patch collé à la main ne peut pas plus écrire une charge qu'un patch venu de l'API.",
       "category": "ACTIF",
       "exposes": [
@@ -3485,9 +3485,9 @@
     },
     {
       "path": "scripts/coach_ai/chat.js",
-      "size": 8502,
-      "lines": 184,
-      "role": "Coach IA : conversation, consigne système et boucle d'outils bornée. Les outils de lecture s'exécutent seuls ; une proposition n'est JAMAIS appliquée ici — elle remonte à l'UI avec un tool_result d'attente. Conversation plafonnée, stockée hors du state de profil.",
+      "size": 21654,
+      "lines": 424,
+      "role": "Coach IA : conversation et mémoire. Fil compact (texte seul, 40 messages / 60 Ko, racine_coach_ai_thread_v2), carnet du coach (20 faits, racine_coach_ai_memory_v1, outil `retenir`), fenêtre de 12 messages envoyée au modèle, boucle d'outils bornée, archive des échanges pour la sauvegarde GitHub. Ne référence jamais CoachAIPatch.apply.",
       "category": "ACTIF",
       "exposes": [
         "window.CoachAIChat"
@@ -3539,8 +3539,8 @@
     },
     {
       "path": "scripts/coach_ai/context.js",
-      "size": 12897,
-      "lines": 287,
+      "size": 33974,
+      "lines": 666,
       "role": "Coach IA : construit le texte d'état de l'athlète envoyé au modèle (séances récentes, notes, mémoire Brain, contraintes matériel, remplacements actifs). LECTURE SEULE et borné. Sert aussi l'outil consulter_mouvement.",
       "category": "ACTIF",
       "exposes": [
@@ -3580,8 +3580,8 @@
     },
     {
       "path": "scripts/coach_ai/patch.js",
-      "size": 16081,
-      "lines": 341,
+      "size": 21355,
+      "lines": 436,
       "role": "Coach IA : schémas des outils exposés au modèle, rendu lisible d'une proposition, et application sur geste de l'athlète. AUCUN champ de charge dans les schémas — la règle « le moteur garde la main » est tenue dans le schéma, pas dans une consigne de prompt. Journal des propositions plafonné.",
       "category": "ACTIF",
       "exposes": [
@@ -3618,8 +3618,8 @@
     },
     {
       "path": "scripts/coach_ai/ui.js",
-      "size": 19535,
-      "lines": 450,
+      "size": 32862,
+      "lines": 678,
       "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
       "category": "ACTIF",
       "exposes": [
@@ -4283,8 +4283,8 @@
     },
     {
       "path": "scripts/sync/github_backup.js",
-      "size": 23976,
-      "lines": 438,
+      "size": 26490,
+      "lines": 474,
       "role": "Sauvegarde GitHub du profil admin (décision 2026-10-08, CLAUDE.md §3.4) : après chaque séance, dépose en un commit l'historique d'entraînement (JSON brut), un résumé lisible par Claude (CoachAIContext.build) et l'export de restauration (CoachProfiles.exportProfileBlob) dans un dépôt GitHub privé séparé. Un seul profil, jeton au niveau appareil hors export, dépôt de code refusé, sens unique (restaurer = import comme nouveau profil). Seul fichier du runtime, avec scripts/coach_ai/client.js, à appeler fetch().",
       "category": "ACTIF",
       "exposes": [

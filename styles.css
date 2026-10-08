@@ -8750,6 +8750,286 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
   opacity: .85;
 }
 
+/* ── Coach IA V5.2.11 : en-tête, fil, carnet ──
+   Le fil est relu depuis la mémoire à chaque affichage : chaque tour a son
+   auteur, son heure, et ses propositions avec leur décision. Palette et
+   polices de Racine uniquement (Orbitron pour les étiquettes, Inter pour le
+   texte) — CLAUDE.md §5. */
+
+.cai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--border2);
+}
+.cai-head-id { min-width: 0; }
+.cai-status {
+  margin-top: 3px;
+  font-family: var(--font-main);
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cai-status-sep { opacity: .5; }
+.cai-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  vertical-align: 1px;
+}
+.cai-dot-on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.cai-head-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.cai-head-btn {
+  position: relative;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text2);
+  font-family: var(--font-hud);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  min-height: 34px;
+  cursor: pointer;
+}
+.cai-badge:not(:empty) {
+  display: inline-block;
+  margin-left: 6px;
+  min-width: 16px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  background: var(--cyan);
+  color: var(--bg);
+  font-size: 9.5px;
+  line-height: 14px;
+  text-align: center;
+}
+
+.cai-messages { gap: 12px; padding: 8px 0; min-height: 0; }
+/* Seul le fil défile : en-tête, panneaux, raccourcis et saisie gardent leur
+   hauteur, sinon un panneau ouvert écrase le fil sous les raccourcis. */
+#coachaiView > .cai-header,
+#coachaiView > .cai-quick,
+#coachaiView > .cai-composer,
+#coachaiView > .cai-banner,
+#coachaiView > .cai-bridge { flex: 0 0 auto; }
+#coachaiView > .cai-settings { flex: 0 1 auto; max-height: 52dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#coachaiView > .cai-bridge { max-height: 48dvh; overflow-y: auto; }
+
+.cai-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+  font-family: var(--font-hud);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .8;
+}
+.cai-day::before, .cai-day::after { content: ""; flex: 1; height: 1px; background: var(--border2); }
+
+.cai-row { display: flex; flex-direction: column; gap: 6px; }
+.cai-row-me { align-items: flex-end; }
+.cai-row-coach { align-items: flex-start; }
+.cai-row-system { align-items: center; }
+.cai-row .cai-msg { max-width: 92%; }
+.cai-row-coach .cai-msg-coach { max-width: 100%; border-radius: 4px 14px 14px 14px; }
+.cai-row-me .cai-msg-me { border-radius: 14px 4px 14px 14px; }
+
+.cai-coach-head { display: flex; align-items: center; gap: 7px; }
+.cai-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-hud);
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 0 10px var(--sl-glow);
+}
+.cai-coach-name {
+  font-family: var(--font-hud);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.cai-meta {
+  font-family: var(--font-hud);
+  font-size: 9.5px;
+  letter-spacing: .05em;
+  color: var(--muted);
+  opacity: .75;
+}
+.cai-msg-me .cai-meta { display: block; margin-top: 4px; text-align: right; }
+.cai-via {
+  margin-right: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.cai-h {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-top: 8px !important;
+}
+.cai-msg strong { color: var(--text); font-weight: 600; }
+ol.cai-list { padding-left: 20px; }
+
+.cai-memo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  font-family: var(--font-main);
+  font-size: 12.5px;
+  color: var(--text2);
+}
+.cai-memo-tag, .cai-patch-tag {
+  flex: 0 0 auto;
+  font-family: var(--font-hud);
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.cai-patch { width: 100%; }
+.cai-patch-tag { display: block; margin-bottom: 4px; opacity: .8; }
+.cai-patch-done { border-color: var(--border2); box-shadow: none; opacity: .85; }
+.cai-patch-done .cai-patch-head { color: var(--text2); }
+.cai-patch-state {
+  padding: 8px 13px;
+  border-top: 1px solid var(--border2);
+  font-family: var(--font-hud);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.cai-patch-accepted { color: var(--green); }
+.cai-patch-refused { color: var(--muted); }
+
+/* Indicateur de frappe : trois points, pas de texte qui clignote. */
+.cai-typing { display: inline-flex; gap: 4px; margin-right: 8px; vertical-align: middle; }
+.cai-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: caiTyping 1.2s infinite ease-in-out;
+}
+.cai-typing i:nth-child(2) { animation-delay: .15s; }
+.cai-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes caiTyping { 0%, 80%, 100% { opacity: .2; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.cai-typing-text { font-size: 12.5px; color: var(--muted); }
+.cai-thinking { opacity: 1; font-style: normal; }
+@media (prefers-reduced-motion: reduce) { .cai-typing i { animation: none; opacity: .7; } }
+
+.cai-empty { text-align: center; padding: 24px 12px; }
+.cai-empty-mark {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-hud);
+  font-size: 20px;
+  line-height: 42px;
+  box-shadow: 0 0 22px var(--sl-glow);
+}
+.cai-empty .cai-empty-hint { border-left: none; padding-left: 0; }
+
+.cai-quick {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.cai-quick::-webkit-scrollbar { display: none; }
+.cai-quick .cai-chip { flex: 0 0 auto; white-space: nowrap; }
+.cai-quick.cai-disabled { opacity: .45; pointer-events: none; }
+
+.cai-composer {
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel2);
+  align-items: flex-end;
+}
+.cai-composer .cai-textarea {
+  border: none;
+  background: transparent;
+  padding: 8px 8px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.cai-composer .cai-textarea:focus { outline: none; }
+.cai-composer:focus-within { border-color: var(--cyan); box-shadow: 0 0 14px var(--sl-glow); }
+.cai-btn-send { min-height: 40px; padding: 8px 14px; border-color: var(--cyan); color: var(--cyan); }
+
+.cai-panel-head { display: flex; align-items: baseline; justify-content: space-between; }
+.cai-panel-count { font-family: var(--font-hud); font-size: 10.5px; color: var(--cyan); }
+.cai-facts { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.cai-fact {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  background: var(--panel2);
+}
+.cai-fact-text { display: block; font-family: var(--font-main); font-size: 13.5px; color: var(--text); line-height: 1.4; }
+.cai-fact-meta { display: block; margin-top: 2px; font-family: var(--font-main); font-size: 11px; color: var(--muted); }
+.cai-fact-del {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.cai-fact-add { display: flex; gap: 6px; margin-top: 4px; }
+.cai-fact-add .cai-input { flex: 1 1 auto; min-width: 0; }
+.cai-btn-small { flex: 0 0 auto; min-height: 42px; padding: 8px 12px; }
+.cai-link-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  color: var(--red-hud);
+  font-family: var(--font-main);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cai-hint-empty { font-style: italic; }
+#caiSettings code, .cai-hint code { font-size: 11.5px; color: var(--cyan); }
+
 /* ════ Onglet « Charge » : sous-onglets Travail · Records ════
    Un seul panneau visible à la fois ; le dernier ouvert est retenu. */
 #profileView .ctab-panel { padding-bottom: 12px; }

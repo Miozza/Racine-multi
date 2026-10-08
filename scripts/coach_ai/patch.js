@@ -101,6 +101,18 @@
         input_schema: {type: "object", properties: {}}
       },
       {
+        name: "retenir",
+        description: "Noter dans le carnet du coach un fait DURABLE appris de l'athlète (blessure, contrainte d'horaire ou de matériel, objectif, préférence). Le carnet est relu à chaque conversation ; l'athlète le voit et peut effacer un fait. "
+                   + "Une phrase courte par fait. Pas de résultat de séance (déjà dans l'historique), pas de charge.",
+        input_schema: {
+          type: "object",
+          properties: {
+            fait: {type: "string", description: "Le fait, en une phrase (ex. « Épaule gauche sensible au strict press depuis octobre 2026 »)."}
+          },
+          required: ["fait"]
+        }
+      },
+      {
         name: "proposer_remplacement",
         description: "Proposer de remplacer un mouvement par un autre, partout où il apparaît, jusqu'à ce que l'athlète retire le remplacement. "
                    + "Sert quand un mouvement pose problème (douleur, matériel indisponible, exécution qui ne passe pas).",
@@ -233,6 +245,9 @@
     return lines.join("\n");
   };
   api.isRead = function(name){ return READS.indexOf(str(name)) >= 0; };
+  // Le carnet n'est ni une lecture ni une proposition : il n'écrit que dans la
+  // mémoire du coach (scripts/coach_ai/chat.js), jamais dans l'entraînement.
+  api.isMemo = function(name){ return str(name) === "retenir"; };
 
   // ── Rendu lisible d'une proposition ────────────────────────────────────
   // L'athlète doit pouvoir décider sans lire du JSON.

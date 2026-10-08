@@ -75,6 +75,10 @@ Les outils sont de deux natures :
 - **Lecture** (`consulter_mouvement`, `consulter_seance`,
   `consulter_programme`) — exécuté immédiatement, la boucle continue. Lire ne
   change rien. Aiguillage unique : `CoachAIContext.read(name, input)`.
+- **Carnet** (`retenir`) — exécuté immédiatement : il n'écrit que dans le
+  carnet du coach (§4), jamais dans l'entraînement. Le fait apparaît dans le
+  fil, l'athlète peut l'effacer. En copier-coller, même chose par la clé
+  `retenir` du bloc JSON.
 - **Proposition** (`proposer_*`) — **jamais** exécuté par le modèle. On lui
   rend un `tool_result` qui dit « affiché, en attente de décision », la boucle
   s'arrête, et une carte Accepter / Refuser apparaît.
@@ -94,7 +98,9 @@ et que l'Avis IA existant (`do_not_auto_apply`).
 |---|---|---|
 | Clé API | `racine_coach_ai_device_v1`, **hors** state de profil | Ne doit pas partir dans un export JSON ni un lien `#rx=`. C'est un secret d'appareil, pas une donnée d'athlète. |
 | Semaines générées + ajustements | `state.aiPlan` (donc `racineState::<profil>`) | Isolation par profil **par construction**, même choix que `movementSwaps`. Aucun nouveau chemin de persistance : l'écriture passe par `save()`. |
-| Conversation | `racine_coach_ai_chat_v1::<profil>`, plafonnée | Hors du state : l'export sert à restaurer un athlète, pas à archiver un chat. Le quota local n'a **aucune copie serveur** — entre une séance de 2024 et une conversation de la semaine dernière, la séance gagne. |
+| Fil de conversation | `racine_coach_ai_thread_v2::<profil>` : 40 messages, 60 Ko, **texte seul** (V5.2.11) | Hors du state : l'export sert à restaurer un athlète, pas à archiver un chat. Le quota local n'a **aucune copie serveur** — entre une séance de 2024 et une conversation de la semaine dernière, la séance gagne. Aucun bloc d'outil stocké : une coupe ne peut plus laisser un `tool_result` orphelin. Le modèle reçoit les 12 derniers messages. Migration depuis `racine_coach_ai_chat_v1`. |
+| Carnet du coach | `racine_coach_ai_memory_v1::<profil>` : 20 faits × 240 caractères | La mémoire longue. Écrit par l'outil `retenir` (ni lecture, ni proposition : il n'écrit que là) ou par l'athlète, effaçable fait par fait. Relu dans le contexte à chaque message. |
+| Archive des échanges | Sauvegarde GitHub (`racine/coach/…`), si active | Sens unique : jamais réécrite ni relue. C'est ce qui permet au téléphone d'oublier sans perdre. |
 | Journal des propositions | `racine_coach_ai_patch_log_v1`, plafonné | Consultatif. Perdu sans bruit si le quota sature. |
 | Dépense API estimée | `racine_coach_ai_usage_v1`, **hors** state de profil, 12 mois max | Comme la clé : c'est la dépense de cette clé sur cet appareil, pas une donnée d'athlète. |
 
@@ -167,6 +173,10 @@ cosmétique. Ne pas introduire de branche par fournisseur dans `bridge.js` — u
 garde-fou vérifie que le prompt construit ne contient aucun nom de fournisseur.
 C'est un avantage réel sur le chemin API, lié à Anthropic par construction : le
 pont survit à un changement d'abonnement sans une ligne de code.
+
+Depuis V5.2.11, le pont a un fil : chaque question et chaque réponse recollée
+entrent dans la conversation de Racine, et le prompt suivant rend les 6
+derniers échanges et le carnet du coach.
 
 Ce que ce chemin perd : la boucle d'outils. Le modèle ne peut pas appeler
 `consulter_mouvement` pour creuser un mouvement à la demande — d'où le contexte
@@ -250,9 +260,6 @@ du state de profil et inaccessible à l'export et à la prescription ;
 - **Streaming de la réponse.** Sans objet sur le chemin par défaut. Sur le
   chemin API, non-streaming : une réponse de coaching tient largement dans le
   budget, et le SSE à la main coûterait plus qu'il ne rapporte.
-- **Un fil de conversation dans le mode pont.** Chaque aller-retour repart de
-  l'état courant. Garder l'historique demanderait de le réinjecter dans chaque
-  prompt, ce qui allonge le copier-coller pour un gain incertain.
 - **Coach IA pour les profils clients.** Demanderait un relais serveur (la clé
   ne peut pas voyager) et une décision de coût. Hors périmètre.
 - **Le modèle qui lit un résultat pendant la séance.** Volontairement absent :

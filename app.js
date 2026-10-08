@@ -1,5 +1,5 @@
-// Racine V5.2.10 — Coach IA lit le programme (aujourd'hui, demain, toute séance) ; sauvegarde GitHub du profil admin
-var APP_VERSION = "V5.2.10";
+// Racine V5.2.11 — Coach IA : fil réaffiché, carnet du coach, archive GitHub des échanges, interface refaite
+var APP_VERSION = "V5.2.11";
 
 // Architecture stable
 // programs/*.js = plan prévu
