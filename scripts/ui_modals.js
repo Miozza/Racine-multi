@@ -575,14 +575,15 @@ function renderLoadInfoModalBody(msg){
       sourceDesc="Pas assez d'historique fiable — l'app utilise des repères de base pour ce mouvement.";
       sourceColor="#FF9800";
     }
-    var sourceHtml='<div class="tuto-section" style="margin-bottom:8px">'+
+    // Tailles de police dans styles.css (.load-source-*) : lisibilité du (!).
+    var sourceHtml='<div class="tuto-section load-source">'+
       '<div class="tuto-section-title">Source de suggestion</div>'+ 
-      '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">'+
-        '<span style="background:'+sourceColor+';color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.5px">'+escapeHtml(sourceLabel)+'</span>'+ 
-        '<span style="font-size:12px;color:#ccc">'+escapeHtml(sourceDesc)+'</span>'+ 
+      '<div class="load-source-row">'+
+        '<span class="load-source-badge" style="background:'+sourceColor+'">'+escapeHtml(sourceLabel)+'</span>'+ 
+        '<span class="load-source-desc">'+escapeHtml(sourceDesc)+'</span>'+ 
       '</div></div>';
     var lis=rows.length ? rows.map(function(r){
-      var origineTag=r.origine?'<span style="font-size:10px;color:#aaa;margin-left:4px">('+escapeHtml(r.origine)+')</span>':"";
+      var origineTag=r.origine?'<span class="load-origin-tag">('+escapeHtml(r.origine)+')</span>':"";
       return "<li><strong>"+escapeHtml(r.date||"?")+"</strong> \u2014 "+
         escapeHtml(loadText(r.load))+" \u00d7 "+escapeHtml(r.reps||"?")+
         " \u2014 RPE "+escapeHtml(r.rpe||"?")+(r.status?" <small>"+escapeHtml(r.status)+"</small>":"")+origineTag+"</li>";
