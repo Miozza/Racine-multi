@@ -1,5 +1,5 @@
-// Racine V5.2.17 — La note du programme dans le (!)
-var APP_VERSION = "V5.2.17";
+// Racine V5.2.18 — La note du programme dans le (!)
+var APP_VERSION = "V5.2.18";
 
 // Architecture stable
 // programs/*.js = plan prévu

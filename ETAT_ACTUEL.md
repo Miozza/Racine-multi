@@ -1,12 +1,16 @@
-# ETAT ACTUEL — V5.2.17
+# ETAT ACTUEL — V5.2.18
 
-Version actuelle : V5.2.17
+Version actuelle : V5.2.18
 
 ## État courant
 
 ### Note du programme dans le (!)
 
 Le panneau (!) rappelle la note et le format de l'exercice tels qu'écrits dans le programme.
+
+### Coach IA analyste
+
+Coach IA explique les charges (`expliquer_charge`, trace du moteur), affiche un bilan suggéré vs fait calculé sans IA, et prépare des demandes pour Claude Code (`racine/demandes/`). Il n'écrit plus de semaines ; tout ce qu'il propose est réversible et il ne touche jamais l'historique.
 
 ### Avis IA mouvement : envoi direct à l'API
 

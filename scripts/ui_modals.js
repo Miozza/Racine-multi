@@ -245,7 +245,7 @@ function loadInfoPayload(exercise, shownLoad){
     // Capacite estimee (Kalman) telle que la suggestion l'a lue : le (!) la
     // relit, il ne la recalcule pas.
     kalman: hint && hint.kalman ? hint.kalman : null,
-    // V5.2.17 — la consigne écrite dans le programme (note + format), pour
+    // V5.2.18 — la consigne écrite dans le programme (note + format), pour
     // la relire dans le (!) sans quitter la séance. Affichage seulement.
     programNote: String(exercise.note||"").trim(),
     programFormat: String(exercise.format||"").trim()

@@ -10,7 +10,7 @@ if(!src.includes('function refreshLoadInfoModalBody()')){
 if(!src.includes('refreshLoadInfoModalBody();')){
   throw new Error('Clear/import callbacks do not refresh modal body');
 }
-// V5.2.17 — la note du programme voyage jusqu'au (!) (copie champ par champ).
+// V5.2.18 — la note du programme voyage jusqu'au (!) (copie champ par champ).
 if(!/programNote:\s*String\(exercise\.note/.test(src) || !src.includes('Note du programme')){
   throw new Error('La note du programme doit suivre loadInfoPayload et s\'afficher dans le (!)');
 }

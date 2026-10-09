@@ -440,9 +440,9 @@
       "consumes": []
     },
     {
-      "path": "dev/ai_cycle_movement_bridge_smoke.js",
-      "size": 2072,
-      "lines": 43,
+      "path": "dev/ai_ask_checks.js",
+      "size": 5736,
+      "lines": 107,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -456,9 +456,9 @@
       "consumes": []
     },
     {
-      "path": "dev/ai_ask_checks.js",
-      "size": 5736,
-      "lines": 107,
+      "path": "dev/ai_cycle_movement_bridge_smoke.js",
+      "size": 2072,
+      "lines": 43,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -661,8 +661,8 @@
     },
     {
       "path": "dev/coach_ai_checks.js",
-      "size": 40834,
-      "lines": 588,
+      "size": 42801,
+      "lines": 605,
       "role": "Garde-fous du domaine Coach IA : aucun champ de charge dans les schémas d'outils, effacement des charges au nettoyage, ajustements sans mutation de template, aucune application sans geste de l'athlète, plafonds présents, clé API hors du state de profil, contexte en lecture seule, un seul fichier réseau.",
       "category": "ACTIF",
       "exposes": [],
@@ -810,8 +810,8 @@
     },
     {
       "path": "dev/github_backup_checks.js",
-      "size": 5443,
-      "lines": 85,
+      "size": 5650,
+      "lines": 87,
       "role": "Garde-fous de la sauvegarde GitHub : réseau confiné à deux fichiers, un seul profil admin, jeton hors export, dépôt de code refusé, restauration sans écrasement.",
       "category": "ACTIF",
       "exposes": [],
@@ -2090,8 +2090,8 @@
     },
     {
       "path": "index.html",
-      "size": 26369,
-      "lines": 501,
+      "size": 26680,
+      "lines": 505,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2164,10 +2164,10 @@
       "consumes": []
     },
     {
-      "path": "programs/ai_custom.js",
+      "path": "programs/archive/ai_custom.js",
       "size": 4437,
       "lines": 114,
-      "role": "Programme « Semaines Coach IA » (id ai_custom, PRIVÉ). Programme autonome standard : il expose getBlocks/dayMeta/cycleRules comme les autres, mais lit ses blocs dans CoachAIPlan au lieu de les coder en dur. Son tableau days est muté sur place, jamais réassigné (registerProgramsFromIndex en partage la référence). N'écrit aucune charge.",
+      "role": "Programme « Semaines Coach IA » (id ai_custom, PRIVÉ), ARCHIVÉ le 2026-10-09 : Coach IA n'écrit plus de semaines. Reste chargé comme tout programme archivé ; lit les semaines déjà écrites dans CoachAIPlan. N'écrit aucune charge.",
       "category": "ACTIF",
       "exposes": [
         "window.COACH_BERTIN_PROGRAMS.ai_custom",
@@ -2622,8 +2622,8 @@
     },
     {
       "path": "programs/index.js",
-      "size": 21562,
-      "lines": 166,
+      "size": 21998,
+      "lines": 168,
       "role": "Registre central des programmes : construit COACH_BERTIN_PROGRAM_INDEX (ordre + visibilité public/private) et les macrocycles. Ne charge AUCUN script (les <script> restent dans index.html).",
       "category": "ACTIF",
       "exposes": [
@@ -2973,6 +2973,24 @@
       "consumes": []
     },
     {
+      "path": "scripts/ai/ai_ask.js",
+      "size": 3477,
+      "lines": 70,
+      "role": "Avis IA mouvement envoyé directement à l'API (via CoachAIClient), repli copier-coller : RacineAIAsk.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineAIAsk"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 410
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "scripts/ai/ai_export.js",
       "size": 24689,
       "lines": 488,
@@ -3022,24 +3040,6 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 347
-        }
-      ],
-      "consumes": []
-    },
-    {
-      "path": "scripts/ai/ai_ask.js",
-      "size": 3477,
-      "lines": 70,
-      "role": "Avis IA mouvement envoyé directement à l'API (via CoachAIClient), repli copier-coller : RacineAIAsk.",
-      "category": "ACTIF",
-      "exposes": [
-        "RacineAIAsk"
-      ],
-      "consumedBy": [
-        {
-          "path": "index.html",
-          "vector": "script-tag",
-          "line": 410
         }
       ],
       "consumes": []
@@ -3502,8 +3502,8 @@
     },
     {
       "path": "scripts/coach_ai/bridge.js",
-      "size": 12057,
-      "lines": 253,
+      "size": 11817,
+      "lines": 249,
       "role": "Coach IA : pont copier-coller, le chemin PAR DÉFAUT du domaine (un abonnement Claude Pro ne couvre pas l'API, facturée séparément). Construit le prompt à coller dans Claude — contexte élargi, car aucune facturation au jeton ici — et lit la réponse recollée. Le contrat envoyé au modèle est engendré depuis CoachAIPatch.tools() : une seule définition de ce qui est proposable, donc un patch collé à la main ne peut pas plus écrire une charge qu'un patch venu de l'API.",
       "category": "ACTIF",
       "exposes": [
@@ -3519,8 +3519,8 @@
     },
     {
       "path": "scripts/coach_ai/chat.js",
-      "size": 25578,
-      "lines": 456,
+      "size": 25784,
+      "lines": 457,
       "role": "Coach IA : conversation et mémoire. Fil compact (texte seul, 40 messages / 60 Ko, racine_coach_ai_thread_v2), carnet du coach (20 faits, racine_coach_ai_memory_v1, outil `retenir`), fenêtre de 12 messages envoyée au modèle, boucle d'outils bornée, archive des échanges pour la sauvegarde GitHub. Ne référence jamais CoachAIPatch.apply.",
       "category": "ACTIF",
       "exposes": [
@@ -3573,8 +3573,8 @@
     },
     {
       "path": "scripts/coach_ai/context.js",
-      "size": 41771,
-      "lines": 794,
+      "size": 51177,
+      "lines": 924,
       "role": "Coach IA : construit le texte d'état de l'athlète envoyé au modèle (séances récentes, notes, mémoire Brain, contraintes matériel, remplacements actifs). LECTURE SEULE et borné. Sert aussi l'outil consulter_mouvement.",
       "category": "ACTIF",
       "exposes": [
@@ -3614,8 +3614,8 @@
     },
     {
       "path": "scripts/coach_ai/patch.js",
-      "size": 22158,
-      "lines": 449,
+      "size": 21535,
+      "lines": 415,
       "role": "Coach IA : schémas des outils exposés au modèle, rendu lisible d'une proposition, et application sur geste de l'athlète. AUCUN champ de charge dans les schémas — la règle « le moteur garde la main » est tenue dans le schéma, pas dans une consigne de prompt. Journal des propositions plafonné.",
       "category": "ACTIF",
       "exposes": [
@@ -3641,7 +3641,7 @@
         "window.CoachAIPlan"
       ],
       "consumedBy": [
-        "programs/ai_custom.js",
+        "programs/archive/ai_custom.js",
         "programs/workouts.js",
         "scripts/coach_ai/patch.js",
         "scripts/coach_ai/context.js"
@@ -3652,8 +3652,8 @@
     },
     {
       "path": "scripts/coach_ai/ui.js",
-      "size": 35032,
-      "lines": 714,
+      "size": 45137,
+      "lines": 859,
       "role": "Coach IA : propriétaire du rendu de la vue coachai (conversation, cartes Accepter/Refuser, réglage de la clé API). Seul endroit qui appelle CoachAIPatch.apply, depuis le bouton Accepter. Mobile d'abord.",
       "category": "ACTIF",
       "exposes": [
@@ -4317,8 +4317,8 @@
     },
     {
       "path": "scripts/sync/github_backup.js",
-      "size": 26490,
-      "lines": 474,
+      "size": 27648,
+      "lines": 494,
       "role": "Sauvegarde GitHub du profil admin (décision 2026-10-08, CLAUDE.md §3.4) : après chaque séance, dépose en un commit l'historique d'entraînement (JSON brut), un résumé lisible par Claude (CoachAIContext.build) et l'export de restauration (CoachProfiles.exportProfileBlob) dans un dépôt GitHub privé séparé. Un seul profil, jeton au niveau appareil hors export, dépôt de code refusé, sens unique (restaurer = import comme nouveau profil). Seul fichier du runtime, avec scripts/coach_ai/client.js, à appeler fetch().",
       "category": "ACTIF",
       "exposes": [
@@ -4493,8 +4493,8 @@
     },
     {
       "path": "styles.css",
-      "size": 312876,
-      "lines": 9257,
+      "size": 315375,
+      "lines": 9310,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],

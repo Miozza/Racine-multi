@@ -67,6 +67,8 @@ assert(B.filePath() === 'racine/bertin-profil.json' && B.files().historique === 
 assert(/history: history/.test(src) && /CoachAIContext\.build\(/.test(src), 'L\'historique brut et le résumé Coach IA partent avec la sauvegarde.');
 assert(/coachOnly/.test(src) && /\/coach\//.test(src) && /markArchived/.test(src),
   'Les échanges Coach IA partent dans une archive à part, sans renvoyer le profil complet.');
+assert(/api\.pushRequest = /.test(src) && /\/demandes\//.test(src) && /nowIso\(\)\.replace/.test(src),
+  'Les demandes pour Claude Code partent dans demandes/, horodatées : jamais réécrites ni relues.');
 assert(/force: false/.test(src), 'La branche n\'est jamais déplacée de force : un conflit se rejoue, il n\'écrase pas.');
 assert(JSON.stringify(B.get()).indexOf('"t"') === -1, 'get() ne rend jamais le jeton en clair.');
 active = 'p_client';

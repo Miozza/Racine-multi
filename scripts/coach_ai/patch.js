@@ -109,6 +109,29 @@
         }
       },
       {
+        name: "expliquer_charge",
+        description: "Lire le raisonnement RÉEL du moteur de charges pour un mouvement : charge proposée maintenant et sa raison, %1RM du programme et sa mise à l'échelle, contexte du jour (deload, technique…), écart de reps, capacité estimée, lignes d'historique retenues ou écartées. "
+                   + "Utilise-le quand l'athlète demande « pourquoi cette charge ? » ou conteste une suggestion. Tu expliques, tu ne recalcules jamais.",
+        input_schema: {
+          type: "object",
+          properties: {
+            mouvement: {type: "string", description: "Nom du mouvement, tel qu'il apparaît dans la séance."}
+          },
+          required: ["mouvement"]
+        }
+      },
+      {
+        name: "consulter_bilan",
+        description: "Lire le bilan « suggéré vs fait » calculé par Racine : pour chaque mouvement, l'écart moyen entre la charge suggérée avant la séance et la charge faite, le RPE moyen, et un signal quand l'écart est systématique. "
+                   + "Utilise-le quand l'athlète demande si le moteur est bien réglé, ou ce qu'il fait différemment des suggestions.",
+        input_schema: {
+          type: "object",
+          properties: {
+            semaines: {type: "integer", description: "Nombre de semaines à couvrir (8 par défaut)."}
+          }
+        }
+      },
+      {
         name: "consulter_programme",
         description: "Lire la carte du programme actif : objectif, règles du cycle, intention de chaque journée, libellé et objectif de chaque semaine, programmes disponibles, remplacements actifs.",
         input_schema: {type: "object", properties: {}}
@@ -152,36 +175,14 @@
             format: {type: "string", description: "Nouveau format (ex. « 5×5 »). Laisser vide pour ne pas y toucher."},
             rest: {type: "string", description: "Nouveau repos (ex. « 3:00 »). Laisser vide pour ne pas y toucher."},
             note: {type: "string", description: "Consigne ajoutée à l'exercice."},
+            intention: {
+              type: "string",
+              enum: ["normale", "technique", "legere", "facile"],
+              description: "Intention du travail. « technique », « legere » et « facile » coupent l'auto-progression du moteur de charges pour cet exercice : à utiliser pour une reprise, une douleur, un apprentissage. C'est le SEUL moyen de demander « plus léger » — jamais un poids."
+            },
             raison: {type: "string", description: "Pourquoi, en une phrase."}
           },
           required: ["semaine", "jour", "mouvement", "raison"]
-        }
-      },
-      {
-        name: "proposer_semaine",
-        description: "Proposer une semaine d'entraînement complète, qui remplacera le programme pour cette semaine-là si l'athlète l'accepte. "
-                   + "N'écris JAMAIS de charge : le moteur de Racine calcule chaque poids à partir de l'historique réel, des ratios de l'athlète et du matériel disponible. "
-                   + "Exprime l'intensité voulue par le champ `intention` et par le format, jamais par un nombre de livres.",
-        input_schema: {
-          type: "object",
-          properties: {
-            semaine: {type: "integer", description: "Numéro de la semaine à écrire."},
-            label: {type: "string", description: "Nom court de la semaine (ex. « Volume haut du corps »)."},
-            objectif: {type: "string", description: "Objectif de la semaine, en une phrase."},
-            jours: {
-              type: "array",
-              description: "Un objet par jour d'entraînement.",
-              items: {
-                type: "object",
-                properties: {
-                  jour: {type: "string", description: "Jour en minuscules (« lundi », « mardi »…)."},
-                  blocs: {type: "array", items: BLOCK_SCHEMA}
-                },
-                required: ["jour", "blocs"]
-              }
-            }
-          },
-          required: ["semaine", "jours"]
         }
       },
       {
@@ -213,8 +214,8 @@
     ];
   }
 
-  var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_semaine", "proposer_retrait_remplacement", "proposer_retrait_ajustement"];
-  var READS = ["consulter_mouvement", "consulter_seance", "consulter_programme", "consulter_historique"];
+  var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_retrait_remplacement", "proposer_retrait_ajustement"];
+  var READS = ["consulter_mouvement", "consulter_seance", "consulter_programme", "consulter_historique", "expliquer_charge", "consulter_bilan"];
 
   api.tools = tools;
   api.isProposal = function(name){ return PROPOSALS.indexOf(str(name)) >= 0; };
@@ -286,6 +287,7 @@
       if(str(input.format)) bits.push("format → " + str(input.format));
       if(str(input.rest)) bits.push("repos → " + str(input.rest));
       if(str(input.note)) bits.push("note → " + str(input.note));
+      if(({technique: 1, legere: 1, facile: 1})[str(input.intention)]) bits.push("intention → " + ({technique: "technique", legere: "légère", facile: "facile"})[str(input.intention)] + " (pas de hausse de charge)");
       return {
         title: "Ajuster " + str(input.mouvement),
         lines: [
@@ -294,22 +296,6 @@
           str(input.raison)
         ].filter(Boolean),
         footer: "La charge reste calculée par le moteur."
-      };
-    }
-
-    if(name === "proposer_semaine"){
-      var jours = Array.isArray(input.jours) ? input.jours : [];
-      var lines = [];
-      if(str(input.objectif)) lines.push(str(input.objectif));
-      jours.forEach(function(d){
-        var blocs = Array.isArray(d.blocs) ? d.blocs : [];
-        var titles = blocs.map(function(b){ return str(b.title); }).filter(Boolean);
-        lines.push(str(d.jour) + " — " + (titles.join(" · ") || "aucun bloc"));
-      });
-      return {
-        title: "Semaine " + str(input.semaine) + (str(input.label) ? " — " + str(input.label) : ""),
-        lines: lines,
-        footer: "Remplace le programme pour cette semaine. Réversible : « Retirer la semaine »."
       };
     }
 
@@ -359,33 +345,13 @@
           movement: input.mouvement,
           format: input.format,
           rest: input.rest,
-          note: input.note || input.raison
+          // L'intention devient un mot de la note : ce sont exactement les mots
+          // que coachExtractMovementIntent() lit pour couper l'auto-progression.
+          note: [({technique: "technique", legere: "léger", facile: "facile"})[str(input.intention)] || "", str(input.note || input.raison)].filter(Boolean).join(" · ")
         });
         if(!res.ok) return res;
         logPatch(patch, "accepted");
         return {ok:true, message:"Ajustement appliqué sur " + str(input.mouvement) + "."};
-      }
-
-      if(name === "proposer_semaine"){
-        if(!window.CoachAIPlan) return {ok:false, error:"Module de plan indisponible."};
-        var days = {};
-        (Array.isArray(input.jours) ? input.jours : []).forEach(function(d){
-          var key = str(d && d.jour).toLowerCase();
-          if(!key) return;
-          days[key] = Array.isArray(d.blocs) ? d.blocs : [];
-        });
-        var out = CoachAIPlan.setWeek(input.semaine, {
-          label: str(input.label),
-          goal: str(input.objectif),
-          days: days
-        });
-        if(!out.ok) return out;
-        logPatch(patch, "accepted");
-        return {
-          ok: true,
-          message: "Semaine " + out.week + " écrite (" + out.days.join(", ") + "). "
-                 + "Pour la suivre, choisis le programme « Semaines Coach IA » dans l'onglet Cycle."
-        };
       }
 
       if(name === "proposer_retrait_remplacement"){

@@ -483,7 +483,9 @@
       "- `consulter_seance` : N'IMPORTE QUELLE séance du programme, toutes semaines confondues (ex. semaine 5, mardi), en détail complet — y compris la semaine suivante, dont tu n'as ci-dessus qu'un aperçu.",
       "- `consulter_programme` : objectif, règles du cycle, intention de chaque journée, carte des semaines, programmes disponibles.",
       "- `consulter_historique` : les séances réellement faites sur une période (TOUT l'historique, pas seulement les récentes ci-dessous).",
-      "- `consulter_mouvement` : l'historique complet d'un mouvement, la charge suggérée par le moteur et son explication.",
+      "- `consulter_mouvement` : l'historique complet d'un mouvement.",
+      "- `expliquer_charge` : POURQUOI le moteur propose une charge (prescription, mise à l'échelle, RPE, deload, historique retenu).",
+      "- `consulter_bilan` : l'écart suggéré vs fait par mouvement sur plusieurs semaines, avec les signaux (moteur trop prudent / trop ambitieux).",
       "Ne dis jamais qu'une donnée te manque avant d'avoir appelé l'outil qui la lit."];
   }
 
@@ -778,6 +780,132 @@
       .concat(renderSessions(shown)).join("\n");
   };
 
+  // ── Bilan « suggéré vs fait » : calculé ICI, sans modèle ───────────────
+  // Pour chaque mouvement, compare la charge suggérée AVANT la séance
+  // (`planned.load`, figée dans le résultat) à la charge faite. C'est le
+  // signal qui dit si le moteur est trop prudent ou trop ambitieux pour cet
+  // athlète. Calcul local : l'écran l'affiche gratuitement, et le coach ne le
+  // lit (outil `consulter_bilan`) que si l'athlète demande de le commenter.
+  var GAP_DEFAULT_WEEKS = 8;
+  api.gapReport = function(opts){
+    opts = opts || {};
+    var weeks = Number(opts.weeks) || GAP_DEFAULT_WEEKS;
+    var cutoff = "";
+    try{ var d = new Date(); d.setDate(d.getDate() - weeks * 7); cutoff = d.toISOString().slice(0, 10); }catch(e){}
+    var by = {};
+    hist().forEach(function(s){
+      if(!s || (cutoff && str(s.date) < cutoff)) return;
+      var results = s.results || {};
+      Object.keys(results).forEach(function(key){
+        if(isWodKey(key)) return;
+        var r = results[key] || {};
+        var done = positive(r.load), planned = r.planned ? positive(r.planned.load) : null;
+        if(done == null || planned == null) return;
+        var name = label(key, r);
+        var row = by[name] || (by[name] = {mouvement: name, n: 0, diff: 0, pct: 0, above: 0, below: 0, equal: 0, rpeSum: 0, rpeN: 0, last: null});
+        var diff = done - planned;
+        row.n++; row.diff += diff; row.pct += diff / planned;
+        if(Math.abs(diff) < 0.5) row.equal++; else if(diff > 0) row.above++; else row.below++;
+        var rpe = positive(r.rpe); if(rpe != null){ row.rpeSum += rpe; row.rpeN++; }
+        if(!row.last || str(s.date) >= row.last.date) row.last = {date: str(s.date), fait: done, suggere: planned, rpe: rpe};
+      });
+    });
+    var rows = Object.keys(by).map(function(k){
+      var r = by[k];
+      var out = {mouvement: r.mouvement, seances: r.n, ecartMoyenLb: Math.round(r.diff / r.n * 10) / 10, ecartMoyenPct: Math.round(r.pct / r.n * 1000) / 10,
+        auDessus: r.above, enDessous: r.below, egal: r.equal, rpeMoyen: r.rpeN ? Math.round(r.rpeSum / r.rpeN * 10) / 10 : null, derniere: r.last, signal: "", suivie: false};
+      if(r.n >= 3 && r.above >= r.n * 2 / 3 && (out.rpeMoyen == null || out.rpeMoyen <= 8)) out.signal = "tu dépasses souvent la suggestion à effort modéré : le moteur est peut-être trop prudent";
+      else if(r.n >= 3 && r.below >= r.n * 2 / 3 && out.rpeMoyen != null && out.rpeMoyen >= 8.5) out.signal = "tu restes souvent sous la suggestion à effort élevé : elle est peut-être trop lourde";
+      else if(r.n >= 3 && r.equal >= r.n * 2 / 3) out.suivie = true;
+      return out;
+    }).sort(function(a, b){ return (b.signal ? 1 : 0) - (a.signal ? 1 : 0) || b.seances - a.seances; });
+    return {semaines: weeks, depuis: cutoff, lignes: rows};
+  };
+  api.gapText = function(opts){
+    var rep = api.gapReport(opts);
+    if(!rep.lignes.length) return "Aucune série avec une suggestion enregistrée depuis " + rep.depuis + ".";
+    var lines = ["Bilan suggéré vs fait, " + rep.semaines + " dernières semaines (depuis " + rep.depuis + "). Écart = fait − suggéré avant la séance."];
+    rep.lignes.forEach(function(r){
+      lines.push("- " + r.mouvement + " : " + r.seances + " séance(s), écart moyen " + (r.ecartMoyenLb > 0 ? "+" : "") + r.ecartMoyenLb + " lb (" + (r.ecartMoyenPct > 0 ? "+" : "") + r.ecartMoyenPct + " %)"
+        + " · au-dessus " + r.auDessus + " / égal " + r.egal + " / en dessous " + r.enDessous
+        + (r.rpeMoyen != null ? " · RPE moyen " + r.rpeMoyen : "")
+        + (r.signal ? " · SIGNAL : " + r.signal : (r.suivie ? " · suggestion suivie" : "")));
+    });
+    lines.push("Un écart répété est une information pour régler le moteur (via Claude Code), pas une raison de proposer un poids toi-même.");
+    return lines.join("\n");
+  };
+
+  // ── Outil `expliquer_charge` : le raisonnement RÉEL du moteur ──────────
+  // Relit la trace du moteur (scripts/charge/trace.js), la même que le panneau
+  // de diagnostic : jamais un recalcul parallèle. Le prescrit est pris dans
+  // la séance où le mouvement apparaît cette semaine (le %1RM écrit et sa
+  // mise à l'échelle comptent dans l'explication). Pas de rejeu de
+  // l'historique (`skipReplay`) : l'explication reste rapide et courte.
+  function findPrescription(name){
+    var wanted = norm(name), week = 1;
+    try{ week = Number(state.week) || 1; }catch(e){}
+    var days = dayList();
+    for(var i = 0; i < days.length; i++){
+      var w = null;
+      try{ w = buildWorkout(days[i], week); }catch(e){ w = null; }
+      var blocks = (w && w.blocks) || [];
+      for(var j = 0; j < blocks.length; j++){
+        var exs = Array.isArray(blocks[j].exercises) ? blocks[j].exercises : [];
+        for(var k = 0; k < exs.length; k++){
+          if(norm(exs[k].name) === wanted || norm(label(exs[k].name)) === wanted) return {ex: exs[k], block: blocks[j], day: days[i], week: week};
+        }
+      }
+    }
+    return null;
+  }
+  function fmtLb(v){ var n = num(v); return n == null ? "—" : Math.round(n * 10) / 10 + " lb"; }
+  api.loadExplanation = function(input){
+    input = input || {};
+    var name = str(input.mouvement);
+    if(!name) return "Nom de mouvement vide.";
+    if(!(window.CoachChargeTrace && typeof CoachChargeTrace.movement === "function")) return "Trace du moteur indisponible.";
+    var found = findPrescription(name);
+    var opts = {skipReplay: true};
+    if(found){
+      var parsed = (typeof parseTargetReps === "function") ? parseTargetReps(found.ex.format, 8) : {min: 8, max: 8};
+      opts = {kind: found.block.kind, blockTitle: found.block.title, format: found.ex.format, note: found.ex.note, text: found.block.text,
+        load: found.ex.load, pctOf1RM: found.ex.pctOf1RM, programLoad: found.ex.load,
+        targetReps: parsed.min || parsed.max || 8, targetMin: parsed.min || parsed.max || 8, targetMax: parsed.max || parsed.min || 8,
+        day: found.day, week: found.week, skipReplay: true};
+    }
+    var t = null;
+    try{ t = CoachChargeTrace.movement(found ? found.ex.name : name, opts); }
+    catch(e){ return "Explication impossible : " + (e && e.message ? e.message : String(e)); }
+    if(!t) return "Explication impossible.";
+    var lines = ["Explication du moteur pour « " + str(t.mouvement) + " »" + (found ? " (" + found.day + " S" + found.week + ", " + str(found.block.title) + ")" : " (hors de la semaine en cours : sans prescription du programme)") + " :"];
+    var s = t.suggestion || {};
+    lines.push("- Charge proposée MAINTENANT : " + (s.propose != null ? fmtLb(s.propose) : "aucune") + (str(s.raison) ? " — " + str(s.raison) : "") + (str(s.severite) ? " [" + str(s.severite) + "]" : ""));
+    var p = t.programme || {};
+    if(str(p.chargeEcrite)){
+      var e = p.echelle;
+      lines.push("- Programme : écrit « " + str(p.chargeEcrite) + " » (" + str(p.format) + ")"
+        + (p.chargeMiseAEchelle != null ? ", ramené à ton niveau : " + fmtLb(p.chargeMiseAEchelle) : "")
+        + (e ? " (ratio " + (num(e.ratioApplique) != null ? Math.round(num(e.ratioApplique) * 100) / 100 : "?") + (str(e.source) ? ", source " + str(e.source) : "") + (e.emprunte ? ", emprunté à une famille voisine" : "") + (e.borne ? ", borné" : "") + ")" : ""));
+    }
+    var c = t.contexteDuJour || {};
+    if((c.intentions && c.intentions.length) || c.limite) lines.push("- Contexte du jour : " + (c.intentions || []).join(", ") + (c.limite ? " — progression LIMITÉE" + (str(c.raisonLimite) ? " (" + str(c.raisonLimite) + ")" : "") : ""));
+    if(t.ecartReps && str(t.ecartReps.pourquoi)) lines.push("- Écart de reps : " + str(t.ecartReps.pourquoi) + (str(t.ecartReps.effet) ? " → " + str(t.ecartReps.effet) : ""));
+    // Même phrase que le panneau (!) : CoachKalman.explainLine, jamais un recalcul.
+    try{
+      var kt = (t.capaciteEstimee && window.CoachKalman && typeof CoachKalman.explainLine === "function") ? str(CoachKalman.explainLine(t.capaciteEstimee)) : "";
+      if(kt) lines.push("- " + kt);
+    }catch(e){}
+    var h = t.historique || {};
+    var drops = Object.keys(h.motifsDEcart || {}).map(function(m){ return clip(m, 110) + " ×" + h.motifsDEcart[m]; });
+    lines.push("- Historique utilisé : " + (h.retenues || 0) + " ligne(s) retenue(s) sur " + (h.lignesTracees || 0) + (drops.length ? " ; écartées : " + drops.join(", ") : ""));
+    (h.lignes || []).slice(-5).reverse().forEach(function(r){
+      lines.push("    · " + str(r.date) + " — " + fmtLb(r.charge) + " × " + (r.reps || "?") + (r.rpe ? " RPE " + r.rpe : "")
+        + (r.retenue ? (r.poids < 1 ? " (retenue, poids réduit : " + clip(r.pourquoiPoidsReduit, 90) + ")" : " (retenue)") : " (écartée : " + clip(r.pourquoiEcartee, 90) + ")"));
+    });
+    lines.push("Explique ce raisonnement à l'athlète en mots simples. Tu ne recalcules pas la charge : tu dis pourquoi le moteur propose celle-ci.");
+    return lines.join("\n");
+  };
+
   // Aiguillage unique des outils de lecture : chat.js n'a pas à connaître
   // chaque outil, et aucun d'eux n'écrit quoi que ce soit.
   api.read = function(name, input){
@@ -786,6 +914,8 @@
     if(name === "consulter_seance") return api.sessionDetail(input);
     if(name === "consulter_programme") return api.programDetail();
     if(name === "consulter_historique") return api.historyDetail(input);
+    if(name === "expliquer_charge") return api.loadExplanation(input);
+    if(name === "consulter_bilan") return api.gapText({weeks: input.semaines});
     return "Outil de lecture inconnu : " + str(name);
   };
 

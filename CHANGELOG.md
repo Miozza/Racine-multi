@@ -1,9 +1,19 @@
-## V5.2.17 — La note du programme dans le (!)
+## V5.2.18 — La note du programme dans le (!)
 
 **Pourquoi** : demande de l'athlète (2026-10-09). En séance, le (!) expliquait la charge sans rappeler la consigne écrite dans le programme (ex. Power Clean : « 70-75 % du 1RM, vitesse maximale… »).
 
 - Le (!) affiche une section **Note du programme** sous la charge suggérée : la note de l'exercice, précédée de son format (« EMOM 8 × 2 »). Absente si l'exercice n'a pas de note.
 - Affichage seulement : rien ne change dans le calcul des charges.
+
+## V5.2.17 — Coach IA analyste
+
+**Pourquoi** : décision de l'athlète (2026-10-09). Tout doit rester réversible, l'historique ne se touche que dans son module, et les programmes se font avec Claude et Claude Code. Coach IA devient l'analyste du moteur, à coût quasi nul.
+
+- **« Pourquoi cette charge ? »** — outil de lecture `expliquer_charge` : relit la trace RÉELLE du moteur (`CoachChargeTrace.movement`, sans rejeu) : charge proposée et sa raison, %1RM du programme et sa mise à l'échelle, contexte du jour, écart de reps, capacité estimée, lignes retenues ou écartées. Coût seulement quand on le demande.
+- **Bilan suggéré vs fait** — bouton « Bilan » : par mouvement, écart moyen entre la charge suggérée avant la séance et la charge faite, sur 4, 8 ou 16 semaines, avec un signal quand le moteur est systématiquement trop prudent ou trop ambitieux. **Calculé par Racine, sans IA** (coût 0). « Demander au coach » le fait commenter (`consulter_bilan`).
+- **→ Claude Code** — sous chaque réponse du coach et dans le bilan : une demande prête pour Claude Code (échange, propositions, données du bilan pour les mouvements cités, rappels du dépôt), **rédigée par Racine sans IA**, modifiable, envoyée dans `racine/demandes/` de la sauvegarde GitHub ou copiée. Refusée tant que « Ce que je veux » n'est pas rempli.
+- **Ménage** — `proposer_semaine` et l'intention « Écrire ma semaine » retirés ; `ai_custom` archivé (`programs/archive/`, toujours chargé). Les ajustements gagnent le champ `intention` (technique / légère / facile), seul moyen de dire « plus léger » sans écrire de poids.
+- Historique réel : le bilan signale Back Squat (+36 lb en moyenne, 6/6 séances au-dessus, RPE 8) et Barbell RDL (+27,5 lb).
 
 ## V5.2.16 — Avis IA mouvement : envoi direct à l'API
 
