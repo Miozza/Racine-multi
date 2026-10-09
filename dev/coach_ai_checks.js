@@ -51,7 +51,7 @@ const html = read('index.html');
 DOMAIN.forEach(function(f){
   assert(html.indexOf(f) !== -1, 'Chargé par index.html : ' + f);
 });
-assert(html.indexOf('programs/ai_custom.js') !== -1, 'Programme ai_custom chargé par index.html.');
+assert(html.indexOf('programs/archive/ai_custom.js') !== -1, 'Programme ai_custom archivé mais toujours chargé (aucun profil ne tombe sur « Programme absent »).');
 assert(read('programs/index.js').indexOf('"ai_custom"') !== -1, 'ai_custom déclaré dans programs/index.js.');
 assert(/id:\s*"ai_custom"[^}]*visibility:\s*"private"/.test(read('programs/index.js')),
   'ai_custom reste PRIVÉ : un programme dont le contenu est généré ne se publie pas au catalogue client.');
@@ -146,7 +146,7 @@ assert(read('scripts/coach_ai/ui.js').indexOf('data-cai-accept') !== -1,
   'L\'écran expose un bouton Accepter explicite.');
 
 // ── Données durables : aucune suppression en masse ─────────────────────────
-DOMAIN.concat(['programs/ai_custom.js']).forEach(function(f){
+DOMAIN.concat(['programs/archive/ai_custom.js']).forEach(function(f){
   const src = code(f);
   assert(src.indexOf('localStorage.clear') === -1, 'Aucun localStorage.clear() dans ' + f + '.');
   assert(!/\.removeItem\((?!\s*(storageKey\(\)|legacyKey\(\)|memoryKey\(\)|KEY))/.test(src),
@@ -279,7 +279,9 @@ const contract = ctxBridge.window.CoachAIPatch.contractText().toLowerCase();
   assert(contract.indexOf(needle) === -1, 'Aucun champ de charge dans le contrat texte : ' + needle);
 });
 assert(contract.indexOf('intention') !== -1, 'Le contrat texte décrit bien le champ `intention`.');
-['proposer_semaine', 'proposer_remplacement', 'proposer_ajustement'].forEach(function(n){
+assert(contract.indexOf('proposer_semaine') === -1 && !ctxBridge.window.CoachAIPatch.isProposal('proposer_semaine'),
+  'Coach IA n\'écrit plus de semaines (2026-10-09) : les programmes passent par Claude et Claude Code.');
+['proposer_remplacement', 'proposer_ajustement'].forEach(function(n){
   assert(contract.indexOf(n) !== -1, 'Le contrat texte décrit ' + n + '.');
 });
 ['consulter_mouvement', 'consulter_seance', 'consulter_programme'].forEach(function(n){
@@ -319,28 +321,23 @@ assert(!p4.ok && /JSON/.test(p4.error), 'Un bloc illisible donne une erreur expl
 let p5 = CoachAIBridge.parseResponse('Réponse.\n```json\n{"propositions":[{"type":"proposer_ajustement","semaine":1,"jour":"lundi","mouvement":"Back Squat","format":"5×3","raison":"x"}]}\n```');
 assert(p5.ok && p5.proposals.length === 1, 'Un bloc ```json sans marqueurs est lu en repli.');
 
-// BOUT EN BOUT : une charge collée à la main est effacée comme via l'API.
+// Une semaine collée à la main n'est plus une proposition : refusée, jamais devinée.
 let p6 = CoachAIBridge.parseResponse(CoachAIBridge.START + JSON.stringify({propositions:[{
   type:'proposer_semaine', semaine:3, label:'X',
   jours:[{jour:'lundi', blocs:[{title:'A', kind:'main', exercises:[{name:'Back Squat', format:'5×5', load:'315 lb'}]}]}]
 }]}) + CoachAIBridge.END);
-assert(p6.proposals.length === 1, 'La semaine collée est lue.');
-const pastedWeek = CoachAIPlan.sanitizeWeek({
-  days: {lundi: p6.proposals[0].input.jours[0].blocs}
-});
-assert(pastedWeek.days.lundi[0].exercises[0].load === '—',
-  'Une charge arrivée par COPIER-COLLER est effacée exactement comme par l\'API — pas de porte dérobée.');
+assert(p6.proposals.length === 0 && p6.rejected.length === 1, 'Une semaine collée est refusée : Coach IA n\'écrit plus de programme.');
 
 // Le prompt lui-même ne doit nommer AUCUN fournisseur : c'est ce qui permet de
 // le coller dans Claude, ChatGPT ou autre chose sans toucher une ligne de code,
 // et de survivre à un changement d'abonnement.
 ctxBridge.window.CoachAIConfig = {assistantLabel: function(){ return "ChatGPT"; }};
-const builtPrompt = CoachAIBridge.buildPrompt('semaine', 'ma question');
+const builtPrompt = CoachAIBridge.buildPrompt('libre', 'ma question');
 ['claude', 'chatgpt', 'anthropic', 'openai', 'gpt-', 'gemini'].forEach(function(name){
   assert(builtPrompt.toLowerCase().indexOf(name) === -1,
     'Le prompt ne nomme aucun fournisseur (' + name + ') — il reste portable.');
 });
-assert(builtPrompt.indexOf('proposer_semaine') !== -1 && builtPrompt.indexOf('ma question') !== -1,
+assert(builtPrompt.indexOf('proposer_ajustement') !== -1 && builtPrompt.indexOf('ma question') !== -1,
   'Le prompt porte bien le contrat et la demande de l\'athlète.');
 assert(code('scripts/coach_ai/bridge.js').indexOf('assistantLabel') !== -1,
   'Le nom affiché vient du réglage, pas d\'une chaîne codée en dur.');
@@ -482,12 +479,32 @@ function fakeStorage(){
     && noPlan.indexOf('175 lb × 2 reps (aucune suggestion enregistrée)') !== -1,
     'Série sans suggestion figée : le coach est prévenu, il ne la comble pas avec la suggestion actuelle.');
   ctxPlanned.state.history.pop();
+  // Bilan suggéré vs fait : calculé localement, signal quand l'écart se répète.
+  ctxPlanned.state.history.push(
+    {date: new Date().toISOString().slice(0, 10), week:2, day:'lundi', results:{'Back Squat':{load:'200', reps:'5', rpe:'7.5', planned:{load:170}}}},
+    {date: new Date().toISOString().slice(0, 10), week:2, day:'mardi', results:{'Back Squat':{load:'205', reps:'5', rpe:'8', planned:{load:175}}}},
+    {date: new Date().toISOString().slice(0, 10), week:2, day:'jeudi', results:{'Back Squat':{load:'210', reps:'5', rpe:'8', planned:{load:180}}}});
+  const gap = C.gapReport({weeks: 8}).lignes.filter(function(r){ return r.mouvement === 'Back Squat'; })[0];
+  assert(gap && gap.seances === 3 && gap.ecartMoyenLb === 30 && /trop prudent/.test(gap.signal),
+    'Bilan : écart moyen fait − suggéré calculé par Racine, signal « trop prudent » quand il se répète à effort modéré.');
+  assert(C.read('consulter_bilan', {}).indexOf('Back Squat : 3 séance(s), écart moyen +30 lb') !== -1, 'Le coach lit le même bilan par `consulter_bilan`.');
+  ctxPlanned.state.history.splice(-3, 3);
   const juin = C.read('consulter_historique', {depuis:'2026-06-01', jusqua:'2026-06-30'});
   assert(juin.indexOf('premier jour') !== -1 && juin.indexOf('185') === -1, 'consulter_historique lit une période ancienne, et seulement elle.');
   assert(C.read('consulter_historique', {semaine:3}).indexOf('185') !== -1, 'consulter_historique filtre par semaine du programme.');
   const bridgeCtx = C.build({planned:'week'});
   assert(bridgeCtx.indexOf('consulter_historique') === -1, 'Le pont, sans outils, ne se voit pas promettre un outil de lecture.');
   assert(bridgeCtx.indexOf('Mvt_lundi_S2') !== -1, 'Le pont (sans outils) reçoit toute la semaine prévue.');
+}
+{
+  const ctxSrc = code('scripts/coach_ai/context.js');
+  assert(ctxSrc.indexOf('CoachChargeTrace.movement(') !== -1 && ctxSrc.indexOf('skipReplay: true') !== -1,
+    '`expliquer_charge` relit la trace RÉELLE du moteur (pas de calcul parallèle), sans rejeu coûteux.');
+  assert(CoachAIPatch.isRead('expliquer_charge') && CoachAIPatch.isRead('consulter_bilan'), 'Expliquer une charge et lire le bilan sont des lectures.');
+  const uiCC = code('scripts/coach_ai/ui.js');
+  assert(uiCC.indexOf('data-cai-cc') !== -1 && uiCC.indexOf('function buildRequest') !== -1
+    && !/buildRequest[\s\S]{0,4000}CoachAIChat\.send|buildRequest[\s\S]{0,4000}CoachAIClient/.test(uiCC),
+    '« → Claude Code » rédige la demande dans Racine, sans appel au modèle (coût nul).');
 }
 const chatSrcPlanned = code('scripts/coach_ai/chat.js');
 assert(chatSrcPlanned.indexOf('CoachAIContext.read(name') !== -1,

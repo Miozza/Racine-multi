@@ -91,10 +91,6 @@
       label: "Question libre",
       question: "Voici ma situation. Dis-moi ce que tu vois."
     },
-    semaine: {
-      label: "Écrire ma semaine",
-      question: "Écris-moi la prochaine semaine d'entraînement complète, en tenant compte de ma progression réelle, de ce qui stagne et de mes notes. Utilise `proposer_semaine`."
-    },
     analyse: {
       label: "Analyser ma progression",
       question: "Analyse ma progression des dernières semaines : ce qui monte, ce qui stagne, ce qui revient dans mes notes. Propose des corrections concrètes si tu en vois."

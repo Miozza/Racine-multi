@@ -1,5 +1,5 @@
-// Racine V5.2.16 — Avis IA mouvement : envoi direct à l'API, repli copier-coller
-var APP_VERSION = "V5.2.16";
+// Racine V5.2.17 — Coach IA analyste : expliquer une charge, bilan suggéré vs fait, demande pour Claude Code
+var APP_VERSION = "V5.2.17";
 
 // Architecture stable
 // programs/*.js = plan prévu

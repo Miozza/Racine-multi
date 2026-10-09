@@ -1,3 +1,13 @@
+## V5.2.17 — Coach IA analyste
+
+**Pourquoi** : décision de l'athlète (2026-10-09). Tout doit rester réversible, l'historique ne se touche que dans son module, et les programmes se font avec Claude et Claude Code. Coach IA devient l'analyste du moteur, à coût quasi nul.
+
+- **« Pourquoi cette charge ? »** — outil de lecture `expliquer_charge` : relit la trace RÉELLE du moteur (`CoachChargeTrace.movement`, sans rejeu) : charge proposée et sa raison, %1RM du programme et sa mise à l'échelle, contexte du jour, écart de reps, capacité estimée, lignes retenues ou écartées. Coût seulement quand on le demande.
+- **Bilan suggéré vs fait** — bouton « Bilan » : par mouvement, écart moyen entre la charge suggérée avant la séance et la charge faite, sur 4, 8 ou 16 semaines, avec un signal quand le moteur est systématiquement trop prudent ou trop ambitieux. **Calculé par Racine, sans IA** (coût 0). « Demander au coach » le fait commenter (`consulter_bilan`).
+- **→ Claude Code** — sous chaque réponse du coach et dans le bilan : une demande prête pour Claude Code (échange, propositions, données du bilan pour les mouvements cités, rappels du dépôt), **rédigée par Racine sans IA**, modifiable, envoyée dans `racine/demandes/` de la sauvegarde GitHub ou copiée. Refusée tant que « Ce que je veux » n'est pas rempli.
+- **Ménage** — `proposer_semaine` et l'intention « Écrire ma semaine » retirés ; `ai_custom` archivé (`programs/archive/`, toujours chargé). Les ajustements gagnent le champ `intention` (technique / légère / facile), seul moyen de dire « plus léger » sans écrire de poids.
+- Historique réel : le bilan signale Back Squat (+36 lb en moyenne, 6/6 séances au-dessus, RPE 8) et Barbell RDL (+27,5 lb).
+
 ## V5.2.16 — Avis IA mouvement : envoi direct à l'API
 
 **Pourquoi** : demande de l'athlète (2026-10-09). L'API est branchée pour Coach IA ; l'avis sur un seul poids ne devrait plus demander de copier-coller, et il ne doit envoyer que l'historique du mouvement concerné pour rester bon marché.

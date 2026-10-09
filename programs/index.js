@@ -54,10 +54,11 @@
     { id: "hypertrophie_fesse_stephanie", file: "programs/archive/hypertrophie_fesse_stephanie.js", name: "Hypertrophie Fessier Femme",       phase: 0, macroRole: "alternative", macroStatus: "archivé — remplacé par rehab_stephanie", durationWeeks: 2, minWeeks: 2, maxWeeks: 2, visibility: "private", fillsGap: ["hypertrophie", "fessiers", "femme"], objective: "hypertrophie", frequency: 5, suggestedNext: ["hypertrophie_fesse", "general_hypertrophy_3d"] },
     { id: "phase2_fable5", file: "programs/phase2_fable5.js", name: "Phase 2 — Fable 5", phase: 2, macroRole: "main", macroStatus: "option phase 2 Bertin", durationWeeks: 8, minWeeks: 8, maxWeeks: 10, visibility: "private", objective: "force", frequency: 4, suggestedNext: ["pont_peak", "force_performance", "competition_peak"] },
     { id: "pont_peak", file: "programs/pont_peak.js", name: "Phase 3 — Pont Peak", phase: 3, macroRole: "main", macroStatus: "pont vers Peak Bertin", durationWeeks: 7, minWeeks: 7, maxWeeks: 7, visibility: "private", objective: "force", frequency: 4, suggestedNext: ["competition_peak"] },
-    // Semaines écrites par Coach IA dans le state du profil (scripts/coach_ai/plan.js).
-    // PRIVÉ et sans intention de devenir public : un programme dont le contenu
-    // est généré ne se publie pas à un catalogue client.
-    { id: "ai_custom", file: "programs/ai_custom.js", name: "Semaines Coach IA", phase: 0, macroRole: "buffer", macroStatus: "programmation assistée", durationWeeks: 4, minWeeks: 1, maxWeeks: 12, visibility: "private", fillsGap: ["sur mesure", "coach ia", "adaptation"] }
+    // Archivé le 2026-10-09 : Coach IA n'écrit plus de semaines (les programmes
+    // passent par une conversation Claude et Claude Code). Toujours chargé,
+    // comme tout programme archivé, pour qu'un profil qui l'aurait actif ne
+    // tombe pas sur « Programme absent » ; ses semaines déjà écrites restent lisibles.
+    { id: "ai_custom", file: "programs/archive/ai_custom.js", name: "Semaines Coach IA", phase: 0, macroRole: "buffer", macroStatus: "archivé — Coach IA n'écrit plus de semaines", durationWeeks: 4, minWeeks: 1, maxWeeks: 12, visibility: "private", fillsGap: ["sur mesure", "coach ia", "adaptation"] }
   ];
 
   var clientPrograms = [

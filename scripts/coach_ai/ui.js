@@ -182,6 +182,7 @@
       html += "<div class='cai-memo'><span class='cai-memo-tag'>Retenu</span>" + esc(m) + "</div>";
     });
     (t.proposals || []).forEach(function(p, i){ html += proposalCard(t.id, p, i); });
+    html += "<button type='button' class='cai-cc-link' data-cai-cc='" + esc(t.id) + "'>→ Claude Code</button>";
     return html + "</div>";
   }
 
@@ -347,6 +348,134 @@
       +   "<button type='button' class='cai-btn cai-btn-small' id='caiFactAdd'>Ajouter</button>"
       + "</div>"
       + (facts.length ? "<button type='button' class='cai-link-btn' id='caiMemoryClear'>Vider le carnet</button>" : "");
+  }
+
+  // ── Bilan « suggéré vs fait » ──────────────────────────────────────────
+  // Calculé par Racine (CoachAIContext.gapReport), sans appel au modèle :
+  // l'afficher ne coûte rien. Le coach ne le commente que si on le demande.
+  var gapWeeks = 8;
+  function signed(v, unit){ return (v > 0 ? "+" : "") + v + unit; }
+  function renderGap(){
+    var host = $("caiGap");
+    if(!host || !window.CoachAIContext) return;
+    var rep = CoachAIContext.gapReport({weeks: gapWeeks});
+    var rows = rep.lignes;
+    var flagged = rows.filter(function(r){ return r.signal; });
+    host.innerHTML = sheetHead("Bilan suggéré vs fait", gapWeeks + " dernières semaines · calculé par Racine, sans IA")
+      + "<div class='cai-seg'>" + [4, 8, 16].map(function(w){
+          return "<button type='button' class='cai-seg-btn" + (w === gapWeeks ? " cai-seg-on" : "") + "' data-cai-gapweeks='" + w + "'>" + w + " sem.</button>";
+        }).join("") + "</div>"
+      + "<p class='cai-hint'>Écart = charge faite − charge suggérée <strong>avant</strong> la séance. Un écart répété dit si le moteur est trop prudent ou trop ambitieux pour toi.</p>"
+      + (rows.length ? "" : "<p class='cai-hint cai-hint-empty'>Aucune série avec une suggestion enregistrée sur cette période.</p>")
+      + (flagged.length ? "<div class='cai-card-title'>À regarder</div>" : "")
+      + flagged.concat(rows.filter(function(r){ return !r.signal; })).map(function(r){
+          var dir = r.ecartMoyenLb > 0.4 ? "up" : (r.ecartMoyenLb < -0.4 ? "down" : "eq");
+          return "<div class='cai-gap" + (r.signal ? " cai-gap-flag" : "") + "'>"
+            + "<div class='cai-gap-head'><span class='cai-gap-name'>" + esc(r.mouvement) + "</span>"
+            + "<span class='cai-gap-delta cai-gap-" + dir + "'>" + (dir === "eq" ? "= suggéré" : signed(r.ecartMoyenLb, " lb") + " <small>(" + signed(r.ecartMoyenPct, " %") + ")</small>") + "</span></div>"
+            + "<div class='cai-gap-meta'>" + r.seances + " séance(s) · ↑ " + r.auDessus + " · = " + r.egal + " · ↓ " + r.enDessous
+            + (r.rpeMoyen != null ? " · RPE " + r.rpeMoyen : "")
+            + (r.derniere ? " · dernière : " + r.derniere.fait + " lb faits, " + r.derniere.suggere + " suggérés" : "") + "</div>"
+            + (r.signal ? "<div class='cai-gap-signal'>" + esc(r.signal) + "</div>" : (r.suivie ? "<div class='cai-gap-ok'>Suggestion suivie</div>" : ""))
+            + "</div>";
+        }).join("")
+      + (rows.length ? "<div class='cai-sheet-actions'>"
+          + (mode() === "api" ? "<button type='button' class='cai-btn cai-btn-primary' id='caiGapAsk'>Demander au coach</button>" : "")
+          + "<button type='button' class='cai-btn' id='caiGapCC'>→ Claude Code</button>"
+          + "</div>" : "");
+  }
+
+  // ── Demande pour Claude Code ───────────────────────────────────────────
+  // Rédigée ICI à partir de la conversation et des données calculées par
+  // Racine — aucun appel au modèle. Déposée dans la sauvegarde GitHub
+  // (racine/demandes/) pour qu'une session Claude Code la lise, ou copiée.
+  var requestTitle = "";
+  function appLine(){
+    var bits = [];
+    try{ var p = (typeof focus === "function") ? focus() : null; if(p && p.label) bits.push("Programme actif : " + p.label + " (" + (typeof activeProgramId === "function" ? activeProgramId() : "") + ")"); }catch(e){}
+    try{ bits.push("semaine S" + state.week); }catch(e){}
+    return bits.join(" · ");
+  }
+  function mentionedGapRows(text){
+    var rows = window.CoachAIContext ? CoachAIContext.gapReport({weeks: 8}).lignes : [];
+    var low = String(text || "").toLowerCase();
+    return rows.filter(function(r){ return low.indexOf(r.mouvement.toLowerCase()) >= 0; });
+  }
+  function gapMarkdown(rows){
+    return rows.map(function(r){
+      return "- " + r.mouvement + " : " + r.seances + " séance(s), écart moyen " + signed(r.ecartMoyenLb, " lb") + " (" + signed(r.ecartMoyenPct, " %") + "), "
+        + "↑" + r.auDessus + " =" + r.egal + " ↓" + r.enDessous + (r.rpeMoyen != null ? ", RPE moyen " + r.rpeMoyen : "") + (r.signal ? " — " + r.signal : "");
+    }).join("\n");
+  }
+  function buildRequest(source){
+    var date = new Date().toISOString().slice(0, 10);
+    var name = "";
+    try{ name = (CoachProfiles.getActive() || {}).name || ""; }catch(e){}
+    var parts = ["# Demande Racine → Claude Code", "",
+      "Date : " + date + (name ? " · Profil : " + name : "") + " · Racine " + (window.APP_VERSION || ""), appLine(), "",
+      "## Ce que je veux", "", "(Écris ici, en une ou deux phrases, le changement voulu.)", ""];
+    var context = "";
+    if(source && source.turnId){
+      var turns = CoachAIChat.turns();
+      var idx = -1;
+      turns.forEach(function(t, i){ if(t.id === source.turnId) idx = i; });
+      var coach = idx >= 0 ? turns[idx] : null;
+      var user = null;
+      for(var i = idx - 1; i >= 0; i--){ if(turns[i].role === "user"){ user = turns[i]; break; } }
+      parts.push("## Échange avec Coach IA", "");
+      if(user) parts.push("**Athlète** (" + str(user.at).slice(0, 16).replace("T", " ") + ") :", "", user.text, "");
+      if(coach){
+        parts.push("**Coach** :", "", coach.text || "(pas de texte)", "");
+        (coach.proposals || []).forEach(function(p){
+          parts.push("- Proposition : " + CoachAIPatch.describe(p).title + " — " + CoachAIPatch.describe(p).lines.join(" · ") + " (" + ({accepted: "acceptée", refused: "refusée", pending: "en attente"}[p.status] || p.status) + ")");
+        });
+        if((coach.proposals || []).length) parts.push("");
+      }
+      context = (user ? user.text : "") + " " + (coach ? coach.text : "");
+      requestTitle = user ? user.text : "échange coach";
+      var rows = mentionedGapRows(context);
+      if(rows.length) parts.push("## Données calculées par Racine (suggéré vs fait, 8 semaines)", "", gapMarkdown(rows), "");
+    } else if(source && source.gap){
+      var all = CoachAIContext.gapReport({weeks: gapWeeks}).lignes;
+      var flagged = all.filter(function(r){ return r.signal; });
+      requestTitle = "bilan suggéré vs fait";
+      parts.push("## Bilan suggéré vs fait (" + gapWeeks + " semaines, calculé par Racine)", "",
+        "Écart = charge faite − charge suggérée avant la séance.", "",
+        gapMarkdown(flagged.length ? flagged : all.slice(0, 12)), "");
+    }
+    parts.push("## Rappels pour Claude Code", "",
+      "- Lire `CLAUDE.md` avant tout. Les charges restent au moteur : aucun poids en dur.",
+      "- Un réglage propre à un mouvement va dans `scripts/charge/movement_tuning.js` ; un changement de programme dans `programs/`.",
+      "- Historique complet et contexte de l'athlète : dépôt `racine-sauvegarde`, dossier `racine/`.");
+    return parts.join("\n");
+  }
+  function renderRequest(source){
+    var host = $("caiRequest");
+    if(!host) return;
+    var md = buildRequest(source);
+    var gh = !!(window.RacineGitHubBackup && RacineGitHubBackup.isActiveTarget && RacineGitHubBackup.isActiveTarget());
+    host.innerHTML = sheetHead("Demande pour Claude Code", "Rédigée par Racine, sans IA · modifiable")
+      + "<p class='cai-hint'>Complète « Ce que je veux », puis " + (gh ? "envoie-la dans ta sauvegarde GitHub (<code>racine/demandes/</code>) : ta prochaine session Claude Code la lira." : "copie-la dans ta conversation avec Claude ou Claude Code.") + "</p>"
+      + "<textarea id='caiRequestText' class='cai-textarea cai-request-text' rows='16' spellcheck='false'>" + esc(md) + "</textarea>"
+      + "<p id='caiRequestStatus' class='cai-hint'></p>"
+      + "<div class='cai-sheet-actions'>"
+      +   (gh ? "<button type='button' class='cai-btn cai-btn-primary' id='caiRequestSend'>Envoyer sur GitHub</button>" : "")
+      +   "<button type='button' class='cai-btn" + (gh ? "" : " cai-btn-primary") + "' id='caiRequestCopy'>Copier</button>"
+      + "</div>";
+  }
+  async function sendRequest(){
+    var box = $("caiRequestText"), st = $("caiRequestStatus");
+    if(!box) return;
+    if(/\(Écris ici, en une ou deux phrases, le changement voulu\.\)/.test(box.value)){
+      if(st){ st.textContent = "Complète d'abord « Ce que je veux »."; st.className = "cai-hint cai-err"; }
+      return;
+    }
+    if(st){ st.textContent = "Envoi…"; st.className = "cai-hint"; }
+    var out = await RacineGitHubBackup.pushRequest(requestTitle, box.value);
+    if(out.ok){
+      closePanels();
+      appendBubble("cai-msg-system cai-ok", "<p>Demande déposée : <code>" + esc(out.path) + "</code>. Dis à Claude Code de lire tes demandes dans <code>racine-sauvegarde</code>.</p>");
+    } else if(st){ st.textContent = out.error; st.className = "cai-hint cai-err"; }
   }
 
   // ── Mode pont : copier le prompt, coller la réponse ────────────────────
@@ -612,7 +741,7 @@
 
   function togglePanel(id){
     var open = false;
-    ["caiSettings", "caiMemory"].forEach(function(other){
+    ["caiSettings", "caiMemory", "caiGap", "caiRequest"].forEach(function(other){
       var el = $(other);
       if(!el) return;
       if(other === id) el.classList.toggle("cai-hidden");
@@ -676,6 +805,22 @@
       if(t.getAttribute("data-cai-close") || t.id === "caiBackdrop"){ closePanels(); return; }
       if(t.id === "caiToggleSettings"){ renderSettings(); togglePanel("caiSettings"); return; }
       if(t.id === "caiToggleMemory"){ renderMemory(); togglePanel("caiMemory"); return; }
+      if(t.id === "caiToggleGap"){ renderGap(); togglePanel("caiGap"); return; }
+      var gw = t.getAttribute("data-cai-gapweeks");
+      if(gw){ gapWeeks = Number(gw) || 8; renderGap(); return; }
+      if(t.id === "caiGapAsk"){ closePanels(); send("Commente mon bilan suggéré vs fait (outil consulter_bilan) : qu'est-ce que ces écarts disent du réglage du moteur pour moi ?"); return; }
+      if(t.id === "caiGapCC"){ renderRequest({gap: true}); togglePanel("caiRequest"); return; }
+      var cc = t.getAttribute("data-cai-cc");
+      if(cc){ renderRequest({turnId: cc}); togglePanel("caiRequest"); return; }
+      if(t.id === "caiRequestSend"){ sendRequest(); return; }
+      if(t.id === "caiRequestCopy"){
+        var rt = $("caiRequestText");
+        copyToClipboard(rt ? rt.value : "", rt).then(function(ok){
+          var st = $("caiRequestStatus");
+          if(st){ st.textContent = ok ? "✅ Copiée." : "Copie refusée : sélectionne le texte et copie-le à la main."; st.className = "cai-hint" + (ok ? " cai-ok" : ""); }
+        });
+        return;
+      }
 
       if(t.id === "caiFactAdd"){
         var input = $("caiFactInput");
