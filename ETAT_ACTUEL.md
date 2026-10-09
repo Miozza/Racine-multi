@@ -4,9 +4,9 @@ Version actuelle : V5.2.19
 
 ## État courant
 
-### Texte lisible dans le (!) et le (?)
+### Texte lisible dans le (!), le (?) et Coach IA
 
-Les fenêtres (!) et (?) partagent les mêmes tailles de texte : corps à 18–22px, aucun texte de lecture sous 16px. La page Séance n'est pas touchée.
+Les fenêtres (!) et (?) partagent les mêmes tailles de texte : corps à 18–22px, aucun texte de lecture sous 16px. Coach IA suit les mêmes paliers (messages à 17–20px). La page Séance n'est pas touchée.
 
 ### Note du programme dans le (!)
 

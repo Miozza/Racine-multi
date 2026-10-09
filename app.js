@@ -1,4 +1,4 @@
-// Racine V5.2.19 — Texte plus lisible dans le (!) et le (?)
+// Racine V5.2.19 — Texte plus lisible dans le (!), le (?) et Coach IA
 var APP_VERSION = "V5.2.19";
 
 // Architecture stable

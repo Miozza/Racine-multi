@@ -9390,3 +9390,62 @@ ol.cai-list { padding-left: 20px; }
   min-height:54px;
   font-size:clamp(18px,4.8vw,22px);
 }
+
+/* Lisibilité Coach IA — mêmes paliers que les fenêtres (!) et (?).
+   Lecture de près avec lunettes faibles : messages à 17–20px, aucun texte
+   de lecture sous 15px, étiquettes HUD à 12px minimum. Couleurs, polices
+   et disposition inchangées : seules les tailles montent.
+   Préfixe #coachaiView : passe devant les règles .cai-* et leur palier
+   @media (max-width:400px). */
+#coachaiView .cai-title{font-size:17px;}
+/* Titre et statut gardent leur ligne ; les boutons passent dessous quand
+   l'écran est trop étroit pour les deux (iPhone). */
+#coachaiView .cai-header{flex-wrap:wrap;row-gap:8px;}
+#coachaiView .cai-head-id{flex:1 1 auto;}
+#coachaiView .cai-head-actions{margin-left:auto;}
+#coachaiView .cai-status{font-size:14px;}
+#coachaiView .cai-head-btn{font-size:12px;padding:7px 9px;}
+#coachaiView .cai-badge:not(:empty){font-size:12px;}
+#coachaiView .cai-day{font-size:12px;}
+#coachaiView .cai-msg{font-size:clamp(17px,4.6vw,20px);line-height:1.5;}
+#coachaiView .cai-msg-system,
+#coachaiView .cai-banner,
+#coachaiView .cai-typing-text{font-size:16px;line-height:1.45;}
+#coachaiView .cai-coach-name{font-size:13px;}
+#coachaiView .cai-meta{font-size:13px;}
+#coachaiView .cai-h{font-size:14px;}
+#coachaiView .cai-empty{font-size:17px;}
+#coachaiView .cai-empty-title,
+#coachaiView .cai-empty-hint{font-size:16px;line-height:1.45;}
+#coachaiView .cai-memo{font-size:16px;line-height:1.45;}
+#coachaiView .cai-memo-tag,
+#coachaiView .cai-patch-tag{font-size:12px;}
+#coachaiView .cai-patch-head{font-size:15px;}
+#coachaiView .cai-patch-body{font-size:17px;line-height:1.45;}
+#coachaiView .cai-patch-foot{font-size:15px;}
+#coachaiView .cai-patch-state{font-size:13px;}
+#coachaiView .cai-btn{font-size:15px;}
+#coachaiView .cai-chip{font-size:15px;}
+#coachaiView .cai-textarea,
+#coachaiView .cai-input{font-size:17px;}
+#coachaiView .cai-bridge-q{font-size:17px;}
+#coachaiView .cai-step-num{font-size:14px;}
+#coachaiView .cai-step-text{font-size:15px;line-height:1.4;}
+#coachaiView .cai-fallback,
+#coachaiView .cai-hint{font-size:15px;line-height:1.45;}
+#coachaiView .cai-label{font-size:14px;}
+#coachaiView .cai-sheet-title{font-size:16px;}
+#coachaiView .cai-sheet-sub{font-size:15px;}
+#coachaiView .cai-sheet-close{font-size:13px;}
+#coachaiView .cai-card-title{font-size:14px;}
+#coachaiView .cai-pill{font-size:12px;}
+#coachaiView .cai-keypreview,
+#coachaiView .cai-spend-of{font-size:15px;}
+#coachaiView .cai-model-notes{font-size:16px;line-height:1.45;}
+#coachaiView .cai-stat small{font-size:13px;}
+#coachaiView .cai-stat-label{font-size:14px;}
+#coachaiView .cai-panel-count{font-size:13px;}
+#coachaiView .cai-fact-text{font-size:17px;line-height:1.45;}
+#coachaiView .cai-fact-meta{font-size:14px;}
+#coachaiView .cai-link-btn{font-size:16px;}
+#coachaiView code{font-size:14px;}
