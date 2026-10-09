@@ -244,7 +244,11 @@ function loadInfoPayload(exercise, shownLoad){
     ambitiousOption: hint && hint.ambitiousOption ? hint.ambitiousOption : null,
     // Capacite estimee (Kalman) telle que la suggestion l'a lue : le (!) la
     // relit, il ne la recalcule pas.
-    kalman: hint && hint.kalman ? hint.kalman : null
+    kalman: hint && hint.kalman ? hint.kalman : null,
+    // V5.2.17 — la consigne écrite dans le programme (note + format), pour
+    // la relire dans le (!) sans quitter la séance. Affichage seulement.
+    programNote: String(exercise.note||"").trim(),
+    programFormat: String(exercise.format||"").trim()
   };
 }
 function loadInfoText(exercise, shownLoad){
@@ -587,10 +591,14 @@ function renderLoadInfoModalBody(msg){
     var capacityLine='';
     try{ if(window.CoachKalman&&typeof CoachKalman.explainLine==='function')capacityLine=CoachKalman.explainLine(hint.kalman)||''; }catch(e){ capacityLine=''; }
     var capacityHtml=capacityLine?'<div class="tuto-section compact"><div class="tuto-section-title">Capacit\u00e9 estim\u00e9e</div><p>'+escapeHtml(capacityLine)+'</p></div>':'';
+    var programNoteHtml=hint.programNote?'<div class="tuto-section compact"><div class="tuto-section-title">Note du programme</div>'+
+      (hint.programFormat?'<p><small>Format : '+escapeHtml(hint.programFormat)+'</small></p>':'')+
+      '<p>'+escapeHtml(hint.programNote)+'</p></div>':'';
     var analysisHtml=(computedSource==="brain"||hint.brainStats)?renderBrainExplain(hint):'<div class="tuto-section compact"><div class="tuto-section-title">Analyse</div><p>'+escapeHtml(hint.reason||"\u2014")+'</p></div>';
     return '<div class="tuto-topline">HISTORIQUE DE CHARGE</div>'+ 
       '<div class="tuto-title">'+escapeHtml(hint.name||"Mouvement")+'</div>'+ 
       '<div class="tuto-goal"><strong>Charge sugg\u00e9r\u00e9e : '+escapeHtml(hint.load||"\u2014")+'</strong></div>'+ 
+      programNoteHtml+
       sourceHtml+
       capacityHtml+
       '<div class="tuto-section"><div class="tuto-section-title">Historique des poids utilis\u00e9s</div><ul>'+lis+'</ul></div>'+ 

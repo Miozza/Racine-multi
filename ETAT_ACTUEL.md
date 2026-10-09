@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.16
+# ETAT ACTUEL — V5.2.17
 
-Version actuelle : V5.2.16
+Version actuelle : V5.2.17
 
 ## État courant
+
+### Note du programme dans le (!)
+
+Le panneau (!) rappelle la note et le format de l'exercice tels qu'écrits dans le programme.
 
 ### Avis IA mouvement : envoi direct à l'API
 

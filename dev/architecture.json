@@ -425,8 +425,8 @@
     },
     {
       "path": "dev/ai_advice_modal_refresh_smoke.js",
-      "size": 879,
-      "lines": 17,
+      "size": 1154,
+      "lines": 20,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],

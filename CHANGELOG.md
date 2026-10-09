@@ -1,3 +1,10 @@
+## V5.2.17 — La note du programme dans le (!)
+
+**Pourquoi** : demande de l'athlète (2026-10-09). En séance, le (!) expliquait la charge sans rappeler la consigne écrite dans le programme (ex. Power Clean : « 70-75 % du 1RM, vitesse maximale… »).
+
+- Le (!) affiche une section **Note du programme** sous la charge suggérée : la note de l'exercice, précédée de son format (« EMOM 8 × 2 »). Absente si l'exercice n'a pas de note.
+- Affichage seulement : rien ne change dans le calcul des charges.
+
 ## V5.2.16 — Avis IA mouvement : envoi direct à l'API
 
 **Pourquoi** : demande de l'athlète (2026-10-09). L'API est branchée pour Coach IA ; l'avis sur un seul poids ne devrait plus demander de copier-coller, et il ne doit envoyer que l'historique du mouvement concerné pour rester bon marché.

@@ -1,5 +1,5 @@
-// Racine V5.2.16 — Avis IA mouvement : envoi direct à l'API, repli copier-coller
-var APP_VERSION = "V5.2.16";
+// Racine V5.2.17 — La note du programme dans le (!)
+var APP_VERSION = "V5.2.17";
 
 // Architecture stable
 // programs/*.js = plan prévu
