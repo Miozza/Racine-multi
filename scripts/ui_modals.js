@@ -488,10 +488,19 @@ function renderLoadInfoModalBody(msg){
       // Client (non-admin) : pas d'outils de gestion Avis IA. Un avis déjà importé
       // reste visible en lecture seule ; sinon on n'affiche pas la boîte vide.
       if(!aiAdmin && !summary && !influence) return '';
-      var aiButtons=aiAdmin
-        ? '<button type="button" id="copyAiAdviceMovementBtn" class="btn-accent ai-advice-btn">Copier prompt Avis IA</button>'+
-          '<button type="button" id="importAiAdviceMovementBtn" class="btn-secondary ai-advice-btn">Importer réponse IA</button>'
-        : '';
+      // V5.2.16 — avec une clé et du réseau, « Avis IA » envoie à l'API
+      // (scripts/ai/ai_ask.js). Sinon, ou après une erreur, le même endroit
+      // repasse au copier-coller + import, avec la raison au-dessus.
+      var askMode=(window.RacineAIAsk&&typeof RacineAIAsk.mode==='function')?RacineAIAsk.mode():{api:false,reason:''};
+      if(aiAskFallbackReason) askMode={api:false,reason:aiAskFallbackReason};
+      var aiButtons='';
+      if(aiAdmin && askMode.api){
+        aiButtons='<button type="button" id="askAiAdviceMovementBtn" class="btn-accent ai-advice-btn">Avis IA</button>';
+      }else if(aiAdmin){
+        aiButtons=(askMode.reason?'<p class="ai-advice-note">'+escapeHtml(askMode.reason)+'</p>':'')+
+          '<button type="button" id="copyAiAdviceMovementBtn" class="btn-accent ai-advice-btn">Copier prompt Avis IA</button>'+
+          '<button type="button" id="importAiAdviceMovementBtn" class="btn-secondary ai-advice-btn">Importer réponse IA</button>';
+      }
       return '<div class="tuto-section compact ai-advice-box"><div class="tuto-section-title">Avis IA</div>'+
         '<p class="ai-advice-note">Consultatif. Ne modifie jamais la charge automatiquement.</p>'+
         summary+influence+aiButtons+
@@ -591,9 +600,13 @@ function renderLoadInfoModalBody(msg){
     '<div class="tuto-title">Pourquoi cette charge?</div>'+ 
     '<div class="tuto-goal">'+escapeHtml(msg)+'</div>';
 }
+// Raison du repli vers le copier-coller après un échec de l'envoi direct.
+// Vaut pour le panneau (!) ouvert ; remise à zéro à chaque ouverture.
+var aiAskFallbackReason="";
 function showLoadInfoModal(msg){
   msg=String(msg||"").trim();
   if(!msg)return;
+  aiAskFallbackReason="";
   var existing=document.getElementById("loadInfoModal");
   if(existing) existing.remove();
   var modal=document.createElement("div");
@@ -611,6 +624,21 @@ function showLoadInfoModal(msg){
   }
   var close=function(){modal.classList.remove("visible");setTimeout(function(){modal.remove();unlockBodyScrollForModal();},220);};
   function bindLoadInfoModalActions(){
+    var askBtn=document.getElementById("askAiAdviceMovementBtn");
+    if(askBtn) askBtn.onclick=function(){
+      if(askBtn.disabled) return;
+      askBtn.disabled=true;
+      askBtn.textContent="Analyse…";
+      RacineAIAsk.askMovement(window.__racineLastLoadInfoHint||{}).then(function(){
+        // Panneau fermé pendant l'attente : l'avis est enregistré, rien à redessiner.
+        if(!document.body.contains(modal)) return;
+        refreshLoadInfoModalBody();
+      }).catch(function(err){
+        if(!document.body.contains(modal)) return;
+        aiAskFallbackReason=(err&&err.message?err.message:"Envoi impossible.")+" Copie le prompt à la place.";
+        refreshLoadInfoModalBody();
+      });
+    };
     var aiBtn=document.getElementById("copyAiAdviceMovementBtn");
     if(aiBtn) aiBtn.onclick=function(){
       if(window.RacineAIExport && typeof RacineAIExport.copyMovementPrompt==="function"){

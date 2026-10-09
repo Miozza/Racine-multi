@@ -1,5 +1,5 @@
-// Racine V5.2.15 — Coach IA : Réglages et Carnet en feuilles par-dessus la conversation
-var APP_VERSION = "V5.2.15";
+// Racine V5.2.16 — Avis IA mouvement : envoi direct à l'API, repli copier-coller
+var APP_VERSION = "V5.2.16";
 
 // Architecture stable
 // programs/*.js = plan prévu

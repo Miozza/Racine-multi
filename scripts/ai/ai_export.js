@@ -182,6 +182,7 @@
     }
     return common.concat([
       '  "movement": "'+mov.replace(/"/g,'\\"')+'",',
+      '  "alternative_load": null,',
       '  "allowed_actions": '+actions+',',
       '  "suggested_action": "confirm_current_load|consider_ambitious_option|increase_confirmations|reduce_aggressiveness|monitor_only|flag_possible_issue|maintain_but_watch",',
       '  "reason": "raison précise sans modifier automatiquement la charge",',
@@ -387,6 +388,9 @@
     lines.push('');
     lines.push('QUESTION');
     lines.push('Analyse la décision de Brain pour ce mouvement. Est-ce que tu es d’accord? Si tu proposerais une autre approche, explique le risque et garde ton avis consultatif.');
+    // V5.2.16 — l'athlète veut un chiffre quand le poids ne convient pas,
+    // pour le saisir lui-même. Jamais appliqué par Racine.
+    lines.push('Si tu juges le poids proposé par Brain inadéquat (trop ambitieux ou trop prudent), écris-le clairement dans "summary" et indique dans "alternative_load" le poids que tu proposerais, en lb, nombre seul. Si tu es d’accord, laisse "alternative_load" à null.');
     lines.push('');
     lines = lines.concat(responseContract('movement', pid, str(hint.name || hint.label || hint.movement))); 
     var text=lines.join('\n');

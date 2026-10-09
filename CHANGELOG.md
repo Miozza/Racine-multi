@@ -1,3 +1,13 @@
+## V5.2.16 — Avis IA mouvement : envoi direct à l'API
+
+**Pourquoi** : demande de l'athlète (2026-10-09). L'API est branchée pour Coach IA ; l'avis sur un seul poids ne devrait plus demander de copier-coller, et il ne doit envoyer que l'historique du mouvement concerné pour rester bon marché.
+
+- Panneau (!) : « Copier prompt Avis IA » devient **« Avis IA »** quand une clé est enregistrée. Le prompt est celui du copier-coller — ce mouvement seul : 8 dernières séances, explication Brain, notes dictées. Rien du cycle ni du programme (≈ 0,001 $ l'avis sur Haiku 5.5).
+- Même clé, même modèle, même plafond mensuel que Coach IA ; l'appel passe par `scripts/coach_ai/client.js` (nouveau `scripts/ai/ai_ask.js`, aucun `fetch()`).
+- Repli : sans clé, hors-ligne, plafond atteint ou erreur de l'API, le panneau revient au copier-coller + « Importer réponse IA », avec la raison affichée.
+- Réponse : verdict + raison comme avant. Si l'IA juge le poids de Brain inadéquat, elle propose un poids (`alternative_load`), affiché avec l'arrondi réel du rack et le poids de Brain. **Rien n'est appliqué** : l'athlète saisit la charge lui-même, et le suivi d'influence fonctionne comme avant.
+- L'avis reçu est enregistré comme un avis importé (« avis mouvement actif »), avec `via: "api"`. Les avis déjà enregistrés restent lisibles tels quels (champs neufs facultatifs).
+
 ## V5.2.15 — Coach IA : Réglages et Carnet refaits
 
 **Pourquoi** : capture de l'athlète (iPhone, 2026-10-08). En mode direct, ouvrir ⚙ glissait le panneau DANS le fil : la conversation était coupée en dessous, le panneau lui-même débordait, et le texte des menus déroulants (« Claude ») était tronqué en hauteur.

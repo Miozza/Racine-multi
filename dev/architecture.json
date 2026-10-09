@@ -456,6 +456,22 @@
       "consumes": []
     },
     {
+      "path": "dev/ai_ask_checks.js",
+      "size": 5736,
+      "lines": 107,
+      "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "dev/ai_export_movement_context_smoke.js",
       "size": 704,
       "lines": 9,
@@ -3006,6 +3022,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 347
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/ai/ai_ask.js",
+      "size": 3477,
+      "lines": 70,
+      "role": "Avis IA mouvement envoyé directement à l'API (via CoachAIClient), repli copier-coller : RacineAIAsk.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineAIAsk"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 410
         }
       ],
       "consumes": []

@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.15
+# ETAT ACTUEL — V5.2.16
 
-Version actuelle : V5.2.15
+Version actuelle : V5.2.16
 
 ## État courant
+
+### Avis IA mouvement : envoi direct à l'API
+
+Dans le panneau (!), « Avis IA » envoie le prompt du mouvement (8 dernières séances, explication Brain, notes) directement à l'API avec la clé, le modèle et le plafond de Coach IA. Sans clé, hors-ligne, plafond atteint ou erreur : retour au copier-coller + import. Si l'IA juge le poids de Brain inadéquat, elle propose un poids, affiché avec l'arrondi du rack ; rien n'est appliqué.
 
 ### Coach IA : Réglages et Carnet en feuilles
 
