@@ -356,7 +356,8 @@ assert(uiSrc.indexOf('function mode()') !== -1 && uiSrc.indexOf('CoachAIConfig.i
 assert(uiSrc.indexOf('renderBridge()') !== -1, 'Le mode pont est rendu quand aucune clé n\'est enregistrée.');
 assert(uiSrc.indexOf('classList.toggle("cai-pont"') !== -1 && read('styles.css').indexOf('#coachaiView.cai-pont { height: auto;') !== -1,
   'Mode copier-coller : l\'écran défile comme une page, le fil n\'est plus écrasé entre le bandeau et les étapes.');
-assert(read('styles.css').indexOf('#coachaiView > .cai-settings { flex: 0 0 auto;') !== -1, 'Un panneau ouvert ne rétrécit jamais.');
+assert(/#coachaiView > \.cai-settings \{\s*position: fixed;/.test(read('styles.css')) && uiSrc.indexOf('data-cai-close') !== -1 && read('index.html').indexOf('id="caiBackdrop"') !== -1,
+  'Réglages et Carnet s\'ouvrent en feuille par-dessus la conversation (jamais dans le fil), avec Fermer et un fond qui ferme.');
 assert(/caiClearKey[\s\S]{0,200}confirm\(/.test(uiSrc), 'Effacer la clé API demande confirmation.');
 
 // ── Le contexte dit vrai : unités, metcons, notes, jour ────────────────────

@@ -1,3 +1,13 @@
+## V5.2.15 — Coach IA : Réglages et Carnet refaits
+
+**Pourquoi** : capture de l'athlète (iPhone, 2026-10-08). En mode direct, ouvrir ⚙ glissait le panneau DANS le fil : la conversation était coupée en dessous, le panneau lui-même débordait, et le texte des menus déroulants (« Claude ») était tronqué en hauteur.
+
+- **Feuilles** : Réglages et Carnet montent du bas par-dessus la conversation, en-tête fixe (titre + Fermer), fond assombri qui ferme au toucher, touche Échap.
+- **Réglages en quatre cartes** : Connexion (état de la clé, IA du copier-coller), Modèle (coût indicatif de chacun, réflexion en français : Rapide / Normale / Approfondie / Maximale), Dépense du mois (montant, jauge du plafond), Mémoire (messages, faits, Ko). Enregistrer / Effacer la clé restent en bas, toujours visibles.
+- **Menus déroulants** : rendu maison (hauteur minimale, chevron), plus de texte coupé sur iOS.
+- Clé au préfixe inhabituel : message neutre (« si l'API la refuse, l'erreur le dira ») au lieu d'affirmer qu'elle est invalide.
+- Enregistrer ferme la feuille et confirme dans le fil.
+
 ## V5.2.14 — Coach IA : affichage du mode copier-coller réparé
 
 **Pourquoi** : capture de l'athlète (iPhone, 2026-10-08). En mode copier-coller, l'écran avait une hauteur fixe : en-tête, panneau de réglages, bandeau et trois étapes s'y empilaient, et le fil de conversation, seul à pouvoir rétrécir, finissait écrasé en quelques lignes entre le bandeau et l'étape 1. Le panneau de réglages était lui-même coupé en une bande illisible.

@@ -1,5 +1,5 @@
-// Racine V5.2.14 — Coach IA : affichage du mode copier-coller réparé, effacement de la clé confirmé
-var APP_VERSION = "V5.2.14";
+// Racine V5.2.15 — Coach IA : Réglages et Carnet en feuilles par-dessus la conversation
+var APP_VERSION = "V5.2.15";
 
 // Architecture stable
 // programs/*.js = plan prévu

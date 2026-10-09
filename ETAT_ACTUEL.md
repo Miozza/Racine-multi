@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.14
+# ETAT ACTUEL — V5.2.15
 
-Version actuelle : V5.2.14
+Version actuelle : V5.2.15
 
 ## État courant
+
+### Coach IA : Réglages et Carnet en feuilles
+
+⚙ et Carnet ouvrent une feuille par-dessus la conversation (Fermer, fond qui ferme), réglages en cartes Connexion / Modèle / Dépense / Mémoire.
 
 ### Coach IA : affichage du mode copier-coller
 

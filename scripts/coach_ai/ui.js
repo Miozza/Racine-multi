@@ -332,10 +332,8 @@
     var host = $("caiMemory");
     if(!host || !window.CoachAIChat) return;
     var facts = CoachAIChat.memory().slice().reverse();
-    host.innerHTML = ""
-      + "<div class='cai-panel-head'><span class='cai-label'>Carnet du coach</span>"
-      +   "<span class='cai-panel-count'>" + facts.length + " / " + CoachAIChat.MAX_FACTS + "</span></div>"
-      + "<p class='cai-hint'>Ce que le coach garde d'une conversation à l'autre : blessures, contraintes, objectifs, préférences. "
+    host.innerHTML = sheetHead("Carnet du coach", facts.length + " / " + CoachAIChat.MAX_FACTS + " faits")
+      + "<p class='cai-hint cai-sheet-intro'>Ce que le coach garde d'une conversation à l'autre : blessures, contraintes, objectifs, préférences. "
       +   "Relu à chaque message. Il note lui-même ; tu peux ajouter ou effacer.</p>"
       + (facts.length
           ? "<ul class='cai-facts'>" + facts.map(function(f){
@@ -449,6 +447,20 @@
 
   // ── Réglages (clé API, modèle, mémoire) ────────────────────────────────
 
+  // En-tête commun des panneaux (Réglages, Carnet) : ils s'ouvrent en
+  // feuille par-dessus la conversation, plus dans le fil — ouverts dans le
+  // fil, ils l'écrasaient et se coupaient eux-mêmes (captures iPhone).
+  function sheetHead(title, sub){
+    return "<div class='cai-sheet-head'>"
+      + "<div><div class='cai-sheet-title'>" + esc(title) + "</div>" + (sub ? "<div class='cai-sheet-sub'>" + sub + "</div>" : "") + "</div>"
+      + "<button type='button' class='cai-sheet-close' data-cai-close='1' aria-label='Fermer'>Fermer</button>"
+      + "</div>";
+  }
+  function card(title, body){
+    return "<section class='cai-card'><div class='cai-card-title'>" + esc(title) + "</div>" + body + "</section>";
+  }
+  var EFFORT_LABELS = {low: "Rapide", medium: "Normale", high: "Approfondie", xhigh: "Maximale"};
+
   function renderSettings(){
     var host = $("caiSettings");
     if(!host) return;
@@ -461,61 +473,71 @@
     // Un modèle saisi hors liste reste sélectionnable tel quel.
     var models = CoachAIConfig.models();
     if(!models.some(function(m){ return m.id === cfg.model; })) models.push({id: cfg.model, label: cfg.model});
+    var budget = Number(cfg.monthlyBudget) || 0;
+    var pct = budget > 0 ? Math.min(100, Math.round(spend.usd / budget * 100)) : 0;
 
-    host.innerHTML = ""
-      + "<div class='cai-panel-head'><span class='cai-label'>Mémoire sur cet appareil</span></div>"
-      + "<p class='cai-hint'>Conversation : <strong>" + usage.turns + " / " + usage.maxTurns + "</strong> messages · "
-      +   "carnet : <strong>" + usage.facts + " / " + usage.maxFacts + "</strong> faits · <strong>" + Math.max(1, Math.round(usage.bytes / 1024)) + " Ko</strong> au total. "
-      +   "Au-delà, le plus ancien message s'efface ; le carnet, lui, reste.</p>"
-      + "<p class='cai-hint'>" + (archived
-          ? "✅ Chaque échange est archivé dans ta sauvegarde GitHub (dossier <code>racine/coach/</code>) : rien n'est perdu quand le téléphone oublie."
-          : "Les vieux échanges ne sont archivés nulle part. Active la sauvegarde GitHub (Réglages) pour les garder sans alourdir le téléphone.")
-      + "</p>"
-      + "<label class='cai-label' for='caiAssistant'>Quelle IA tu utilises</label>"
-      + "<select id='caiAssistant' class='cai-input'>"
-      +   CoachAIConfig.assistants().map(function(a){
-            return "<option value='" + esc(a.key) + "'" + (cfg.assistant === a.key ? " selected" : "") + ">" + esc(a.label) + "</option>";
-          }).join("")
-      + "</select>"
-      + "<p class='cai-hint'>Change seulement les libellés de cet écran. Le prompt ne nomme aucune IA : "
-      +   "il marche pareil avec Claude, ChatGPT ou autre chose.</p>"
-      + "<label class='cai-label' for='caiKey'>Clé API Anthropic</label>"
-      + "<input id='caiKey' class='cai-input' type='password' autocomplete='off' spellcheck='false' "
-      +   "placeholder='" + (hasKey ? "Clé enregistrée — laisser vide pour la garder" : "sk-ant-api03-…") + "'>"
-      + (hasKey ? "<p class='cai-hint'>Clé enregistrée : " + esc(CoachAIConfig.keyPreview())
-          + (/^sk-ant-api/.test(cfg.apiKey) ? "." : " — <strong>ce n'est pas une clé API Anthropic</strong> (elle commence par sk-ant-api).")
-          + "</p>" : "")
-      + "<p class='cai-hint'><strong>Optionnelle.</strong> Sans clé, Coach IA fonctionne en copier-coller et ne coûte rien de plus "
-      +   "que ton abonnement. Une clé API se facture séparément, à l'usage — un abonnement Pro ne la couvre pas. "
-      +   "Elle n'a d'intérêt que si tu veux la conversation directe dans l'app.</p>"
-      + "<p class='cai-hint'>Elle reste sur cet appareil : elle n'entre jamais dans un export de profil ni dans un lien de prescription. "
-      +   "Efface-la si tu prêtes ton téléphone.</p>"
-      + "<label class='cai-label' for='caiModel'>Modèle</label>"
-      + "<select id='caiModel' class='cai-input'>"
-      +   models.map(function(m){
-            return "<option value='" + esc(m.id) + "'" + (cfg.model === m.id ? " selected" : "") + ">" + esc(m.label) + "</option>";
-          }).join("")
-      + "</select>"
-      + "<p class='cai-hint'><strong>Haiku 5.5</strong> (≈ 0,1 ¢ par message) suffit pour discuter, lire ton programme et ton historique. "
-      +   "<strong>Sonnet 5.5</strong> (≈ 2 ¢) raisonne mieux sur une semaine à réécrire ; <strong>Opus 5.5</strong> (≈ 4 ¢) est le plus fort. "
-      +   "Les poids viennent toujours du moteur, quel que soit le modèle.</p>"
-      + (info.effort
-          ? "<label class='cai-label' for='caiEffort'>Profondeur de réflexion</label>"
-            + "<select id='caiEffort' class='cai-input'>"
-            +   ["low","medium","high","xhigh"].map(function(e){
-                  return "<option value='" + e + "'" + (cfg.effort === e ? " selected" : "") + ">" + e + "</option>";
-                }).join("")
-            + "</select>"
-            + "<p class='cai-hint'>« medium » suffit pour discuter. Plus haut = plus cher.</p>"
-          : "")
-      + "<label class='cai-label' for='caiBudget'>Plafond mensuel ($)</label>"
-      + "<input id='caiBudget' class='cai-input' type='number' inputmode='decimal' min='0' step='0.5' value='" + esc(String(cfg.monthlyBudget)) + "'>"
-      + "<p class='cai-hint'>Ce mois : <strong>" + spend.usd.toFixed(2) + " $</strong> · " + spend.calls + " appel(s)"
-      +   (cfg.monthlyBudget > 0 ? " sur " + Number(cfg.monthlyBudget).toFixed(2) + " $" : " · sans plafond")
-      +   ". Estimation calculée sur cet appareil ; la facture Anthropic fait foi. "
-      +   "La vraie limite : un crédit prépayé sans recharge automatique.</p>"
-      + "<div class='cai-settings-actions'>"
-      +   "<button type='button' class='cai-btn' id='caiSaveCfg'>Enregistrer</button>"
+    host.innerHTML = sheetHead("Réglages Coach IA", mode() === "api" ? "Conversation directe" : "Copier-coller")
+
+      + card("Connexion",
+          "<label class='cai-label' for='caiKey'>Clé API Anthropic</label>"
+        + (hasKey
+            ? "<div class='cai-keyline'><span class='cai-pill cai-pill-ok'>Clé enregistrée</span><span class='cai-keypreview'>" + esc(CoachAIConfig.keyPreview()) + "</span></div>"
+              + (/^sk-ant-api/.test(cfg.apiKey) ? "" : "<p class='cai-hint'>Préfixe inhabituel (une clé API commence d'ordinaire par sk-ant-api). Si l'API la refuse, le message d'erreur le dira au premier envoi.</p>")
+            : "<div class='cai-keyline'><span class='cai-pill'>Aucune clé</span><span class='cai-keypreview'>Coach IA fonctionne en copier-coller</span></div>")
+        + "<input id='caiKey' class='cai-input' type='password' autocomplete='off' spellcheck='false' "
+        +   "placeholder='" + (hasKey ? "Coller une nouvelle clé pour la remplacer" : "sk-ant-api03-…") + "'>"
+        + "<p class='cai-hint'>Optionnelle et facturée à l'usage (un abonnement Pro ne la couvre pas). Elle reste sur cet appareil : jamais dans un export ni dans un lien.</p>"
+        + "<label class='cai-label' for='caiAssistant'>IA utilisée en copier-coller</label>"
+        + "<select id='caiAssistant' class='cai-input cai-select'>"
+        +   CoachAIConfig.assistants().map(function(a){
+              return "<option value='" + esc(a.key) + "'" + (cfg.assistant === a.key ? " selected" : "") + ">" + esc(a.label) + "</option>";
+            }).join("")
+        + "</select>"
+        + "<p class='cai-hint'>Change seulement les libellés : le prompt marche pareil avec n'importe quelle IA.</p>")
+
+      + card("Modèle",
+          "<select id='caiModel' class='cai-input cai-select' aria-label='Modèle'>"
+        +   models.map(function(m){
+              return "<option value='" + esc(m.id) + "'" + (cfg.model === m.id ? " selected" : "") + ">" + esc(m.label) + "</option>";
+            }).join("")
+        + "</select>"
+        + "<ul class='cai-model-notes'>"
+        +   "<li><strong>Haiku 5.5</strong> ≈ 0,1 ¢ — discuter, lire ton programme et ton historique</li>"
+        +   "<li><strong>Sonnet 5.5</strong> ≈ 2 ¢ — réécrire une semaine</li>"
+        +   "<li><strong>Opus 5.5</strong> ≈ 4 ¢ — le plus fort</li>"
+        + "</ul>"
+        + (info.effort
+            ? "<label class='cai-label' for='caiEffort'>Réflexion</label>"
+              + "<select id='caiEffort' class='cai-input cai-select'>"
+              +   ["low","medium","high","xhigh"].map(function(e){
+                    return "<option value='" + e + "'" + (cfg.effort === e ? " selected" : "") + ">" + EFFORT_LABELS[e] + "</option>";
+                  }).join("")
+              + "</select>"
+              + "<p class='cai-hint'>« Normale » suffit pour discuter. Plus haut = plus lent et plus cher.</p>"
+            : "")
+        + "<p class='cai-hint'>Les poids viennent toujours du moteur de Racine, quel que soit le modèle.</p>")
+
+      + card("Dépense du mois",
+          "<div class='cai-spend'><span class='cai-spend-amount'>" + spend.usd.toFixed(2) + " $</span>"
+        +   "<span class='cai-spend-of'>" + (budget > 0 ? "sur " + budget.toFixed(2) + " $" : "sans plafond") + " · " + spend.calls + " appel(s)</span></div>"
+        + (budget > 0 ? "<div class='cai-meter'><span style='width:" + pct + "%'></span></div>" : "")
+        + "<label class='cai-label' for='caiBudget'>Plafond mensuel ($)</label>"
+        + "<input id='caiBudget' class='cai-input' type='number' inputmode='decimal' min='0' step='0.5' value='" + esc(String(cfg.monthlyBudget)) + "'>"
+        + "<p class='cai-hint'>Estimation calculée sur cet appareil ; la facture Anthropic fait foi. 0 = pas de plafond.</p>")
+
+      + card("Mémoire",
+          "<div class='cai-stats'>"
+        +   "<div><span class='cai-stat'>" + usage.turns + "<small> / " + usage.maxTurns + "</small></span><span class='cai-stat-label'>messages</span></div>"
+        +   "<div><span class='cai-stat'>" + usage.facts + "<small> / " + usage.maxFacts + "</small></span><span class='cai-stat-label'>faits au carnet</span></div>"
+        +   "<div><span class='cai-stat'>" + Math.max(1, Math.round(usage.bytes / 1024)) + "<small> Ko</small></span><span class='cai-stat-label'>sur l'appareil</span></div>"
+        + "</div>"
+        + "<p class='cai-hint'>" + (archived
+            ? "✅ Chaque échange est aussi archivé dans ta sauvegarde GitHub (<code>racine/coach/</code>) : rien n'est perdu quand le téléphone oublie."
+            : "Au-delà de " + usage.maxTurns + " messages, le plus ancien s'efface. Active la sauvegarde GitHub (Réglages de Racine) pour tout garder.")
+        + "</p>")
+
+      + "<div class='cai-sheet-actions'>"
+      +   "<button type='button' class='cai-btn cai-btn-primary' id='caiSaveCfg'>Enregistrer</button>"
       +   (hasKey ? "<button type='button' class='cai-btn cai-btn-refuse' id='caiClearKey'>Effacer la clé</button>" : "")
       + "</div>";
   }
@@ -536,6 +558,7 @@
     if(key) key.value = "";
     renderSettings();
     renderAvailability();   // re-rend aussi le pont, dont les libellés changent
+    closePanels();
     appendBubble("cai-msg-system cai-ok", "<p>Réglages enregistrés.</p>");
   }
 
@@ -588,13 +611,18 @@
   }
 
   function togglePanel(id){
+    var open = false;
     ["caiSettings", "caiMemory"].forEach(function(other){
       var el = $(other);
       if(!el) return;
       if(other === id) el.classList.toggle("cai-hidden");
       else el.classList.add("cai-hidden");
+      if(!el.classList.contains("cai-hidden")){ open = true; el.scrollTop = 0; }
     });
+    var back = $("caiBackdrop");
+    if(back) back.classList.toggle("cai-hidden", !open);
   }
+  function closePanels(){ togglePanel(null); }
 
   // ── Câblage ────────────────────────────────────────────────────────────
 
@@ -645,6 +673,7 @@
         renderSettings(); renderAvailability();
         return;
       }
+      if(t.getAttribute("data-cai-close") || t.id === "caiBackdrop"){ closePanels(); return; }
       if(t.id === "caiToggleSettings"){ renderSettings(); togglePanel("caiSettings"); return; }
       if(t.id === "caiToggleMemory"){ renderMemory(); togglePanel("caiMemory"); return; }
 
@@ -668,6 +697,8 @@
       var refuse = t.getAttribute("data-cai-refuse");
       if(refuse !== null){ decide(refuse, false); return; }
     });
+
+    document.addEventListener("keydown", function(ev){ if(ev.key === "Escape") closePanels(); });
 
     var input = $("caiInput");
     if(input){

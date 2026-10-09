@@ -8823,7 +8823,105 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 #coachaiView > .cai-bridge { flex: 0 0 auto; }
 /* Un panneau ouvert ne rétrécit JAMAIS (il était écrasé en une bande
    illisible) ; s'il est long, il défile lui-même. */
-#coachaiView > .cai-settings { flex: 0 0 auto; max-height: 45dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* Réglages et Carnet : une FEUILLE qui monte du bas, par-dessus la
+   conversation (V5.2.15). Ouverts dans le fil, ils l'écrasaient et se
+   coupaient eux-mêmes (captures iPhone, 2026-10-08). */
+#coachaiView > .cai-settings {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  top: calc(var(--safe-top) + var(--nav-h) + 14px);
+  z-index: 70;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px calc(24px + var(--safe-bot));
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  background: var(--bg);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, .6), 0 0 30px var(--sl-glow);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  gap: 12px;
+  animation: caiSheetUp .22s ease-out;
+}
+@keyframes caiSheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #coachaiView > .cai-settings { animation: none; } }
+.cai-backdrop {
+  position: fixed; inset: 0; z-index: 69;
+  border: none; padding: 0; margin: 0;
+  background: rgba(2, 4, 10, .72);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+.cai-backdrop.cai-hidden { display: none; }
+
+.cai-sheet-head {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin: 0 -16px; padding: 16px 16px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border2);
+}
+.cai-sheet-head::before {
+  content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 4px; border-radius: 2px; background: var(--border);
+}
+.cai-sheet-title { font-family: var(--font-hud); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); }
+.cai-sheet-sub { margin-top: 3px; font-family: var(--font-main); font-size: 12px; color: var(--muted); }
+.cai-sheet-close {
+  flex: 0 0 auto; min-height: 36px; padding: 6px 12px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--panel2);
+  color: var(--text2); font-family: var(--font-hud); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; cursor: pointer;
+}
+.cai-sheet-intro { margin-top: 4px; }
+.cai-sheet-actions {
+  position: sticky; bottom: calc(-24px - var(--safe-bot)); z-index: 1;
+  display: flex; gap: 8px; margin: 4px -16px 0; padding: 12px 16px calc(12px + var(--safe-bot));
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+}
+.cai-btn-primary { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 14px var(--sl-glow); }
+
+.cai-card {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px; border-radius: 14px;
+  border: 1px solid var(--border2); background: var(--panel);
+}
+.cai-card-title { font-family: var(--font-hud); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); }
+.cai-card .cai-label { margin-top: 2px; }
+
+/* Les <select> iOS coupaient leur texte (hauteur fixe + padding) : rendu
+   maison, hauteur minimale, chevron dessiné. */
+.cai-select {
+  -webkit-appearance: none; appearance: none;
+  min-height: 46px; line-height: 1.3; padding: 11px 38px 11px 12px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--cyan) 50%), linear-gradient(135deg, var(--cyan) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+  background-size: 6px 6px; background-repeat: no-repeat;
+}
+.cai-input { min-height: 46px; line-height: 1.3; }
+
+.cai-keyline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cai-pill {
+  padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border);
+  font-family: var(--font-hud); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.cai-pill-ok { border-color: rgba(77, 255, 136, .45); color: var(--green); }
+.cai-keypreview { font-family: var(--font-main); font-size: 12px; color: var(--muted); }
+
+.cai-model-notes { list-style: none; margin: 2px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-family: var(--font-main); font-size: 12.5px; color: var(--text2); }
+.cai-model-notes strong { color: var(--text); font-weight: 600; }
+
+.cai-spend { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cai-spend-amount { font-family: var(--font-hud); font-size: 22px; color: var(--text); }
+.cai-spend-of { font-family: var(--font-main); font-size: 12px; color: var(--muted); }
+.cai-meter { height: 6px; border-radius: 3px; background: var(--panel2); overflow: hidden; }
+.cai-meter span { display: block; height: 100%; border-radius: 3px; background: var(--cyan); box-shadow: 0 0 8px var(--sl-glow); }
+
+.cai-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cai-stats > div { display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 10px; background: var(--panel2); }
+.cai-stat { font-family: var(--font-hud); font-size: 17px; color: var(--text); }
+.cai-stat small { font-size: 10px; color: var(--muted); }
+.cai-stat-label { font-family: var(--font-main); font-size: 11px; color: var(--muted); }
 
 /* Mode copier-coller : trois étapes + bandeau + fil ne tiennent pas dans
    une hauteur d'écran fixe — le fil finissait écrasé en quelques lignes,
@@ -8834,7 +8932,6 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 #coachaiView.cai-pont { height: auto; min-height: calc(100dvh - var(--nav-h) - var(--safe-top) - var(--safe-bot)); padding-bottom: calc(16px + var(--safe-bot)); }
 #coachaiView.cai-pont > .cai-messages { flex: 0 0 auto; overflow: visible; }
 #coachaiView.cai-pont > .cai-bridge { max-height: none; overflow: visible; }
-#coachaiView.cai-pont > .cai-settings { max-height: none; }
 .cai-banner { padding: 8px 12px; font-size: 12.5px; line-height: 1.45; }
 
 .cai-day {
