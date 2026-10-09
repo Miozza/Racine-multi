@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.17
+# ETAT ACTUEL — V5.2.18
 
-Version actuelle : V5.2.17
+Version actuelle : V5.2.18
 
 ## État courant
+
+### Note du programme dans le (!)
+
+Le panneau (!) rappelle la note et le format de l'exercice tels qu'écrits dans le programme.
 
 ### Coach IA analyste
 

@@ -1,3 +1,10 @@
+## V5.2.18 — La note du programme dans le (!)
+
+**Pourquoi** : demande de l'athlète (2026-10-09). En séance, le (!) expliquait la charge sans rappeler la consigne écrite dans le programme (ex. Power Clean : « 70-75 % du 1RM, vitesse maximale… »).
+
+- Le (!) affiche une section **Note du programme** sous la charge suggérée : la note de l'exercice, précédée de son format (« EMOM 8 × 2 »). Absente si l'exercice n'a pas de note.
+- Affichage seulement : rien ne change dans le calcul des charges.
+
 ## V5.2.17 — Coach IA analyste
 
 **Pourquoi** : décision de l'athlète (2026-10-09). Tout doit rester réversible, l'historique ne se touche que dans son module, et les programmes se font avec Claude et Claude Code. Coach IA devient l'analyste du moteur, à coût quasi nul.
