@@ -18,6 +18,7 @@ node dev/ai_advice_clear_smoke.js
 node dev/ai_advice_modal_refresh_smoke.js
 node dev/ai_influence_smoke.js
 node dev/ai_export_movement_context_smoke.js
+node dev/ai_ask_checks.js
 node dev/simulate_multi_users.js
 node dev/simulate_users.js
 node dev/charge_engine_checks.js

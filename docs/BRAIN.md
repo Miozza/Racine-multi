@@ -313,3 +313,12 @@ Exemple de trace :
 ```
 
 Cette trace sert à comprendre l'origine du changement sans transformer Avis IA en moteur de charge. Brain reste décisionnel. L'utilisateur reste responsable du choix final.
+
+## V5.2.16 — Avis IA mouvement par l'API
+
+Dans le panneau (!), « Avis IA » envoie le prompt mouvement directement à l'API (`scripts/ai/ai_ask.js`, `window.RacineAIAsk`) quand une clé Coach IA est enregistrée. Même clé, même modèle, même plafond mensuel que Coach IA ; l'appel passe par `scripts/coach_ai/client.js`, seul fichier du domaine qui fait du réseau.
+
+- **Seulement ce mouvement** : le prompt est celui du copier-coller (8 dernières séances, explication Brain, notes dictées). Ni cycle, ni programme — c'est ce qui garde le coût d'un avis bas.
+- **Repli** : sans clé, hors-ligne, plafond atteint ou erreur, le panneau revient au copier-coller + import.
+- **Poids alternatif** : si l'IA juge le poids de Brain inadéquat, elle donne `alternative_load` (lb). Affiché à côté du poids de Brain, avec l'arrondi réel du rack (`CoachCharge.roundLoad`). Jamais appliqué : l'athlète saisit la charge lui-même, et le suivi d'influence V3.3 s'en charge comme avant.
+- La réponse est rangée par `RacineAIImport.importAdvice`, comme un avis collé (`via: "api"`). Garde-fou : `dev/ai_ask_checks.js`.

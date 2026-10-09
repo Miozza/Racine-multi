@@ -87,6 +87,11 @@
     if(isNaN(confidence)) confidence=null;
     if(confidence!=null && confidence>1) confidence=confidence/100;
     if(confidence!=null) confidence=Math.max(0,Math.min(1,confidence));
+    // V5.2.16 — poids que l'IA proposerait quand elle juge celui de Brain
+    // inadéquat. Indicatif seulement : jamais appliqué, l'athlète le saisit.
+    // Un « d'accord » n'a pas de poids alternatif à montrer.
+    var alt=Number(String(obj.alternative_load==null?'':obj.alternative_load).replace(',', '.').replace(/[^0-9.]/g,''));
+    var alternative=(verdict!=='agree' && isFinite(alt) && alt>0) ? alt : null;
     return {
       racine_ai_response_version: str(obj.racine_ai_response_version||'1.0'),
       prompt_version: str(obj.prompt_version||''),
@@ -102,6 +107,7 @@
       global_risk_level: str(obj.global_risk_level||''),
       priority_movements: Array.isArray(obj.priority_movements)?obj.priority_movements.slice(0,12):[],
       cycle_findings: Array.isArray(obj.cycle_findings)?obj.cycle_findings.slice(0,20):[],
+      alternative_load: alternative,
       do_not_auto_apply: obj.do_not_auto_apply!==false
     };
   }
@@ -123,6 +129,23 @@
       flag_possible_issue:'Signaler un point à vérifier',
       maintain_but_watch:'Maintenir et surveiller'
     }[a] || 'Surveiller seulement';
+  }
+  // Le poids proposé par l'IA ne connaît pas le rack : on montre à côté la
+  // charge réellement disponible (data/equipment.js via CoachCharge.roundLoad).
+  function alternativeLoadHtml(rec, movement){
+    var st=rec&&rec.structured;
+    var alt=st&&Number(st.alternative_load);
+    if(!alt || !(alt>0)) return '';
+    var rounded=null;
+    try{
+      if(window.CoachCharge && typeof CoachCharge.roundLoad==='function') rounded=CoachCharge.roundLoad(movement, alt, 'nearest');
+    }catch(e){}
+    var rack=(rounded && Number(rounded)!==alt) ? ' · ≈ '+esc(rounded)+' lb au rack' : '';
+    var meta=st.prompt_id?promptMetaForId(st.prompt_id):null;
+    var brainLoad=str(rec.brain_load || (meta&&meta.load) || '');
+    if(/^\d+(?:\.\d+)?$/.test(brainLoad)) brainLoad+=' lb';
+    var brain=brainLoad ? ' (Brain proposait '+esc(brainLoad)+')' : '';
+    return '<p class="ai-advice-alt"><strong>Poids proposé par l’IA : '+esc(alt)+' lb</strong>'+rack+brain+'<br><small>À saisir toi-même si tu le suis.</small></p>';
   }
   function confidenceLabel(c){
     if(c==null) return '—';
@@ -219,6 +242,9 @@
       prompt_matched: !!meta,
       scope: str(context.scope || (structured&&structured.scope) || (meta&&meta.scope) || 'movement'),
       movement: movement,
+      via: str(context.via || 'paste'),
+      model: str(context.model || ''),
+      brain_load: str(context.brain_load || (meta&&meta.load) || ''),
       raw_text: str(rawText),
       structured: structured,
       consultative_only: true,
@@ -256,12 +282,15 @@
     if(rec){
       var st=rec.structured;
       if(!st){
-        blocks.push('<div class="ai-advice-summary" data-ai-advice-kind="movement"><strong>Avis IA mouvement actif</strong><br><small>Texte brut seulement · aucune action structurée.</small><br><small>Importé : '+esc(dateLabel(rec.created_at))+'</small><button type="button" class="btn-secondary ai-advice-btn ai-advice-clear-btn" data-ai-clear="movement">Effacer avis mouvement actif</button></div>');
+        var rawExcerpt=str(rec.raw_text).slice(0,600);
+        blocks.push('<div class="ai-advice-summary" data-ai-advice-kind="movement"><strong>Avis IA mouvement actif</strong><br><small>Texte brut seulement · aucune action structurée.</small><br>'+
+          (rec.via==='api'&&rawExcerpt?'<p>'+esc(rawExcerpt)+'</p>':'')+'<small>Importé : '+esc(dateLabel(rec.created_at))+'</small><button type="button" class="btn-secondary ai-advice-btn ai-advice-clear-btn" data-ai-clear="movement">Effacer avis mouvement actif</button></div>');
       }else{
         blocks.push('<div class="ai-advice-summary" data-ai-advice-kind="movement">'+
           '<strong>Avis IA mouvement actif — '+esc(verdictLabel(st.verdict))+'</strong>'+
           '<p>'+esc(st.summary||st.reason||'Avis consultatif importé.')+'</p>'+
-          '<small>Importé : '+esc(dateLabel(rec.created_at))+'</small><br>'+
+          alternativeLoadHtml(rec, movement)+
+          '<small>'+(rec.via==='api'?'Reçu':'Importé')+' : '+esc(dateLabel(rec.created_at))+'</small><br>'+
           '<small>Action : '+esc(actionLabel(st.suggested_action))+' · Confiance IA : '+esc(confidenceLabel(st.confidence))+'</small><br>'+
           '<small>Aucune modification automatique.</small>'+
           '<button type="button" class="btn-secondary ai-advice-btn ai-advice-clear-btn" data-ai-clear="movement">Effacer avis mouvement actif</button>'+
