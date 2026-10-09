@@ -9308,3 +9308,144 @@ ol.cai-list { padding-left: 20px; }
   .cai-head-btn { padding: 6px 7px; font-size: 9.5px; letter-spacing: .04em; }
   .cai-gear { padding: 6px 4px; }
 }
+
+/* Lisibilité des fenêtres (!) et (?) — taille de texte uniforme.
+   Lecture de près avec lunettes faibles : aucun texte de lecture sous 16px,
+   le corps à 18–22px, les mêmes paliers dans les deux fenêtres.
+   Ne touche que #loadInfoModal (!) et #tutoModal (?), pas la page Séance. */
+#loadInfoModal .tuto-topline,
+#tutoModal .tuto-topline{
+  font-size:13px;
+}
+#tutoModal .tuto-modal-inner{
+  max-width:min(98vw,760px);
+  max-height:94vh;
+  padding:22px 16px calc(26px + var(--safe-bot));
+}
+#tutoModal .tuto-title{
+  font-size:clamp(24px,6.4vw,34px);
+  line-height:1.1;
+}
+#loadInfoModal .tuto-goal,
+#loadInfoModal .tuto-section p,
+#loadInfoModal .tuto-section li,
+#loadInfoModal .ai-advice-note,
+#loadInfoModal .ai-advice-summary,
+#loadInfoModal .ai-advice-summary p,
+#loadInfoModal .tuto-cue,
+#loadInfoModal .brain-grid,
+#tutoModal .tuto-goal,
+#tutoModal .tuto-section li,
+#tutoModal .tuto-cue,
+#tutoModal .tuto-video-link{
+  font-size:clamp(18px,4.8vw,22px);
+  line-height:1.5;
+}
+#tutoModal .tuto-section{
+  padding:14px 13px;
+  border-radius:12px;
+}
+#tutoModal .tuto-section ul{gap:10px;}
+#loadInfoModal .tuto-section-title,
+#tutoModal .tuto-section-title{
+  font-size:clamp(14px,3.8vw,17px);
+  margin-bottom:10px;
+}
+/* Petits textes (dates, statuts, détails) : légèrement plus petits que le
+   corps, jamais sous 16px. */
+#loadInfoModal small,
+#loadInfoModal .ai-advice-summary small,
+#loadInfoModal .brain-grid small{
+  font-size:max(16px,.9em);
+  line-height:1.45;
+}
+#loadInfoModal .load-source{margin-bottom:8px;}
+#loadInfoModal .load-source-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px 10px;
+  margin-top:4px;
+}
+#loadInfoModal .load-source-badge{
+  color:#fff;
+  font-size:16px;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:10px;
+  letter-spacing:.03em;
+}
+#loadInfoModal .load-source-desc{
+  font-size:clamp(17px,4.4vw,20px);
+  line-height:1.45;
+  color:var(--text);
+}
+#loadInfoModal .load-origin-tag{
+  font-size:16px;
+  color:var(--text);
+  opacity:.8;
+  margin-left:4px;
+}
+#tutoModal #closeTutoBtn{
+  min-height:54px;
+  font-size:clamp(18px,4.8vw,22px);
+}
+
+/* Lisibilité Coach IA — mêmes paliers que les fenêtres (!) et (?).
+   Lecture de près avec lunettes faibles : messages à 17–20px, aucun texte
+   de lecture sous 15px, étiquettes HUD à 12px minimum. Couleurs, polices
+   et disposition inchangées : seules les tailles montent.
+   Préfixe #coachaiView : passe devant les règles .cai-* et leur palier
+   @media (max-width:400px). */
+#coachaiView .cai-title{font-size:17px;}
+/* Titre et statut gardent leur ligne ; les boutons passent dessous quand
+   l'écran est trop étroit pour les deux (iPhone). */
+#coachaiView .cai-header{flex-wrap:wrap;row-gap:8px;}
+#coachaiView .cai-head-id{flex:1 1 auto;}
+#coachaiView .cai-head-actions{margin-left:auto;}
+#coachaiView .cai-status{font-size:14px;}
+#coachaiView .cai-head-btn{font-size:12px;padding:7px 9px;}
+#coachaiView .cai-badge:not(:empty){font-size:12px;}
+#coachaiView .cai-day{font-size:12px;}
+#coachaiView .cai-msg{font-size:clamp(17px,4.6vw,20px);line-height:1.5;}
+#coachaiView .cai-msg-system,
+#coachaiView .cai-banner,
+#coachaiView .cai-typing-text{font-size:16px;line-height:1.45;}
+#coachaiView .cai-coach-name{font-size:13px;}
+#coachaiView .cai-meta{font-size:13px;}
+#coachaiView .cai-h{font-size:14px;}
+#coachaiView .cai-empty{font-size:17px;}
+#coachaiView .cai-empty-title,
+#coachaiView .cai-empty-hint{font-size:16px;line-height:1.45;}
+#coachaiView .cai-memo{font-size:16px;line-height:1.45;}
+#coachaiView .cai-memo-tag,
+#coachaiView .cai-patch-tag{font-size:12px;}
+#coachaiView .cai-patch-head{font-size:15px;}
+#coachaiView .cai-patch-body{font-size:17px;line-height:1.45;}
+#coachaiView .cai-patch-foot{font-size:15px;}
+#coachaiView .cai-patch-state{font-size:13px;}
+#coachaiView .cai-btn{font-size:15px;}
+#coachaiView .cai-chip{font-size:15px;}
+#coachaiView .cai-textarea,
+#coachaiView .cai-input{font-size:17px;}
+#coachaiView .cai-bridge-q{font-size:17px;}
+#coachaiView .cai-step-num{font-size:14px;}
+#coachaiView .cai-step-text{font-size:15px;line-height:1.4;}
+#coachaiView .cai-fallback,
+#coachaiView .cai-hint{font-size:15px;line-height:1.45;}
+#coachaiView .cai-label{font-size:14px;}
+#coachaiView .cai-sheet-title{font-size:16px;}
+#coachaiView .cai-sheet-sub{font-size:15px;}
+#coachaiView .cai-sheet-close{font-size:13px;}
+#coachaiView .cai-card-title{font-size:14px;}
+#coachaiView .cai-pill{font-size:12px;}
+#coachaiView .cai-keypreview,
+#coachaiView .cai-spend-of{font-size:15px;}
+#coachaiView .cai-model-notes{font-size:16px;line-height:1.45;}
+#coachaiView .cai-stat small{font-size:13px;}
+#coachaiView .cai-stat-label{font-size:14px;}
+#coachaiView .cai-panel-count{font-size:13px;}
+#coachaiView .cai-fact-text{font-size:17px;line-height:1.45;}
+#coachaiView .cai-fact-meta{font-size:14px;}
+#coachaiView .cai-link-btn{font-size:16px;}
+#coachaiView code{font-size:14px;}

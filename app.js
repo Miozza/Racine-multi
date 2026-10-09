@@ -1,5 +1,5 @@
-// Racine V5.2.18 — La note du programme dans le (!)
-var APP_VERSION = "V5.2.18";
+// Racine V5.2.19 — Texte plus lisible dans le (!), le (?) et Coach IA
+var APP_VERSION = "V5.2.19";
 
 // Architecture stable
 // programs/*.js = plan prévu

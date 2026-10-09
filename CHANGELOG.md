@@ -1,3 +1,12 @@
+## V5.2.19 — Texte plus lisible dans le (!), le (?) et Coach IA
+
+**Pourquoi** : demande de l'athlète (2026-10-09). Avec des lunettes de lecture +1.25, certains textes du (!), presque toute la fiche (?) et la vue Coach IA étaient illisibles.
+
+- (!) : le bloc « Source de suggestion » n'a plus de tailles en dur (10–12px, gris pâle) — badge à 16px, description à 17–20px en blanc ; l'origine d'une ligne d'historique passe à 16px ; les petits textes (dates, statuts, détails) ne descendent plus sous 16px ; le corps passe à 18–22px.
+- (?) : la fiche technique prend les mêmes paliers que le (!) — corps 18–22px, titres de section 14–17px, titre plus grand, bouton Fermer plus haut.
+- Coach IA : messages à 17–20px (au lieu de 14px), propositions, boutons, réglages, carnet et petites mentions remontés (plus rien sous 12px, le texte de lecture à 15px minimum). Sur un iPhone, les boutons Bilan / Carnet / Nouveau passent sous le titre au lieu de le couper. Couleurs et polices inchangées.
+- Ne touche que ces deux fenêtres et Coach IA : la page Séance et sa mise en page ne changent pas. Rien ne change dans le calcul des charges.
+
 ## V5.2.18 — La note du programme dans le (!)
 
 **Pourquoi** : demande de l'athlète (2026-10-09). En séance, le (!) expliquait la charge sans rappeler la consigne écrite dans le programme (ex. Power Clean : « 70-75 % du 1RM, vitesse maximale… »).
