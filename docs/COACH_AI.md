@@ -25,7 +25,9 @@ Trois capacités, et pas une de plus :
 | Proposer un remplacement de mouvement, ou en retirer un | Appliquer quoi que ce soit lui-même |
 | Proposer d'annuler un ajustement déjà accepté | |
 | Proposer un changement de format / repos / consigne | Toucher `resultats`, `athlete_state`, `charges.js` |
-| Proposer une semaine complète | Modifier un programme de `programs/` |
+| Expliquer une charge à partir de la trace du moteur (`expliquer_charge`) | Écrire un programme ou une semaine (retiré le 2026-10-09) |
+| Commenter le bilan suggéré vs fait (`consulter_bilan`) | Modifier l'historique |
+| Être la source d'une demande pour Claude Code (rédigée par Racine) | Modifier un programme de `programs/` |
 
 ---
 
@@ -113,7 +115,15 @@ conversation.
 
 ---
 
-## 5. Comment une semaine générée arrive dans l'app
+## 5. Semaines générées — retirées (2026-10-09)
+
+Coach IA n'écrit plus de semaines : les programmes s'écrivent avec Claude et se
+codent avec Claude Code. `proposer_semaine` est retiré du contrat (API et pont) ;
+`programs/archive/ai_custom.js` reste chargé, comme tout programme archivé, pour
+que les semaines déjà écrites restent lisibles. Le texte ci-dessous décrit le
+mécanisme d'origine, conservé pour mémoire.
+
+### Mécanisme d'origine
 
 Par un **programme normal**, `programs/ai_custom.js` (id `ai_custom`, privé).
 

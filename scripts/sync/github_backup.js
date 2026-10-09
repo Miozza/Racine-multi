@@ -344,6 +344,25 @@
 
   // Restauration : relit le fichier et l'importe comme NOUVEAU profil, par le
   // chemin d'import existant. Aucun profil local n'est touché.
+  // Une demande pour Claude Code, rédigée par l'écran Coach IA sans appel au
+  // modèle (décision du 2026-10-09). Déposée dans <dossier>/demandes/, jamais
+  // réécrite (nom horodaté) ni relue par Racine : c'est une session Claude
+  // Code qui la lira dans le dépôt.
+  api.pushRequest = async function(title, markdown){
+    var c = read();
+    if(!api.isActiveTarget()) return {ok:false, error:"Sauvegarde GitHub non configurée pour ce profil."};
+    var text = str(markdown);
+    if(!text) return {ok:false, error:"Demande vide."};
+    var stamp = nowIso().replace(/[^0-9]/g, "").slice(0, 12);
+    var path = folder(c) + "/demandes/" + stamp.slice(0, 8) + "-" + stamp.slice(8, 12) + "-" + (slug(title).slice(0, 40) || "demande") + ".md";
+    try{
+      await commitFiles(c, [{path: path, content: text + "\n"}], "Demande Coach IA → Claude Code : " + (str(title).slice(0, 60) || "sans titre"));
+      return {ok:true, path: path};
+    }catch(e){
+      return {ok:false, error:e.message};
+    }
+  };
+
   api.fetchBlob = async function(){
     var c = read();
     if(!api.isConfigured()) return {ok:false, error:"Sauvegarde GitHub non configurée."};

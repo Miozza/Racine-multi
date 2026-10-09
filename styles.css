@@ -9255,3 +9255,56 @@ ol.cai-list { padding-left: 20px; }
 }
 .trophy-edit-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
 .trophy-edit-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Coach IA V5.2.17 : Bilan, → Claude Code ──
+   Quatre boutons d'en-tête doivent tenir à 375 px : padding resserré. */
+.cai-head-actions { gap: 4px; }
+.cai-head-btn { padding: 7px 8px; letter-spacing: .05em; }
+
+.cai-cc-link {
+  align-self: flex-start;
+  margin-top: -2px;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-hud);
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: .8;
+}
+.cai-cc-link:active { color: var(--cyan); }
+
+.cai-seg { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--border2); border-radius: 10px; background: var(--panel); }
+.cai-seg-btn {
+  flex: 1 1 0; min-height: 34px; border: none; border-radius: 8px; background: none;
+  color: var(--muted); font-family: var(--font-hud); font-size: 10.5px; letter-spacing: .06em; cursor: pointer;
+}
+.cai-seg-on { background: var(--panel2); color: var(--cyan); box-shadow: 0 0 10px var(--sl-glow); }
+
+.cai-gap { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border2); background: var(--panel); }
+.cai-gap-flag { border-color: rgba(255, 107, 53, .45); }
+.cai-gap-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cai-gap-name { font-family: var(--font-main); font-size: 14px; color: var(--text); font-weight: 600; }
+.cai-gap-delta { font-family: var(--font-hud); font-size: 14px; white-space: nowrap; }
+.cai-gap-delta small { font-size: 10px; opacity: .8; }
+.cai-gap-up { color: var(--green); }
+.cai-gap-down { color: var(--red-hud); }
+.cai-gap-eq { color: var(--muted); }
+.cai-gap-meta { font-family: var(--font-main); font-size: 11.5px; color: var(--muted); }
+.cai-gap-signal { font-family: var(--font-main); font-size: 12.5px; color: var(--orange); }
+.cai-gap-ok { font-family: var(--font-main); font-size: 12px; color: var(--muted); opacity: .8; }
+
+.cai-request-text { min-height: 320px; font-family: var(--font-main); font-size: 13px; line-height: 1.45; background: var(--panel); border: 1px solid var(--border); }
+.cai-hint.cai-err { color: var(--red-hud); }
+.cai-hint.cai-ok { color: var(--green); }
+
+/* Écrans étroits (≤ 400 px) : le titre reste sur une ligne. */
+.cai-title { white-space: nowrap; }
+@media (max-width: 400px) {
+  .cai-title { font-size: 13px; }
+  .cai-head-btn { padding: 6px 7px; font-size: 9.5px; letter-spacing: .04em; }
+  .cai-gear { padding: 6px 4px; }
+}

@@ -260,7 +260,8 @@ persiste persiste toujours localement.
   l'historique d'entraînement du profil admin dans un dépôt GitHub **privé séparé** :
   `<profil>-historique.json` (journal brut), `<profil>-resume.md` (contexte Coach IA,
   lisible par Claude sans extraction), `<profil>-profil.json` (export de restauration).
-  Plus, à chaque échange Coach IA, une archive `coach/<AAAA-MM>/<profil>-<horodatage>.md`
+  Plus, sur geste de l'athlète, une demande pour Claude Code `demandes/<AAAA-MM-JJ>-<HHMM>-<sujet>.md`
+  (décision du 2026-10-09). Plus, à chaque échange Coach IA, une archive `coach/<AAAA-MM>/<profil>-<horodatage>.md`
   (décision du 2026-10-08 : le téléphone garde un fil court, GitHub garde tout) —
   jamais réécrite ni relue. Portée stricte, tenue par
   `dev/github_backup_checks.js` :
@@ -348,9 +349,16 @@ Il n'y a donc pas deux définitions de ce qui est proposable, et un patch collé
 à la main ne peut pas plus écrire une charge qu'un patch venu de l'API. Ne pas
 écrire un second schéma.
 
-**Les semaines générées passent par un programme normal** (`programs/ai_custom.js`,
-privé) qui lit ses blocs dans `state.aiPlan`. Ne pas inventer un second chemin
-d'affichage : `buildWorkout()` est l'entonnoir unique de toutes les vues.
+**Coach IA n'écrit pas de programme** (décision du 2026-10-09). Les programmes
+s'écrivent dans une conversation avec Claude et se codent avec Claude Code.
+L'outil `proposer_semaine` est retiré ; `programs/archive/ai_custom.js` reste
+chargé (convention d'archivage) pour les semaines déjà écrites. Tout ce que Coach
+IA propose reste **réversible** (remplacement, ajustement, retraits), et il ne
+touche jamais l'historique — seul l'athlète le modifie, dans son module. Son rôle :
+**analyste** — il lit, explique (`expliquer_charge`, sur la trace réelle du
+moteur), commente le bilan suggéré vs fait (calculé par Racine, sans modèle) et
+prépare une **demande pour Claude Code** (rédigée par Racine, sans modèle,
+déposée dans `racine/demandes/` de la sauvegarde GitHub).
 
 ### 3.6 Admin
 
