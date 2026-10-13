@@ -5,6 +5,7 @@
 - **Envoi avalé** : une séance sauvegardée pendant l'envoi d'une conversation Coach IA recevait la promesse de cette conversation ; l'historique ne partait pas et restait « en attente ». Désormais l'envoi demandé est rejoué à la fin de celui qui tourne (un envoi complet l'emporte et embarque l'archive Coach IA).
 - **Envoi gelé** : sur iPhone, ranger le téléphone juste après « Sauvegarder » gèle la page ; l'envoi en attente ne repartait qu'au prochain démarrage à froid de l'app, rare pour une PWA. Il repart maintenant dès que l'app redevient visible (`visibilitychange`, `pageshow`), et le délai avant envoi passe de 4 s à 1,5 s.
 - Une séance **corrigée dans l'Historique** part aussi sur GitHub (avant : seulement les séances neuves).
+- Une séance restée **en attente** part avec le prochain envoi d'une conversation Coach IA. Avant, la conversation partait seule : constaté dans `racine-sauvegarde`, archive Coach IA reçue le 2026-10-13, historique figé au 2026-10-09 (59 séances).
 
 ## V5.2.19 — Texte plus lisible dans le (!), le (?) et Coach IA
 

@@ -275,6 +275,11 @@
     var c = read();
     if(!api.isConfigured()) return {ok:false, error:"Sauvegarde GitHub non configurée."};
     if(!opts.force && !api.isActiveTarget()) return {ok:false, error:"Profil actif différent du profil sauvegardé."};
+    // Une séance attend encore : l'envoi d'une conversation l'emporte avec lui.
+    // Avant, la conversation partait seule et la séance restait en attente
+    // (constaté le 2026-10-13 dans racine-sauvegarde : archive Coach IA reçue,
+    // historique figé au 2026-10-09).
+    if(opts.coachOnly && c.pending) opts = Object.assign({}, opts, {coachOnly: false});
     if(running){
       if(!queuedPromise){
         queuedOpts = {coachOnly: !!opts.coachOnly, force: !!opts.force};

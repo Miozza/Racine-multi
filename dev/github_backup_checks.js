@@ -112,6 +112,14 @@ assert(code('scripts/session/history_edit.js').indexOf('RacineGitHubBackup.sched
   assert(posted.length === 2 && posted[1].some(function(p){ return /-historique\.json$/.test(p); }),
     'La séance sauvegardée pendant un envoi Coach IA part quand même (historique dans le second commit).');
   assert(JSON.parse(store.racine_github_backup_v1).pending === false, 'Plus rien en attente après les deux envois.');
+  // Une séance restée en attente part avec la prochaine conversation Coach IA.
+  store.racine_github_backup_v1 = JSON.stringify(Object.assign(JSON.parse(store.racine_github_backup_v1), {pending:true}));
+  const before = posted.length;
+  const late = B.push({coachOnly:true});
+  await drain();
+  await late;
+  assert(posted.length === before + 1 && posted[before].some(function(p){ return /-historique\.json$/.test(p); }),
+    'Une séance en attente part avec l\'envoi d\'une conversation Coach IA, au lieu de rester bloquée.');
   report();
 })().catch(function(e){ errors.push('Exception : ' + e.message); report(); });
 
