@@ -79,9 +79,47 @@ admin = true;
 assert(B.schedule() === true, 'Le profil admin configuré programme un envoi.');
 assert(read('scripts/profiles/storage.js').indexOf('racine_github_backup') === -1, 'Le jeton n\'entre pas dans l\'export de profil.');
 
+// ── V5.2.20 : un envoi n'est jamais avalé ni gelé ──────────────────────────
+assert(/addEventListener\("visibilitychange", onVisible\)/.test(src) && /addEventListener\("pageshow", flushPending\)/.test(src),
+  'Un envoi en attente repart quand l\'app sort de l\'arrière-plan (iPhone), pas seulement au démarrage.');
+assert(code('scripts/session/history_edit.js').indexOf('RacineGitHubBackup.schedule()') !== -1,
+  'Une séance corrigée dans l\'Historique part aussi sur GitHub.');
+
+(async function(){
+  // Faux GitHub : chaque appel attend qu'on le libère, et on compte les commits.
+  const posted = [];
+  let release = [];
+  ctx.fetch = function(url, init){
+    return new Promise(function(resolve){
+      release.push(function(){
+        const m = (init && init.method) || 'GET';
+        if(/\/git\/trees$/.test(url)) posted.push(JSON.parse(init.body).tree.map(function(t){ return t.path; }));
+        const body = /\/git\/ref\//.test(url) ? {object:{sha:'p'}}
+          : /\/git\/commits\/p$/.test(url) ? {tree:{sha:'t0'}}
+          : /\/git\/trees$/.test(url) ? {sha:'t' + posted.length}
+          : /\/git\/commits$/.test(url) ? {sha:'c'} : {};
+        resolve({ok:true, status:200, json:async function(){ return body; }});
+      });
+    });
+  };
+  async function drain(){ for(let i = 0; i < 40; i++){ const r = release; release = []; r.forEach(function(f){ f(); }); await new Promise(function(r2){ setImmediate(r2); }); } }
+  ctx.CoachAIChat = {pendingArchive:function(){ return {upTo:'2026-10-13T10:00:00Z', from:'2026-10-13T09:00:00Z', count:2, markdown:'x'}; }, markArchived:function(){}};
+  const coach = B.push({coachOnly:true});        // une conversation part…
+  const session = B.push();                      // …et la séance est sauvegardée pendant ce temps
+  await drain();
+  const a = await coach, b = await session;
+  assert(a.ok && b.ok, 'Les deux envois aboutissent.');
+  assert(posted.length === 2 && posted[1].some(function(p){ return /-historique\.json$/.test(p); }),
+    'La séance sauvegardée pendant un envoi Coach IA part quand même (historique dans le second commit).');
+  assert(JSON.parse(store.racine_github_backup_v1).pending === false, 'Plus rien en attente après les deux envois.');
+  report();
+})().catch(function(e){ errors.push('Exception : ' + e.message); report(); });
+
+function report(){
 if(errors.length){
   console.error('\n✗ github_backup_checks — ' + errors.length + ' échec(s) :');
   errors.forEach(function(e){ console.error('  ✗ ' + e); });
   process.exit(1);
 }
 console.log('✓ github_backup_checks — ' + notes.length + ' vérifications passées.');
+}

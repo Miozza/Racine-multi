@@ -1,5 +1,5 @@
-// Racine V5.2.19 — Texte plus lisible dans le (!), le (?) et Coach IA
-var APP_VERSION = "V5.2.19";
+// Racine V5.2.20 — Sauvegarde GitHub : plus d'envoi perdu après une séance
+var APP_VERSION = "V5.2.20";
 
 // Architecture stable
 // programs/*.js = plan prévu

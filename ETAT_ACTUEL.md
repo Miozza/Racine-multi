@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.19
+# ETAT ACTUEL — V5.2.20
 
-Version actuelle : V5.2.19
+Version actuelle : V5.2.20
 
 ## État courant
+
+### Sauvegarde GitHub fiable après une séance
+
+Un envoi demandé pendant un autre est rejoué ; un envoi en attente repart quand l'app redevient visible ; une séance corrigée dans l'Historique est aussi envoyée.
 
 ### Texte lisible dans le (!), le (?) et Coach IA
 

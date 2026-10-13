@@ -35,7 +35,10 @@
   var KEY = "racine_github_backup_v1";   // niveau appareil, hors state de profil
   var SCHEMA = 1;
   var API_ROOT = "https://api.github.com";
-  var DEBOUNCE_MS = 4000;
+  // Court : sur iPhone, l'athlète range souvent le téléphone juste après
+  // « Sauvegarder » et iOS gèle les minuteries de la page. Un envoi gelé reste
+  // « en attente » et repart quand l'app redevient visible (voir boot()).
+  var DEBOUNCE_MS = 1500;
   var COACH_DEBOUNCE_MS = 45000;
   // Dépôts de CODE : une sauvegarde n'y a pas sa place (Pages la publierait).
   var CODE_REPOS = ["racine-multi", "coach-beurt-dev", "coach-beurt"];
@@ -259,6 +262,11 @@
   };
 
   var running = null;
+  // Un envoi demandé pendant qu'un autre tourne n'est jamais perdu : il est
+  // rejoué à la fin, une seule fois (V5.2.20). Avant, une séance sauvegardée
+  // pendant l'envoi d'une conversation Coach IA recevait la promesse de cette
+  // conversation — l'historique ne partait pas, et restait « en attente ».
+  var queuedOpts = null, queuedPromise = null;
 
   // Envoie l'export du profil sauvegardé. N'écrit RIEN localement d'autre que
   // son propre état (date, erreur) et l'horodatage d'export du registre.
@@ -267,7 +275,20 @@
     var c = read();
     if(!api.isConfigured()) return {ok:false, error:"Sauvegarde GitHub non configurée."};
     if(!opts.force && !api.isActiveTarget()) return {ok:false, error:"Profil actif différent du profil sauvegardé."};
-    if(running) return running;
+    if(running){
+      if(!queuedPromise){
+        queuedOpts = {coachOnly: !!opts.coachOnly, force: !!opts.force};
+        queuedPromise = running.then(function(){
+          var o = queuedOpts; queuedOpts = null; queuedPromise = null;
+          return api.push(o);
+        });
+      }else{
+        // Un envoi complet l'emporte : il embarque aussi l'archive Coach IA.
+        queuedOpts.coachOnly = queuedOpts.coachOnly && !!opts.coachOnly;
+        queuedOpts.force = queuedOpts.force || !!opts.force;
+      }
+      return queuedPromise;
+    }
 
     running = (async function(){
       try{
@@ -479,12 +500,20 @@
 
   // ── Démarrage : renvoyer un envoi resté en attente ─────────────────────
   function flushPending(){
-    try{ if(read().pending && api.isActiveTarget() && read().auto) api.push(); }catch(e){}
+    try{ if(!running && !timer && read().pending && api.isActiveTarget() && read().auto) api.push(); }catch(e){}
+  }
+  // Une PWA iPhone est rarement relancée : elle sort de l'arrière-plan. Sans
+  // ces deux écouteurs, un envoi gelé à la fermeture n'attendait que le
+  // prochain démarrage à froid (V5.2.20).
+  function onVisible(){
+    try{ if(document.visibilityState === "visible") flushPending(); }catch(e){}
   }
   function boot(){
     renderPanel();
     setTimeout(flushPending, 3000);
     try{ window.addEventListener("online", flushPending); }catch(e){}
+    try{ document.addEventListener("visibilitychange", onVisible); }catch(e){}
+    try{ window.addEventListener("pageshow", flushPending); }catch(e){}
   }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();

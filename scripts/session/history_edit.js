@@ -346,6 +346,9 @@
     // Journal brut corrigé → tout l'état dérivé est reconstruit depuis lui.
     if(typeof rebuildRefsFromHistory === 'function') rebuildRefsFromHistory();
     if(typeof window.save === 'function') window.save();
+    // Une séance corrigée part aussi sur GitHub (inerte sans jeton ou sur un
+    // autre profil), comme une séance neuve dans save.js.
+    try{ if(window.RacineGitHubBackup) RacineGitHubBackup.schedule(); }catch(e){ /* jamais bloquant */ }
     exit();
     if(typeof renderHistory === 'function') renderHistory();
     if(typeof renderWorkout === 'function') renderWorkout();
