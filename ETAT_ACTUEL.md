@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.20
+# ETAT ACTUEL — V5.2.21
 
-Version actuelle : V5.2.20
+Version actuelle : V5.2.21
 
 ## État courant
+
+### Metcons : charge et minute dans la pastille
+
+Les pastilles du metcon disent la minute de l'EMOM et la charge écrite dans le programme. Pont Peak fixe ses charges de metcon en Rx homme. La fin de séance ne propose plus l'export manuel quand la sauvegarde GitHub est active.
 
 ### Sauvegarde GitHub fiable après une séance
 

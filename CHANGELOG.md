@@ -1,3 +1,15 @@
+## V5.2.21 — Metcons : la charge et la minute dans la pastille
+
+**Pourquoi** : rapport de l'athlète (2026-10-15). EMOM du jeudi : « J'ai fait un mouvement par minute, j'espère que c'est ça ». L'écran du metcon n'affichait que « 12 Cal Row » et « 12 Goblet Squats » : ni l'alternance, ni le poids. Et les metcons de Pont Peak ne fixaient aucune charge.
+
+- **Pastilles du metcon** : la charge du programme s'affiche à côté du nom (« GOBLET SQUATS 53 lb », « BOX JUMPS 24 po ») et la minute de l'EMOM sur une ligne fine dessous (« min impaires », « station 2 »). Nom et reps inchangés : la capture des résultats est la même.
+- **Pont Peak — charges Rx homme fixées** : Wall Balls 20 lb (cible 10 pi), KB Swings 53 lb, Goblet Squats 53 lb, Box Jumps 24 po, Walking Lunges au poids du corps.
+- **Pont Peak — formats clarifiés** : les EMOM alternés disent « en alternance, un seul mouvement par minute ». Vendredi S3 : « EMOM 14 en 4 stations » sans répétitions devient « EMOM 12 en 4 stations, une station par minute, 3 tours » avec les reps de chaque station.
+- **Competition Peak** (public, donc homme/femme) : Wall Balls 20/14 lb, Box Step-Ups 24/20 po, KB Swings 53/35 lb ; les Power Cleans « légers », Front Squats « légers » et Clean and Jerk « légers à modérés » deviennent 135/95 lb (Grace au standard).
+- **Heritage 225** : Box Step-Ups 24 po, Farmer Carry 70 lb/main. **Strict Muscle-Up Personnel** : Box Step-Up 24 po, KB Swing « léger » → 44 lb.
+- **Règle pour tous les programmes, futurs compris** (`CLAUDE.md` § 3.1, `dev/wod_loads_checks.js` en CI) : un mouvement chargé de metcon porte sa charge écrite, un EMOM à plusieurs mouvements dit sa minute. Les 28 programmes antérieurs pas encore corrigés sont listés à part ; la liste ne peut que rétrécir.
+- **Fin de séance** : quand la sauvegarde GitHub automatique est active pour ce profil, « ↓ Sauvegarder profil » laisse place à « La séance part automatiquement sur GitHub ». Sans GitHub, le bouton reste.
+
 ## V5.2.20 — Sauvegarde GitHub : plus d'envoi perdu après une séance
 
 **Pourquoi** : rapport de l'athlète (2026-10-13) — les séances terminées n'arrivaient pas toujours sur GitHub. Deux causes dans `scripts/sync/github_backup.js` :

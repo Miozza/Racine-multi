@@ -9449,3 +9449,32 @@ ol.cai-list { padding-left: 20px; }
 #coachaiView .cai-fact-meta{font-size:14px;}
 #coachaiView .cai-link-btn{font-size:16px;}
 #coachaiView code{font-size:14px;}
+
+/* ── V5.2.21 : minute de l'EMOM et charge du programme dans la pastille ────
+   Ligne fine sous le nom, dans la même cellule : la grille reps | nom et la
+   hauteur minimale de la pastille ne changent pas (UI_CONSTRAINTS). */
+.guided-wod-name .guided-wod-meta{
+  display:block;
+  margin-top:3px;
+  font-family:var(--font-hud);
+  font-size:13px;
+  font-weight:700;
+  line-height:1.1;
+  letter-spacing:.04em;
+  text-transform:none;
+  color:var(--cyan);
+}
+/* Charge à côté du nom : même ligne, plus petite que le nom, chiffre HUD. */
+.guided-wod-name .guided-wod-load{
+  font-family:var(--font-hud);
+  font-size:.62em;
+  font-weight:800;
+  letter-spacing:.02em;
+  text-transform:none;
+  white-space:nowrap;
+  color:var(--cyan);
+}
+.guided-card.kind-wod .guided-wod-moves.compact .guided-wod-name .guided-wod-meta{
+  font-size:11px;
+  margin-top:2px;
+}

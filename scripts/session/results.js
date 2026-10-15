@@ -704,6 +704,16 @@ function showSessionSummaryModal(summary){
     ? '<div class="modal-deload">RPE moyen élevé sur plusieurs séances. Considère un deload cette semaine ou la prochaine.</div>'
     : '';
 
+  // Sauvegarde GitHub active pour ce profil (scripts/sync/github_backup.js) :
+  // la séance part toute seule, le bouton d'export manuel ne fait que redire
+  // ce qui est déjà fait (V5.2.21). Sans GitHub — client, autre appareil,
+  // envoi automatique coupé — l'export manuel reste proposé.
+  var ghAuto = false;
+  try{ ghAuto = !!(window.RacineGitHubBackup && RacineGitHubBackup.isActiveTarget() && RacineGitHubBackup.get().auto); }catch(e){ ghAuto = false; }
+  var backupHtml = ghAuto
+    ? '<div class="session-note" style="margin-top:12px;text-align:center">☁ La séance part automatiquement sur GitHub (Réglages → Sauvegarde GitHub pour l’état).</div>'
+    : '<button id="backupProfileBtn" class="btn-ghost" style="width:100%;margin-top:12px">↓ Sauvegarder profil</button>';
+
   var modal = document.createElement("div");
   modal.id = "summaryModal";
   modal.className = "summary-modal";
@@ -722,7 +732,7 @@ function showSessionSummaryModal(summary){
         summary.lines.map(function(l){return'<div class="summary-line">'+sessionSummaryEscape(l)+'</div>';}).join("")+
       '</div>'+
       weekAdvanceHtml+
-      '<button id="backupProfileBtn" class="btn-ghost" style="width:100%;margin-top:12px">↓ Sauvegarder profil</button>'+
+      backupHtml+
       '<button id="closeSummaryBtn" class="btn-ghost" style="width:100%;margin-top:8px">Fermer</button>'+
     '</div>';
   document.body.appendChild(modal);

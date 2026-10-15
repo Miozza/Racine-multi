@@ -176,6 +176,17 @@ Ne **jamais** écrire ici une « charge de travail » déjà réduite : la doubl
 réduction rend les poids ridicules. Un mouvement sans repère se déclare dans
 `scripts/charge/movement_tuning.js` (`defaultLoadSeeds`), jamais en dur ailleurs.
 
+**Metcon** (`kind:"wod"`) : tout mouvement chargé porte sa charge **écrite**
+dans le texte — jamais à l'appréciation de l'athlète (décision du 2026-10-15).
+Format : `15 Wall Balls 20 lb`, `24 po` pour une boîte, `poids du corps` si
+c'est voulu ; homme/femme `53/35 lb` dans un programme public. Un EMOM à
+plusieurs mouvements dit dans quelle minute va chacun (`en alternance, un
+seul mouvement par minute : minutes impaires … ; minutes paires …`), et sa
+durée tombe juste sur ses stations. Ces charges sont des standards fixes, pas
+des %1RM : le moteur ne les touche pas. La pastille du metcon affiche la
+charge à côté du nom et la minute dessous. Garde-fou : `dev/wod_loads_checks.js`
+(tout nouveau programme doit passer ; `LEGACY` ne fait que rétrécir).
+
 **Semaine légère / deload / reprise** : deux verrous, à poser volontairement.
 `coachIsDeloadWeekOrContext()` lit le libellé et l'objectif de semaine (mots
 `deload`, `récupération`, `facile`) ; `coachExtractMovementIntent()` lit la note

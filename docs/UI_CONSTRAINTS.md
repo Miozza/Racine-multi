@@ -110,6 +110,11 @@ Ces règles sont obligatoires à partir de V51.24.
 - Les plages et pyramides restent entières comme libellé de reps (`8–10`,
   `21-15-9`). Tout code qui calcule sur `mv.reps` doit donc en extraire un nombre
   (`wodMoveMaxReps()`), jamais faire d'arithmétique directe sur la chaîne.
+- **La pastille dit la charge et la minute** : la charge (`mv.load`) à côté du
+  nom (« GOBLET SQUATS 53 lb »), la minute de l'EMOM (`mv.slot`) sur une ligne
+  fine dessous (« min paires », « station 2 »), le tout dans la cellule du nom. Sans ça, deux pastilles côte à côte ne disaient ni s'il
+  fallait les faire dans la même minute ni le poids. Le nom et les reps ne
+  changent pas : la capture des résultats est la même.
 - Ces règles vivent dans `parseWodStructure()` (`app.js`), qui alimente **aussi**
   la capture de résultats : une erreur d'analyse se voit à deux écrans.
   Garde-fou : `dev/wod_moves_checks.js`.

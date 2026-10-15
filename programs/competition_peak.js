@@ -67,14 +67,14 @@ function competitionPeakBlocks(day,week){
      ]},
 
     {time:taper?"12 min":week>=3?"16 min":"15 min",title:"B. WOD Open court",tag:"Conditioning",kind:"wod",
-     text:(week===1?"AMRAP 15 : 12 wall balls 14 lb + 10 cal row + 8 burpees." :
-       week===2?"AMRAP 18 : 14 wall balls 14 lb + 12 cal row + 10 burpees." :
-       week===3?"For time 5 rounds : 12 wall balls 14 lb + 10 burpees + 12 cal row. Cap 16 min." :
-       week===4?"AMRAP 18 : 15 wall balls 14 lb + 12 box step-ups + 10 burpees." :
-       week===5?"Benchmark style Open — AMRAP 15 : 10 wall balls 14 lb + 10 cal row + 10 burpees." :
-       week===6?"AMRAP 16 : 12 wall balls 14 lb + 12 cal row + 8 burpees over line." :
-       week===7?"AMRAP 12 : 8 wall balls 14 lb + 8 cal row + 6 burpees. Reste frais." :
-       "AMRAP 10 : 6 wall balls 14 lb + 6 cal row + 4 burpees. Activation seulement.")+" "+p.wodNote+"."},
+     text:(week===1?"AMRAP 15 : 12 wall balls 20/14 lb + 10 cal row + 8 burpees." :
+       week===2?"AMRAP 18 : 14 wall balls 20/14 lb + 12 cal row + 10 burpees." :
+       week===3?"For time 5 rounds : 12 wall balls 20/14 lb + 10 burpees + 12 cal row. Cap 16 min." :
+       week===4?"AMRAP 18 : 15 wall balls 20/14 lb + 12 box step-ups 24/20 po + 10 burpees." :
+       week===5?"Benchmark style Open — AMRAP 15 : 10 wall balls 20/14 lb + 10 cal row + 10 burpees." :
+       week===6?"AMRAP 16 : 12 wall balls 20/14 lb + 12 cal row + 8 burpees over line." :
+       week===7?"AMRAP 12 : 8 wall balls 20/14 lb + 8 cal row + 6 burpees. Reste frais." :
+       "AMRAP 10 : 6 wall balls 20/14 lb + 6 cal row + 4 burpees. Activation seulement.")+" "+p.wodNote+"."},
 
     {time:"7 min",title:"C. Reset moteur",tag:"Recovery",kind:"accessory",
      exercises:[cpEx("Bike",taper?"5 min":"6 min","zone 2","—","Faire redescendre le système. Tu dois finir mieux, pas écrasé.")]},
@@ -96,8 +96,8 @@ function competitionPeakBlocks(day,week){
      text:(week===1?"EMOM 16 : min 1 = 12 cal row ; min 2 = 10 ring rows ; min 3 = 12 cal bike ; min 4 = 10 sit-ups." :
        week===2?"EMOM 20 : min 1 = 14 cal row ; min 2 = 8 pull-ups ; min 3 = 14 cal bike ; min 4 = 12 sit-ups." :
        week===3?"EMOM 16 : min 1 = 15 cal row ; min 2 = 10 burpees ; min 3 = 12 cal ski ; min 4 = 8 pull-ups." :
-       week===4?"AMRAP 18 : 12 cal ski + 10 pull-ups/ring rows + 12 sit-ups + 10 box step-ups." :
-       week===5?"Helen adapté — 3 rounds for time : 400 m row + 21 KB swings + 12 pull-ups/ring rows. Cap 15 min." :
+       week===4?"AMRAP 18 : 12 cal ski + 10 pull-ups/ring rows + 12 sit-ups + 10 box step-ups 24/20 po." :
+       week===5?"Helen adapté — 3 rounds for time : 400 m row + 21 KB swings 53/35 lb + 12 pull-ups/ring rows. Cap 15 min." :
        week===6?"EMOM 18 : min 1 = 15 cal row ; min 2 = 10 burpees ; min 3 = 10 pull-ups/ring rows." :
        week===7?"EMOM 12 : min 1 = 10 cal row ; min 2 = 6 pull-ups/ring rows ; min 3 = 8 sit-ups." :
        "EMOM 8 : min 1 = 8 cal row ; min 2 = 5 pull-ups/ring rows. Activation.")+" "+p.wodNote+"."},
@@ -122,14 +122,14 @@ function competitionPeakBlocks(day,week){
      exercises:[cpEx("Front Squat",p.front,p.frontLoad,taper?"1:30":"2:00","Maintenir les jambes et le rack. Aucune bataille.")]},
 
     {time:taper?"10 min":week>=4?"18 min":"14 min",title:"C. WOD haltéro sous fatigue",tag:"Conditioning",kind:"wod",
-     text:(week===1?"AMRAP 14 : 6 power cleans légers + 10 wall balls 14 lb + 12 cal row." :
-       week===2?"AMRAP 18 : 5 power cleans légers + 10 box step-ups + 12 wall balls 14 lb + 10 cal row." :
-       week===3?"For time 21-15-9 : wall balls 14 lb + cal row, puis 15 power cleans légers. Cap 14 min." :
-       week===4?"AMRAP 18 : 4 power cleans + 8 front squats légers + 12 burpees + 14 cal row." :
-       week===5?"Grace adapté — For time : 30 clean and jerk légers à modérés. Cap 8 min, puis 5 min easy row." :
-       week===6?"For time 4 rounds : 10 power cleans légers + 12 wall balls 14 lb + 12 cal row. Cap 18 min." :
-       week===7?"AMRAP 10 : 4 power cleans légers + 8 wall balls 14 lb + 8 cal row. Vif, frais." :
-       "AMRAP 8 : 3 power cleans légers + 6 wall balls 14 lb + 6 cal row. Activation.")+" "+p.wodNote+"."},
+     text:(week===1?"AMRAP 14 : 6 power cleans 135/95 lb + 10 wall balls 20/14 lb + 12 cal row." :
+       week===2?"AMRAP 18 : 5 power cleans 135/95 lb + 10 box step-ups 24/20 po + 12 wall balls 20/14 lb + 10 cal row." :
+       week===3?"For time 21-15-9 : wall balls 20/14 lb + cal row, puis 15 power cleans 135/95 lb. Cap 14 min." :
+       week===4?"AMRAP 18 : 4 power cleans 135/95 lb + 8 front squats 135/95 lb + 12 burpees + 14 cal row." :
+       week===5?"Grace adapté — For time : 30 clean and jerk 135/95 lb. Cap 8 min, puis 5 min easy row." :
+       week===6?"For time 4 rounds : 10 power cleans 135/95 lb + 12 wall balls 20/14 lb + 12 cal row. Cap 18 min." :
+       week===7?"AMRAP 10 : 4 power cleans 135/95 lb + 8 wall balls 20/14 lb + 8 cal row. Vif, frais." :
+       "AMRAP 8 : 3 power cleans 135/95 lb + 6 wall balls 20/14 lb + 6 cal row. Activation.")+" "+p.wodNote+"."},
 
     cpMob("Front rack stretch 1 min + lat stretch 1 min/côté + wrist stretch 1 min + respiration 1 min.")
   ];
@@ -142,14 +142,14 @@ function competitionPeakBlocks(day,week){
      exercises:[cpEx("Transitions",taper?"3 tours faciles":"3-4 tours","6 reps / mouvement","0:45","Tester le rythme du WOD sans créer de fatigue.")]},
 
     {time:week===6?"35 min":week===4?"30 min":week===2?"24 min":week===7?"15 min":week===8?"12 min":week===5?"20 min":"20 min",title:"B. WOD long compétition",tag:"Conditioning",kind:"wod",
-     text:(week===1?"AMRAP 20 : 12 wall balls 14 lb + 12 cal row + 10 box step-ups + 8 burpees." :
-       week===2?"AMRAP 24 : 15 wall balls 14 lb + 15 cal row + 12 box step-ups + 10 burpees + 8 ring rows." :
-       week===3?"For time 5 rounds : 20 cal row + 20 wall balls 14 lb + 15 box step-ups + 10 burpees. Cap 25 min." :
-       week===4?"Chipper for time : 50 cal row + 50 wall balls 14 lb + 50 box step-ups + 40 KB swings + 30 burpees + 20 ring rows. Cap 30 min." :
-       week===5?"Benchmark long — AMRAP 20 : 5 power cleans légers + 10 wall balls 14 lb + 15 cal row + 20 sit-ups." :
-       week===6?"Simulation compétition — For time : 60 cal row + 50 wall balls 14 lb + 40 box step-ups + 30 burpees + 20 power cleans légers + 10 pull-ups/ring rows. Cap 35 min." :
-       week===7?"AMRAP 15 : 10 wall balls 14 lb + 10 cal row + 8 box step-ups + 6 burpees. Reste frais." :
-       "Test court — AMRAP 12 : 8 wall balls 14 lb + 8 cal row + 6 burpees + 6 sit-ups. Activation compétitive.")+" "+p.wodNote+"."},
+     text:(week===1?"AMRAP 20 : 12 wall balls 20/14 lb + 12 cal row + 10 box step-ups 24/20 po + 8 burpees." :
+       week===2?"AMRAP 24 : 15 wall balls 20/14 lb + 15 cal row + 12 box step-ups 24/20 po + 10 burpees + 8 ring rows." :
+       week===3?"For time 5 rounds : 20 cal row + 20 wall balls 20/14 lb + 15 box step-ups 24/20 po + 10 burpees. Cap 25 min." :
+       week===4?"Chipper for time : 50 cal row + 50 wall balls 20/14 lb + 50 box step-ups 24/20 po + 40 KB swings 53/35 lb + 30 burpees + 20 ring rows. Cap 30 min." :
+       week===5?"Benchmark long — AMRAP 20 : 5 power cleans 135/95 lb + 10 wall balls 20/14 lb + 15 cal row + 20 sit-ups." :
+       week===6?"Simulation compétition — For time : 60 cal row + 50 wall balls 20/14 lb + 40 box step-ups 24/20 po + 30 burpees + 20 power cleans 135/95 lb + 10 pull-ups/ring rows. Cap 35 min." :
+       week===7?"AMRAP 15 : 10 wall balls 20/14 lb + 10 cal row + 8 box step-ups 24/20 po + 6 burpees. Reste frais." :
+       "Test court — AMRAP 12 : 8 wall balls 20/14 lb + 8 cal row + 6 burpees + 6 sit-ups. Activation compétitive.")+" "+p.wodNote+"."},
 
     {time:"5 min",title:"C. Cooldown obligatoire",tag:"Recovery",kind:"mobility",
      text:"Marche lente 2 min + respiration nasale 1 min + couch stretch 1 min/côté. Évalue stratégie : départ, cassures, transitions."}

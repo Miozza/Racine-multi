@@ -82,6 +82,8 @@ assert(read('scripts/profiles/storage.js').indexOf('racine_github_backup') === -
 // ── V5.2.20 : un envoi n'est jamais avalé ni gelé ──────────────────────────
 assert(/addEventListener\("visibilitychange", onVisible\)/.test(src) && /addEventListener\("pageshow", flushPending\)/.test(src),
   'Un envoi en attente repart quand l\'app sort de l\'arrière-plan (iPhone), pas seulement au démarrage.');
+assert(/RacineGitHubBackup\.isActiveTarget\(\)/.test(code('scripts/session/results.js')) && /backupProfileBtn/.test(code('scripts/session/results.js')),
+  'Fin de séance : le bouton d\'export manuel laisse place à « part sur GitHub » quand la sauvegarde est active, et reste sinon.');
 assert(code('scripts/session/history_edit.js').indexOf('RacineGitHubBackup.schedule()') !== -1,
   'Une séance corrigée dans l\'Historique part aussi sur GitHub.');
 

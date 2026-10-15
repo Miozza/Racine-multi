@@ -85,8 +85,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     {name:"Push-up", defaultLoad:"poids du corps", intent:"light", tempo:"3-1-1", note:"Tempo contrôlé, arrêter avec 3 reps en réserve."}
   ];
   var METCON = [
-    {f:"AMRAP 8", t:"10 cal row + 8 box step-up + 10 sit-up. RPE 7-8, rien d'overhead lourd."},
-    {f:"EMOM 10", t:"min 1 = 12 cal ski erg ; min 2 = 8 KB swing léger. Pas de pression overhead."},
+    {f:"AMRAP 8", t:"10 cal row + 8 box step-up 24 po + 10 sit-up. RPE 7-8, rien d'overhead lourd."},
+    {f:"EMOM 10", t:"min 1 = 12 cal ski erg ; min 2 = 8 KB swing 44 lb. Pas de pression overhead."},
     {f:"For Time (12 min cap)", t:"4 tours : 200 m row + 10 air squat + 8 sit-up. Contrôlé, aucun sprint final."},
     {f:"Intervalles 3×4 min", t:"Bike ou row, effort soutenu mais conversationnel, 2 min repos. Aucun mouvement d'épaule."}
   ];
