@@ -7,6 +7,7 @@
 - **Pont Peak — formats clarifiés** : les EMOM alternés disent « en alternance, un seul mouvement par minute ». Vendredi S3 : « EMOM 14 en 4 stations » sans répétitions devient « EMOM 12 en 4 stations, une station par minute, 3 tours » avec les reps de chaque station.
 - **Competition Peak** (public, donc homme/femme) : Wall Balls 20/14 lb, Box Step-Ups 24/20 po, KB Swings 53/35 lb ; les Power Cleans « légers », Front Squats « légers » et Clean and Jerk « légers à modérés » deviennent 135/95 lb (Grace au standard).
 - **Heritage 225** : Box Step-Ups 24 po, Farmer Carry 70 lb/main. **Strict Muscle-Up Personnel** : Box Step-Up 24 po, KB Swing « léger » → 44 lb.
+- **Règle pour tous les programmes, futurs compris** (`CLAUDE.md` § 3.1, `dev/wod_loads_checks.js` en CI) : un mouvement chargé de metcon porte sa charge écrite, un EMOM à plusieurs mouvements dit sa minute. Les 28 programmes antérieurs pas encore corrigés sont listés à part ; la liste ne peut que rétrécir.
 - **Fin de séance** : quand la sauvegarde GitHub automatique est active pour ce profil, « ↓ Sauvegarder profil » laisse place à « La séance part automatiquement sur GitHub ». Sans GitHub, le bouton reste.
 
 ## V5.2.20 — Sauvegarde GitHub : plus d'envoi perdu après une séance
