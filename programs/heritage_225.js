@@ -247,7 +247,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
             {name:"Hammer Curl", format:deload?"2×12":"3×10-12", load:"modéré", rest:"0:45 après B2", note:"Coudes, grip, bras forts."}
           ]},
         {time:"10 min", title:"C. WOD maintien CrossFit", tag:"Conditioning", kind:"wod",
-          text:(week>=13?"AMRAP 8":"AMRAP 10")+" : 10 cal row + 10 box step-ups + 8 burpees contrôlés + 40 m farmer carry. RPE 7-8. Aucun volume overhead inutile."},
+          text:(week>=13?"AMRAP 8":"AMRAP 10")+" : 10 cal row + 10 box step-ups 24 po + 8 burpees contrôlés + 40 m farmer carry 70 lb/main. RPE 7-8. Aucun volume overhead inutile."},
         {time:"8 min", title:"D. Mobilité récupération", tag:"Mobilité", kind:"mobility",
           text:"Lat stretch 1 min/côté + pec stretch 1 min/côté + couch stretch 1 min/côté + respiration 2 min. "+note}
       ];

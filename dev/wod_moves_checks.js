@@ -206,6 +206,23 @@ const bad = wods.filter(w => w.split(/[,;+]/).some(seg => LOADED.test(seg) && !/
 assert(wods.length >= 20 && bad.length === 0, 'Pont Peak : chaque mouvement chargé du metcon a sa charge (' + bad.join(' | ') + ')');
 assert(!/EMOM 14 en 4 stations/.test(pp), 'Pont Peak : plus d\'EMOM dont la durée ne tombe pas juste sur les stations');
 }
+// Les autres programmes de l'athlète (choix du 2026-10-15) : Competition
+// Peak (public, donc homme/femme), Heritage 225, Strict Muscle-Up Personnel.
+// Metcons seulement : un exercice de force (cpEx, name:) reçoit sa charge du
+// moteur, et l'échauffement n'est pas un metcon.
+{
+const files = ['programs/competition_peak.js', 'programs/heritage_225.js', 'programs/strict_muscle_up_personnel.js'];
+files.forEach(function(f){
+  const src = read(f).split('\n').filter(l => !/Warmup\(|warmup|cpEx\(|name:\s*"/i.test(l)).join('\n');
+  assert(!/box step-ups?\b(?!\s+\d)/i.test(src), f + ' : chaque box step-up a sa hauteur');
+  assert(!/KB swings?\b(?!\s+\d)/i.test(src), f + ' : chaque KB swing a sa charge');
+  assert(!/(?:power cleans|front squats|clean and jerk) légers/i.test(src), f + ' : plus de charge « légère » à deviner');
+  assert(!/farmer carry\b(?!\s+\d+\s*lb)/i.test(src), f + ' : le farmer carry a sa charge');
+});
+assert(!/wall balls 14 lb/.test(read('programs/competition_peak.js')), 'Competition Peak : wall balls en 20/14 lb (homme/femme)');
+const h = parse("AMRAP 18 : 15 wall balls 20/14 lb + 12 box step-ups 24/20 po + 10 burpees.");
+assert(h && h[1].load === '24/20 po' && /^box step-ups$/i.test(h[1].name), 'Hauteur homme/femme lue telle quelle, hors du nom (obtenu ' + JSON.stringify(h && h[1]) + ')');
+}
 
 console.log(failures ? '\n' + failures + ' échec(s).' : '\nTous les garde-fous passent.');
 process.exit(failures ? 1 : 0);

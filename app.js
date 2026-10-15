@@ -1050,8 +1050,8 @@ function wodSegmentLoad(part){
   var s = String(part||'');
   var m = s.match(/(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?)\s*(lb|lbs|kg)\b(\s*\/\s*(?:main|côté))?/i);
   if(m) return m[1].replace(/\s+/g,'') + ' ' + m[2].toLowerCase().replace('lbs','lb') + (m[3] ? ' /' + m[3].replace(/^\s*\/\s*/,'') : '');
-  m = s.match(/(\d+)\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/i);
-  if(m) return m[1] + ' po';
+  m = s.match(/(\d+(?:\s*\/\s*\d+)?)\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/i);
+  if(m) return m[1].replace(/\s+/g,'') + ' po';
   if(/poids du corps/i.test(s)) return 'poids du corps';
   return '';
 }
@@ -1093,7 +1093,7 @@ function parseWodStructure(text){
       .replace(/\b(?:\d+(?:\.\d+)?\s*)?(?:lb|lbs|kg)\s*(?:\/\s*(?:main|hand|côté|side))?\b/ig,'')
       // Hauteur de boîte (« Box Jumps 24 po ») et « poids du corps » : dans la
       // pastille, pas dans le nom (V5.2.21).
-      .replace(/\b\d+\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/ig,'')
+      .replace(/\b\d+(?:\s*\/\s*\d+)?\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/ig,'')
       .replace(/\bpoids du corps\b/ig,'')
       .replace(/\b(?:light|léger|légers|légères|modéré|modérée|moderate|heavy|lourd|lourds|lourdes)\b/ig,'')
       .replace(/\s+/g,' ')
