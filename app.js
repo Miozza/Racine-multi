@@ -1,5 +1,5 @@
-// Racine V5.2.20 — Sauvegarde GitHub : plus d'envoi perdu après une séance
-var APP_VERSION = "V5.2.20";
+// Racine V5.2.21 — Metcons : charge et minute dans la pastille, Pont Peak en Rx homme
+var APP_VERSION = "V5.2.21";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1039,6 +1039,35 @@ function boundWodMoveName(name){
   return n.trim();
 }
 
+// Ce que la pastille doit dire en plus du nom (V5.2.21) : la charge écrite
+// dans le programme (« 53 lb », « 24 po ») et la place du mouvement dans
+// l'EMOM (« min impaires », « station 2 »). Sans ça, « 12 Cal Row » et
+// « 12 Goblet Squats » côte à côte ne disaient ni le poids ni s'il fallait
+// les faire dans la même minute ou en alternance (note de l'athlète,
+// 2026-10-15). Lecture seulement : le nom et les reps restent ceux d'avant,
+// donc la capture des résultats ne change pas.
+function wodSegmentLoad(part){
+  var s = String(part||'');
+  var m = s.match(/(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?)\s*(lb|lbs|kg)\b(\s*\/\s*(?:main|côté))?/i);
+  if(m) return m[1].replace(/\s+/g,'') + ' ' + m[2].toLowerCase().replace('lbs','lb') + (m[3] ? ' /' + m[3].replace(/^\s*\/\s*/,'') : '');
+  m = s.match(/(\d+)\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/i);
+  if(m) return m[1] + ' po';
+  if(/poids du corps/i.test(s)) return 'poids du corps';
+  return '';
+}
+function wodSegmentSlot(part){
+  var s = String(part||'').trim();
+  var m = s.match(/^minutes?\s+(impaires|paires)\b/i);
+  if(m) return 'min ' + m[1].toLowerCase();
+  m = s.match(/^min(?:utes?)?\s*(\d+(?:\s*[-–]\s*\d+)?)\s*[:=]/i);
+  if(m) return 'min ' + m[1].replace(/\s+/g,'');
+  m = s.match(/^(\d)\)\s*/);
+  if(m) return 'station ' + m[1];
+  m = s.match(/^station\s*(\d+)/i);
+  if(m) return 'station ' + m[1];
+  return '';
+}
+
 // ── Analyse la structure d'un WOD pour extraire mouvements + reps + couleurs ──
 function parseWodStructure(text){
   if(!text) return null;
@@ -1062,6 +1091,10 @@ function parseWodStructure(text){
     // La charge appartient aux consignes, pas au titre: "Wall Balls 14 lb" => "Wall Balls".
     n = n
       .replace(/\b(?:\d+(?:\.\d+)?\s*)?(?:lb|lbs|kg)\s*(?:\/\s*(?:main|hand|côté|side))?\b/ig,'')
+      // Hauteur de boîte (« Box Jumps 24 po ») et « poids du corps » : dans la
+      // pastille, pas dans le nom (V5.2.21).
+      .replace(/\b\d+\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/ig,'')
+      .replace(/\bpoids du corps\b/ig,'')
       .replace(/\b(?:light|léger|légers|légères|modéré|modérée|moderate|heavy|lourd|lourds|lourdes)\b/ig,'')
       .replace(/\s+/g,' ')
       .trim();
@@ -1078,7 +1111,7 @@ function parseWodStructure(text){
     }
     return n;
   }
-  function addMove(reps,name,isCal){
+  function addMove(reps,name,isCal,seg){
     name = cleanMoveName(name,isCal);
     if(!name || name.length<2) return;
     // Un repos n'est pas un mouvement (« 2 min repos » dans un intervalle).
@@ -1086,7 +1119,13 @@ function parseWodStructure(text){
     var key = (String(reps)+'_'+name).toLowerCase();
     if(seen.has(key)) return;
     seen.add(key);
-    moves.push({name:name, reps:String(reps), color:COLORS[moves.length % COLORS.length]});
+    var mv = {name:name, reps:String(reps), color:COLORS[moves.length % COLORS.length]};
+    if(seg){
+      var ld = wodSegmentLoad(seg), sl = wodSegmentSlot(seg);
+      if(ld) mv.load = ld;
+      if(sl) mv.slot = sl;
+    }
+    moves.push(mv);
   }
 
   // EMOM : "min 1 = 12 cal row ; min 2 = 10 ring rows stricts"
@@ -1098,7 +1137,7 @@ function parseWodStructure(text){
       // Même lecture du nombre de tête que les autres branches : « 8-10 ring
       // rows » donnait « 8 » + un nom commençant par « -10 ».
       var lead = parseWodLeadingReps(m[1]);
-      if(lead) addMove(lead.reps, lead.name, lead.isCal);
+      if(lead) addMove(lead.reps, lead.name, lead.isCal, m[0]);
     }
     if(moves.length) return moves;
   }
@@ -1120,10 +1159,11 @@ function parseWodStructure(text){
   if(scheme){
     main = main.replace(/^(\d+\s*[-–]\s*\d+\s*[-–]\s*\d+)\s*:?\s*/,'');
     splitWodSegments(main).forEach(function(part){
+      var seg = part;
       part = stripWodSegmentLabel(part);
       var isCalPart = /^\s*cal\s+/i.test(part);
       part = cleanMoveName(part, isCalPart);
-      if(part) addMove(scheme, part, false);
+      if(part) addMove(scheme, part, false, seg);
     });
     if(moves.length) return moves;
   }
@@ -1132,12 +1172,15 @@ function parseWodStructure(text){
     // Stations numérotées sans reps (« 1) cal Row, 2) Wall Balls ») : le
     // numéro de station tient la place des reps, le nom reste propre.
     var station = String(part).trim().match(/^(\d)\)\s*(.+)$/);
-    if(station){ addMove('#'+station[1], station[2], /^cal\s/i.test(station[2])); return; }
-    var lead = parseWodLeadingReps(stripWodSegmentLabel(part));
+    // Station avec ses reps (« 2) 12 Wall Balls 20 lb ») : reps normales, le
+    // numéro de station passe dans la pastille (V5.2.21).
+    var stationLead = station ? parseWodLeadingReps(station[2]) : null;
+    if(station && !stationLead){ addMove('#'+station[1], station[2], /^cal\s/i.test(station[2]), part); return; }
+    var lead = stationLead || parseWodLeadingReps(stripWodSegmentLabel(part));
     if(!lead) return;
     var name = cleanMoveName(lead.name, lead.isCal);
     if(name.length<2) return;
-    addMove(lead.reps, name, false);
+    addMove(lead.reps, name, false, part);
   });
 
   return moves.length>=1 ? moves : null;

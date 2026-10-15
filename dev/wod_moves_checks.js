@@ -50,7 +50,7 @@ function extractFunction(src, name){
   return null;
 }
 
-const NAMES = ['splitWodSegments','stripWodSegmentLabel','parseWodLeadingReps','boundWodMoveName','parseWodStructure','wodFormatMinutes'];
+const NAMES = ['splitWodSegments','stripWodSegmentLabel','parseWodLeadingReps','boundWodMoveName','wodSegmentLoad','wodSegmentSlot','parseWodStructure','wodFormatMinutes'];
 const CONSTS = [
   ['WOD_TIME_UNIT_RE',     /var WOD_TIME_UNIT_RE\s*=\s*[^\n]+\n/],
   ['WOD_DURATION_PREP_RE', /var WOD_DURATION_PREP_RE\s*=\s*[^\n]+\n/],
@@ -175,6 +175,36 @@ assert(/var fmtMin=wodFormatMinutes\(txt\);\s*\n\s*if\(fmtMin\)seconds=fmtMin\*6
   'wodTimerConfig : le chrono prend la durée du format avant le créneau du bloc');
 assert(/wodFormatMinutes\(wodText\)/.test(read('scripts/session/results.js')),
   'results.js : la saisie des rounds utilise la même durée que le chrono');
+}
+
+// ── V5.2.21 : la pastille dit la charge et la minute ───────────────────────
+// Note de l'athlète (2026-10-15) : « J'ai fait un mouvement par minute,
+// j'espère que c'est ça » — les pastilles taisaient l'alternance et le poids.
+{
+const alt = parse("EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 12 cal Row ; minutes paires 12 Goblet Squats 53 lb.");
+assert(alt && alt.length === 2 && alt[0].slot === 'min impaires' && alt[1].slot === 'min paires',
+  'EMOM alterné : chaque pastille dit sa minute (obtenu ' + JSON.stringify(alt) + ')');
+assert(alt && alt[1].name === 'Goblet Squats' && alt[1].load === '53 lb' && alt[1].reps === '12',
+  'La charge sort du nom et va dans la pastille');
+const st = parse("EMOM 12 en 4 stations, une station par minute, 3 tours : 1) 12 cal Row, 2) 12 Wall Balls 20 lb, 3) 8 Burpees over the bar, 4) 40 Double-Unders.");
+assert(st && st.length === 4 && st[1].reps === '12' && st[1].name === 'Wall Balls' && st[1].load === '20 lb' && st[1].slot === 'station 2',
+  'Station avec reps : reps normales, station et charge dans la pastille (obtenu ' + JSON.stringify(st && st[1]) + ')');
+const box = parse("AMRAP 6 : 10 Box Jumps 24 po, 30 Double-Unders.");
+assert(box && box[0].name === 'Box Jumps' && box[0].load === '24 po' && !box[1].load,
+  'Hauteur de boîte dans la pastille, pas dans le nom');
+const pyr = parse("21-15-9 : Wall Balls 20 lb, Burpees — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14).");
+assert(pyr && pyr[0].load === '20 lb' && pyr[0].name === 'Wall Balls', 'Pyramide : la charge suit le mouvement');
+const rx = parse("AMRAP 12 : 21 KB Swings 53/35 lb + 12 Pull-Ups");
+assert(rx && rx[0].load === '53/35 lb', 'Charge Rx homme/femme lue telle quelle');
+}
+// Aucun metcon de Pont Peak ne laisse une charge à l'appréciation de l'athlète.
+{
+const pp = read('programs/pont_peak.js');
+const wods = (pp.match(/(?:mon|tue|thu|fri)Wod:"[^"]*"/g) || []);
+const LOADED = /Wall Balls|KB Swings|Goblet Squats|Box Jumps|Walking Lunges/;
+const bad = wods.filter(w => w.split(/[,;+]/).some(seg => LOADED.test(seg) && !/\d+\s*(?:lb|po)\b|poids du corps/.test(seg)));
+assert(wods.length >= 20 && bad.length === 0, 'Pont Peak : chaque mouvement chargé du metcon a sa charge (' + bad.join(' | ') + ')');
+assert(!/EMOM 14 en 4 stations/.test(pp), 'Pont Peak : plus d\'EMOM dont la durée ne tombe pas juste sur les stations');
 }
 
 console.log(failures ? '\n' + failures + ' échec(s).' : '\nTous les garde-fous passent.');

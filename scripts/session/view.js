@@ -399,7 +399,11 @@ function renderGuidedWodMoves(moves, compact){
     moves.slice(0,4).forEach(function(mv){
       html+="<div class='guided-wod-move "+escHtml(mv.color)+"'>"+
             "<div class='guided-wod-reps'>"+escHtml(mv.reps)+"</div>"+
-            "<div class='guided-wod-name'>"+escHtml(typeof displayMovementName==='function'?displayMovementName(mv.name):mv.name)+"</div>"+
+            "<div class='guided-wod-name'>"+escHtml(typeof displayMovementName==='function'?displayMovementName(mv.name):mv.name)+
+              // Minute de l'EMOM et charge du programme (V5.2.21) : une ligne
+              // DANS la cellule du nom, la grille reps | nom ne bouge pas.
+              ((mv.slot||mv.load)?"<span class='guided-wod-meta'>"+escHtml([mv.slot,mv.load].filter(Boolean).join(" · "))+"</span>":"")+
+            "</div>"+
             "</div>";
     });
     html+="</div>";

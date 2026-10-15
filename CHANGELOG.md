@@ -1,3 +1,12 @@
+## V5.2.21 — Metcons : la charge et la minute dans la pastille
+
+**Pourquoi** : rapport de l'athlète (2026-10-15). EMOM du jeudi : « J'ai fait un mouvement par minute, j'espère que c'est ça ». L'écran du metcon n'affichait que « 12 Cal Row » et « 12 Goblet Squats » : ni l'alternance, ni le poids. Et les metcons de Pont Peak ne fixaient aucune charge.
+
+- **Pastilles du metcon** : une ligne fine sous le nom dit la minute de l'EMOM (« min impaires », « station 2 ») et la charge du programme (« 53 lb », « 24 po »). Nom et reps inchangés : la capture des résultats est la même.
+- **Pont Peak — charges Rx homme fixées** : Wall Balls 20 lb (cible 10 pi), KB Swings 53 lb, Goblet Squats 53 lb, Box Jumps 24 po, Walking Lunges au poids du corps.
+- **Pont Peak — formats clarifiés** : les EMOM alternés disent « en alternance, un seul mouvement par minute ». Vendredi S3 : « EMOM 14 en 4 stations » sans répétitions devient « EMOM 12 en 4 stations, une station par minute, 3 tours » avec les reps de chaque station.
+- **Fin de séance** : quand la sauvegarde GitHub automatique est active pour ce profil, « ↓ Sauvegarder profil » laisse place à « La séance part automatiquement sur GitHub ». Sans GitHub, le bouton reste.
+
 ## V5.2.20 — Sauvegarde GitHub : plus d'envoi perdu après une séance
 
 **Pourquoi** : rapport de l'athlète (2026-10-13) — les séances terminées n'arrivaient pas toujours sur GitHub. Deux causes dans `scripts/sync/github_backup.js` :

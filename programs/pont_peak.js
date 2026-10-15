@@ -90,13 +90,13 @@
         tueMain:"Paused Bench Press", tueFormat:"4×5", tueLoad:"165 lb", // 228 × 0,72
         tueNote:"Pause 1 s immobile sur la poitrine, sans relâcher. RPE 7. Omoplates serrées, fessiers sur le banc.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"135 lb",
-        tueWod:"AMRAP 6 : 10 Box Jumps, 30 Double-Unders.",
+        tueWod:"AMRAP 6 : 10 Box Jumps 24 po, 30 Double-Unders.",
         thuMain:"Landmine Press", thuFormat:"4×8/bras", thuLoad:"45 lb",
         thuNote:"Demi-genou, côtes basses. RPE 7. Laisse l'omoplate glisser vers le haut en fin de poussée.",
-        thuWod:"AMRAP 7 : 12 cal Row, 10 KB Swings.",
+        thuWod:"AMRAP 7 : 12 cal Row, 10 KB Swings 53 lb.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"AMRAP 12 : 15 Wall Balls, 12 cal Row, 9 Toes-to-Bar."
+        friWod:"AMRAP 12 : 15 Wall Balls 20 lb (cible 10 pi), 12 cal Row, 9 Toes-to-Bar."
       },
       2: {
         monMain:"Tempo Back Squat", monFormat:"5×3", monLoad:"215 lb", // 268 × 0,80
@@ -109,10 +109,10 @@
         tueWod:"3 RFT : 10 Shuttle Runs de 10 m (aller-retour, ≈ 200 m), 15 Air Squats.",
         thuMain:"Landmine Press", thuFormat:"4×6/bras", thuLoad:"55 lb",
         thuNote:"Demi-genou, côtes basses. RPE 8. Aucune rotation du tronc.",
-        thuWod:"EMOM 8 : minutes impaires 12 cal Row ; minutes paires 12 Goblet Squats.",
+        thuWod:"EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 12 cal Row ; minutes paires 12 Goblet Squats 53 lb.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"21-15-9 : Wall Balls, Burpees — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14)."
+        friWod:"21-15-9 : Wall Balls 20 lb, Burpees — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14)."
       },
       3: {
         monMain:"Tempo Back Squat", monFormat:"montée vers 3RM", monLoad:"235 lb", // 268 × 0,87
@@ -122,13 +122,13 @@
         tueMain:"Paused Bench Press", tueFormat:"montée vers 3RM", tueLoad:"200 lb", // 228 × 0,87
         tueNote:"3RM avec pause 1 s. RPE 9 max, jamais d'échec. Pareur obligatoire.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"155 lb",
-        tueWod:"EMOM 8 : minutes impaires 40 Double-Unders ; minutes paires 8 Box Jumps.",
+        tueWod:"EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 40 Double-Unders ; minutes paires 8 Box Jumps 24 po.",
         thuMain:"Landmine Press", thuFormat:"4×5/bras", thuLoad:"65 lb",
         thuNote:"RPE 9, pas de RM. Gainage solide, stop si l'épaule monte vers l'oreille.",
-        thuWod:"2 RFT : 20 cal Row, 20 Walking Lunges.",
+        thuWod:"2 RFT : 20 cal Row, 20 Walking Lunges poids du corps.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"EMOM 14 en 4 stations : 1) cal Row, 2) Wall Balls, 3) Burpees over the bar, 4) Double-Unders."
+        friWod:"EMOM 12 en 4 stations, une station par minute, 3 tours : 1) 12 cal Row, 2) 12 Wall Balls 20 lb, 3) 8 Burpees over the bar, 4) 40 Double-Unders."
       },
       4: {
         monMain:"Back Squat", monFormat:"5×3", monLoad:"250 lb", // 315 × 0,80
@@ -144,7 +144,7 @@
         thuWod:"6 × (0:40 Row / 0:20 repos).",
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
-        friWod:"5 × (2:00 effort / 1:00 repos) : 12 cal Row puis max Wall Balls."
+        friWod:"5 × (2:00 effort / 1:00 repos) : 12 cal Row puis max Wall Balls 20 lb."
       },
       5: {
         monMain:"Back Squat", monFormat:"4×2", monLoad:"275 lb", // 315 × 0,88
@@ -157,10 +157,10 @@
         tueWod:"Pour le temps : 50 cal Bike (mini-benchmark, à refaire pendant le Peak).",
         thuMain:"Strict Press", thuFormat:"4×2", thuLoad:"135 lb", // 155 × 0,88
         thuNote:"Doubles lourds, RPE 9. Stop si le bas du dos cambre ou si la barre dérive vers l'avant.",
-        thuWod:"Pour le temps : 500 m Row + 30 KB Swings (cap 7).",
+        thuWod:"Pour le temps : 500 m Row + 30 KB Swings 53 lb (cap 7).",
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
-        friWod:"Mini-benchmark pour le temps : 50 Wall Balls, 40 cal Row, 30 Burpees, 20 Toes-to-Bar (cap 15). À refaire pendant le Peak pour mesurer la progression."
+        friWod:"Mini-benchmark pour le temps : 50 Wall Balls 20 lb, 40 cal Row, 30 Burpees, 20 Toes-to-Bar (cap 15). À refaire pendant le Peak pour mesurer la progression."
       },
       6: {
         monMain:"Back Squat", monFormat:"3×5", monLoad:"175 lb", // 315 × 0,55
@@ -192,7 +192,7 @@
         thuWod:"6 min Row facile.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"75%",
         cleanNote:"75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Aucun RM cette semaine.",
-        friWod:"AMRAP 12 modéré, aperçu du Peak : 10 Wall Balls, 10 cal Row, 5 Burpees."
+        friWod:"AMRAP 12 modéré, aperçu du Peak : 10 Wall Balls 20 lb, 10 cal Row, 5 Burpees."
       }
     })[week] || plan(1);
   }
