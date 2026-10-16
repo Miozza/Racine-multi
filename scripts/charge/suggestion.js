@@ -1991,6 +1991,14 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     if(!baseNum || baseNum <= 0) return base.loadText;
 
     var label = base.label || nameOrKey;
+    // Capacite estimee : coachFinalizeSuggestionDecision vient de l'attacher a
+    // l'indice de CETTE decision (nulle en mode off). Les re-stockages plus bas
+    // (deload, couche Brain, portail stats) ecrivent un payload neuf : sans
+    // cette relecture, le (!) perdait sa section « Capacite estimee » des que
+    // la couche Brain repassait. Relue une fois, reattachee, jamais recalculee.
+    var hintKey = (typeof coachNormalizeMoveText==='function') ? coachNormalizeMoveText(label) : '';
+    var baseHint = (hintKey && window.__coachLoadHints) ? window.__coachLoadHints[hintKey] : null;
+    var baseKalman = (baseHint && baseHint.kalman) ? baseHint.kalman : null;
     var mv = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(label) : null;
     var histAll = (mv && Array.isArray(mv.history)) ? mv.history : [];
     if(!histAll.length) return base.loadText;
@@ -2062,6 +2070,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
             window.__coachLoadHints[dk].load=coachFormatSuggestedLoad(label,deloadRounded,base.loadText,'');
             window.__coachLoadHints[dk].reason=reason;
             window.__coachLoadHints[dk].source='brain';
+            if(baseKalman)window.__coachLoadHints[dk].kalman=baseKalman;
           }
         }
       }catch(e){}
@@ -2249,6 +2258,7 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
           window.__coachLoadHints[normKey].reason = reason;
           window.__coachLoadHints[normKey].source = 'brain';
           if(safeDecision.brainStats)window.__coachLoadHints[normKey].brainStats=safeDecision.brainStats;
+          if(baseKalman)window.__coachLoadHints[normKey].kalman=baseKalman;
         }
       }
     }catch(e){}

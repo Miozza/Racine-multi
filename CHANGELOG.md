@@ -1,3 +1,13 @@
+## V5.2.22 — (!) : la capacité estimée ne disparaît plus derrière Brain
+
+**Pourquoi** : rapport de l'athlète (2026-10-15). Dans le (!), la section « Capacité estimée » (Kalman, mode observation) n'apparaissait jamais, alors que la source « Brain » et l'analyse Brain s'affichaient.
+
+- **Cause** : l'app passe par `CoachCharge.suggestLoad` (= `coachSafeSuggestedLoad`, `scripts/charge/suggestion.js`). Sa couche Brain re-stocke l'indice du (!) après la décision de base (couche Brain V1.16, portail Brain stats, chemin deload) ; `storeLoadDecisionHint` écrit un objet neuf, et le champ `kalman` attaché par `coachFinalizeSuggestionDecision` était perdu.
+- **Correctif** : `coachSafeSuggestedLoad` relit le `kalman` de l'indice que la décision de base vient d'écrire et le réattache après chaque re-stockage. Jamais recalculé ; nul en mode off, donc jamais périmé.
+- **Charges inchangées** : seul l'indice d'affichage est touché. Suggestions identiques avant/après sur toute la matrice de `dev/kalman_checks.js`, modes off, shadow et blend.
+- **Garde-fou** : `dev/kalman_checks.js` § 8b teste le (!) par le chemin réel de l'app (il échouait sur V5.2.21), shadow = off bit à bit sur ce chemin, et aucun `kalman` périmé après un passage en off.
+- `ETAT_ACTUEL.md` : Coach IA tourne par défaut sur Haiku 5.5, plus Haiku 4.5.
+
 ## V5.2.21 — Metcons : la charge et la minute dans la pastille
 
 **Pourquoi** : rapport de l'athlète (2026-10-15). EMOM du jeudi : « J'ai fait un mouvement par minute, j'espère que c'est ça ». L'écran du metcon n'affichait que « 12 Cal Row » et « 12 Goblet Squats » : ni l'alternance, ni le poids. Et les metcons de Pont Peak ne fixaient aucune charge.
