@@ -116,6 +116,21 @@ function wodPlusProgressExerciseHtml(mvKey, kind, index, isPrimary){
   return html;
 }
 
+function wodPlusRealTodayText(){
+  try{return realToday().label;}catch(e){return "";}
+}
+// L'app peut rester ouverte en arrière-plan d'un jour à l'autre : au retour
+// au premier plan, la ligne du jour réel suit l'horloge. Seul ce texte est
+// réécrit — ni l'état, ni la séance affichée.
+function refreshWodPlusRealToday(){
+  var el=$("wodRealToday");
+  if(el){var t=wodPlusRealTodayText();if(el.textContent!==t)el.textContent=t;}
+}
+try{
+  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")refreshWodPlusRealToday();});
+  window.addEventListener("pageshow",refreshWodPlusRealToday);
+}catch(e){}
+
 function renderWorkout(){
   var w=buildWorkout(state.day,state.week);
   var wt=$("workoutTitle"),fi=$("focusImpact"),c=$("blocks"),pa=$("progressionAdvice");
@@ -146,6 +161,10 @@ function renderWorkout(){
         "</div>"+
         wodPlusStartButtonHtml("top")+
       "</div>"+
+      // Jour réel (horloge du téléphone) à côté du jour de programme : même
+      // source que Coach IA (realToday). Le titre au-dessus reste le jour de
+      // PROGRAMME, qui avance avec la semaine validée, pas avec le calendrier.
+      "<div class='wodplus-intention'><span>Aujourd’hui</span><strong id='wodRealToday'>"+wodPlusRealTodayText()+"</strong></div>"+
       "<div class='wodplus-intention'><span>Intention</span><strong>"+dayIntention(state.day)+"</strong></div>"+
       (plan?"<div class='wodplus-plan'>"+plan.label+" — "+plan.note+"</div>":"")+
       deloadWarning+

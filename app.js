@@ -1,5 +1,5 @@
-// Racine V5.2.22 — (!) : la capacité estimée (Kalman) survit à la couche Brain
-var APP_VERSION = "V5.2.22";
+// Racine V5.2.23 — jour réel (horloge du téléphone) séparé du jour de programme
+var APP_VERSION = "V5.2.23";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -200,9 +200,22 @@ function missingDaysForWeek(){
   return currentDayOrder().filter(function(d){ return !isDayCompleted(d) && !isDayMissed(d); });
 }
 function dayLabel(day){ var m=currentDayMeta(day); return (m&&m.label)||day; }
+// Jour RÉEL : l'horloge du téléphone, dans le fuseau local de l'athlète.
+// Source unique pour l'écran WOD, la sauvegarde de séance et Coach IA. À ne
+// pas confondre avec state.day, le jour de PROGRAMME, qui avance avec la
+// semaine validée dans l'app et jamais avec le calendrier. `now` n'existe que
+// pour les tests (dev/real_today_checks.js).
+var REAL_DAY_NAMES=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+var REAL_MONTH_NAMES=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function realToday(now){
+  var d=(now instanceof Date&&!isNaN(now.getTime()))?now:new Date();
+  var tz="";
+  try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"";}catch(e){}
+  var name=REAL_DAY_NAMES[d.getDay()];
+  return {iso:localIsoDate(d),day:name,label:name+" "+d.getDate()+" "+REAL_MONTH_NAMES[d.getMonth()]+" "+d.getFullYear(),timeZone:tz};
+}
 function actualDayName(){
-  var js=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
-  try{return js[new Date().getDay()];}catch(e){return "";}
+  try{return realToday().day;}catch(e){return "";}
 }
 
 function localIsoDate(d){
@@ -1281,8 +1294,8 @@ function rebuildRefsFromHistory(){
   state.athleteState={movements:{},updatedAt:null,version:APP_VERSION};
   (state.history||[]).forEach(function(s){
     var res=s.results||s.resultats||{};
-    updateRefsFromResults(res,s.date||new Date().toLocaleDateString("fr-CA"));
-    CoachCharge.updateAthleteStateFromResults(res,s.date||new Date().toLocaleDateString("fr-CA"));
+    updateRefsFromResults(res,s.date||todayIsoDate());
+    CoachCharge.updateAthleteStateFromResults(res,s.date||todayIsoDate());
   });
   checkDeloadAlert();
 }
@@ -1313,7 +1326,7 @@ function markDayMissed(day, reason){
   if(!reason)return false;
   state.missedDays=state.missedDays||[];
   state.missedDays=state.missedDays.filter(function(x){return !(x&&x.day===day&&Number(x.week)===Number(state.week)&&x.cycle===activeProgramId());});
-  state.missedDays.push({week:state.week,day:day,cycle:activeProgramId(),reason:reason,date:new Date().toLocaleDateString("fr-CA"),actualDate:new Date().toLocaleDateString("fr-CA"),actualDayName:actualDayName()});
+  state.missedDays.push({week:state.week,day:day,cycle:activeProgramId(),reason:reason,date:todayIsoDate(),actualDate:todayIsoDate(),actualDayName:actualDayName()});
   state.cycleState=buildCycleStatePayload();
   save();
   render();
@@ -1331,7 +1344,7 @@ function advanceWeek(reason){
   if(state.week < tw){
     var fromWeek=state.week, fromCompleted=(state.completedDays||[]).slice(), fromMissed=(state.missedDays||[]).filter(function(x){return x&&Number(x.week)===Number(fromWeek)&&x.cycle===activeProgramId();});
     state.weekTransitions=state.weekTransitions||[];
-    state.weekTransitions.push({cycle:activeProgramId(),fromWeek:fromWeek,toWeek:fromWeek+1,completedDays:fromCompleted,missedDays:fromMissed,reason:reason||"Semaine traitée",date:new Date().toLocaleDateString("fr-CA"),actualDayName:actualDayName()});
+    state.weekTransitions.push({cycle:activeProgramId(),fromWeek:fromWeek,toWeek:fromWeek+1,completedDays:fromCompleted,missedDays:fromMissed,reason:reason||"Semaine traitée",date:todayIsoDate(),actualDayName:actualDayName()});
     state.week++;
     state.completedDays = [];
     state.cycleState=buildCycleStatePayload();
@@ -2403,7 +2416,7 @@ var PR_FIELD_MAP = {
   prInclineDb10RM:  {profile:"inclineDb10RM",    label:"Incline DB press",    mvKey:"inclineDb",  reps:10, range:"hypertrophy"}
 };
 
-function todayDateString(){return new Date().toLocaleDateString("fr-CA");}
+function todayDateString(){return todayIsoDate();}
 
 function renderProfile(){
   Object.keys(PR_FIELD_MAP).forEach(function(id){
@@ -3104,7 +3117,7 @@ function bind(){
   var cst=$("cycleStartTodayBtn");if(cst)cst.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=todayIsoDate();};
   var csm=$("cycleStartMondayBtn");if(csm)csm.onclick=function(){var i=$("cycleStartDateInput");if(i)i.value=mondayOfCurrentWeekIso();};
   var csa=$("applyCycleStartDateBtn");if(csa)csa.onclick=function(){var i=$("cycleStartDateInput"), val=(i&&i.value)||todayIsoDate();if(applyCycleStartDate(val,{setDayFromToday:true,resetWeekTracking:true})){save();render();renderCycle();}};
-  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){var stamp=(window.RacineExport&&window.RacineExport.stamp)?window.RacineExport.stamp():new Date().toISOString().slice(0,10);saveJsonFile("racine-historique-"+stamp+".json",state.history);};
+  var eh=$("exportHistoryBtn");if(eh)eh.onclick=function(){var stamp=(window.RacineExport&&window.RacineExport.stamp)?window.RacineExport.stamp():todayIsoDate();saveJsonFile("racine-historique-"+stamp+".json",state.history);};
   var hts=$("historySubtabSessions");if(hts)hts.onclick=function(){historyActiveSubtab="sessions";renderHistory();};
   var htp=$("historySubtabProgress");if(htp)htp.onclick=function(){historyActiveSubtab="progress";renderHistory();};
   var rh=$("resetHistoryBtn");if(rh)rh.onclick=function(){if(confirm("Effacer tout l'historique ? Le moteur de charge oubliera aussi les references apprises (athleteState, RPE) pour repartir a zero.")){state.history=[];rebuildRefsFromHistory();save();renderHistory();renderWorkout();renderReferences();renderWeekProgress();}};

@@ -402,8 +402,9 @@ assert(/caiClearKey[\s\S]{0,200}confirm\(/.test(uiSrc), 'Effacer la clé API dem
     'La note système reste visible dans la séance, étiquetée comme venant de l\'app.');
   assert(txt.indexOf('Record Back Squat 1RM : 285 → 300 lb') !== -1 && athleteNotes.indexOf('Record') === -1,
     'Un trophée 1RM détecté est une note de l\'app, jamais une note de l\'athlète.');
-  assert(txt.indexOf('Aujourd\'hui : vendredi 2026-10-02') !== -1 && txt.indexOf('jour affiché dans l\'app : mardi') !== -1,
-    'Le jour affiché (curseur) n\'est plus présenté comme la date du jour.');
+  assert(txt.indexOf('Aujourd\'hui (jour réel, horloge du téléphone') !== -1 && txt.indexOf(') : vendredi 2 octobre 2026 (2026-10-02)') !== -1
+    && txt.indexOf('jour affiché dans l\'app : mardi') !== -1 && txt.indexOf('Ne confonds jamais les deux') !== -1,
+    'Le jour affiché (curseur) n\'est plus présenté comme la date du jour : jour réel en toutes lettres, jour de programme à part.');
 
   // Sans prédiction testée, pas d'en-tête orphelin.
   c.localStorage.setItem('racine::__pending__::brain-memory-v1', JSON.stringify({version:'brain-memory-v1', schema:2, journal:[], profiles:{

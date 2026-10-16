@@ -248,6 +248,14 @@ programme est un %1RM de l'athlète de référence et ne doit jamais être montr
 comme un poids. Le pont reçoit toute la semaine (`planned: "week"`), puisqu'il
 n'a pas d'outils pour demander le détail.
 
+**Jour réel ≠ jour de programme** (V5.2.23). Le contexte donne d'abord le
+jour réel — `realToday()` (`app.js`), horloge du téléphone dans le fuseau
+local, en toutes lettres avec le fuseau — puis, à part, le jour de programme
+ouvert dans l'app (`state.day`, S + jour), qui avance avec la semaine validée
+et jamais avec le calendrier. Le contexte est reconstruit à chaque message :
+une conversation qui passe minuit suit la date. L'écran WOD lit la même
+source. Garde-fou : `dev/real_today_checks.js`.
+
 Le contexte athlète est envoyé dans un bloc système **mis en cache**
 (`cache_control`) : il est long et stable d'un message à l'autre, et se place
 donc avant tout ce qui varie.

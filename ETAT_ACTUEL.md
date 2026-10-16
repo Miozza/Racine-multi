@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.22
+# ETAT ACTUEL — V5.2.23
 
-Version actuelle : V5.2.22
+Version actuelle : V5.2.23
 
 ## État courant
+
+### Jour réel séparé du jour de programme
+
+L'écran WOD et Coach IA affichent le même jour réel (horloge du téléphone, fuseau local, en toutes lettres). Coach IA reçoit à part le jour de programme, qui avance avec la semaine validée et pas avec le calendrier. Une séance est datée du jour réel de la saisie. Les kettlebells des metcons sont en kg.
 
 ### Capacité estimée visible dans le (!)
 

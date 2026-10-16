@@ -5,7 +5,8 @@
   Règle (décision de l'athlète, 2026-10-15) : dans un bloc `kind:"wod"`, tout
   mouvement chargé porte sa charge écrite (« 20 lb », « 53/35 lb », « 24 po »,
   « poids du corps »), et un EMOM à plusieurs mouvements dit dans quelle
-  minute va chacun. Sans ça, l'écran du metcon affichait « 12 Cal Row » et
+  minute va chacun. Une kettlebell se donne toujours en kg (2026-10-16).
+  Sans ça, l'écran du metcon affichait « 12 Cal Row » et
   « 12 Goblet Squats » sans poids ni ordre, et l'athlète devinait.
 
   Portée : TOUS les programmes chargés par index.html, donc chaque nouveau
@@ -58,6 +59,10 @@ const LEGACY = [
 // Mouvement chargé par nature : sans charge écrite, l'athlète devine.
 const LOADED = /\b(?:wall ?balls?|kb swings?|kettlebell|goblet squats?|thrusters?|db [a-z]|dumbbell|haltères?|snatch(?:es)?|power cleans?|hang cleans?|clean and jerk|deadlifts?|sandbag|farmer carry|devil press|man ?makers?|box step-ups?|box jumps?|front squats?|overhead squats?|push press|front rack lunges?)\b/i;
 const HAS_LOAD = /\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?\s*(?:lb|lbs|kg|po|pouces)(?![A-Za-zÀ-ÿ])|poids du corps|barre vide|PVC|à vide/i;
+// Kettlebells : toujours en kg (décision du 2026-10-16), comme le rack de
+// data/equipment.js (RACINE_EQUIPMENT.kettlebells.unit). « 53/35 lb » → « 24/16 kg ».
+const KB = /\b(?:kb|kettlebells?)\b/i;
+const KB_IN_LB = /\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?\s*(?:lb|lbs)(?![A-Za-zÀ-ÿ])/i;
 const EMOM_ORDER = /impaires|paires|min(?:ute)?s?\s*\d|station|altern|même minute|dans la minute|chaque minute|\d\)/i;
 const DAYS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
 
@@ -67,6 +72,7 @@ function wodIssues(text){
   const segs = t.split(/[,;+]|\bpuis\b/i);
   segs.forEach(seg => {
     if(LOADED.test(seg) && !HAS_LOAD.test(seg)) issues.push('charge manquante : « ' + seg.trim().slice(0, 50) + ' »');
+    if(KB.test(seg) && KB_IN_LB.test(seg)) issues.push('kettlebell en lb (toujours en kg) : « ' + seg.trim().slice(0, 50) + ' »');
   });
   if(/\bEMOM\b/i.test(t) && segs.length > 1 && !EMOM_ORDER.test(t)) issues.push('EMOM sans ordre des minutes');
   const st = t.match(/EMOM\s*(\d+)[^:]*?(\d+)\s*stations/i);
@@ -118,7 +124,9 @@ const must = [
   ['EMOM 8 : 12 cal Row, 12 Goblet Squats.', 2],
   ['AMRAP 7 : 12 cal Row, 10 KB Swings.', 1],
   ['EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 12 cal Row ; minutes paires 12 Goblet Squats 53 lb.', 0],
-  ['AMRAP 18 : 15 wall balls 20/14 lb + 12 box step-ups 24/20 po + 10 burpees.', 0]
+  ['AMRAP 18 : 15 wall balls 20/14 lb + 12 box step-ups 24/20 po + 10 burpees.', 0],
+  ['AMRAP 7 : 12 cal Row, 10 KB Swings 53 lb.', 1],
+  ['400 m Run + 21 KB Swings 24/16 kg + 12 Pull-Ups.', 0]
 ];
 must.forEach(([t, n]) => { const got = wodIssues(t).length; if(got !== n) failures.push('Règle : « ' + t + ' » → ' + got + ' problème(s), attendu ' + n); });
 if(Object.keys(report).length < 20) failures.push('Moins de 20 programmes chargés (' + Object.keys(report).length + ') : le chargement a cassé.');

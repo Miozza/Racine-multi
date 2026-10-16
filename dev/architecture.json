@@ -1437,6 +1437,22 @@
       "consumes": []
     },
     {
+      "path": "dev/real_today_checks.js",
+      "size": 7484,
+      "lines": 140,
+      "role": "Garde-fous du jour réel : realToday() suit l'horloge locale (pas l'UTC), minuit change le jour transmis à Coach IA dans plusieurs fuseaux, l'écran WOD affiche le même jour réel, une séance est datée du jour de saisie et garde son jour de programme à part.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "dev/wod_moves_checks.js",
       "size": 8692,
       "lines": 143,
