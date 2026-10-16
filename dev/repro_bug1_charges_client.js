@@ -191,7 +191,7 @@ console.log(' exercices d\'arnold_split_2026_adapte.)');
 
 console.log('\n════ Scénario E — kettlebells en kg : arrondi aux vraies tailles ════');
 console.log('(Convention : KB = kg, tout le reste = lb. Avant : arrondi générique aux 5,');
-console.log(' des bells inexistants (15 kg…). Après : toujours une taille du rack [4..32].)');
+console.log(' des bells inexistants (15 kg…). Après : toujours une taille du rack [8..36].)');
 {
   const ctx = buildContext();
   const computed = ctx.CoachOnboarding.computeFromAnswers(answers, 'debutant');
@@ -199,7 +199,7 @@ console.log(' des bells inexistants (15 kg…). Après : toujours une taille du 
     aggressiveness:0.7, scaleRatios: computed.ratios};
   const kb = ctx.guardedSuggestedLoadDecision('KB Swings','24 kg',15,{kind:'main'});
   console.log('  KB Swings (prog 24 kg) →', JSON.stringify(kb.loadText));
-  const KB_SIZES = [4,8,10,12,16,18,24,28,32];
+  const KB_SIZES = [8,10,12,16,18,24,28,32,36];
   if(KB_SIZES.indexOf(kb.loadNum) === -1) throw new Error('REGRESSION : KB arrondi hors du rack ('+kb.loadNum+' kg)');
   if(!/kg/.test(kb.loadText)) throw new Error('REGRESSION : unité kg perdue pour un KB');
   // Un KB déclaré en lb ailleurs garde le comportement lb historique.

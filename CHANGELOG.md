@@ -7,9 +7,10 @@
 - **Écran WOD** : nouvelle ligne « Aujourd'hui » sous le titre du jour de programme, même texte que Coach IA ; elle suit l'horloge quand l'app revient au premier plan.
 - **Séance enregistrée** : datée du jour réel de la saisie (`date`, `actualDate`, `actualDayName`, un seul instant), son jour de programme gardé à part (`day`, `plannedDay`). Format inchangé (`AAAA-MM-JJ`), aucune migration. Une séance faite un vendredi reste un vendredi.
 - **Dates UTC corrigées** : nom du fichier de sauvegarde du profil, date d'une demande pour Claude Code et fenêtre du bilan suggéré vs fait suivaient l'UTC — le soir au Québec, elles passaient au lendemain.
-- **Kettlebells en kg dans les metcons** : KB Swings 53/35 lb → 24/16 kg (Competition Peak, CrossFit Racine), 53 lb → 24 kg (Pont Peak), 44 lb → 20 kg (Strict Muscle-Up Personnel). `dev/wod_loads_checks.js` refuse désormais une KB en lb.
+- **Kettlebells en kg dans les metcons** : KB Swings 53/35 lb → 24/16 kg (Competition Peak, CrossFit Racine), 53 lb → 24 kg (Pont Peak), 44 lb → 18 kg (Strict Muscle-Up Personnel, taille du rack la plus proche). `dev/wod_loads_checks.js` refuse désormais une KB en lb.
+- **Rack de kettlebells** (`data/equipment.js`, et le repli de `scripts/charge/equipement.js`) : 8, 10, 12, 16, 18, 24, 28, 32, 36 kg — 36 ajouté, 4 retiré, liste donnée par l'athlète. Coach IA recevait cette liste étiquetée « (lb) » : elle porte maintenant l'unité du rack (kg).
 - **Garde-fou** : `dev/real_today_checks.js` simule minuit et 21 h dans cinq fuseaux (Toronto, Los Angeles, Paris, Tokyo, Kiritimati) et vérifie que Coach IA, l'écran WOD et la séance suivent le jour réel, le jour de programme restant fixe.
-- Moteur de charges non touché.
+- Logique du moteur de charges non touchée : seule la liste des tailles de kettlebells change.
 
 ## V5.2.22 — (!) : la capacité estimée ne disparaît plus derrière Brain
 

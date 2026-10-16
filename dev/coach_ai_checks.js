@@ -414,6 +414,10 @@ assert(/caiClearKey[\s\S]{0,200}confirm\(/.test(uiSrc), 'Effacer la clé API dem
     'Section Brain vide → son en-tête n\'est pas affiché.');
 }
 
+// Les kettlebells sont en kg : la liste du rack transmise au coach porte l'unité du rack.
+assert(contextSrc.indexOf('Kettlebells (lb)') === -1 && /Kettlebells \(" \+ \(eq\.kettlebells\.unit/.test(contextSrc),
+  'Coach IA reçoit les kettlebells du rack avec leur unité (kg), jamais étiquetées lb.');
+
 // ── Sortie ─────────────────────────────────────────────────────────────────
 function fakeStorage(){
   const store = {};

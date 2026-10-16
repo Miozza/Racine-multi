@@ -23,7 +23,7 @@ window.RACINE_EQUIPMENT = {
   kettlebells: {
     unit: "kg",
     rounding: "nearest",
-    values: [4, 8, 10, 12, 16, 18, 24, 28, 32]
+    values: [8, 10, 12, 16, 18, 24, 28, 32, 36]
   },
   bands: {
     values: ["petit", "moyen", "large", "très large"]

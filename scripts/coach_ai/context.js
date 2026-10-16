@@ -601,7 +601,7 @@
     if(eq){
       if(eq.dumbbells && eq.dumbbells.values) lines.push("Haltères disponibles (lb) : " + eq.dumbbells.values.join(", "));
       if(eq.barbells && eq.barbells.step) lines.push("Barre : incrément de " + eq.barbells.step + " lb");
-      if(eq.kettlebells && eq.kettlebells.values) lines.push("Kettlebells (lb) : " + eq.kettlebells.values.join(", "));
+      if(eq.kettlebells && eq.kettlebells.values) lines.push("Kettlebells (" + (eq.kettlebells.unit || "kg") + ") : " + eq.kettlebells.values.join(", "));
     }
 
     try{
