@@ -47,6 +47,25 @@
   function sessionsOn(iso){
     return hist().filter(function(s){ return s && str(s.actualDate || s.date) === iso; });
   }
+  // La prochaine séance à faire : premier jour de la semaine en cours ni fait
+  // ni manqué ; semaine entièrement traitée → premier jour de la suivante,
+  // une fois la semaine passée dans l'app.
+  function nextPlannedSession(){
+    var days = dayList();
+    if(!days.length) return "";
+    var week = 1;
+    try{ week = Number(state.week) || 1; }catch(e){}
+    var treated = function(d){
+      try{
+        return (state.completedDays || []).indexOf(d) >= 0
+          || (state.missedDays || []).some(function(x){ return x && x.day === d && Number(x.week) === week; });
+      }catch(e){ return false; }
+    };
+    for(var i = 0; i < days.length; i++) if(!treated(days[i])) return "S" + week + " · " + days[i];
+    var max = weekCount();
+    if(max && week >= max) return "aucune : S" + week + " est la dernière semaine du programme et elle est traitée.";
+    return "S" + (week + 1) + " · " + days[0] + " (S" + week + " est traitée ; l'athlète doit encore passer à S" + (week + 1) + " dans l'app).";
+  }
   function lastWeekTransition(){
     var list = [];
     try{ list = Array.isArray(state.weekTransitions) ? state.weekTransitions : []; }catch(e){}
@@ -233,6 +252,8 @@
           + ((tr.completedDays || []).length ? " (jours faits en S" + str(tr.fromWeek) + " : " + tr.completedDays.join(", ") + ")" : "") + (str(tr.reason) ? " — " + str(tr.reason) : "") + ".");
         lines.push("Une séance faite avant ce passage appartient à S" + str(tr.fromWeek) + " : c'est normal, pas une erreur de semaine.");
       }
+      var nxt = nextPlannedSession();
+      if(nxt) lines.push("Prochaine séance prévue : " + nxt);
       lines.push("Ne confonds jamais les deux : le jour de programme avance avec la semaine validée dans l'app, pas avec le calendrier. Une séance de programme nommée « " + today.day + " » n'est pas forcément celle d'aujourd'hui, et une séance faite aujourd'hui est datée du " + today.iso + " quel que soit son jour de programme.");
     }catch(e){}
     // Le libellé et l'objectif de semaine sont là où un deload se déclare

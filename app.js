@@ -1347,6 +1347,11 @@ function advanceWeek(reason){
     state.weekTransitions.push({cycle:activeProgramId(),fromWeek:fromWeek,toWeek:fromWeek+1,completedDays:fromCompleted,missedDays:fromMissed,reason:reason||"Semaine traitée",date:todayIsoDate(),actualDayName:actualDayName()});
     state.week++;
     state.completedDays = [];
+    // La semaine qui s'ouvre commence à son premier jour de programme :
+    // après « Passer à S3 » depuis le résumé du vendredi, l'app ouvre S3 ·
+    // lundi, la prochaine séance, et non S3 · vendredi (demande du 2026-10-16).
+    var order=currentDayOrder();
+    if(order.length)state.day=order[0];
     state.cycleState=buildCycleStatePayload();
     save();
         render();
