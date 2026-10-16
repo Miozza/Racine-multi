@@ -37,11 +37,12 @@ Conséquence pratique pour tout agent :
 Racine est une PWA CrossFit en **JavaScript vanilla** — pas de framework, pas de
 build step, pas de bundler. Développée en solo. Version multi-utilisateurs.
 
-- `Miozza/Racine-multi` → **production**
-- `Miozza/Coach-Beurt-Dev` → **staging uniquement**
+- `Miozza/Racine-multi` → **le seul dépôt de code**.
 
-Le code est livré dans Coach-Beurt-Dev, puis répliqué manuellement vers la
-production. **Le code est répliqué, jamais les données.**
+Décision du 2026-10-16 : on travaille directement dans Racine-multi, par
+branche et pull request. L'ancien dépôt de staging n'existe plus pour ce
+projet : ne jamais y livrer, ne jamais proposer d'y répliquer, ne jamais le
+mentionner comme étape de livraison.
 
 Ancien nom du projet : Coach-Beurt. Des références résiduelles peuvent subsister.
 
@@ -440,9 +441,9 @@ polices ni la nature « dark HUD » de l'app.
 
 ## 6. Livraison
 
-- Livraison par ZIP dans le repo staging.
-- Le ZIP contient **soit** les fichiers modifiés uniquement, **soit** le codebase
-  complet — selon le contexte. Demander si ambigu.
+- Livraison par branche et pull request dans `Miozza/Racine-multi` (§ 1).
+- Un ZIP seulement si l'athlète le demande : fichiers modifiés **ou** codebase
+  complet selon le contexte, demander si ambigu.
 - Traiter les quatre fichiers `data/` selon § 2.2 : ne pas les écraser, ne pas les
   inclure dans un ZIP sans demande explicite.
 - Une pipeline GitHub Actions (CI) existe : ne pas casser sa configuration.
