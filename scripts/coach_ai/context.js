@@ -139,16 +139,27 @@
     }
     return {athlete: athlete.join(" · "), system: system.join(" · ")};
   }
+  // Jour RÉEL : horloge du téléphone, fuseau local (realToday() dans app.js).
+  // Relu à chaque construction du contexte, donc à chaque message : une
+  // conversation qui passe minuit suit la date. Le repli ne sert qu'aux
+  // bacs à sable de dev/ qui ne chargent pas app.js.
+  var DAY_NAMES = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+  var MONTH_NAMES = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
   function todayInfo(){
+    var t = null;
+    try{ t = (typeof realToday === "function") ? realToday() : null; }catch(e){}
+    if(t && t.iso && t.day) return {iso: str(t.iso), day: str(t.day), label: str(t.label) || (t.day + " " + t.iso), timeZone: str(t.timeZone)};
     var iso = "", day = "";
     try{ iso = (typeof todayIsoDate === "function") ? str(todayIsoDate()) : ""; }catch(e){}
     try{ day = (typeof actualDayName === "function") ? str(actualDayName()) : ""; }catch(e){}
-    if(!iso || !day){
-      var d = new Date();
-      if(!iso) iso = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
-      if(!day) day = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][d.getDay()];
-    }
-    return {iso: iso, day: day};
+    var d = new Date();
+    if(!iso) iso = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+    if(!day) day = DAY_NAMES[d.getDay()];
+    var m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    var label = m ? day + " " + Number(m[3]) + " " + MONTH_NAMES[Number(m[2]) - 1] + " " + m[1] : day + " " + iso;
+    var tz = "";
+    try{ tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; }catch(e){}
+    return {iso: iso, day: day, label: label, timeZone: tz};
   }
 
   // ── Bloc 1 : qui est l'athlète, où il en est ────────────────────────────
@@ -185,13 +196,16 @@
     lines.push("");
     lines.push("## Position dans le cycle");
     lines.push("Programme actif : " + (programLabel || programId || "inconnu") + (programId ? " (id " + programId + ")" : ""));
-    // state.day est le jour AFFICHÉ dans l'app (curseur de navigation, posé au
-    // démarrage du cycle ou par un geste), pas la date du jour : les deux sont
-    // donnés séparément, sinon le modèle croit qu'on est ce jour-là.
+    // Deux jours qui ne se confondent pas. Le jour RÉEL vient de l'horloge du
+    // téléphone. Le jour de PROGRAMME (state.day) est le curseur de l'app : il
+    // avance avec la semaine validée par l'athlète, jamais avec le calendrier.
     try{
       var today = todayInfo();
-      lines.push("Aujourd'hui : " + today.day + " " + today.iso);
-      lines.push("Semaine " + str(state.week) + " · jour affiché dans l'app : " + str(state.day));
+      lines.push("Aujourd'hui (jour réel, horloge du téléphone" + (today.timeZone ? ", fuseau " + today.timeZone : "") + ") : " + today.label + " (" + today.iso + ")");
+      var dl = "";
+      try{ dl = (typeof dayLabel === "function") ? str(dayLabel(state.day)) : ""; }catch(e){}
+      lines.push("Jour de programme ouvert dans l'app : S" + str(state.week) + " · " + str(state.day) + (dl && dl !== str(state.day) ? " (" + dl + ")" : "") + " — jour affiché dans l'app : " + str(state.day));
+      lines.push("Ne confonds jamais les deux : le jour de programme avance avec la semaine validée dans l'app, pas avec le calendrier. Une séance de programme nommée « " + today.day + " » n'est pas forcément celle d'aujourd'hui, et une séance faite aujourd'hui est datée du " + today.iso + " quel que soit son jour de programme.");
     }catch(e){}
     // Le libellé et l'objectif de semaine sont là où un deload se déclare
     // (coachIsDeloadWeekOrContext). Sans eux, le coach lisait une semaine de
@@ -376,7 +390,10 @@
     if(days.indexOf(today) < 0) lines.push("Aujourd'hui (" + today + ") : jour de repos dans ce programme.");
     days.forEach(function(d){
       var tags = [];
-      if(d === today) tags.push("AUJOURD'HUI");
+      // « AUJOURD'HUI » : le jour de programme qui porte le nom du jour réel.
+      // Le jour ouvert dans l'app est marqué à part : ils peuvent différer.
+      if(d === today) tags.push("AUJOURD'HUI (jour réel " + today + ")");
+      try{ if(d === str(state.day)) tags.push("OUVERT DANS L'APP"); }catch(e){}
       // La semaine du cycle avance par un geste de l'athlète, pas par le
       // calendrier : demain dimanche → lundi appartient à la semaine suivante.
       if(d === tomorrow && tomorrow !== "lundi") tags.push("DEMAIN");
@@ -584,7 +601,7 @@
     if(eq){
       if(eq.dumbbells && eq.dumbbells.values) lines.push("Haltères disponibles (lb) : " + eq.dumbbells.values.join(", "));
       if(eq.barbells && eq.barbells.step) lines.push("Barre : incrément de " + eq.barbells.step + " lb");
-      if(eq.kettlebells && eq.kettlebells.values) lines.push("Kettlebells (lb) : " + eq.kettlebells.values.join(", "));
+      if(eq.kettlebells && eq.kettlebells.values) lines.push("Kettlebells (" + (eq.kettlebells.unit || "kg") + ") : " + eq.kettlebells.values.join(", "));
     }
 
     try{
@@ -791,7 +808,7 @@
     opts = opts || {};
     var weeks = Number(opts.weeks) || GAP_DEFAULT_WEEKS;
     var cutoff = "";
-    try{ var d = new Date(); d.setDate(d.getDate() - weeks * 7); cutoff = d.toISOString().slice(0, 10); }catch(e){}
+    try{ var d = new Date(); d.setDate(d.getDate() - weeks * 7); cutoff = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }catch(e){}
     var by = {};
     hist().forEach(function(s){
       if(!s || (cutoff && str(s.date) < cutoff)) return;

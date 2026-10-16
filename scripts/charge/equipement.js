@@ -11,7 +11,7 @@ function defaultEquipmentLoadRules(){
     kettlebell: {
       match:["kb ","kettlebell"],
       unit:"kg",
-      available:[4,8,10,12,16,18,24,28,32]
+      available:[8,10,12,16,18,24,28,32,36]
     },
     cable: {
       match:["câble","cable","poulie","rope","face pull","triceps pushdown","triceps rope","lat pulldown","upright row"],

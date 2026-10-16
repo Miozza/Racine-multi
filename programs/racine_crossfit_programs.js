@@ -111,7 +111,7 @@
     {
       name:"Helen",
       format:"3 rounds for time",
-      prescription:"400 m Run + 21 KB Swings 53/35 lb + 12 Pull-Ups.",
+      prescription:"400 m Run + 21 KB Swings 24/16 kg + 12 Pull-Ups.",
       cap:"Cap 14 min",
       prep:["KB Swing", "Pull-Up"],
       stimulus:"Moteur + grip. Course soutenable; swings idéalement gros sets.",
@@ -177,7 +177,7 @@
     {
       name:"Helen",
       format:"3 rounds for time",
-      prescription:"400 m Run + 21 KB Swings 53/35 lb + 12 Pull-Ups.",
+      prescription:"400 m Run + 21 KB Swings 24/16 kg + 12 Pull-Ups.",
       cap:"16 min",
       prep:["Run", "Row", "KB Swing", "Pull-Up"],
       stimulus:"Seuil + transitions. Rester capable d'accélérer au 3e round.",

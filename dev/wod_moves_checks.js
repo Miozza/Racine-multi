@@ -202,7 +202,7 @@ assert(rx && rx[0].load === '53/35 lb', 'Charge Rx homme/femme lue telle quelle'
 const pp = read('programs/pont_peak.js');
 const wods = (pp.match(/(?:mon|tue|thu|fri)Wod:"[^"]*"/g) || []);
 const LOADED = /Wall Balls|KB Swings|Goblet Squats|Box Jumps|Walking Lunges/;
-const bad = wods.filter(w => w.split(/[,;+]/).some(seg => LOADED.test(seg) && !/\d+\s*(?:lb|po)\b|poids du corps/.test(seg)));
+const bad = wods.filter(w => w.split(/[,;+]/).some(seg => LOADED.test(seg) && !/\d+\s*(?:lb|kg|po)\b|poids du corps/.test(seg)));
 assert(wods.length >= 20 && bad.length === 0, 'Pont Peak : chaque mouvement chargé du metcon a sa charge (' + bad.join(' | ') + ')');
 assert(!/EMOM 14 en 4 stations/.test(pp), 'Pont Peak : plus d\'EMOM dont la durée ne tombe pas juste sur les stations');
 }

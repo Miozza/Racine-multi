@@ -93,7 +93,7 @@
         tueWod:"AMRAP 6 : 10 Box Jumps 24 po, 30 Double-Unders.",
         thuMain:"Landmine Press", thuFormat:"4×8/bras", thuLoad:"45 lb",
         thuNote:"Demi-genou, côtes basses. RPE 7. Laisse l'omoplate glisser vers le haut en fin de poussée.",
-        thuWod:"AMRAP 7 : 12 cal Row, 10 KB Swings 53 lb.",
+        thuWod:"AMRAP 7 : 12 cal Row, 10 KB Swings 24 kg.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
         friWod:"AMRAP 12 : 15 Wall Balls 20 lb (cible 10 pi), 12 cal Row, 9 Toes-to-Bar."
@@ -157,7 +157,7 @@
         tueWod:"Pour le temps : 50 cal Bike (mini-benchmark, à refaire pendant le Peak).",
         thuMain:"Strict Press", thuFormat:"4×2", thuLoad:"135 lb", // 155 × 0,88
         thuNote:"Doubles lourds, RPE 9. Stop si le bas du dos cambre ou si la barre dérive vers l'avant.",
-        thuWod:"Pour le temps : 500 m Row + 30 KB Swings 53 lb (cap 7).",
+        thuWod:"Pour le temps : 500 m Row + 30 KB Swings 24 kg (cap 7).",
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
         friWod:"Mini-benchmark pour le temps : 50 Wall Balls 20 lb, 40 cal Row, 30 Burpees, 20 Toes-to-Bar (cap 15). À refaire pendant le Peak pour mesurer la progression."

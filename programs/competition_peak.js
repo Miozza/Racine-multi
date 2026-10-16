@@ -97,7 +97,7 @@ function competitionPeakBlocks(day,week){
        week===2?"EMOM 20 : min 1 = 14 cal row ; min 2 = 8 pull-ups ; min 3 = 14 cal bike ; min 4 = 12 sit-ups." :
        week===3?"EMOM 16 : min 1 = 15 cal row ; min 2 = 10 burpees ; min 3 = 12 cal ski ; min 4 = 8 pull-ups." :
        week===4?"AMRAP 18 : 12 cal ski + 10 pull-ups/ring rows + 12 sit-ups + 10 box step-ups 24/20 po." :
-       week===5?"Helen adapté — 3 rounds for time : 400 m row + 21 KB swings 53/35 lb + 12 pull-ups/ring rows. Cap 15 min." :
+       week===5?"Helen adapté — 3 rounds for time : 400 m row + 21 KB swings 24/16 kg + 12 pull-ups/ring rows. Cap 15 min." :
        week===6?"EMOM 18 : min 1 = 15 cal row ; min 2 = 10 burpees ; min 3 = 10 pull-ups/ring rows." :
        week===7?"EMOM 12 : min 1 = 10 cal row ; min 2 = 6 pull-ups/ring rows ; min 3 = 8 sit-ups." :
        "EMOM 8 : min 1 = 8 cal row ; min 2 = 5 pull-ups/ring rows. Activation.")+" "+p.wodNote+"."},
@@ -145,7 +145,7 @@ function competitionPeakBlocks(day,week){
      text:(week===1?"AMRAP 20 : 12 wall balls 20/14 lb + 12 cal row + 10 box step-ups 24/20 po + 8 burpees." :
        week===2?"AMRAP 24 : 15 wall balls 20/14 lb + 15 cal row + 12 box step-ups 24/20 po + 10 burpees + 8 ring rows." :
        week===3?"For time 5 rounds : 20 cal row + 20 wall balls 20/14 lb + 15 box step-ups 24/20 po + 10 burpees. Cap 25 min." :
-       week===4?"Chipper for time : 50 cal row + 50 wall balls 20/14 lb + 50 box step-ups 24/20 po + 40 KB swings 53/35 lb + 30 burpees + 20 ring rows. Cap 30 min." :
+       week===4?"Chipper for time : 50 cal row + 50 wall balls 20/14 lb + 50 box step-ups 24/20 po + 40 KB swings 24/16 kg + 30 burpees + 20 ring rows. Cap 30 min." :
        week===5?"Benchmark long — AMRAP 20 : 5 power cleans 135/95 lb + 10 wall balls 20/14 lb + 15 cal row + 20 sit-ups." :
        week===6?"Simulation compétition — For time : 60 cal row + 50 wall balls 20/14 lb + 40 box step-ups 24/20 po + 30 burpees + 20 power cleans 135/95 lb + 10 pull-ups/ring rows. Cap 35 min." :
        week===7?"AMRAP 15 : 10 wall balls 20/14 lb + 10 cal row + 8 box step-ups 24/20 po + 6 burpees. Reste frais." :

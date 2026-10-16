@@ -1,3 +1,17 @@
+## V5.2.23 — Jour réel : l'horloge du téléphone, séparée du jour de programme
+
+**Pourquoi** : demande de l'athlète (2026-10-16). Coach IA affichait « Aujourd'hui : vendredi 2026-10-16 » sans que l'app puisse le garantir, et l'écran WOD ne montrait que le jour de programme.
+
+- **Source unique** : `realToday()` (`app.js`) lit l'horloge du téléphone dans le fuseau local et donne la date, le jour et le libellé en toutes lettres (« vendredi 16 octobre 2026 »). L'écran WOD, la sauvegarde de séance et Coach IA la lisent tous.
+- **Coach IA** : le contexte, reconstruit à chaque message, dit le jour réel en toutes lettres avec le fuseau, puis à part le jour de programme ouvert dans l'app (S + jour), avec la consigne de ne jamais les confondre : le jour de programme avance avec la semaine validée, pas avec le calendrier. Dans la semaine détaillée, le jour ouvert dans l'app est marqué « OUVERT DANS L'APP », distinct de « AUJOURD'HUI ».
+- **Écran WOD** : nouvelle ligne « Aujourd'hui » sous le titre du jour de programme, même texte que Coach IA ; elle suit l'horloge quand l'app revient au premier plan.
+- **Séance enregistrée** : datée du jour réel de la saisie (`date`, `actualDate`, `actualDayName`, un seul instant), son jour de programme gardé à part (`day`, `plannedDay`). Format inchangé (`AAAA-MM-JJ`), aucune migration. Une séance faite un vendredi reste un vendredi.
+- **Dates UTC corrigées** : nom du fichier de sauvegarde du profil, date d'une demande pour Claude Code et fenêtre du bilan suggéré vs fait suivaient l'UTC — le soir au Québec, elles passaient au lendemain.
+- **Kettlebells en kg dans les metcons** : KB Swings 53/35 lb → 24/16 kg (Competition Peak, CrossFit Racine), 53 lb → 24 kg (Pont Peak), 44 lb → 18 kg (Strict Muscle-Up Personnel, taille du rack la plus proche). `dev/wod_loads_checks.js` refuse désormais une KB en lb.
+- **Rack de kettlebells** (`data/equipment.js`, et le repli de `scripts/charge/equipement.js`) : 8, 10, 12, 16, 18, 24, 28, 32, 36 kg — 36 ajouté, 4 retiré, liste donnée par l'athlète. Coach IA recevait cette liste étiquetée « (lb) » : elle porte maintenant l'unité du rack (kg).
+- **Garde-fou** : `dev/real_today_checks.js` simule minuit et 21 h dans cinq fuseaux (Toronto, Los Angeles, Paris, Tokyo, Kiritimati) et vérifie que Coach IA, l'écran WOD et la séance suivent le jour réel, le jour de programme restant fixe.
+- Logique du moteur de charges non touchée : seule la liste des tailles de kettlebells change.
+
 ## V5.2.22 — (!) : la capacité estimée ne disparaît plus derrière Brain
 
 **Pourquoi** : rapport de l'athlète (2026-10-15). Dans le (!), la section « Capacité estimée » (Kalman, mode observation) n'apparaissait jamais, alors que la source « Brain » et l'analyse Brain s'affichaient.

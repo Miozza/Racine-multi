@@ -6,16 +6,22 @@ function updateCustomChargesFromResults(results){
 }
 
 function buildSessionPayload(results){
-  var now=new Date();
+  // Une séance est rattachée à DEUX choses distinctes : la date réelle de la
+  // saisie (horloge du téléphone, fuseau local — date/actualDate/actualDayName)
+  // et le jour de programme ouvert dans l'app (jour/plannedDay). Une séance
+  // faite un vendredi porte toujours la date du vendredi, quel que soit le
+  // jour de programme. Un seul instant pour les trois champs réels : une
+  // sauvegarde à minuit ne peut pas mélanger deux jours.
+  var now=new Date(), today=realToday(now);
   return{
     version:APP_VERSION,
-    date:now.toLocaleDateString("fr-CA"),
+    date:today.iso,
     time:now.toLocaleTimeString("fr-CA"),
     semaine:state.week,
     jour:state.day,
     plannedDay:state.day,
-    actualDate:now.toLocaleDateString("fr-CA"),
-    actualDayName:actualDayName(),
+    actualDate:today.iso,
+    actualDayName:today.day,
     cycle:state.cycle&&state.cycle.goal?state.cycle.goal:null,
     focus:focus().label,
     cycleState:buildCycleStatePayload(),

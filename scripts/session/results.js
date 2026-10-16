@@ -663,7 +663,7 @@ function downloadProfileBackup(){
   var id=CoachProfiles.getActiveId();
   var blob=CoachProfiles.exportProfileBlob(id);
   if(!blob)return;
-  var date=new Date().toISOString().slice(0,10);
+  var date=todayIsoDate();
   var name="racine-"+(blob.profile&&blob.profile.name?blob.profile.name.toLowerCase().replace(/[^a-z0-9]+/g,"-"):"profil")+"-"+date+".json";
   // Vrai fichier .json via partage natif ou repli <a download> (Safari iOS).
   if(window.RacineExport&&window.RacineExport.saveJson){

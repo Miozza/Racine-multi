@@ -408,7 +408,8 @@
     }).join("\n");
   }
   function buildRequest(source){
-    var date = new Date().toISOString().slice(0, 10);
+    var date = "";
+    try{ var t = realToday(); date = t.iso + " (" + t.day + ")"; }catch(e){ date = new Date().toISOString().slice(0, 10); }
     var name = "";
     try{ name = (CoachProfiles.getActive() || {}).name || ""; }catch(e){}
     var parts = ["# Demande Racine → Claude Code", "",
