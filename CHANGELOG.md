@@ -1,3 +1,13 @@
+## V5.2.24 — Coach IA fait partie de l'app ; « Passer à S3 » ouvre S3 · lundi
+
+**Pourquoi** : retour de l'athlète (2026-10-16) après V5.2.23. Séance S2 · vendredi faite, puis « Passer à S3 » depuis le résumé : l'app ouvrait S3 · vendredi, et Coach IA supposait à tort que la semaine n'avait pas été avancée. L'athlète veut un coach qui fait partie de l'app, pas un vérificateur externe.
+
+- **Coach IA sait si la séance du jour est faite** : le contexte liste les séances enregistrées à la date réelle (semaine, jour, heure) et le dernier passage de semaine (date, depuis quelle semaine). Rapport du 2026-10-16 : séance S2 · vendredi faite, puis « Passer à S3 » dans le résumé ; l'app ouvrait S3 · vendredi et le coach supposait à tort que la semaine n'avait pas été avancée. Un jour de programme qui porte le nom d'aujourd'hui n'est plus marqué « AUJOURD'HUI » quand la séance du jour est déjà faite.
+- **Coach IA fait partie de l'app** : sa consigne le dit — la date, le jour réel, la semaine et le jour ouverts, les séances du jour, le dernier passage de semaine et la **prochaine séance prévue** (nouvelle ligne du contexte) sont des faits de l'app, redonnés à chaque message. Il ne dit plus qu'il « ne peut pas vérifier la date ».
+- **« Passer à S3 » ouvre S3 · lundi** : la semaine qui s'ouvre commence à son premier jour de programme, au lieu de rester sur le jour où la précédente s'est terminée.
+- **Garde-fou** : `dev/real_today_checks.js` couvre ce scénario (séance du jour faite puis passage de semaine), la prochaine séance, l'ouverture de S3 · lundi et la consigne de Coach IA.
+- `CLAUDE.md` : Racine-multi est le seul dépôt de code ; livraison par branche et PR, plus de dépôt de staging.
+
 ## V5.2.23 — Jour réel : l'horloge du téléphone, séparée du jour de programme
 
 **Pourquoi** : demande de l'athlète (2026-10-16). Coach IA affichait « Aujourd'hui : vendredi 2026-10-16 » sans que l'app puisse le garantir, et l'écran WOD ne montrait que le jour de programme.

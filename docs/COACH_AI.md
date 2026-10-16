@@ -254,7 +254,10 @@ local, en toutes lettres avec le fuseau — puis, à part, le jour de programme
 ouvert dans l'app (`state.day`, S + jour), qui avance avec la semaine validée
 et jamais avec le calendrier. Le contexte est reconstruit à chaque message :
 une conversation qui passe minuit suit la date. L'écran WOD lit la même
-source. Garde-fou : `dev/real_today_checks.js`.
+source. Le contexte dit aussi les séances enregistrées aujourd'hui, le dernier
+passage de semaine et la prochaine séance prévue. La consigne place le coach
+**dans** l'app : ces lignes sont des faits qu'il énonce, pas des hypothèses.
+Garde-fou : `dev/real_today_checks.js`.
 
 Le contexte athlète est envoyé dans un bloc système **mis en cache**
 (`cache_control`) : il est long et stable d'un message à l'autre, et se place

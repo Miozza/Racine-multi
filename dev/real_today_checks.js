@@ -17,6 +17,8 @@
     4. Une séance sauvegardée est datée du jour réel de la saisie (date,
        actualDate, actualDayName) et garde son jour de programme à part
        (jour, plannedDay) : faite un vendredi, elle reste un vendredi.
+    5. Coach IA sait si la séance du jour est faite, voit le dernier passage
+       de semaine et la prochaine séance ; « Passer à S3 » ouvre S3 · lundi.
 
   Usage : node dev/real_today_checks.js
   (le script se relance lui-même avec plusieurs valeurs de TZ)
@@ -131,7 +133,48 @@ NOW = new Date(2026, 9, 16, 21, 0, 0).getTime();
 assert(c.realToday().iso === '2026-10-16' && c.todayDateString() === '2026-10-16', '21 h le vendredi reste le vendredi, quel que soit l\'UTC.');
 assert(todayLine().indexOf('vendredi 16 octobre 2026') !== -1, 'Coach IA dit vendredi à 21 h.');
 
-// 3. Plus de date UTC pour dater une séance, une sauvegarde ou une demande.
+// 3. Scénario réel du 2026-10-16 : séance S2 · vendredi faite aujourd'hui,
+// puis « Passer à S3 » dans le résumé. L'app ouvre S3 · vendredi : le coach
+// doit savoir que la séance du jour est faite, et pourquoi elle est en S2.
+NOW = new Date(2026, 9, 16, 19, 22, 0).getTime();
+c.state.week = 3; c.state.day = 'lundi'; c.state.completedDays = [];
+c.state.history = [{date: '2026-10-16', actualDate: '2026-10-16', time: '18:05:00', week: 2, day: 'vendredi', results: {}}];
+c.state.weekTransitions = [{fromWeek: 2, toWeek: 3, completedDays: ['lundi', 'mercredi', 'vendredi'], reason: 'Semaine complétée/traitée', date: '2026-10-16', actualDayName: 'vendredi'}];
+const ctx3 = c.CoachAIContext.build();
+assert(ctx3.indexOf("Séance(s) déjà enregistrée(s) aujourd'hui (2026-10-16) : S2 · vendredi à 18:05") !== -1, 'Le coach sait que la séance du jour est faite, et dans quelle semaine.');
+assert(ctx3.indexOf('Passage à S3 validé par l\'athlète le 2026-10-16 (vendredi), depuis S2') !== -1, 'Le coach voit le passage de semaine, avec sa date.');
+assert(ctx3.indexOf("### vendredi — AUJOURD'HUI") === -1 && ctx3.indexOf("la séance d'aujourd'hui est déjà faite : S2 · vendredi") !== -1,
+  'S3 · vendredi n\'est pas présentée comme la séance d\'aujourd\'hui quand celle-ci est déjà faite.');
+assert(ctx3.indexOf('Prochaine séance prévue : S3 · lundi') !== -1, 'Le coach connaît la prochaine séance : S3 · lundi.');
+c.state.week = 2; c.state.completedDays = ['lundi', 'mercredi', 'vendredi'];
+assert(c.CoachAIContext.build().indexOf('Prochaine séance prévue : S3 · lundi (S2 est traitée') !== -1, 'Semaine traitée mais pas encore passée : le coach le dit.');
+c.state.week = 3; c.state.completedDays = [];
+c.state.history = []; c.state.weekTransitions = [];
+assert(c.CoachAIContext.build().indexOf("Aucune séance enregistrée aujourd'hui (2026-10-16).") !== -1, 'Sans séance du jour, le coach le sait aussi.');
+
+// 4. « Passer à S3 » ouvre S3 au premier jour du programme (demande du
+// 2026-10-16), pas au jour où la semaine précédente s'est terminée.
+{
+  const a = {console, Math, JSON, Date: FakeDate};
+  vm.createContext(a);
+  ['advanceWeek'].forEach(n => vm.runInContext(extractFunction(app, n), a));
+  a.state = {week: 2, day: 'vendredi', completedDays: ['lundi', 'mercredi', 'vendredi'], missedDays: []};
+  a.totalWeeks = () => 8; a.activeProgramId = () => 'x'; a.currentDayOrder = () => ['lundi', 'mercredi', 'vendredi'];
+  a.todayIsoDate = () => '2026-10-16'; a.actualDayName = () => 'vendredi';
+  a.buildCycleStatePayload = () => ({}); a.save = () => {}; a.render = () => {}; a.renderWeekProgress = () => {};
+  a.advanceWeek('Semaine complétée/traitée');
+  assert(a.state.week === 3 && a.state.day === 'lundi' && a.state.completedDays.length === 0, 'Après le passage, l\'app ouvre S3 · lundi (reçu S' + a.state.week + ' · ' + a.state.day + ').');
+  assert(a.state.weekTransitions[0].fromWeek === 2 && a.state.weekTransitions[0].date === '2026-10-16', 'Le passage est daté du jour réel.');
+}
+
+// 5. Coach IA se sait partie de l'app : la date est un fait, pas une supposition.
+{
+  const chat = read('scripts/coach_ai/chat.js');
+  assert(chat.indexOf('Tu fais partie de Racine') !== -1 && chat.indexOf('Ne dis jamais que tu ne peux pas vérifier la date') !== -1,
+    'La consigne de Coach IA le place dans l\'app, avec la date comme fait.');
+}
+
+// 6. Plus de date UTC pour dater une séance, une sauvegarde ou une demande.
 ['scripts/session/save.js', 'scripts/session/results.js', 'scripts/coach_ai/context.js'].forEach(f => {
   assert(!/toISOString\(\)\s*\.slice\(0,\s*10\)/.test(read(f)), f + ' : aucune date tirée de toISOString().slice(0,10) (UTC).');
 });
