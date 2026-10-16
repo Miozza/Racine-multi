@@ -39,6 +39,25 @@
     try{ return Array.isArray(window.state && state.history) ? state.history : []; }
     catch(e){ return []; }
   }
+  // Séances enregistrées à la date réelle d'aujourd'hui, et dernier passage de
+  // semaine du programme actif. Sans eux, le coach voyait « S3 · vendredi »
+  // ouvert et une séance « S2 · vendredi » datée du jour, et devinait que la
+  // semaine n'avait pas été avancée — alors que l'athlète venait de passer à
+  // S3 depuis le résumé de fin de séance (rapport du 2026-10-16).
+  function sessionsOn(iso){
+    return hist().filter(function(s){ return s && str(s.actualDate || s.date) === iso; });
+  }
+  function lastWeekTransition(){
+    var list = [];
+    try{ list = Array.isArray(state.weekTransitions) ? state.weekTransitions : []; }catch(e){}
+    var pid = "";
+    try{ pid = (typeof activeProgramId === "function") ? str(activeProgramId()) : ""; }catch(e){}
+    for(var i = list.length - 1; i >= 0; i--){
+      var t = list[i];
+      if(t && (!pid || !t.cycle || str(t.cycle) === pid)) return t;
+    }
+    return null;
+  }
   // Le libellé canonique du moteur fait foi : une clé de résultat brute
   // ("backSquat", "back_squat"…) ne doit pas créer un mouvement fantôme
   // dans le contexte (règle des noms, docs/STRUCTURE_CONTRACT.md).
@@ -205,6 +224,15 @@
       var dl = "";
       try{ dl = (typeof dayLabel === "function") ? str(dayLabel(state.day)) : ""; }catch(e){}
       lines.push("Jour de programme ouvert dans l'app : S" + str(state.week) + " · " + str(state.day) + (dl && dl !== str(state.day) ? " (" + dl + ")" : "") + " — jour affiché dans l'app : " + str(state.day));
+      var done = sessionsOn(today.iso);
+      if(done.length) lines.push("Séance(s) déjà enregistrée(s) aujourd'hui (" + today.iso + ") : " + done.map(function(x){ return "S" + str(x.week) + " · " + str(x.day) + (str(x.time) ? " à " + str(x.time).slice(0, 5) : ""); }).join(" ; ") + ".");
+      else lines.push("Aucune séance enregistrée aujourd'hui (" + today.iso + ").");
+      var tr = lastWeekTransition();
+      if(tr && Number(tr.toWeek) === Number(state.week)){
+        lines.push("Passage à S" + str(tr.toWeek) + " validé par l'athlète le " + str(tr.date) + (str(tr.actualDayName) ? " (" + str(tr.actualDayName) + ")" : "") + ", depuis S" + str(tr.fromWeek)
+          + ((tr.completedDays || []).length ? " (jours faits en S" + str(tr.fromWeek) + " : " + tr.completedDays.join(", ") + ")" : "") + (str(tr.reason) ? " — " + str(tr.reason) : "") + ".");
+        lines.push("Une séance faite avant ce passage appartient à S" + str(tr.fromWeek) + " : c'est normal, pas une erreur de semaine.");
+      }
       lines.push("Ne confonds jamais les deux : le jour de programme avance avec la semaine validée dans l'app, pas avec le calendrier. Une séance de programme nommée « " + today.day + " » n'est pas forcément celle d'aujourd'hui, et une séance faite aujourd'hui est datée du " + today.iso + " quel que soit son jour de programme.");
     }catch(e){}
     // Le libellé et l'objectif de semaine sont là où un deload se déclare
@@ -382,7 +410,8 @@
     var week = 0;
     try{ week = Number(state.week) || 1; }catch(e){ week = 1; }
     var maxWeek = weekCount();
-    var today = todayInfo().day;
+    var todayFull = todayInfo(), today = todayFull.day;
+    var doneToday = sessionsOn(todayFull.iso);
     var ti = ALL_DAYS.indexOf(today);
     var tomorrow = ti >= 0 ? ALL_DAYS[(ti + 1) % 7] : "";
     var lines = ["", "## Semaine en cours : S" + week + " (en détail, telle que l'athlète la voit dans l'app)"];
@@ -392,7 +421,13 @@
       var tags = [];
       // « AUJOURD'HUI » : le jour de programme qui porte le nom du jour réel.
       // Le jour ouvert dans l'app est marqué à part : ils peuvent différer.
-      if(d === today) tags.push("AUJOURD'HUI (jour réel " + today + ")");
+      if(d === today){
+        // La séance du jour déjà faite (souvent dans la semaine précédente) :
+        // ce jour de programme porte le nom d'aujourd'hui, mais n'est pas
+        // « la séance d'aujourd'hui ».
+        if(doneToday.length) tags.push("même nom que le jour réel (" + today + "), mais la séance d'aujourd'hui est déjà faite : " + doneToday.map(function(x){ return "S" + str(x.week) + " · " + str(x.day); }).join(", "));
+        else tags.push("AUJOURD'HUI (jour réel " + today + ")");
+      }
       try{ if(d === str(state.day)) tags.push("OUVERT DANS L'APP"); }catch(e){}
       // La semaine du cycle avance par un geste de l'athlète, pas par le
       // calendrier : demain dimanche → lundi appartient à la semaine suivante.

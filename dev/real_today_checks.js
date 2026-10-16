@@ -131,7 +131,22 @@ NOW = new Date(2026, 9, 16, 21, 0, 0).getTime();
 assert(c.realToday().iso === '2026-10-16' && c.todayDateString() === '2026-10-16', '21 h le vendredi reste le vendredi, quel que soit l\'UTC.');
 assert(todayLine().indexOf('vendredi 16 octobre 2026') !== -1, 'Coach IA dit vendredi à 21 h.');
 
-// 3. Plus de date UTC pour dater une séance, une sauvegarde ou une demande.
+// 3. Scénario réel du 2026-10-16 : séance S2 · vendredi faite aujourd'hui,
+// puis « Passer à S3 » dans le résumé. L'app ouvre S3 · vendredi : le coach
+// doit savoir que la séance du jour est faite, et pourquoi elle est en S2.
+NOW = new Date(2026, 9, 16, 19, 22, 0).getTime();
+c.state.week = 3; c.state.day = 'vendredi';
+c.state.history = [{date: '2026-10-16', actualDate: '2026-10-16', time: '18:05:00', week: 2, day: 'vendredi', results: {}}];
+c.state.weekTransitions = [{fromWeek: 2, toWeek: 3, completedDays: ['lundi', 'mercredi', 'vendredi'], reason: 'Semaine complétée/traitée', date: '2026-10-16', actualDayName: 'vendredi'}];
+const ctx3 = c.CoachAIContext.build();
+assert(ctx3.indexOf("Séance(s) déjà enregistrée(s) aujourd'hui (2026-10-16) : S2 · vendredi à 18:05") !== -1, 'Le coach sait que la séance du jour est faite, et dans quelle semaine.');
+assert(ctx3.indexOf('Passage à S3 validé par l\'athlète le 2026-10-16 (vendredi), depuis S2') !== -1, 'Le coach voit le passage de semaine, avec sa date.');
+assert(ctx3.indexOf("### vendredi — AUJOURD'HUI") === -1 && ctx3.indexOf("la séance d'aujourd'hui est déjà faite : S2 · vendredi") !== -1,
+  'S3 · vendredi n\'est pas présentée comme la séance d\'aujourd\'hui quand celle-ci est déjà faite.');
+c.state.history = []; c.state.weekTransitions = [];
+assert(c.CoachAIContext.build().indexOf("Aucune séance enregistrée aujourd'hui (2026-10-16).") !== -1, 'Sans séance du jour, le coach le sait aussi.');
+
+// 4. Plus de date UTC pour dater une séance, une sauvegarde ou une demande.
 ['scripts/session/save.js', 'scripts/session/results.js', 'scripts/coach_ai/context.js'].forEach(f => {
   assert(!/toISOString\(\)\s*\.slice\(0,\s*10\)/.test(read(f)), f + ' : aucune date tirée de toISOString().slice(0,10) (UTC).');
 });
