@@ -35,7 +35,7 @@ const ENGINE = [
   'scripts/charge/rpe.js', 'scripts/charge/historique.js', 'scripts/charge/scaling.js',
   'scripts/charge/brain_stats.js', 'scripts/charge/brain_memory.js', 'scripts/charge/brain_explain.js',
   'scripts/charge/brain_journal.js', 'scripts/charge/ceiling.js', 'scripts/charge/kalman.js',
-  'scripts/charge/suggestion.js'
+  'scripts/charge/suggestion.js', 'scripts/charge/index.js'
 ];
 function makeContext(opts){
   opts = opts || {};
@@ -325,6 +325,53 @@ function withMode(ctx, m, fn){ const T = ctx.COACH_MOVEMENT_TUNING.kalman; const
   withMode(ctx, 0, () => decide(ctx, s));
   const hintOff = ctx.__coachLoadHints['strict press'];
   assert(!hintOff.kalman && !ctx.CoachBrainExplain.build(hintOff).capacity, 'Off : aucune ligne de capacite.');
+}
+
+// ─── 8b. (!) par le chemin reel de l'app : CoachCharge.suggestLoad ─────────
+// § 8 appelle guardedSuggestedLoadDecision directement. L'app passe par
+// CoachCharge.suggestLoad (= coachSafeSuggestedLoad), dont la couche Brain
+// re-stocke l'indice : avant V5.2.22, `kalman` y etait perdu et la section
+// « Capacite estimee » n'apparaissait jamais des que la source etait Brain.
+function decideApp(ctx, s, keepHints){
+  ctx.state.week = s.week || 3;
+  seed(ctx, sessionsFor(s));
+  if(ctx.CoachKalman) ctx.CoachKalman.rebuild();
+  if(!keepHints) ctx.__coachLoadHints = {};
+  const call = s.call.slice();
+  const mc = ctx.coachBuildMovementContext(call[0], Object.assign({day:'jeudi', week:ctx.state.week}, call[3]));
+  return ctx.CoachCharge.suggestLoad(call[0], call[1], call[2], mc);
+}
+const hintOf = (ctx, s) => ctx.__coachLoadHints[ctx.coachNormalizeMoveText(s.label)];
+{
+  const ctx = makeContext();
+  assert(ctx.CoachCharge.suggestLoad === ctx.coachSafeSuggestedLoad, 'CoachCharge.suggestLoad est bien la couche Brain (coachSafeSuggestedLoad).');
+  ['strict_press_fixture_3x3', 'progression_rpe_bas'].forEach(name => {
+    const s = scenarios.find(x => x.name === name);
+    withMode(ctx, 1, () => decideApp(ctx, s));
+    const hint = hintOf(ctx, s);
+    assert(!!hint && !!hint.kalman, name + ' (app) : la capacite estimee survit a la couche Brain (source ' + (hint && hint.source) + ').');
+    const ex = ctx.CoachBrainExplain.build(hint || {});
+    assert(/^Capacite estimee \(observation\) : \d+ lb ± \d+/.test(ex.capacity || ''), name + ' (app) : ligne (!) non vide — « ' + ex.capacity + ' ».');
+  });
+  // Le cas qui echouait : source forcee a 'brain' par la couche Brain stats.
+  const brain = scenarios.find(x => x.name === 'progression_rpe_bas');
+  withMode(ctx, 1, () => decideApp(ctx, brain));
+  const hb = hintOf(ctx, brain);
+  assert(hb.source === 'brain' && !!hb.brainStats && !!hb.kalman, 'Couche Brain stats : source brain, analyse Brain ET capacite estimee.');
+  // Mode off apres shadow, sans vider les indices : aucun kalman perime.
+  withMode(ctx, 0, () => decideApp(ctx, brain, true));
+  assert(!hintOf(ctx, brain).kalman, 'Off apres shadow : aucun kalman perime sur l\'indice.');
+  // Shadow = off bit a bit sur le chemin de l'app, charges ET indice hors kalman.
+  const bare = makeContext({files: ENGINE.filter(f => f !== 'scripts/charge/kalman.js')});
+  bare.CoachKalman = undefined;
+  const strip = h => { const c = Object.assign({}, h); delete c.kalman; return JSON.stringify(c); };
+  scenarios.forEach(s => {
+    const off = withMode(ctx, 0, () => decideApp(ctx, s)); const hOff = strip(hintOf(ctx, s) || {});
+    const sh = withMode(ctx, 1, () => decideApp(ctx, s)); const hSh = strip(hintOf(ctx, s) || {});
+    assert(sh === off, s.name + ' (app) : shadow identique a off (' + off + ').');
+    assert(hSh === hOff, s.name + ' (app) : indice identique hors kalman.');
+    assert(decideApp(bare, s) === off, s.name + ' (app) : module absent = off.');
+  });
 }
 
 // ─── 9. Stockage : rien n'est ecrit ────────────────────────────────────────

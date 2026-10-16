@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.21
+# ETAT ACTUEL — V5.2.22
 
-Version actuelle : V5.2.21
+Version actuelle : V5.2.22
 
 ## État courant
+
+### Capacité estimée visible dans le (!)
+
+La section « Capacité estimée » (Kalman, mode observation) apparaît dans le (!) même quand la suggestion vient de Brain. Elle est relue telle que la décision l'a calculée, jamais recalculée à l'affichage. Aucune charge suggérée ne change.
 
 ### Metcons : charge et minute dans la pastille
 
@@ -62,7 +66,7 @@ Les pauses du mouvement principal sont remplies par un filler léger au poids du
 
 ### Coach IA économique
 
-Par l'API, Coach IA tourne par défaut sur Haiku 4.5 (cible < 1 $/mois). Plafond mensuel réglable (1 $ par défaut), dépense du mois affichée dans Réglages → Coach IA, comptée d'après le `usage` déclaré par l'API. Les poids restent au moteur ; le copier-coller reste le chemin par défaut sans clé.
+Par l'API, Coach IA tourne par défaut sur Haiku 5.5 (`claude-haiku-5-5`, cible < 1 $/mois). Plafond mensuel réglable (1 $ par défaut), dépense du mois affichée dans Réglages → Coach IA, comptée d'après le `usage` déclaré par l'API. Les poids restent au moteur ; le copier-coller reste le chemin par défaut sans clé.
 
 ### Onglet Charge en sous-onglets
 

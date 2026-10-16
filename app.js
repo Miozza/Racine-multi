@@ -1,5 +1,5 @@
-// Racine V5.2.21 — Metcons : charge et minute dans la pastille, Pont Peak en Rx homme
-var APP_VERSION = "V5.2.21";
+// Racine V5.2.22 — (!) : la capacité estimée (Kalman) survit à la couche Brain
+var APP_VERSION = "V5.2.22";
 
 // Architecture stable
 // programs/*.js = plan prévu
