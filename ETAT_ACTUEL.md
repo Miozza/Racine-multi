@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.23
+# ETAT ACTUEL — V5.2.24
 
-Version actuelle : V5.2.23
+Version actuelle : V5.2.24
 
 ## État courant
+
+### Coach IA fait partie de l'app
+
+Coach IA reçoit à chaque message la date réelle, la semaine et le jour ouverts, les séances faites aujourd'hui, le dernier passage de semaine et la prochaine séance prévue, et les énonce comme des faits de l'app. « Passer à S3 » ouvre S3 au premier jour du programme.
 
 ### Jour réel séparé du jour de programme
 

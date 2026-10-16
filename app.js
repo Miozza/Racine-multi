@@ -1,5 +1,5 @@
-// Racine V5.2.23 — jour réel (horloge du téléphone) séparé du jour de programme
-var APP_VERSION = "V5.2.23";
+// Racine V5.2.24 — Coach IA fait partie de l'app ; « Passer à S3 » ouvre S3 · lundi
+var APP_VERSION = "V5.2.24";
 
 // Architecture stable
 // programs/*.js = plan prévu
