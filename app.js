@@ -1,5 +1,5 @@
-// Racine V5.2.30 — Jambes du coureur : refait pour un gym à appareils
-var APP_VERSION = "V5.2.30";
+// Racine V5.2.31 — Jambes du coureur : un seul exercice de mollets
+var APP_VERSION = "V5.2.31";
 
 // Architecture stable
 // programs/*.js = plan prévu

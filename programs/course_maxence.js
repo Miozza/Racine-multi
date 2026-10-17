@@ -34,7 +34,8 @@
 // ramène au niveau de Maxence, puis son historique prend la main.
 //   Leg Press             4×6 : 450 lb ; B : 3×4 à 385 lb (≈ −15 %)
 //   Single-Leg Leg Press  180 lb ; Leg Curl / Leg Extension 110 lb
-//   Calf Raise            debout 180 lb (comme arnold_split_strict), assis 90 lb
+//   Standing Calf Raise   180 lb (comme arnold_split_strict). Un seul exercice
+//                         de mollets par séance (V5.2.31, choix de l'athlète).
 // Repères déclarés dans movement_tuning.js (defaultLoadSeeds). Le poids
 // affiché d'une presse ou d'une pile varie d'une machine à l'autre : le
 // premier résultat loggé recale tout, c'est voulu.
@@ -42,7 +43,7 @@
 // ── V5.2.30 : UN GYM D'APPAREILS ───────────────────────────────────────────
 // Le gym du cégep est un gym de musculation à appareils, sans boîte. Le
 // programme est construit autour : presse à jambes (principal), presse à une
-// jambe, leg curl + leg extension, machines à mollets debout et assis. Les
+// jambe, leg curl + leg extension, machine à mollets debout. Les
 // appareils réduisent aussi la technique à apprendre et les courbatures
 // (peu d'excentrique sous charge libre) — exactement la règle 1.
 // Pas de semaine allégée : il n'y a qu'une semaine. La première séance se
@@ -92,11 +93,9 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Single-Leg Leg Press", "3×6/jambe", cmLoad(180, week), "1:00",
            "Même presse, un seul pied au centre de la plateforme. Genou aligné sur le pied, poussée rapide comme une foulée. Commence par la jambe la plus faible. RPE 7.")
       ]},
-      {time:"8 min", title:"E. Mollets", tag:"Superset", kind:"accessory", exercises:[
-        ex("Standing Calf Raise", "3×10", cmLoad(180, week), "0:20 avant E2",
-           "Machine à mollets debout, genoux tendus. Pause 1 sec en haut, descente complète. Enchaîne sur E2."),
-        ex("Seated Calf Raise", "3×12", cmLoad(90, week), "1:00 après E2",
-           "Machine à mollets assis, genoux pliés : c'est le soléaire, le muscle qui encaisse chaque foulée. Pause en haut, amplitude complète.")
+      {time:"5 min", title:"E. Mollets", tag:"Accessoire", kind:"accessory", exercises:[
+        ex("Standing Calf Raise", "3×10", cmLoad(180, week), "1:00",
+           "Machine à mollets debout, genoux tendus. Pause 1 sec en haut, descente complète. RPE 7.")
       ]},
       {time:"6 min", title:"F. Cheville & tronc", tag:"Prévention", kind:"core", exercises:[
         ex("Tibialis Raise", "2×15", "poids du corps", "0:20 avant F2",
@@ -166,7 +165,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       jeudi: "Garder la force en semaine de course sans rien laisser dans les jambes."
     },
     dayMeta: {
-      mardi: {label:"Séance A — Force",           base:"Presse + leg curl", focus:"Squat jump, presse à jambes 4×6, leg curl + leg extension, presse à une jambe, mollets aux machines, tibial, gainage latéral. ~58 min."},
+      mardi: {label:"Séance A — Force",           base:"Presse + leg curl", focus:"Squat jump, presse à jambes 4×6, leg curl + leg extension, presse à une jambe, mollets debout, tibial, gainage latéral. ~55 min."},
       jeudi: {label:"Séance B — Semaine de course", base:"Presse légère", focus:"Squat jump, presse à jambes 3×4 légère, presse à une jambe, mollets, tibial. ~36 min."}
     }
   };

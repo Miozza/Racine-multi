@@ -1,3 +1,10 @@
+## V5.2.31 — Jambes du coureur : un seul exercice de mollets
+
+**Pourquoi** : choix de l'athlète (2026-10-17) : un seul exercice de mollets par séance, les mollets debout.
+
+- **`course_maxence`**, séance A : le superset mollets debout + assis devient **Standing Calf Raise 3×10** seul (5 min). Séance A ≈ 55 min. La séance B avait déjà un seul exercice de mollets (debout).
+- La fiche et le repère de charge du Seated Calf Raise restent dans l'app pour d'autres programmes.
+
 ## V5.2.30 — Jambes du coureur : refait pour un gym à appareils
 
 **Pourquoi** : retour de l'athlète (2026-10-17). Le gym du cégep est un gym de musculation à appareils (presse à jambes, leg curl, leg extension, machines à mollets), sans boîte. Le programme était écrit pour un gym de barre libre et demandait encore une boîte au Step-Up.
