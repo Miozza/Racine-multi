@@ -1,3 +1,11 @@
+## V5.2.29 — Jambes du coureur : Squat Jump à la place du Box Jump
+
+**Pourquoi** : retour de l'athlète (2026-10-17). Le gym du coureur n'a pas de boîte à sauter.
+
+- **`course_maxence`** : le Box Jump devient un **Squat Jump** dans les deux séances (A 3×3, B 2×3). Un saut à la fois, réception amortie et tenue 2 secondes — jamais d'enchaînement rebondi, pour la cheville. Volume inchangé : la réception se fait au sol, on n'en rajoute pas.
+- Fiche technique « Squat Jump » ajoutée ; repère de charge au poids du corps dans `movement_tuning.js`.
+- `dev/course_maxence_checks.js` : tout saut se fait un saut à la fois avec réception tenue, et aucune boîte n'est requise.
+
 ## V5.2.28 — Jambes du coureur : programme public
 
 **Pourquoi** : décision de l'athlète (2026-10-17). Les profils vivent sur chaque téléphone : le coureur crée son profil sur le sien et ne peut pas recevoir la permission accordée depuis le panneau admin d'un autre appareil. Il doit pouvoir choisir le programme lui-même dans l'onglet Cycle.

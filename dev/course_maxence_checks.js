@@ -8,7 +8,8 @@
        et fait disparaître les courbatures.
     2. RIEN À L'ÉCHEC. Aucun format AMRAP / max / échec dans un exercice.
     3. CHEVILLE. Aucun saut répété sur place (pogo, corde, depth jump) ; le
-       Box Jump se redescend en marchant. Tibialis Raise dans les deux séances.
+       Squat Jump se fait un saut à la fois, réception tenue. Tibialis Raise
+       dans les deux séances.
     4. SÉANCE B DÉCLARÉE LÉGÈRE : chaque exercice chargé porte « léger » —
        c'est ce qui coupe l'auto-progression (coachExtractMovementIntent).
     5. CHAQUE MOUVEMENT A UNE FICHE TECHNIQUE, y compris dans les cartes de
@@ -54,7 +55,8 @@ for(let w = 1; w <= P.weekLabels.length; w++){
     assert(!/pogo|double under|corde à sauter|depth jump|drop jump/.test(all), day + ' S' + w + ' : aucun saut répété ni réception en contrebas.');
     assert(/tibialis raise/.test(all), day + ' S' + w + ' : Tibialis Raise présent.');
     bl.forEach(b => (b.exercises || []).forEach(e => {
-      if(e.name === 'Box Jump') assert(/marchant/i.test(e.note), day + ' S' + w + ' : Box Jump redescendu en marchant.');
+      if(/jump/i.test(e.name)) assert(/un saut à la fois/i.test(e.note) && /tiens|tenue/i.test(e.note), day + ' S' + w + ' : ' + e.name + ' un saut à la fois, réception tenue.');
+      assert(e.name !== 'Box Jump', day + ' S' + w + ' : aucune boîte requise (le gym n\'en a pas).');
       if(day === 'jeudi' && /\d+ lb/.test(e.load)) assert(/léger/i.test(e.note), 'B S' + w + ' : ' + e.name + ' déclaré léger.');
       if(w === 1) assert(!!tutos[e.name], 'fiche technique : ' + e.name + '.');
     }));

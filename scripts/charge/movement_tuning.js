@@ -594,7 +594,7 @@
       {pattern:/seated cable row/, load:120},
       {pattern:/one arm db row|db row/, load:65},
       // Mouvements au poids du corps : seed 0 = pas de charge externe.
-      {pattern:/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang|tibialis raise/, load:0},
+      {pattern:/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang|tibialis raise|squat jump/, load:0},
       {pattern:/pull up|pullup|chin up|chest to bar|toes to bar|knee raise|muscle up/, load:0},
       {pattern:/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap/, load:0}
     ],

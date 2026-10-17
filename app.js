@@ -1,5 +1,5 @@
-// Racine V5.2.28 — Jambes du coureur : programme public
-var APP_VERSION = "V5.2.28";
+// Racine V5.2.29 — Jambes du coureur : Squat Jump à la place du Box Jump
+var APP_VERSION = "V5.2.29";
 
 // Architecture stable
 // programs/*.js = plan prévu

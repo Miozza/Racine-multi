@@ -21,7 +21,9 @@
 // Fragilités : cheville et releveurs des orteils (tibial antérieur). Ils
 // sont renforcés doucement à chaque séance (Tibialis Raise, mollets,
 // équilibre). Pas de sauts répétés sur place (pogo, corde) ni de réception
-// en contrebas : le seul saut est un Box Jump avec descente en marchant.
+// en contrebas : le seul saut est un Squat Jump, UN saut à la fois, réception
+// amortie et tenue 2 sec (V5.2.29 : le gym n'a pas de boîte, il remplace le
+// Box Jump ; volume plafonné à 3×3 parce que la réception se fait au sol).
 //
 // ── CHARGES : %1RM DE L'ATHLÈTE DE RÉFÉRENCE ───────────────────────────────
 // Convention du dépôt (CLAUDE.md § 3.1) : les nombres écrits sont ceux de
@@ -61,8 +63,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return [
       {time:"8 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:WARMUP},
       {time:"6 min", title:"A. Puissance", tag:"Puissance", kind:"secondary", exercises:[
-        ex("Box Jump", "3×3", "poids du corps", "1:30",
-           "Boîte 20-24 po. Saut explosif, réception douce et silencieuse sur la boîte, puis tu REDESCENDS EN MARCHANT — jamais en sautant, pour la cheville. Chaque saut est frais : qualité, pas fatigue.")
+        ex("Squat Jump", "3×3", "poids du corps", "1:30",
+           "UN saut à la fois : quart de squat, saut le plus haut possible, réception douce et silencieuse sur l'avant-pied puis les talons, genoux souples. Tu TIENS la réception 2 secondes avant le saut suivant — jamais d'enchaînement rebondi, pour la cheville. Chaque saut est frais : qualité, pas fatigue.")
       ]},
       {time:"14 min", title:"B. Squat", tag:"Principal", kind:"main", exercises:[
         ex("Back Squat", "4×5", cmLoad(235, week), "2:30",
@@ -96,8 +98,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return [
       {time:"8 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:WARMUP},
       {time:"4 min", title:"A. Puissance", tag:"Puissance", kind:"secondary", exercises:[
-        ex("Box Jump", "2×3", "poids du corps", "1:30",
-           "Mêmes consignes qu'en A : réception douce, descente en marchant. Léger : tu cherches à te sentir vif, pas à te fatiguer.")
+        ex("Squat Jump", "2×3", "poids du corps", "1:30",
+           "Mêmes consignes qu'en A : un saut à la fois, réception tenue 2 secondes. Léger : tu cherches à te sentir vif, pas à te fatiguer.")
       ]},
       {time:"10 min", title:"B. Squat rapide", tag:"Entretien", kind:"main", exercises:[
         ex("Back Squat", "3×3", cmLoad(205, week), "2:00",
@@ -148,7 +150,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       "Une seule séance par semaine : A en semaine normale, B en semaine de course. L'autre se marque « manquée » (raison : au choix).",
       "Place la séance un jour de course facile ou de repos, au moins 48 h avant des intervalles ou une course. Jamais la veille d'une compétition.",
       "Rien à l'échec : RPE 7 maximum en A, RPE 6 en B. Une courbature qui dure plus de 2 jours veut dire trop lourd.",
-      "Cheville et releveurs des orteils : pas de saut répété sur place, Box Jump avec descente en marchant. Une douleur qui monte pendant une série arrête la série.",
+      "Cheville et releveurs des orteils : pas de saut répété sur place, Squat Jump un saut à la fois avec réception tenue 2 secondes. Une douleur qui monte pendant une série arrête la série.",
       "Montée toujours rapide, descente contrôlée : la vitesse est le travail, pas la fatigue."
     ],
     dayIntentions: {
@@ -156,8 +158,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       jeudi: "Garder la force en semaine de course sans rien laisser dans les jambes."
     },
     dayMeta: {
-      mardi: {label:"Séance A — Force",           base:"Squat + RDL + step-up", focus:"Box jump, back squat 4×5, RDL, step-ups, mollets, tibial, gainage latéral. ~60 min."},
-      jeudi: {label:"Séance B — Semaine de course", base:"Squat léger + step-up", focus:"Box jump, back squat 3×3 léger, step-ups, mollets, tibial. ~40 min."}
+      mardi: {label:"Séance A — Force",           base:"Squat + RDL + step-up", focus:"Squat jump, back squat 4×5, RDL, step-ups, mollets, tibial, gainage latéral. ~60 min."},
+      jeudi: {label:"Séance B — Semaine de course", base:"Squat léger + step-up", focus:"Squat jump, back squat 3×3 léger, step-ups, mollets, tibial. ~40 min."}
     }
   };
 
