@@ -6,7 +6,7 @@
 - **Sans courbatures** : volume bas, RPE 7 max (6 en B), montée rapide, mêmes mouvements chaque semaine.
 - **Cheville** : Tibialis Raise et mollets (debout et assis) à chaque séance ; seul saut, un Box Jump redescendu en marchant.
 - **Séance B légère par déclaration** : « léger » dans chaque note chargée, l'auto-progression ne s'y applique pas.
-- Fiches techniques ajoutées : Tibialis Raise, Seated Calf Raise, Barbell RDL. Repère de charge `seated calf` (90 lb réf.) et Tibialis Raise au poids du corps dans `movement_tuning.js`.
+- Fiches techniques ajoutées : Tibialis Raise, Seated Calf Raise (machine ou banc), Barbell RDL, Wall Calf Stretch. Toutes les cartes du programme, échauffement et retour au calme compris, ouvrent une fiche. Repère de charge `seated calf` (90 lb réf.) et Tibialis Raise au poids du corps dans `movement_tuning.js`.
 - Garde-fou : `dev/course_maxence_checks.js`.
 
 ## V5.2.26 — Rappel de retard anticipé dans la séance guidée

@@ -54,7 +54,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
 
   // Texte séparé par « + » : la vue séance en fait une carte par mouvement.
   var WARMUP = "Vélo ou jogging facile 5 min + Ankle Rocks 10/côté + Glute Bridge 10 reps + Tibialis Raise 10 reps légères + 3 Air Squat lents";
-  var COOLDOWN = "Ankle Rocks 8/côté + étirement mollets au mur 30 sec/côté. Tu sors plus frais qu'en entrant.";
+  var COOLDOWN = "Ankle Rocks 8/côté + Wall Calf Stretch 30 sec jambe tendue puis 30 sec genou plié, par côté";
 
   function seanceA(week){
     return [

@@ -11,7 +11,8 @@
        Box Jump se redescend en marchant. Tibialis Raise dans les deux séances.
     4. SÉANCE B DÉCLARÉE LÉGÈRE : chaque exercice chargé porte « léger » —
        c'est ce qui coupe l'auto-progression (coachExtractMovementIntent).
-    5. CHAQUE MOUVEMENT A UNE FICHE TECHNIQUE.
+    5. CHAQUE MOUVEMENT A UNE FICHE TECHNIQUE, y compris dans les cartes de
+       texte d'échauffement et de retour au calme.
 
   Usage : node dev/course_maxence_checks.js
 */
@@ -57,6 +58,10 @@ for(let w = 1; w <= P.weekLabels.length; w++){
       if(day === 'jeudi' && /\d+ lb/.test(e.load)) assert(/léger/i.test(e.note), 'B S' + w + ' : ' + e.name + ' déclaré léger.');
       if(w === 1) assert(!!tutos[e.name], 'fiche technique : ' + e.name + '.');
     }));
+    // Les cartes de texte (échauffement, retour au calme) ouvrent aussi une fiche.
+    if(w === 1) bl.filter(b => b.text && b.kind !== 'wod').forEach(b => b.text.split('+').map(t => t.trim())
+      .filter(t => !/^vélo|^jogging/i.test(t))
+      .forEach(t => assert(!!ctx.window.findCoachBertinTutorial(t), 'fiche technique (texte) : ' + t + '.')));
   });
 }
 

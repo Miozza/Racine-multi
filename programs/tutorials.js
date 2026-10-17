@@ -126,10 +126,17 @@ window.COACH_BERTIN_TUTORIALS = {
   },
   "Seated Calf Raise": {
     goal: "Soléaire — le mollet qui encaisse chaque foulée de course.",
-    setup: ["Assis, genoux pliés à 90°.", "Avant-pied sur le rebord, talons dans le vide.", "Charge posée sur les genoux."],
+    setup: ["Machine à mollets assis : coussin réglé juste au-dessus des genoux.", "Sans machine : banc, avant-pied sur un disque, haltère ou barre posé sur les cuisses.", "Genoux pliés à 90°, talons dans le vide."],
     execution: ["Monte le plus haut possible.", "Pause 1 sec en haut.", "Descends lentement jusqu’à l’étirement."],
     mistakes: ["Rebondir en bas.", "Demi-amplitude.", "Pousser avec les mains."],
     cue: "Genoux pliés, pause en haut."
+  },
+  "Wall Calf Stretch": {
+    goal: "Étirer les deux muscles du mollet après la séance.",
+    setup: ["Face au mur, mains à hauteur de poitrine.", "Un pied reculé, talon au sol, orteils vers l’avant."],
+    execution: ["Jambe arrière tendue, avance les hanches : 30 sec (gastrocnémien).", "Plie le genou arrière en gardant le talon au sol : 30 sec (soléaire).", "Change de jambe."],
+    mistakes: ["Talon qui décolle.", "Pied arrière tourné vers l’extérieur.", "Rebondir dans l’étirement."],
+    cue: "Talon collé, jambe tendue puis genou plié."
   },
   "Tibialis Raise": {
     goal: "Renforcer les releveurs des orteils (tibial antérieur) et protéger la cheville du coureur.",

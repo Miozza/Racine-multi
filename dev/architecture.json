@@ -685,8 +685,8 @@
         }
       ],
       "consumes": [],
-      "size": 3625,
-      "lines": 64
+      "size": 4059,
+      "lines": 69
     },
     {
       "path": "dev/crossfit_quality_checks.js",
@@ -2420,7 +2420,7 @@
         }
       ],
       "consumes": [],
-      "size": 11024,
+      "size": 11023,
       "lines": 167
     },
     {
