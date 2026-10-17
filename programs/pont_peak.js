@@ -5,6 +5,10 @@
 // masse d'épaules avant janvier.
 // Méthode : rotation A (S1-3, variations nouvelles), rotation B (S4-5,
 // mouvements de compétition), S6 deload, S7 test 1RM au Bench Press SEUL.
+// Moteur (V2, 2026-10-17, S3-S5) : lundi aérobie long au rythme conversation
+// (à la place du split squat), jeudi EMOM de burpees, vendredi metcon long
+// avec stratégie de découpage écrite ; re-test du 21-15-9 de S2 le vendredi
+// S7. Competition Peak ouvre sur un AMRAP 20 : le bloc doit y amener le souffle.
 // Règle : noms de mouvements propres. Les intentions vivent dans les notes.
 // Trois variations sont des mouvements DISTINCTS avec leur propre historique :
 // Tempo Back Squat, Paused Bench Press, Bottoms-Up KB Press.
@@ -60,8 +64,8 @@
     mult: [0.72, 0.80, 0.87, 0.80, 0.88, 0.55, 0.90],
     rest: "0:30–3:00",
     tag: "pont peak bench épaules",
-    versionDate: "2026-10-01",
-    versionLabel: "2026-10-01 — Phase 3 Pont Peak V1, rotations A/B, deload S6, test bench S7"
+    versionDate: "2026-10-17",
+    versionLabel: "2026-10-17 — Phase 3 Pont Peak V2, moteur cardio S3-S5 (aérobie, EMOM burpees, stratégie écrite)"
   };
 
   // ── S7 — TEST 1RM BENCH PRESS ───────────────────────────────────────────
@@ -118,49 +122,52 @@
         monMain:"Tempo Back Squat", monFormat:"montée vers 3RM", monLoad:"235 lb", // 268 × 0,87
         monNote:"3RM au tempo 3-1-X. RPE 9 max, jamais d'échec. Ce chiffre devient la référence de la variation.",
         rdl:"3×6", rdlLoad:"195 lb",
-        monWod:"3 RFT : 15 cal Bike, 10 Burpees (cap 9).",
+        monTime:"20 min",
+        monWod:"Moteur aérobie, 20 min sans arrêt : 5 min Bike puis 5 min Row, 2 fois. Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici.",
         tueMain:"Paused Bench Press", tueFormat:"montée vers 3RM", tueLoad:"200 lb", // 228 × 0,87
         tueNote:"3RM avec pause 1 s. RPE 9 max, jamais d'échec. Pareur obligatoire.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"155 lb",
         tueWod:"EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 40 Double-Unders ; minutes paires 8 Box Jumps 24 po.",
         thuMain:"Landmine Press", thuFormat:"4×5/bras", thuLoad:"65 lb",
         thuNote:"RPE 9, pas de RM. Gainage solide, stop si l'épaule monte vers l'oreille.",
-        thuWod:"2 RFT : 20 cal Row, 20 Walking Lunges poids du corps.",
+        thuWod:"EMOM 10 : 6 Burpees poids du corps chaque minute. Rythme constant, un burpee toutes les 3-4 s : fini en 25-30 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"EMOM 12 en 4 stations, une station par minute, 3 tours : 1) 12 cal Row, 2) 12 Wall Balls 20 lb, 3) 8 Burpees over the bar, 4) 40 Double-Unders."
+        friWod:"EMOM 16 en 4 stations, une station par minute, 4 tours : 1) 12 cal Row, 2) 12 Wall Balls 20 lb, 3) 8 Burpees over the bar, 4) 40 Double-Unders. Stratégie : chaque station finie en 35-40 s, 20 s de souffle. Burpees over the bar en step-up dès que le souffle monte : ralentir, jamais s'arrêter."
       },
       4: {
         monMain:"Back Squat", monFormat:"5×3", monLoad:"250 lb", // 315 × 0,80
         monNote:"Retour au mouvement de compétition. RPE 8. Descente contrôlée, remontée explosive.",
         rdl:"3×6", rdlLoad:"195 lb",
-        monWod:"8 × (0:30 Bike fort / 0:30 repos).",
+        monTime:"22 min",
+        monWod:"Moteur aérobie, 22 min sans arrêt : 6 min Bike, 5 min Row, 6 min Bike, 5 min Row. Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici.",
         tueMain:"Bench Press", tueFormat:"5×3", tueLoad:"195 lb", // 245 × 0,80
         tueNote:"Touch-and-go contrôlé, aucun rebond. RPE 8. Omoplates serrées, fessiers sur le banc.",
         pull:"Weighted Pull-up", pullFormat:"4×4", pullLoad:"80%",
         tueWod:"4 × (1:00 Shuttle Runs de 10 m / 1:00 repos) — compte les allers-retours, garde le même nombre à chaque intervalle.",
         thuMain:"Strict Press", thuFormat:"5×3", thuLoad:"125 lb", // 155 × 0,80
         thuNote:"RPE 8. Fessiers serrés, aucune cambrure, tête qui passe à travers en fin de poussée.",
-        thuWod:"6 × (0:40 Row / 0:20 repos).",
+        thuWod:"EMOM 10 : 7 Burpees poids du corps chaque minute. Rythme constant, un burpee toutes les 3-4 s : fini en 30-35 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier.",
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
-        friWod:"5 × (2:00 effort / 1:00 repos) : 12 cal Row puis max Wall Balls 20 lb."
+        friWod:"AMRAP 16 à effort 7 sur 10 : 12 cal Row, 10 Wall Balls 20 lb, 6 Burpees poids du corps. Stratégie : le Row est ta récupération, à rythme régulier sans sprint. Les 10 lancers d'une traite. Burpees réguliers : ralentir, jamais s'arrêter. Vise le même nombre de tours à chaque tranche de 4 min."
       },
       5: {
         monMain:"Back Squat", monFormat:"4×2", monLoad:"275 lb", // 315 × 0,88
         monNote:"Doubles lourds, RPE 9. Une rep en réserve, toujours. Aucune bataille.",
         rdl:"3×5", rdlLoad:"205 lb",
-        monWod:"Pour le temps : 30 cal Bike, 20 Toes-to-Bar, 15 Burpees (cap 10).",
+        monTime:"24 min",
+        monWod:"Moteur aérobie, 24 min sans arrêt : 6 min Bike puis 6 min Row, 2 fois. Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici.",
         tueMain:"Bench Press", tueFormat:"4×2", tueLoad:"215 lb", // 245 × 0,88
         tueNote:"Doubles lourds, RPE 9 : préparation neurale du test. Une rep en réserve. Pareur obligatoire.",
         pull:"Weighted Pull-up", pullFormat:"4×4", pullLoad:"85%",
         tueWod:"Pour le temps : 50 cal Bike (mini-benchmark, à refaire pendant le Peak).",
         thuMain:"Strict Press", thuFormat:"4×2", thuLoad:"135 lb", // 155 × 0,88
         thuNote:"Doubles lourds, RPE 9. Stop si le bas du dos cambre ou si la barre dérive vers l'avant.",
-        thuWod:"Pour le temps : 500 m Row + 30 KB Swings 24 kg (cap 7).",
+        thuWod:"EMOM 10 : 8 Burpees poids du corps chaque minute. Rythme constant, un burpee toutes les 3-4 s : fini en 35-40 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier.",
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
-        friWod:"Mini-benchmark pour le temps : 50 Wall Balls 20 lb, 40 cal Row, 30 Burpees, 20 Toes-to-Bar (cap 15). À refaire pendant le Peak pour mesurer la progression."
+        friWod:"Mini-benchmark pour le temps : 50 Wall Balls 20 lb, 40 cal Row, 30 Burpees, 20 Toes-to-Bar (cap 15). À refaire pendant le Peak pour mesurer la progression. Stratégie : lancers en 5 séries de 10 ; Row à rythme fixe, jamais en sprint ; Burpees en 6 séries de 5 avec 3 respirations entre ; Toes-to-Bar en 5 séries de 4."
       },
       6: {
         monMain:"Back Squat", monFormat:"3×5", monLoad:"175 lb", // 315 × 0,55
@@ -189,10 +196,10 @@
         tueWod:"6 min Bike facile (après le test).",
         thuMain:"Strict Press", thuFormat:"3×3", thuLoad:"115 lb", // modéré, ~0,75 × 155 (pas de mult : semaine de test)
         thuNote:"Modéré, aucune montée. Gainage solide, barre qui reste rapide.",
-        thuWod:"6 min Row facile.",
+        thuWod:"EMOM 8 : 5 Burpees poids du corps chaque minute, rythme régulier. On garde le geste, on ne se vide pas.",
         cleanFormat:"EMOM 8 × 2", cleanLoad:"75%",
         cleanNote:"75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Aucun RM cette semaine.",
-        friWod:"AMRAP 12 modéré, aperçu du Peak : 10 Wall Balls 20 lb, 10 cal Row, 5 Burpees."
+        friWod:"Re-test du 21-15-9 de S2 : Wall Balls 20 lb, Burpees poids du corps — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14). Référence S2 : 6:58 avec trois pauses. Stratégie : lancers 21 = 11 puis 10 ; 15 = 8 puis 7 ; 9 d'une traite. Burpees jamais arrêtés : ralentis plutôt, step-down et step-up permis. Objectif : zéro pause."
       }
     })[week] || plan(1);
   }
@@ -207,27 +214,35 @@
     var rotA = w <= 3;
     var light = w >= 6;      // S6 deload, S7 semaine de test : accessoires réduits
     var isTest = w === 7;
+    // S3-S5 : moteur cardio (lundi aérobie long, jeudi EMOM burpees, vendredi
+    // metcon long). Le split squat et l'Overhead Rope Extension cèdent leur
+    // temps ; le bench d'appoint du vendredi garde ses 4 séries.
+    var engine = w >= 3 && w <= 5;
 
-    if(day === "lundi") return [
-      {time:"8 min", title:"Échauffement squat", tag:"Préparation", kind:"warmup", text:"Bike 2 min + ankle rocks 10/côté + glute bridge 15 + goblet squat 10 + 90/90 hanches. Montée progressive longue sur le mouvement A."},
-      {time:"16 min", title:"A. " + p.monMain, tag:"Squat lourd", kind:"main", exercises:[
-        ex(p.monMain, p.monFormat, p.monLoad, "1:00 avant A2", p.monNote),
-        // Filler : remplit la pause du squat sans le fatiguer, ni le RDL, ni le bench du mardi.
-        ex("Tibialis Raise", light ? "2×15" : "3×15", "poids du corps", "1:00 après A2", "Pendant la pause du squat. Dos au mur, talons en avant, orteils vers les tibias. Lent, sans élan. Genoux et chevilles, zéro fatigue pour la série suivante.")
-      ]},
-      {time:"10 min", title:"B. Volume quadriceps", tag:"Masse jambes", kind:"hypertrophy", exercises:[
+    if(day === "lundi"){
+      var lundi = [
+        {time:"8 min", title:"Échauffement squat", tag:"Préparation", kind:"warmup", text:"Bike 2 min + ankle rocks 10/côté + glute bridge 15 + goblet squat 10 + 90/90 hanches. Montée progressive longue sur le mouvement A."},
+        {time:"16 min", title:"A. " + p.monMain, tag:"Squat lourd", kind:"main", exercises:[
+          ex(p.monMain, p.monFormat, p.monLoad, "1:00 avant A2", p.monNote),
+          // Filler : remplit la pause du squat sans le fatiguer, ni le RDL, ni le bench du mardi.
+          ex("Tibialis Raise", light ? "2×15" : "3×15", "poids du corps", "1:00 après A2", "Pendant la pause du squat. Dos au mur, talons en avant, orteils vers les tibias. Lent, sans élan. Genoux et chevilles, zéro fatigue pour la série suivante.")
+        ]}
+      ];
+      if(!engine) lundi.push({time:"10 min", title:"B. Volume quadriceps", tag:"Masse jambes", kind:"hypertrophy", exercises:[
         light ? ex("Bulgarian Split Squat", "2×10/jambe", "30-35 lb / main", "1:00", "Léger, amplitude complète. On entretient, on ne charge pas.")
-        : rotA ? ex("Front-Foot Elevated Split Squat", "3×8-10/jambe", "40-50 lb / main", "1:00", "Pied avant sur une plaque, genou avant qui voyage loin. Dernière série à 1-2 reps de l'échec.")
-        : ex("Bulgarian Split Squat", "3×8-12/jambe", "50-55 lb / main", "1:00", "Torse un peu penché, genou avant qui voyage. Dernière série à 1-2 reps de l'échec.")
-      ]},
-      {time:"10 min", title:"C. Chaîne postérieure", tag:"Protection lombaire", kind:"accessory", exercises:[
-        ex("Barbell RDL", p.rdl, p.rdlLoad, "0:30 avant C2", "Charnière propre, dos neutre, barre proche des tibias, genoux à peine fléchis. Le seul RDL avant janvier : le Peak n'en contient pas."),
+        : ex("Front-Foot Elevated Split Squat", "3×8-10/jambe", "40-50 lb / main", "1:00", "Pied avant sur une plaque, genou avant qui voyage loin. Dernière série à 1-2 reps de l'échec.")
+      ]});
+      lundi.push({time:"10 min", title:(engine ? "B" : "C") + ". Chaîne postérieure", tag:"Protection lombaire", kind:"accessory", exercises:[
+        ex("Barbell RDL", p.rdl, p.rdlLoad, "0:30 avant " + (engine ? "B2" : "C2"), "Charnière propre, dos neutre, barre proche des tibias, genoux à peine fléchis. Le seul RDL avant janvier : le Peak n'en contient pas."),
         light ? ex("Dead Bug", "2×8/côté", "poids du corps", "1:00 après C2", "Côtes basses, bas du dos collé au sol, souffle contrôlé.")
-        : ex("Ab Wheel Rollout", "3×8-10", "poids du corps", "1:00 après C2", "Anti-extension. Bassin rentré, côtes basses, dos qui ne creuse jamais. Rollout à genoux ; quand 10 reps propres passent, départ debout ou gilet lesté.")
-      ]},
-      {time:"8 min", title:"D. Metcon court", tag:"WOD", kind:"wod", text:p.monWod},
-      {time:"3 min", title:"E. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + décompression suspendue 30 sec + respiration."}
-    ];
+        : ex("Ab Wheel Rollout", "3×8-10", "poids du corps", "1:00 après " + (engine ? "B2" : "C2"), "Anti-extension. Bassin rentré, côtes basses, dos qui ne creuse jamais. Rollout à genoux ; quand 10 reps propres passent, départ debout ou gilet lesté.")
+      ]});
+      lundi.push(engine
+        ? {time:p.monTime, title:"C. Moteur aérobie", tag:"Aérobie", kind:"wod", text:p.monWod}
+        : {time:"8 min", title:"D. Metcon court", tag:"WOD", kind:"wod", text:p.monWod});
+      lundi.push({time:"3 min", title:(engine ? "D" : "E") + ". Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + décompression suspendue 30 sec + respiration."});
+      return lundi;
+    }
 
     if(day === "mardi"){
       var mardi = [
@@ -299,12 +314,13 @@
           ex("Cable Lateral Raise", "4×12-15/bras", "20 lb", "1:00 après C2", "Câble au plus bas, tension constante, arrêt à hauteur d'épaule.")
         ]
       },
-      {time:"9 min", title:"D. Stabilité — socle fixe", tag:"Coiffe", kind:"accessory", exercises:[
+      {time:engine ? "6 min" : "9 min", title:"D. Stabilité — socle fixe", tag:"Coiffe", kind:"accessory", exercises:[
         ex("Bottoms-Up KB Press", light ? "2×6/bras" : "3×6/bras", "12 kg", "0:30", "KB à l'envers, poignet neutre, prise ferme. Lent et stable : si la cloche tombe, la charge est trop lourde."),
-        ex("Cuban Press", "2×12", "15-25 lb total", "0:30", "Lent. Rotation externe complète à chaque rep. Ce bloc ne tourne jamais : c'est le socle."),
+        ex("Cuban Press", "2×12", "15-25 lb total", "0:30", "Lent. Rotation externe complète à chaque rep. Ce bloc ne tourne jamais : c'est le socle.")
+      ].concat(engine ? [] : [
         ex("Overhead Rope Extension", light ? "2×12" : "3×12", light ? "35-40 lb" : "50 lb", "0:45", "Coudes serrés et hauts, étirement complet en bas.")
-      ]},
-      {time:"7 min", title:"E. Metcon court", tag:"WOD", kind:"wod", text:p.thuWod + " Aucune poussée au-dessus de la tête."},
+      ])},
+      {time:engine ? "10 min" : isTest ? "8 min" : "7 min", title:engine ? "E. EMOM burpees" : "E. Metcon court", tag:"WOD", kind:"wod", text:p.thuWod + " Aucune poussée au-dessus de la tête."},
       {time:"3 min", title:"F. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Pec stretch 45 sec/côté + lat stretch 45 sec/côté + respiration."}
     ];
 
@@ -331,7 +347,7 @@
       {time:"5 min", title:"D. DB Pullover", tag:"Ouverture thoracique", kind:"accessory", exercises:[
         ex("DB Pullover", light ? "2×10" : "3×12", light ? "25-30 lb" : "35 lb", "0:45", "Cross-bench, plus léger que le mardi. Respiration, ouverture thoracique, amplitude maximale contrôlée.")
       ]},
-      {time:light ? "12 min" : "14 min", title:"E. Metcon long", tag:"WOD", kind:"wod", text:p.friWod},
+      {time:engine ? "16 min" : (light && !isTest) ? "12 min" : "14 min", title:"E. Metcon long", tag:"WOD", kind:"wod", text:p.friWod},
       {time:"3 min", title:"F. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch + pec stretch + 10 respirations lentes." + (isTest ? " Fin du bloc : le Peak commence lundi." : "")}
     ];
   }
@@ -351,20 +367,22 @@
     "Ratio tirage:poussée ≥ 1,5:1 en séries chaque semaine de travail (S1-S5), hors stabilité et deltoïdes latéraux.",
     "Chaque variation garde son propre historique : ne jamais comparer un 3RM de Tempo Back Squat à un Back Squat, ni un Paused Bench Press à un Bench Press.",
     "Mardi : metcon monostructural ou bas du corps seulement — ni traction, ni rameur, ni wall balls, ni burpees, ni toes-to-bar, ni ski. Jeudi : aucune poussée au-dessus de la tête dans le metcon.",
-    "60 minutes max par séance : lundi et jeudi courts, vendredi avec le metcon long, style Peak.",
+    "Moteur S3-S5 : lundi aérobie de 20 → 22 → 24 min au rythme conversation (Bike/Row, à la place du split squat), jeudi EMOM 10 de burpees 6 → 7 → 8 par minute, vendredi metcon long avec stratégie de découpage écrite. Mardi : intervalles courts. Re-test du 21-15-9 de S2 le vendredi S7.",
+    "Force intacte : mouvements A, RDL, Front Squat, Power Clean, tirage et bench d'appoint du vendredi (4 séries) ne cèdent rien au moteur. Seuls le split squat (lundi) et l'Overhead Rope Extension (jeudi) sortent en S3-S5.",
+    "60 minutes max par séance : lundi aérobie en S3-S5, jeudi court, vendredi avec le metcon long, style Peak.",
     "Fillers pendant les pauses : Tibialis Raise (lundi, A2), Hip Airplane (mardi, B2 après le tirage), Single-Leg Calf Raise (jeudi, A2), Front Rack Stretch (jeudi, B2), Dead Bug (vendredi, B2). Légers et sans conflit avec le mouvement principal ni avec la veille ou le lendemain.",
     "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Test bench, Back Squat S7, Weighted Pull-up et Power Clean en pourcentage, résolus sur la capacité mesurée."
   ];
   P.dayIntentions = {
-    lundi: "Squat lourd : variation de squat en rotation avec Tibialis Raise pendant les pauses, volume quadriceps unilatéral, Barbell RDL, gainage anti-extension, metcon court.",
+    lundi: "Squat lourd : variation de squat en rotation avec Tibialis Raise pendant les pauses, volume quadriceps unilatéral (hors S3-S5), Barbell RDL, gainage anti-extension, puis metcon court — ou moteur aérobie long au rythme conversation en S3-S5.",
     mardi: "Bench lourd + tirage : variation de bench en rotation en superset avec un tirage et Hip Airplane, Pull-Up, DB Pullover, Face Pull, Cable Curl, 100 Band Pull-Apart, metcon qui épargne épaules et lats.",
-    jeudi: "Épaules : press en rotation avec Single-Leg Calf Raise pendant les pauses, Front Squat d'amorce du Peak avec Front Rack Stretch pendant les pauses, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps, metcon sans poussée au-dessus de la tête.",
+    jeudi: "Épaules : press en rotation avec Single-Leg Calf Raise pendant les pauses, Front Squat d'amorce du Peak avec Front Rack Stretch pendant les pauses, masse deltoïdes, socle de stabilité (Bottoms-Up KB Press, Cuban Press), triceps (hors S3-S5), metcon sans poussée au-dessus de la tête — EMOM de burpees en S3-S5.",
     vendredi: "Bench volume + transition Peak : Power Clean en EMOM, bench d'accessoire avec Dead Bug pendant les pauses, rowing, DB Pullover cross-bench, metcon long style Peak."
   };
   P.dayMeta = {
-    lundi:   {label:"Lundi",   base:"Squat lourd",            focus:"Tempo Back Squat / Back Squat en rotation, split squat, Barbell RDL, Ab Wheel Rollout, metcon court."},
+    lundi:   {label:"Lundi",   base:"Squat lourd",            focus:"Tempo Back Squat / Back Squat en rotation, split squat (hors S3-S5), Barbell RDL, Ab Wheel Rollout, metcon court ou moteur aérobie (S3-S5)."},
     mardi:   {label:"Mardi",   base:"Bench lourd + tirage",   focus:"Paused Bench Press / Bench Press en rotation, Pendlay Row / Weighted Pull-up, Pull-Up, DB Pullover, Face Pull, Band Pull-Apart, metcon court."},
-    jeudi:   {label:"Jeudi",   base:"Épaules + front squat",  focus:"Landmine Press / Strict Press en rotation, Front Squat, Arnold Press / Seated DB Press, Bottoms-Up KB Press, Cuban Press, metcon court."},
+    jeudi:   {label:"Jeudi",   base:"Épaules + front squat",  focus:"Landmine Press / Strict Press en rotation, Front Squat, Arnold Press / Seated DB Press, Bottoms-Up KB Press, Cuban Press, metcon court ou EMOM burpees (S3-S5)."},
     vendredi:{label:"Vendredi",base:"Bench volume + Peak",    focus:"Power Clean EMOM, DB Bench / Close-Grip Bench, rowing, DB Pullover, metcon long."}
   };
 })();

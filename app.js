@@ -1,5 +1,5 @@
-// Racine V5.2.24 — Coach IA fait partie de l'app ; « Passer à S3 » ouvre S3 · lundi
-var APP_VERSION = "V5.2.24";
+// Racine V5.2.25 — Pont Peak : moteur cardio S3-S5 (aérobie, EMOM burpees, stratégie écrite)
+var APP_VERSION = "V5.2.25";
 
 // Architecture stable
 // programs/*.js = plan prévu
