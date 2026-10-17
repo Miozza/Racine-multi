@@ -6,6 +6,7 @@
 - **Jeudi S3-S5 — EMOM 10 de burpees** : 6 → 7 → 8 par minute, rythme constant ; l'Overhead Rope Extension sort pour tenir les 60 min. S7 : EMOM 8 × 5 burpees.
 - **Vendredi — stratégie de découpage écrite** : S3 EMOM 16 en 4 stations (au lieu de 12), S4 AMRAP 16 Row / Wall Balls / Burpees à effort 7 (au lieu des 5 × 2:00), S5 mini-benchmark inchangé avec stratégie. Bench d'appoint gardé à 4 séries (choix de l'athlète).
 - **Vendredi S7 — re-test du 21-15-9 de S2**, référence 6:58, objectif zéro pause.
+- **Le cardio passe avant les accessoires dès S3** : juste après le travail principal (le vendredi, après le bench d'appoint). Si le temps manque, ce sont les accessoires de fin qui sautent, plus le metcon. Règle durable ajoutée à `CLAUDE.md` § 3.1 pour les cycles suivants.
 - **Force intacte** : mouvements A et charges, RDL, Front Squat, Power Clean, tirage, test bench S7. Ratio tirage:poussée amélioré (S3 2,14, S4 1,76, S5 2,00).
 - **Garde-fou** : `dev/pont_peak_checks.js` § 8 (aérobie lundi, EMOM burpees jeudi, stratégie vendredi, bench d'appoint à 4 séries, re-test S7).
 

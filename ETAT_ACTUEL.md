@@ -6,7 +6,7 @@ Version actuelle : V5.2.25
 
 ### Pont Peak : moteur cardio en S3-S5
 
-Lundi : moteur aérobie de 20, 22 puis 24 min au rythme conversation, à la place du split squat. Jeudi : EMOM 10 de burpees (6, 7 puis 8 par minute), sans Overhead Rope Extension. Vendredi : metcon long avec stratégie de découpage écrite ; le bench d'appoint garde ses 4 séries. Vendredi S7 : re-test du 21-15-9 de S2 (référence 6:58). Mouvements principaux, RDL, Front Squat, tirage et test bench inchangés.
+Lundi : moteur aérobie de 20, 22 puis 24 min au rythme conversation, à la place du split squat. Jeudi : EMOM 10 de burpees (6, 7 puis 8 par minute), sans Overhead Rope Extension. Vendredi : metcon long avec stratégie de découpage écrite ; le bench d'appoint garde ses 4 séries. Vendredi S7 : re-test du 21-15-9 de S2 (référence 6:58). Dès S3, le cardio passe juste après le travail principal, avant les accessoires. Mouvements principaux, RDL, Front Squat, tirage et test bench inchangés.
 
 ### Coach IA fait partie de l'app
 

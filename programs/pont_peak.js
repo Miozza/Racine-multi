@@ -208,7 +208,7 @@
     return {name:name, format:format, load:load || "—", rest:rest || "—", note:note || ""};
   }
 
-  function blocks(day, week){
+  function buildBlocks(day, week){
     var w = Number(week) || 1;
     var p = plan(w);
     var rotA = w <= 3;
@@ -218,29 +218,31 @@
     // metcon long). Le split squat et l'Overhead Rope Extension cèdent leur
     // temps ; le bench d'appoint du vendredi garde ses 4 séries.
     var engine = w >= 3 && w <= 5;
+    // Les titres et les repos (« avant @2 ») restent sans lettre ici :
+    // blocks() ordonne puis lettre (A, B, C…) une seule fois.
 
     if(day === "lundi"){
       var lundi = [
         {time:"8 min", title:"Échauffement squat", tag:"Préparation", kind:"warmup", text:"Bike 2 min + ankle rocks 10/côté + glute bridge 15 + goblet squat 10 + 90/90 hanches. Montée progressive longue sur le mouvement A."},
-        {time:"16 min", title:"A. " + p.monMain, tag:"Squat lourd", kind:"main", exercises:[
-          ex(p.monMain, p.monFormat, p.monLoad, "1:00 avant A2", p.monNote),
+        {time:"16 min", title:p.monMain, tag:"Squat lourd", kind:"main", exercises:[
+          ex(p.monMain, p.monFormat, p.monLoad, "1:00 avant @2", p.monNote),
           // Filler : remplit la pause du squat sans le fatiguer, ni le RDL, ni le bench du mardi.
-          ex("Tibialis Raise", light ? "2×15" : "3×15", "poids du corps", "1:00 après A2", "Pendant la pause du squat. Dos au mur, talons en avant, orteils vers les tibias. Lent, sans élan. Genoux et chevilles, zéro fatigue pour la série suivante.")
+          ex("Tibialis Raise", light ? "2×15" : "3×15", "poids du corps", "1:00 après @2", "Pendant la pause du squat. Dos au mur, talons en avant, orteils vers les tibias. Lent, sans élan. Genoux et chevilles, zéro fatigue pour la série suivante.")
         ]}
       ];
-      if(!engine) lundi.push({time:"10 min", title:"B. Volume quadriceps", tag:"Masse jambes", kind:"hypertrophy", exercises:[
+      if(!engine) lundi.push({time:"10 min", title:"Volume quadriceps", tag:"Masse jambes", kind:"hypertrophy", exercises:[
         light ? ex("Bulgarian Split Squat", "2×10/jambe", "30-35 lb / main", "1:00", "Léger, amplitude complète. On entretient, on ne charge pas.")
         : ex("Front-Foot Elevated Split Squat", "3×8-10/jambe", "40-50 lb / main", "1:00", "Pied avant sur une plaque, genou avant qui voyage loin. Dernière série à 1-2 reps de l'échec.")
       ]});
-      lundi.push({time:"10 min", title:(engine ? "B" : "C") + ". Chaîne postérieure", tag:"Protection lombaire", kind:"accessory", exercises:[
-        ex("Barbell RDL", p.rdl, p.rdlLoad, "0:30 avant " + (engine ? "B2" : "C2"), "Charnière propre, dos neutre, barre proche des tibias, genoux à peine fléchis. Le seul RDL avant janvier : le Peak n'en contient pas."),
-        light ? ex("Dead Bug", "2×8/côté", "poids du corps", "1:00 après C2", "Côtes basses, bas du dos collé au sol, souffle contrôlé.")
-        : ex("Ab Wheel Rollout", "3×8-10", "poids du corps", "1:00 après " + (engine ? "B2" : "C2"), "Anti-extension. Bassin rentré, côtes basses, dos qui ne creuse jamais. Rollout à genoux ; quand 10 reps propres passent, départ debout ou gilet lesté.")
+      lundi.push({time:"10 min", title:"Chaîne postérieure", tag:"Protection lombaire", kind:"accessory", exercises:[
+        ex("Barbell RDL", p.rdl, p.rdlLoad, "0:30 avant @2", "Charnière propre, dos neutre, barre proche des tibias, genoux à peine fléchis. Le seul RDL avant janvier : le Peak n'en contient pas."),
+        light ? ex("Dead Bug", "2×8/côté", "poids du corps", "1:00 après @2", "Côtes basses, bas du dos collé au sol, souffle contrôlé.")
+        : ex("Ab Wheel Rollout", "3×8-10", "poids du corps", "1:00 après @2", "Anti-extension. Bassin rentré, côtes basses, dos qui ne creuse jamais. Rollout à genoux ; quand 10 reps propres passent, départ debout ou gilet lesté.")
       ]});
       lundi.push(engine
-        ? {time:p.monTime, title:"C. Moteur aérobie", tag:"Aérobie", kind:"wod", text:p.monWod}
-        : {time:"8 min", title:"D. Metcon court", tag:"WOD", kind:"wod", text:p.monWod});
-      lundi.push({time:"3 min", title:(engine ? "D" : "E") + ". Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + décompression suspendue 30 sec + respiration."});
+        ? {time:p.monTime, title:"Moteur aérobie", tag:"Aérobie", kind:"wod", text:p.monWod}
+        : {time:"8 min", title:"Metcon court", tag:"WOD", kind:"wod", text:p.monWod});
+      lundi.push({time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + décompression suspendue 30 sec + respiration."});
       return lundi;
     }
 
@@ -249,107 +251,139 @@
         {time:"8 min", title:"Échauffement bench + posture", tag:"Préparation", kind:"warmup", text:"Row 2 min. Puis 2 tours : Band Pull-Apart 20 (première série des 100 de la séance) + Scap Push-Up 10 + Wall Slide 8 + extension thoracique sur rouleau 60 sec. Montée progressive sur le mouvement A" + (isTest ? " — au moins 6 paliers avant la porte." : ".")}
       ];
       if(isTest){
-        mardi.push({time:"22 min", title:"A. Bench Press", tag:"TEST ANCRE", kind:"main", exercises:[
+        mardi.push({time:"22 min", title:"Bench Press", tag:"TEST ANCRE", kind:"main", exercises:[
           ex(p.tueMain, p.tueFormat, p.tueLoad, "3:00-4:00", p.tueNote)
         ]});
-        mardi.push({time:"6 min", title:"B. Tirage après le test", tag:"Tirage", kind:"accessory", exercises:[
+        mardi.push({time:"6 min", title:"Tirage après le test", tag:"Tirage", kind:"accessory", exercises:[
           ex(p.pull, p.pullFormat, p.pullLoad, "1:00", "Léger, uniquement après le test. Dos plat, barre qui touche le bas du sternum.")
         ]});
       } else {
-        mardi.push({time:"12 min", title:"A. " + p.tueMain, tag:"Bench lourd", kind:"main", exercises:[
-          ex(p.tueMain, p.tueFormat, p.tueLoad, "1:00 avant A2", p.tueNote)
+        mardi.push({time:"12 min", title:p.tueMain, tag:"Bench lourd", kind:"main", exercises:[
+          ex(p.tueMain, p.tueFormat, p.tueLoad, "1:00 avant @2", p.tueNote)
         ]});
-        mardi.push({time:"8 min", title:"B. " + p.pull + " — superset avec A", tag:"Tirage", kind:"secondary", exercises:[
-          ex(p.pull, p.pullFormat, p.pullLoad, "0:45 avant B2",
+        mardi.push({time:"8 min", title:p.pull + " — superset avec A", tag:"Tirage", kind:"secondary", exercises:[
+          ex(p.pull, p.pullFormat, p.pullLoad, "0:45 avant @2",
             p.pull === "Weighted Pull-up" ? "Lest ajouté, départ bras tendus, menton au-dessus de la barre. Aucun kip."
             : light ? "Léger. Dos plat, barre qui repart du sol à chaque rep."
             : "Barre qui repart du sol à chaque rep, dos parallèle au sol, tirage vers le bas du sternum."),
           // Filler : hanches seulement, rien pour les épaules, les pecs ou les lats avant le bench suivant.
-          ex("Hip Airplane", light ? "2×4/côté" : "3×5/côté", "poids du corps", "0:45 après B2, puis bench", "Pendant la pause avant le bench. Main au rack, sur une jambe, torse parallèle au sol : ouvre puis ferme le bassin lentement. Contrôle, pas d'effort.")
+          ex("Hip Airplane", light ? "2×4/côté" : "3×5/côté", "poids du corps", "0:45 après @2, puis bench", "Pendant la pause avant le bench. Main au rack, sur une jambe, torse parallèle au sol : ouvre puis ferme le bassin lentement. Contrôle, pas d'effort.")
         ]});
         // Volume vertical en S1-S5, aussi en rotation B pour tenir le ratio
         // tirage:poussée ≥ 1,5 (voir dev/pont_peak_checks.js). « Pull-Up » et
         // non « Weighted Pull-up » : en rotation B, le lourd lesté du bloc B
         // porte déjà ce nom, et la capture des résultats se clé par nom.
-        if(w <= 5) mardi.push({time:"6 min", title:"C. Volume dorsal", tag:"Ratio tirage", kind:"accessory", exercises:[
+        if(w <= 5) mardi.push({time:"6 min", title:"Volume dorsal", tag:"Ratio tirage", kind:"accessory", exercises:[
           ex("Pull-Up", "3×8-10", "poids du corps", "1:00", "Strict, départ bras tendus, menton au-dessus de la barre, aucun kip. Si 10 reps propres passent sur les 3 séries, ajoute 5-10 lb de lest.")
         ]});
       }
-      mardi.push({time:"6 min", title:"D. DB Pullover", tag:"Lats + thoracique", kind:"accessory", exercises:[
+      mardi.push({time:"6 min", title:"DB Pullover", tag:"Lats + thoracique", kind:"accessory", exercises:[
         ex("DB Pullover", light ? "2×10" : "3×10-12", light ? "30-35 lb" : "45 lb", "1:00",
           "Excentrique 3 s, pause 2 s en étirement, côtes basses, bassin neutre. Objectif : extension thoracique et lats, pas la charge.")
       ]});
-      mardi.push({time:"9 min", title:"E. Coiffe, posture et biceps", tag:"Santé d'épaules", kind:"accessory", exercises:[
-        ex("Face Pull", light ? "2×15" : "3×15", light ? "50 lb" : "60 lb", "0:30 avant E2", "Rotation externe en fin de tirage, cou relâché."),
+      mardi.push({time:"9 min", title:"Coiffe, posture et biceps", tag:"Santé d'épaules", kind:"accessory", exercises:[
+        ex("Face Pull", light ? "2×15" : "3×15", light ? "50 lb" : "60 lb", "0:30 avant @2", "Rotation externe en fin de tirage, cou relâché."),
         ex("Cable Curl", light ? "2×10-12" : "3×10-12", light ? "30-35 lb" : "40 lb", "0:45", "Coudes fixes, aucun balancement."),
         ex("Band Pull-Apart", "5×20", "bande légère", "au besoin", "100 reps au total sur la séance : une série à l'échauffement, les autres entre les blocs. Ce socle ne tourne jamais.")
       ]});
-      mardi.push({time:"8 min", title:"F. Metcon court", tag:"WOD", kind:"wod", text:p.tueWod + " Mardi : monostructural et bas du corps seulement, épaules et lats épargnés."});
-      mardi.push({time:"3 min", title:"G. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Lat stretch 45 sec/côté + pec stretch 45 sec/côté + ouverture thoracique sur rouleau 90 sec."});
+      mardi.push({time:"8 min", title:"Metcon court", tag:"WOD", kind:"wod", text:p.tueWod + " Mardi : monostructural et bas du corps seulement, épaules et lats épargnés."});
+      mardi.push({time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Lat stretch 45 sec/côté + pec stretch 45 sec/côté + ouverture thoracique sur rouleau 90 sec."});
       return mardi;
     }
 
     if(day === "jeudi") return [
       {time:"8 min", title:"Échauffement épaules + thoracique", tag:"Préparation", kind:"warmup", text:"Row 2 min. Puis 2 tours : Band External Rotation 12/côté + Scap Push-Up 10 + Wall Slide 8 + extension thoracique sur rouleau 60 sec. Montée progressive sur le mouvement A."},
-      {time:"14 min", title:"A. " + p.thuMain, tag:"Épaules lourd", kind:"main", exercises:[
-        ex(p.thuMain, p.thuFormat, p.thuLoad, "1:00 avant A2", p.thuNote),
+      {time:"14 min", title:p.thuMain, tag:"Épaules lourd", kind:"main", exercises:[
+        ex(p.thuMain, p.thuFormat, p.thuLoad, "1:00 avant @2", p.thuNote),
         // Filler : aucun travail d'épaule ni de triceps, rien qui pèse sur le Front Squat.
-        ex("Single-Leg Calf Raise", light ? "2×12/jambe" : "3×12/jambe", "poids du corps", "0:45 après A2", "Pendant la pause du press. Sur une marche, amplitude complète, 1 s en haut. Main au mur pour l'équilibre, pas pour pousser.")
+        ex("Single-Leg Calf Raise", light ? "2×12/jambe" : "3×12/jambe", "poids du corps", "0:45 après @2", "Pendant la pause du press. Sur une marche, amplitude complète, 1 s en haut. Main au mur pour l'équilibre, pas pour pousser.")
       ]},
-      {time:"10 min", title:"B. Front Squat", tag:"Amorce du Peak", kind:"secondary", exercises:[
-        light ? ex("Front Squat", "3×3", "160 lb", "0:45 avant B2", "Léger. Coudes hauts, torse droit.")
-        : ex("Front Squat", "4×4", "200 lb", "0:45 avant B2", "RPE 7, jamais au-delà : amorce du Peak, pas un test. Coudes hauts, torse droit."),
+      {time:"10 min", title:"Front Squat", tag:"Amorce du Peak", kind:"secondary", exercises:[
+        light ? ex("Front Squat", "3×3", "160 lb", "0:45 avant @2", "Léger. Coudes hauts, torse droit.")
+        : ex("Front Squat", "4×4", "200 lb", "0:45 avant @2", "RPE 7, jamais au-delà : amorce du Peak, pas un test. Coudes hauts, torse droit."),
         // Filler : mobilité de la position rack, prépare la série suivante et le Power Clean du vendredi.
-        ex("Front Rack Stretch", light ? "2×30 s/côté" : "3×30 s/côté", "bande ou barre", "0:45 après B2", "Pendant la pause du front squat. Coude levé, main sur la barre ou dans une bande : étire lats et triceps. Aucune force, seulement de l'amplitude.")
+        ex("Front Rack Stretch", light ? "2×30 s/côté" : "3×30 s/côté", "bande ou barre", "0:45 après @2", "Pendant la pause du front squat. Coude levé, main sur la barre ou dans une bande : étire lats et triceps. Aucune force, seulement de l'amplitude.")
       ]},
-      {time:"9 min", title:"C. Masse épaules", tag:"Superset", kind:"hypertrophy", exercises:
+      {time:"9 min", title:"Masse épaules", tag:"Superset", kind:"hypertrophy", exercises:
         light ? [
-          ex("Arnold Press", "2×10", "25 lb / main", "0:30 avant C2", "Léger, rotation complète."),
-          ex("Lateral Raise DB", "2×15", "15 lb", "1:00 après C2", "Léger, épaules basses.")
+          ex("Arnold Press", "2×10", "25 lb / main", "0:30 avant @2", "Léger, rotation complète."),
+          ex("Lateral Raise DB", "2×15", "15 lb", "1:00 après @2", "Léger, épaules basses.")
         ] : rotA ? [
-          ex("Arnold Press", "3×10", "30-35 lb / main", "0:30 avant C2", "Rotation complète, coudes qui s'ouvrent en montant. Aucun élan."),
-          ex("Lateral Raise DB", "4×12-15", "20 lb", "1:00 après C2", "Deltoïde latéral, aucun élan, épaules basses.")
+          ex("Arnold Press", "3×10", "30-35 lb / main", "0:30 avant @2", "Rotation complète, coudes qui s'ouvrent en montant. Aucun élan."),
+          ex("Lateral Raise DB", "4×12-15", "20 lb", "1:00 après @2", "Deltoïde latéral, aucun élan, épaules basses.")
         ] : [
-          ex("Seated DB Press", "3×8", "45 lb / main", "0:30 avant C2", "Dos appuyé, cage basse, descente contrôlée aux épaules."),
-          ex("Cable Lateral Raise", "4×12-15/bras", "20 lb", "1:00 après C2", "Câble au plus bas, tension constante, arrêt à hauteur d'épaule.")
+          ex("Seated DB Press", "3×8", "45 lb / main", "0:30 avant @2", "Dos appuyé, cage basse, descente contrôlée aux épaules."),
+          ex("Cable Lateral Raise", "4×12-15/bras", "20 lb", "1:00 après @2", "Câble au plus bas, tension constante, arrêt à hauteur d'épaule.")
         ]
       },
-      {time:engine ? "6 min" : "9 min", title:"D. Stabilité — socle fixe", tag:"Coiffe", kind:"accessory", exercises:[
+      {time:engine ? "6 min" : "9 min", title:"Stabilité — socle fixe", tag:"Coiffe", kind:"accessory", exercises:[
         ex("Bottoms-Up KB Press", light ? "2×6/bras" : "3×6/bras", "12 kg", "0:30", "KB à l'envers, poignet neutre, prise ferme. Lent et stable : si la cloche tombe, la charge est trop lourde."),
         ex("Cuban Press", "2×12", "15-25 lb total", "0:30", "Lent. Rotation externe complète à chaque rep. Ce bloc ne tourne jamais : c'est le socle.")
       ].concat(engine ? [] : [
         ex("Overhead Rope Extension", light ? "2×12" : "3×12", light ? "35-40 lb" : "50 lb", "0:45", "Coudes serrés et hauts, étirement complet en bas.")
       ])},
-      {time:engine ? "10 min" : isTest ? "8 min" : "7 min", title:engine ? "E. EMOM burpees" : "E. Metcon court", tag:"WOD", kind:"wod", text:p.thuWod + " Aucune poussée au-dessus de la tête."},
-      {time:"3 min", title:"F. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Pec stretch 45 sec/côté + lat stretch 45 sec/côté + respiration."}
+      {time:engine ? "10 min" : isTest ? "8 min" : "7 min", title:engine ? "EMOM burpees" : "Metcon court", tag:"WOD", kind:"wod", text:p.thuWod + " Aucune poussée au-dessus de la tête."},
+      {time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Pec stretch 45 sec/côté + lat stretch 45 sec/côté + respiration."}
     ];
 
     // vendredi
     return [
       {time:"8 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:"Row 2 min + mobilité hanches/épaules + barre vide : 2×5 hang power clean, 2×5 front squat." + (isTest ? " Si le test bench a été reporté, il se fait ici À LA PLACE du DB Bench Press." : "")},
-      {time:"10 min", title:"A. Power Clean", tag:"Transition Peak", kind:"main", exercises:[
+      {time:"10 min", title:"Power Clean", tag:"Transition Peak", kind:"main", exercises:[
         ex("Power Clean", p.cleanFormat, p.cleanLoad, "le reste de la minute", p.cleanNote)
       ]},
-      {time:"10 min", title:"B. Bench volume", tag:"Bench", kind:"hypertrophy", exercises:[
-        light ? ex("DB Bench Press", "2×10", "40 lb / main", "0:30 avant B2", "Léger, amplitude complète.")
-        : rotA ? ex("DB Bench Press", "4×8-10", "55-60 lb / main", "0:45 avant B2", "Amplitude complète, omoplates serrées. Dernière série à 1-2 reps de l'échec.")
-        : ex("Close-Grip Bench Press", "4×5", "175 lb", "0:45 avant B2", "Prise largeur d'épaules, coudes proches du corps, pause touchée à la poitrine."),
+      {time:"10 min", title:"Bench volume", tag:"Bench", kind:"hypertrophy", exercises:[
+        light ? ex("DB Bench Press", "2×10", "40 lb / main", "0:30 avant @2", "Léger, amplitude complète.")
+        : rotA ? ex("DB Bench Press", "4×8-10", "55-60 lb / main", "0:45 avant @2", "Amplitude complète, omoplates serrées. Dernière série à 1-2 reps de l'échec.")
+        : ex("Close-Grip Bench Press", "4×5", "175 lb", "0:45 avant @2", "Prise largeur d'épaules, coudes proches du corps, pause touchée à la poitrine."),
         // Filler : gainage doux au sol, ne fatigue ni le rowing qui suit ni le squat du lundi.
-        ex("Dead Bug", light ? "2×8/côté" : "3×8/côté", "poids du corps", light ? "0:30 après B2" : "0:45 après B2", "Pendant la pause du bench. Côtes basses, bas du dos collé au sol, bras et jambe opposés qui s'allongent lentement.")
+        ex("Dead Bug", light ? "2×8/côté" : "3×8/côté", "poids du corps", light ? "0:30 après @2" : "0:45 après @2", "Pendant la pause du bench. Côtes basses, bas du dos collé au sol, bras et jambe opposés qui s'allongent lentement.")
       ]},
-      {time:"8 min", title:"C. Rowing", tag:"Superset", kind:"accessory", exercises:[
-        light ? ex("One-Arm DB Row", "2×10/côté", "55 lb", "0:30 avant C2", "Coude vers la hanche, zéro rotation du tronc.")
-        : rotA ? ex("One-Arm DB Row", "3×10/côté", "70 lb", "0:30 avant C2", "Amplitude complète, coude vers la hanche, zéro rotation du tronc.")
-        : ex("Seated Cable Row", "3×10-12", "120 lb", "0:30 avant C2", "Torse droit, omoplates serrées en fin de tirage, aucun balancement."),
+      {time:"8 min", title:"Rowing", tag:"Superset", kind:"accessory", exercises:[
+        light ? ex("One-Arm DB Row", "2×10/côté", "55 lb", "0:30 avant @2", "Coude vers la hanche, zéro rotation du tronc.")
+        : rotA ? ex("One-Arm DB Row", "3×10/côté", "70 lb", "0:30 avant @2", "Amplitude complète, coude vers la hanche, zéro rotation du tronc.")
+        : ex("Seated Cable Row", "3×10-12", "120 lb", "0:30 avant @2", "Torse droit, omoplates serrées en fin de tirage, aucun balancement."),
         // Face Pull : 2×15 prévu ; 3×15 en S1-S5 pour tenir le ratio ≥ 1,5.
-        ex("Face Pull", light ? "2×15" : "3×15", light ? "50 lb" : "60 lb", "1:00 après C2", "Rotation externe en fin de tirage, cou relâché.")
+        ex("Face Pull", light ? "2×15" : "3×15", light ? "50 lb" : "60 lb", "1:00 après @2", "Rotation externe en fin de tirage, cou relâché.")
       ]},
-      {time:"5 min", title:"D. DB Pullover", tag:"Ouverture thoracique", kind:"accessory", exercises:[
+      {time:"5 min", title:"DB Pullover", tag:"Ouverture thoracique", kind:"accessory", exercises:[
         ex("DB Pullover", light ? "2×10" : "3×12", light ? "25-30 lb" : "35 lb", "0:45", "Cross-bench, plus léger que le mardi. Respiration, ouverture thoracique, amplitude maximale contrôlée.")
       ]},
-      {time:engine ? "16 min" : (light && !isTest) ? "12 min" : "14 min", title:"E. Metcon long", tag:"WOD", kind:"wod", text:p.friWod},
-      {time:"3 min", title:"F. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch + pec stretch + 10 respirations lentes." + (isTest ? " Fin du bloc : le Peak commence lundi." : "")}
+      {time:engine ? "16 min" : (light && !isTest) ? "12 min" : "14 min", title:"Metcon long", tag:"WOD", kind:"wod", text:p.friWod},
+      {time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch + pec stretch + 10 respirations lentes." + (isTest ? " Fin du bloc : le Peak commence lundi." : "")}
     ];
+  }
+
+
+  // Dès S3, le cardio passe avant les accessoires (décision du 2026-10-17) :
+  // quand l'athlète manque de temps, ce sont les accessoires de fin qui
+  // sautent, plus le metcon. Il se place juste après le travail principal
+  // (main / secondary) ; le vendredi après le bench d'appoint, qui ne cède
+  // rien au moteur. S1-S2 gardent leur ordre d'origine.
+  function blocks(day, week){
+    var w = Number(week) || 1;
+    var list = buildBlocks(day, w);
+    if(w >= 3){
+      var wod = list.filter(function(b){ return b.kind === "wod"; })[0];
+      if(wod){
+        list.splice(list.indexOf(wod), 1);
+        var at = 0;
+        list.forEach(function(b, i){
+          if(b.kind === "main" || b.kind === "secondary" || b.title === "Bench volume") at = i;
+        });
+        list.splice(at + 1, 0, wod);
+      }
+    }
+    var n = 0;
+    return list.map(function(b){
+      if(b.kind === "warmup") return b;
+      var L = "ABCDEFGH".charAt(n++);
+      var out = Object.assign({}, b, {title: L + ". " + b.title});
+      if(b.exercises) out.exercises = b.exercises.map(function(e){
+        return Object.assign({}, e, {rest: String(e.rest).replace(/@2/g, L + "2")});
+      });
+      return out;
+    });
   }
 
   var P = window.COACH_BERTIN_PROGRAMS.pont_peak;
@@ -369,6 +403,7 @@
     "Mardi : metcon monostructural ou bas du corps seulement — ni traction, ni rameur, ni wall balls, ni burpees, ni toes-to-bar, ni ski. Jeudi : aucune poussée au-dessus de la tête dans le metcon.",
     "Moteur S3-S5 : lundi aérobie de 20 → 22 → 24 min au rythme conversation (Bike/Row, à la place du split squat), jeudi EMOM 10 de burpees 6 → 7 → 8 par minute, vendredi metcon long avec stratégie de découpage écrite. Mardi : intervalles courts. Re-test du 21-15-9 de S2 le vendredi S7.",
     "Force intacte : mouvements A, RDL, Front Squat, Power Clean, tirage et bench d'appoint du vendredi (4 séries) ne cèdent rien au moteur. Seuls le split squat (lundi) et l'Overhead Rope Extension (jeudi) sortent en S3-S5.",
+    "Dès S3, le cardio passe juste après le travail principal (le vendredi, après le bench d'appoint), avant les accessoires : si le temps manque, ce sont les accessoires de fin qui sautent, jamais le metcon.",
     "60 minutes max par séance : lundi aérobie en S3-S5, jeudi court, vendredi avec le metcon long, style Peak.",
     "Fillers pendant les pauses : Tibialis Raise (lundi, A2), Hip Airplane (mardi, B2 après le tirage), Single-Leg Calf Raise (jeudi, A2), Front Rack Stretch (jeudi, B2), Dead Bug (vendredi, B2). Légers et sans conflit avec le mouvement principal ni avec la veille ou le lendemain.",
     "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Test bench, Back Squat S7, Weighted Pull-up et Power Clean en pourcentage, résolus sur la capacité mesurée."

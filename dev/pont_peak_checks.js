@@ -17,7 +17,9 @@
     8. Moteur S3-S5 (2026-10-17) : lundi aérobie ≥ 20 min au rythme
        conversation, jeudi EMOM de burpees, bench d'appoint du vendredi à
        4 séries (choix de l'athlète : le cardio ne se paie pas sur le bench),
-       re-test du 21-15-9 le vendredi S7.
+       re-test du 21-15-9 le vendredi S7. Dès S3, le metcon passe avant tout
+       bloc d'accessoires (le temps qui manque coupe les accessoires, pas le
+       cardio).
 
   Usage :
     node dev/pont_peak_checks.js
@@ -207,8 +209,14 @@ try {
     const b = exs('vendredi', w).filter(e => /Bench/.test(e.name))[0] || {};
     if (!/^4×/.test(b.format || '')) moteur.push('vendredi S' + w + ' ' + b.name + ' ' + b.format + ' (4 séries attendues)');
   });
+  [3, 4, 5, 6, 7].forEach(w => days.forEach(d => {
+    const bl = P.getBlocks(d, w) || [];
+    const iw = bl.findIndex(b => b.kind === 'wod');
+    const ia = bl.findIndex(b => (b.kind === 'accessory' || b.kind === 'hypertrophy') && !/Bench volume/.test(b.title));
+    if (iw < 0 || (ia >= 0 && iw > ia)) moteur.push(d + ' S' + w + ' : metcon après les accessoires');
+  }));
   if (!/21-15-9 de S2/.test(P.getWodText('vendredi', 7))) moteur.push('vendredi S7 sans re-test du 21-15-9');
-  assert(moteur.length === 0, 'Moteur S3-S5 : aérobie lundi, EMOM burpees jeudi, stratégie vendredi, bench d\'appoint à 4 séries, re-test S7 (' + (moteur.join(' | ') || 'conforme') + ').');
+  assert(moteur.length === 0, 'Moteur S3-S5 : aérobie lundi, EMOM burpees jeudi, stratégie vendredi, bench d\'appoint à 4 séries, metcon avant les accessoires dès S3, re-test S7 (' + (moteur.join(' | ') || 'conforme') + ').');
 } catch (err) {
   errors.push('Erreur pendant les tests pont_peak : ' + (err && err.stack ? err.stack : err));
 }
