@@ -319,12 +319,15 @@ function openGuidedSession(){
   try{ if(window.CoachAmrapRounds) CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
   guidedSessionState.blocks = buildGuidedSessionBlocks();
   guidedSessionState.index = 0;
+  // Rappel de retard : le repère est le départ réel de l'athlète, pas midi.
+  try{ if(window.CoachScheduleReminder) CoachScheduleReminder.start(guidedSessionState.blocks); }catch(e){ /* jamais bloquant */ }
   renderGuidedSession();
   scheduleGuidedViewportRefresh();
 }
 
 function closeGuidedSession(){
   stopGuidedTimer();
+  try{ if(window.CoachScheduleReminder) CoachScheduleReminder.stop(); }catch(e){ /* jamais bloquant */ }
   if(typeof closeGuidedTimerEditor==="function") closeGuidedTimerEditor();
   // Abandon de séance : les notes du mouvement partent avec elle. Sans ça
   // elles resteraient dans guidedResultCache — qui n'est indexé que par nom de
@@ -591,7 +594,8 @@ function renderGuidedSession(){
         "</div>";
   html+="<div class='guided-progress'><div style='width:"+pct+"%'></div></div>";
   html+="<div class='guided-card kind-"+escHtml(st.kind)+"'>";
-  html+="<div class='guided-tag'>"+escHtml(st.tag)+" · "+escHtml(st.time)+"</div>";
+  // La mention de retard vit dans cette ligne : aucune hauteur prise à la carte.
+  html+="<div class='guided-tag'>"+escHtml(st.tag)+" · "+escHtml(st.time)+"<span id='guidedLateNote' class='guided-late-note'></span></div>";
 
   if(st.kind==="wod"){
     // Le WOD a droit à sa note comme n'importe quel mouvement : c'est même là
@@ -679,6 +683,7 @@ function renderGuidedSession(){
   // Le bouton X en haut à gauche remplit déjà ce rôle et libère de l'espace vertical iPhone.
 
   el.innerHTML=html;
+  try{ if(window.CoachScheduleReminder) CoachScheduleReminder.enter(i); }catch(e){ /* jamais bloquant */ }
   el.classList.remove("hidden");
   updateGlobalClock();
   if(typeof renderWakeLockStatus === "function") renderWakeLockStatus();

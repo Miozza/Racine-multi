@@ -2231,6 +2231,11 @@ label {
   margin-bottom: 10px;
   text-transform: uppercase;
 }
+/* Rappel de retard anticipé : dans la ligne du tag, jamais sur sa propre ligne. */
+.guided-late-note { text-transform: none; letter-spacing: .02em; }
+.guided-late-note.is-on { color: var(--gold); }
+.guided-late-note.is-red { color: var(--red); }
+.guided-tag.has-late { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .guided-title {
   font-family: var(--font-main);
   font-size: clamp(30px, 8vw, 46px);

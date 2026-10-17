@@ -942,6 +942,16 @@
       "consumes": []
     },
     {
+      "path": "dev/schedule_reminder_checks.js",
+      "size": 3958,
+      "lines": 72,
+      "role": "Garde-fous du rappel de retard : seuils 5/10 min, retard d'entrée et dépassement de créneau, aucun faux retard en revenant en arrière, suggestion limitée aux blocs de fin, mémoire vive, mention dans la ligne du tag.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/movement_swaps_checks.js",
       "size": 6456,
       "lines": 115,
@@ -4169,6 +4179,24 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 370
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/session/schedule_reminder.js",
+      "size": 4299,
+      "lines": 99,
+      "role": "Rappel de retard anticipé de la séance guidée : compare le temps passé depuis le départ réel aux créneaux prévus (block.time) des blocs faits. Rien sous 5 min ; au-delà, une mention dans la ligne du tag propose d'écourter un bloc de fin (hypertrophy, puis accessory), jamais l'échauffement, le principal ni le cardio. Mémoire vive seulement.",
+      "category": "ACTIF",
+      "exposes": [
+        "window.CoachScheduleReminder"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 0
         }
       ],
       "consumes": []

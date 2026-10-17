@@ -242,6 +242,18 @@ chrono, mais **pas au prix de la hauteur des cartes d'exercice**.
   espaces distincts, ils tournent ensemble : deux comptes à rebours ne se
   contredisent que s'ils sont au même endroit.
 
+### Rappel de retard anticipé
+
+- **Pas de chrono strict ni d'heure fixe** (décision de l'athlète, 2026-10-17) :
+  le repère est l'ouverture de la séance guidée. Rien ne s'affiche sous 5 min
+  de retard ; couleur or à 5 min, rouge à 10.
+- **RÈGLE VERROUILLÉE — coût zéro pixel.** La mention vit dans la ligne du tag
+  (`#guidedLateNote` dans `.guided-tag`) ; quand elle est là, la ligne passe en
+  `nowrap` + ellipse plutôt que de s'étendre sur deux lignes.
+- La suggestion ne vise que les blocs de fin (`hypertrophy`, puis le dernier
+  `accessory`) : jamais l'échauffement, le principal ni le cardio. Garde-fou :
+  `dev/schedule_reminder_checks.js`.
+
 ### Accessibilité vue séance
 
 - Les boutons `Précédent` et `Bloc suivant` doivent toujours rester accessibles en portrait iPhone.
