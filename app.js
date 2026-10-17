@@ -1,5 +1,5 @@
-// Racine V5.2.26 — Rappel de retard anticipé dans la séance guidée
-var APP_VERSION = "V5.2.26";
+// Racine V5.2.27 — Programme privé : jambes du coureur de cross-country
+var APP_VERSION = "V5.2.27";
 
 // Architecture stable
 // programs/*.js = plan prévu

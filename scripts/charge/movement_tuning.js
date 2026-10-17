@@ -579,6 +579,9 @@
       {pattern:/kickback/, load:30},
       {pattern:/cable hip abduction|band hip abduction/, load:25},
       {pattern:/hip abduction/, load:0},
+      // Soleaire assis (programs/course_maxence.js) : machine ou barre sur les
+      // genoux, repere a l'echelle de l'athlete de reference.
+      {pattern:/seated calf/, load:90},
       {pattern:/kb swing|kettlebell swing/, load:53},
       {pattern:/step up|box step/, load:35},
       {pattern:/farmer carry|farmer walk/, load:70},
@@ -591,7 +594,7 @@
       {pattern:/seated cable row/, load:120},
       {pattern:/one arm db row|db row/, load:65},
       // Mouvements au poids du corps : seed 0 = pas de charge externe.
-      {pattern:/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang/, load:0},
+      {pattern:/dead bug|hollow|plank|bird dog|band |mini band|glute bridge|dead hang|tibialis raise/, load:0},
       {pattern:/pull up|pullup|chin up|chest to bar|toes to bar|knee raise|muscle up/, load:0},
       {pattern:/ring dip|dips|dip$|push up|pushup|air squat|sit up|situp|burpee|pistol|double under|handstand|wall walk|rope climb|ring row|scap/, load:0}
     ],

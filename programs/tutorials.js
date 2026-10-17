@@ -124,6 +124,20 @@ window.COACH_BERTIN_TUTORIALS = {
     mistakes: ["Rebondir.", "Demi-amplitude.", "Aller trop vite."],
     cue: "Pause en haut, étirement en bas."
   },
+  "Seated Calf Raise": {
+    goal: "Soléaire — le mollet qui encaisse chaque foulée de course.",
+    setup: ["Assis, genoux pliés à 90°.", "Avant-pied sur le rebord, talons dans le vide.", "Charge posée sur les genoux."],
+    execution: ["Monte le plus haut possible.", "Pause 1 sec en haut.", "Descends lentement jusqu’à l’étirement."],
+    mistakes: ["Rebondir en bas.", "Demi-amplitude.", "Pousser avec les mains."],
+    cue: "Genoux pliés, pause en haut."
+  },
+  "Tibialis Raise": {
+    goal: "Renforcer les releveurs des orteils (tibial antérieur) et protéger la cheville du coureur.",
+    setup: ["Dos appuyé au mur.", "Talons à environ un pied du mur.", "Jambes tendues, poids sur les talons."],
+    execution: ["Lève les orteils le plus haut possible.", "Pause 1 sec en haut.", "Redescends lentement sans laisser tomber le pied."],
+    mistakes: ["Décoller les fesses du mur.", "Laisser claquer l’avant-pied.", "Pousser à travers une douleur qui monte."],
+    cue: "Orteils vers le nez, descente lente."
+  },
   "Farmer Carry": {
     goal: "Gainage, grip, posture haute.",
     setup: ["Charges de chaque côté.", "Épaules basses.", "Cage basse.", "Regard loin."],
@@ -204,6 +218,7 @@ window.COACH_BERTIN_TUTORIALS = {
   "Overhead Tricep Extension": {goal:"Longue portion du triceps avec étirement overhead.",setup:["Charge tenue au-dessus/derrière la tête.","Coudes serrés.","Cage basse.","Tronc gainé."],execution:["Descends derrière la tête.","Sens l’étirement triceps.","Étends les coudes sans cambrer.","Contrôle le retour."],mistakes:["Coudes trop ouverts.","Cambrer.","Descendre dans une douleur coude/épaule.","Aller trop lourd."],cue:"Étirement triceps, côtes basses."},
   "Concentration Curl": {goal:"Biceps strict avec isolement maximal.",setup:["Assis ou penché stable.","Coude appuyé contre l’intérieur de la cuisse ou fixe.","Épaule basse.","Charge modérée."],execution:["Monte sans bouger le bras.","Serre fort en haut.","Descends complet et lent.","Garde le poignet solide."],mistakes:["Balancer l’épaule.","Demi-amplitude.","Tourner le tronc.","Prendre trop lourd."],cue:"Strict, contraction en haut."},
   "Tricep Pushdown": {goal:"Triceps au câble avec coudes fixes.",setup:["Câble haut.","Coudes collés au corps.","Poitrine stable.","Poignets neutres."],execution:["Pousse jusqu’à extension complète.","Garde les coudes immobiles.","Contrôle la remontée.","Ne perds pas la posture."],mistakes:["Avancer les coudes.","Balancer le torse.","Couper l’amplitude.","Casser les poignets."],cue:"Coudes collés, extension complète."},
+  "Barbell RDL": {goal:"Ischios/fessiers à la barre — charnière de hanche contrôlée.",setup:["Pieds sous les hanches.","Prise juste à l’extérieur des cuisses.","Genoux légèrement fléchis.","Dos neutre, lats engagés."],execution:["Pousse les hanches loin derrière.","Barre collée aux cuisses puis aux tibias.","Descends jusqu’à l’étirement des ischios.","Remonte en serrant les fessiers."],mistakes:["Arrondir le dos.","Squatter le mouvement.","Éloigner la barre.","Descendre plus bas que l’étirement."],cue:"Hanches arrière, barre collée."},
   "Romanian Deadlift": {goal:"Ischios/fessiers avec charnière de hanche contrôlée.",setup:["Pieds sous les hanches.","Genoux légèrement fléchis.","Dos neutre.","Barre ou haltères proches des jambes."],execution:["Pousse les hanches loin derrière.","Descends jusqu’à étirement ischios.","Garde les lats engagés.","Remonte en serrant les fessiers."],mistakes:["Arrondir le dos.","Squatter le mouvement.","Descendre trop bas.","Éloigner la charge."],cue:"Hanches arrière, dos neutre."},
   "Hamstring Walkout": {goal:"Ischios au poids du corps avec hanches hautes.",setup:["Dos au sol.","Pont fessier haut.","Talons au sol.","Côtes basses."],execution:["Marche les talons lentement vers l’avant.","Garde les hanches hautes.","Reviens talon par talon.","Arrête avant de cambrer."],mistakes:["Laisser tomber les hanches.","Aller trop vite.","Cambrer.","Perdre la tension ischios."],cue:"Hanches hautes, talons contrôlés."},
 
