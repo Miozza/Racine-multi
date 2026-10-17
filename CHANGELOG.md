@@ -1,3 +1,10 @@
+## V5.2.30 — Jambes du coureur : fentes arrière à la place du Step-Up
+
+**Pourquoi** : retour de l'athlète (2026-10-17). Le Step-Up demandait lui aussi une boîte, que le gym n'a pas — oubli de V5.2.29.
+
+- **`course_maxence`** : Step-Up → **DB Reverse Lunge** dans les deux séances (A 3×6/jambe, B 2×5/jambe, léger), haltères seulement. Repère 40 lb / main (déjà dans `movement_tuning.js`), fiche et vidéo déjà dans l'app.
+- `dev/course_maxence_checks.js` : aucun exercice nommé box ou step-up, aucune note qui demande une boîte.
+
 ## V5.2.29 — Jambes du coureur : Squat Jump à la place du Box Jump
 
 **Pourquoi** : retour de l'athlète (2026-10-17). Le gym du coureur n'a pas de boîte à sauter.

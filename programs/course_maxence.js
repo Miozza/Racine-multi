@@ -31,7 +31,8 @@
 // ramène au niveau de Maxence, puis son historique prend la main.
 //   Back Squat   1RM réf 315 → 4×5 à ≈75 % : 235 lb ; B : 3×3 à ≈65 % : 205 lb
 //   Barbell RDL  repère 170 → 185 lb à 3×6, RPE 6-7
-//   Step-Up      repère 35 lb / main
+//   DB Reverse Lunge  repère 40 lb / main (V5.2.30 : remplace le Step-Up,
+//                qui demandait une boîte — le gym n'en a pas)
 //   Calf Raise   debout 180 lb (comme arnold_split_strict), assis 90 lb
 // La S1 est à −15 % : c'est la semaine qui donnerait des courbatures.
 //
@@ -75,8 +76,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
            "Hanches loin derrière, dos neutre, barre collée aux cuisses. Descends jusqu'à l'étirement des ischios, pas plus bas. RPE 6-7 : les ischios d'un coureur se fâchent vite, on les renforce sans les écraser.")
       ]},
       {time:"8 min", title:"D. Unilatéral", tag:"Unilatéral", kind:"accessory", exercises:[
-        ex("Step-Up", "3×6/jambe", cmLoad(35, week, "/ main"), "1:00",
-           "Boîte à hauteur de genou (18-20 po). Toute la poussée vient de la jambe du haut, genou aligné sur le pied, montée rapide comme une foulée. Descente lente. RPE 7.")
+        ex("DB Reverse Lunge", "3×6/jambe", cmLoad(40, week, "/ main"), "1:00",
+           "Un haltère dans chaque main, aucun autre équipement. Pas vers l'arrière, genou arrière qui frôle le sol sans le cogner. Toute la poussée vient du pied avant, remontée rapide comme une foulée, genou aligné sur le pied. RPE 7.")
       ]},
       {time:"8 min", title:"E. Mollets", tag:"Superset", kind:"accessory", exercises:[
         ex("Standing Calf Raise", "3×10", cmLoad(180, week), "0:20 avant E2",
@@ -106,8 +107,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
            "Léger, volontairement : RPE 6. Chaque rep monte vite et facile. On garde la force sans rien laisser dans les jambes pour la course.")
       ]},
       {time:"6 min", title:"C. Unilatéral", tag:"Entretien", kind:"accessory", exercises:[
-        ex("Step-Up", "2×5/jambe", cmLoad(35, week, "/ main"), "1:00",
-           "Léger : même charge qu'en A, moins de reps. Montée rapide, descente contrôlée.")
+        ex("DB Reverse Lunge", "2×5/jambe", cmLoad(40, week, "/ main"), "1:00",
+           "Léger : même charge qu'en A, moins de reps. Remontée rapide, descente contrôlée.")
       ]},
       {time:"6 min", title:"D. Mollets & cheville", tag:"Prévention", kind:"accessory", exercises:[
         ex("Standing Calf Raise", "2×10", cmLoad(180, week), "0:20 avant D2",
@@ -158,8 +159,8 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       jeudi: "Garder la force en semaine de course sans rien laisser dans les jambes."
     },
     dayMeta: {
-      mardi: {label:"Séance A — Force",           base:"Squat + RDL + step-up", focus:"Squat jump, back squat 4×5, RDL, step-ups, mollets, tibial, gainage latéral. ~60 min."},
-      jeudi: {label:"Séance B — Semaine de course", base:"Squat léger + step-up", focus:"Squat jump, back squat 3×3 léger, step-ups, mollets, tibial. ~40 min."}
+      mardi: {label:"Séance A — Force",           base:"Squat + RDL + fentes", focus:"Squat jump, back squat 4×5, RDL, fentes arrière, mollets, tibial, gainage latéral. ~60 min."},
+      jeudi: {label:"Séance B — Semaine de course", base:"Squat léger + fentes", focus:"Squat jump, back squat 3×3 léger, fentes arrière, mollets, tibial. ~40 min."}
     }
   };
 

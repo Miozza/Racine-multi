@@ -56,7 +56,7 @@ for(let w = 1; w <= P.weekLabels.length; w++){
     assert(/tibialis raise/.test(all), day + ' S' + w + ' : Tibialis Raise présent.');
     bl.forEach(b => (b.exercises || []).forEach(e => {
       if(/jump/i.test(e.name)) assert(/un saut à la fois/i.test(e.note) && /tiens|tenue/i.test(e.note), day + ' S' + w + ' : ' + e.name + ' un saut à la fois, réception tenue.');
-      assert(e.name !== 'Box Jump', day + ' S' + w + ' : aucune boîte requise (le gym n\'en a pas).');
+      assert(!/box|step-up|step up/i.test(e.name) && !/boîte/i.test(e.note), day + ' S' + w + ' : ' + e.name + ' — aucune boîte requise (le gym n\'en a pas).');
       if(day === 'jeudi' && /\d+ lb/.test(e.load)) assert(/léger/i.test(e.note), 'B S' + w + ' : ' + e.name + ' déclaré léger.');
       if(w === 1) assert(!!tutos[e.name], 'fiche technique : ' + e.name + '.');
     }));
