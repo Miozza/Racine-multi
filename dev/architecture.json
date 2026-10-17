@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 243,
+    "ACTIF": 245,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -671,6 +671,22 @@
         "scripts/coach_ai/plan.js",
         "scripts/coach_ai/patch.js"
       ]
+    },
+    {
+      "path": "dev/course_maxence_checks.js",
+      "role": "Garde-fous du programme jambes du coureur : deux séances fixes identiques chaque semaine, durées, rien à l'échec, aucun saut répété (cheville), Tibialis Raise présent, séance B déclarée légère, fiche technique pour chaque mouvement.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": [],
+      "size": 4059,
+      "lines": 69
     },
     {
       "path": "dev/crossfit_quality_checks.js",
@@ -2375,6 +2391,37 @@
         }
       ],
       "consumes": []
+    },
+    {
+      "path": "programs/course_maxence.js",
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules) : jambes du coureur de cross-country, deux séances fixes faites une fois par semaine au choix (A force ~60 min, B semaine de course ~40 min déclarée légère). Privé. Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 0
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        },
+        {
+          "path": "dev/course_maxence_checks.js",
+          "vector": "garde-fou",
+          "line": 0
+        }
+      ],
+      "consumes": [],
+      "size": 11023,
+      "lines": 167
     },
     {
       "path": "programs/epaules_3d.js",
