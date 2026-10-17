@@ -1,8 +1,12 @@
-## V5.2.30 — Jambes du coureur : fentes arrière à la place du Step-Up
+## V5.2.30 — Jambes du coureur : refait pour un gym à appareils
 
-**Pourquoi** : retour de l'athlète (2026-10-17). Le Step-Up demandait lui aussi une boîte, que le gym n'a pas — oubli de V5.2.29.
+**Pourquoi** : retour de l'athlète (2026-10-17). Le gym du cégep est un gym de musculation à appareils (presse à jambes, leg curl, leg extension, machines à mollets), sans boîte. Le programme était écrit pour un gym de barre libre et demandait encore une boîte au Step-Up.
 
-- **`course_maxence`** : Step-Up → **DB Reverse Lunge** dans les deux séances (A 3×6/jambe, B 2×5/jambe, léger), haltères seulement. Repère 40 lb / main (déjà dans `movement_tuning.js`), fiche et vidéo déjà dans l'app.
+- **Séance A (~58 min)** : Squat Jump 3×3, **presse à jambes 4×6** (principal, RPE 7, poussée rapide), superset **leg curl 3×8 + leg extension 2×10**, **presse à une jambe 3×6/jambe**, mollets aux machines debout et assis, Tibialis Raise + planche latérale.
+- **Séance B (~36 min, légère)** : Squat Jump 2×3, presse à jambes 3×4 à ≈ −15 %, presse à une jambe 2×5/jambe, mollets debout + Tibialis Raise.
+- Retirés : Back Squat, Barbell RDL, Step-Up. Aucune boîte nulle part.
+- **Moteur de charges** : repères de départ pour Leg Press (450 lb réf.), Single-Leg Leg Press (180), Leg Curl et Leg Extension (110) dans `movement_tuning.js` ; Leg Extension classé isolation ; dans `scaling.js`, leg curl et leg extension rejoignent la famille bas du corps — « leg curl » tombait sur la famille tirage par son mot « curl ».
+- Fiches techniques : Leg Press, Single-Leg Leg Press, Leg Curl, Leg Extension.
 - `dev/course_maxence_checks.js` : aucun exercice nommé box ou step-up, aucune note qui demande une boîte.
 
 ## V5.2.29 — Jambes du coureur : Squat Jump à la place du Box Jump

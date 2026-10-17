@@ -1,4 +1,4 @@
-// Racine V5.2.30 — Jambes du coureur : fentes arrière à la place du Step-Up
+// Racine V5.2.30 — Jambes du coureur : refait pour un gym à appareils
 var APP_VERSION = "V5.2.30";
 
 // Architecture stable
