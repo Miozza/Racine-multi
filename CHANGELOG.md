@@ -1,3 +1,12 @@
+## V5.2.26 — Rappel de retard anticipé dans la séance guidée
+
+**Pourquoi** : demande de l'athlète (2026-10-17). Il démarre rarement à midi pile et ne rentre pas toujours à la même heure : un chrono strict n'aide pas. Mais le retard s'accumule sans qu'il le voie, et c'est le metcon de fin qui saute.
+
+- **Repère = départ réel** : à l'ouverture de la séance guidée, l'app compare le temps passé aux créneaux prévus (`block.time`) des blocs faits. Entrer en retard dans un bloc compte, s'y attarder au-delà de son créneau aussi ; revenir en arrière ne crée pas de faux retard.
+- **Discret** : rien sous 5 min. Au-delà, « ⏱ +6 min · écourte D. Masse épaules » s'ajoute à la ligne du tag (or, rouge à 10 min) — aucune hauteur prise aux charges, reps et RPE.
+- **Suggestion** : le volume musculaire d'abord, sinon le dernier accessoire ; jamais l'échauffement, le principal ni le cardio.
+- Nouveau module `scripts/session/schedule_reminder.js` (`window.CoachScheduleReminder`), mémoire vive seulement. Garde-fou : `dev/schedule_reminder_checks.js`.
+
 ## V5.2.25 — Pont Peak : moteur cardio en S3-S5
 
 **Pourquoi** : rapport de l'athlète (2026-10-16, S2 · vendredi). 21-15-9 Wall Balls + Burpees en 6:58 avec trois pauses : le souffle lâche, pas la force. Analyse : Pont Peak S1-S5 faisait ~33 min de metcon par semaine, tout au seuil ou au-dessus, aucun effort au-delà de 15 min, burpees irréguliers, aucune stratégie écrite — alors que Competition Peak ouvre sur un AMRAP 20 en respiration nasale.

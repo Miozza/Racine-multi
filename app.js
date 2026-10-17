@@ -1,5 +1,5 @@
-// Racine V5.2.25 — Pont Peak : moteur cardio S3-S5 (aérobie, EMOM burpees, stratégie écrite)
-var APP_VERSION = "V5.2.25";
+// Racine V5.2.26 — Rappel de retard anticipé dans la séance guidée
+var APP_VERSION = "V5.2.26";
 
 // Architecture stable
 // programs/*.js = plan prévu

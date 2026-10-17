@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.25
+# ETAT ACTUEL — V5.2.26
 
-Version actuelle : V5.2.25
+Version actuelle : V5.2.26
 
 ## État courant
+
+### Rappel de retard anticipé
+
+Dans la séance guidée, l'app compare le temps passé depuis l'ouverture aux créneaux prévus des blocs. Rien sous 5 min de retard ; au-delà, une mention dans la ligne du tag propose d'écourter un bloc de fin (volume musculaire, puis accessoire), jamais l'échauffement, le principal ni le cardio. Aucune heure fixe, aucun stockage.
 
 ### Pont Peak : moteur cardio en S3-S5
 
