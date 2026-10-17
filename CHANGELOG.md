@@ -1,3 +1,12 @@
+## V5.2.32 — Jambes du coureur : un complément, pas un deuxième entraînement
+
+**Pourquoi** : précisions de l'athlète (2026-10-17). Le coureur est de niveau provincial (15e sur 180 au cross, 6 km), en club de course et de natation : son cardio n'est pas une lacune. Cette séance est secondaire et doit combler ce que la course et la natation ne travaillent pas. Durée gardée à ~60 min.
+
+- **Séance A (~60 min)** : Squat Jump 3×3 ; **presse à jambes 4×4 RPE 8** (plus lourde, au lieu de 4×6 RPE 7) ; **Hip Thrust 3×6** (nouveau : poussée de hanche, absente jusqu'ici) ; presse à une jambe 3×5/jambe ; leg curl 3×6 ; **mollets debout 4×6 lourds** (au lieu de 3×10) ; Tibialis Raise.
+- **Retirés** : leg extension (peu de transfert à la course) et planche latérale (tronc couvert par la natation et le club).
+- **Séance B (~40 min, légère)** : presse 3×3, hip thrust 2×5, presse à une jambe 2×4/jambe, mollets 2×6, tous à ≈ −15 % et déclarés « léger ».
+- Règles du cycle : RPE 8 maximum en A ; « semaine chargée ou fatigue : la séance B ou rien » ; prévenir l'entraîneur de club du jour choisi.
+
 ## V5.2.31 — Jambes du coureur : un seul exercice de mollets
 
 **Pourquoi** : choix de l'athlète (2026-10-17) : un seul exercice de mollets par séance, les mollets debout.

@@ -1,5 +1,5 @@
-// Racine V5.2.31 — Jambes du coureur : un seul exercice de mollets
-var APP_VERSION = "V5.2.31";
+// Racine V5.2.32 — Jambes du coureur : un complément, pas un deuxième entraînement
+var APP_VERSION = "V5.2.32";
 
 // Architecture stable
 // programs/*.js = plan prévu

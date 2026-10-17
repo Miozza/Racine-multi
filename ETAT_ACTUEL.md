@@ -1,12 +1,12 @@
-# ETAT ACTUEL — V5.2.31
+# ETAT ACTUEL — V5.2.32
 
-Version actuelle : V5.2.31
+Version actuelle : V5.2.32
 
 ## État courant
 
 ### Jambes du coureur — cross-country (public)
 
-Programme public `course_maxence`, construit pour un gym à appareils sans boîte : deux séances fixes, une par semaine au choix. A « Force » (~55 min : squat jump, presse à jambes 4×6, leg curl + leg extension, presse à une jambe, mollets debout, Tibialis Raise, gainage latéral) en semaine normale ; B « Semaine de course » (~36 min, chaque charge déclarée légère) en semaine de compétition. Une seule semaine qui se répète, sans semaines à faire avancer. Rien à l'échec, aucun saut répété pour la cheville. Tout profil le choisit lui-même dans l'onglet Cycle.
+Programme public `course_maxence`, construit pour un gym à appareils sans boîte : deux séances fixes, une par semaine au choix. A « Force » (~60 min : squat jump, presse à jambes 4×4 lourde, hip thrust, presse à une jambe, leg curl, mollets lourds, Tibialis Raise) en semaine normale ; B « Semaine de course » (~36 min, chaque charge déclarée légère) en semaine de compétition. Une seule semaine qui se répète, sans semaines à faire avancer. Rien à l'échec, aucun saut répété pour la cheville. Tout profil le choisit lui-même dans l'onglet Cycle.
 
 ### Rappel de retard anticipé
 
