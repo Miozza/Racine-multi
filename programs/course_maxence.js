@@ -3,7 +3,7 @@
 // fois par semaine au choix :
 //   - Séance A « Force »          (~60 min) — semaine normale ;
 //   - Séance B « Semaine de course » (~40 min) — semaine de compétition.
-// Public depuis V5.2.27 : l'athlète le choisit lui-même dans l'onglet Cycle.
+// Public depuis V5.2.28 : l'athlète le choisit lui-même dans l'onglet Cycle.
 // Les clés mardi/jeudi sont des identifiants internes moteur ; l'affichage
 // passe par dayMeta[day].label. La séance non faite se marque « manquée »
 // avec la raison « au choix » pour passer à la semaine suivante.
