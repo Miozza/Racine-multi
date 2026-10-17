@@ -1,12 +1,13 @@
-## V5.2.27 — Programme privé : jambes du coureur de cross-country
+## V5.2.27 — Programme public : jambes du coureur de cross-country
 
 **Pourquoi** : demande de l'athlète (2026-10-17). Un coureur de cross-country de 18 ans (6 km en 20:37), un peu d'expérience en salle, cheville et releveurs des orteils sensibles, veut renforcer ses jambes une fois par semaine pour courir plus vite — sans courbatures qui nuisent à la course.
 
-- **`programs/course_maxence.js`** (privé) : deux séances fixes à répéter jusqu'à les connaître par cœur. A « Force » ~60 min en semaine normale, B « Semaine de course » ~40 min en semaine de compétition ; l'autre se marque manquée. 8 semaines, S1 à −15 %, puis le moteur règle les charges sur le RPE.
+- **`programs/course_maxence.js`** (public) : deux séances fixes à répéter jusqu'à les connaître par cœur. A « Force » ~60 min en semaine normale, B « Semaine de course » ~40 min en semaine de compétition ; l'autre se marque manquée. 8 semaines, S1 à −15 %, puis le moteur règle les charges sur le RPE.
 - **Sans courbatures** : volume bas, RPE 7 max (6 en B), montée rapide, mêmes mouvements chaque semaine.
 - **Cheville** : Tibialis Raise et mollets (debout et assis) à chaque séance ; seul saut, un Box Jump redescendu en marchant.
 - **Séance B légère par déclaration** : « léger » dans chaque note chargée, l'auto-progression ne s'y applique pas.
 - Fiches techniques ajoutées : Tibialis Raise, Seated Calf Raise (machine ou banc), Barbell RDL, Wall Calf Stretch. Toutes les cartes du programme, échauffement et retour au calme compris, ouvrent une fiche. Repère de charge `seated calf` (90 lb réf.) et Tibialis Raise au poids du corps dans `movement_tuning.js`.
+- **Public** (décision du 2026-10-17) : les profils vivent sur chaque téléphone, le coureur doit pouvoir le choisir lui-même dans l'onglet Cycle. Le libellé ne nomme personne. Compteur de `program_catalog_checks.js` : 32 → 33.
 - Garde-fou : `dev/course_maxence_checks.js`.
 
 ## V5.2.26 — Rappel de retard anticipé dans la séance guidée
