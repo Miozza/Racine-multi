@@ -188,6 +188,12 @@ des %1RM : le moteur ne les touche pas. La pastille du metcon affiche la
 charge à côté du nom et la minute dessous. Garde-fou : `dev/wod_loads_checks.js`
 (tout nouveau programme doit passer ; `LEGACY` ne fait que rétrécir).
 
+**Ordre des blocs** (décision du 2026-10-17) : le cardio (`kind:"wod"`) se
+place juste après le travail principal, avant les accessoires. Quand
+l'athlète manque de temps, ce sont les accessoires de fin qui sautent, jamais
+le metcon. Pont Peak l'applique dès S3 ; un cycle suivant le place au moins
+aussi tôt.
+
 **Semaine légère / deload / reprise** : deux verrous, à poser volontairement.
 `coachIsDeloadWeekOrContext()` lit le libellé et l'objectif de semaine (mots
 `deload`, `récupération`, `facile`) ; `coachExtractMovementIntent()` lit la note

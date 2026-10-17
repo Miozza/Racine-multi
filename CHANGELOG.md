@@ -1,3 +1,15 @@
+## V5.2.25 — Pont Peak : moteur cardio en S3-S5
+
+**Pourquoi** : rapport de l'athlète (2026-10-16, S2 · vendredi). 21-15-9 Wall Balls + Burpees en 6:58 avec trois pauses : le souffle lâche, pas la force. Analyse : Pont Peak S1-S5 faisait ~33 min de metcon par semaine, tout au seuil ou au-dessus, aucun effort au-delà de 15 min, burpees irréguliers, aucune stratégie écrite — alors que Competition Peak ouvre sur un AMRAP 20 en respiration nasale.
+
+- **Lundi S3-S5 — moteur aérobie** : 20 → 22 → 24 min Bike/Row au rythme conversation, à la place du split squat.
+- **Jeudi S3-S5 — EMOM 10 de burpees** : 6 → 7 → 8 par minute, rythme constant ; l'Overhead Rope Extension sort pour tenir les 60 min. S7 : EMOM 8 × 5 burpees.
+- **Vendredi — stratégie de découpage écrite** : S3 EMOM 16 en 4 stations (au lieu de 12), S4 AMRAP 16 Row / Wall Balls / Burpees à effort 7 (au lieu des 5 × 2:00), S5 mini-benchmark inchangé avec stratégie. Bench d'appoint gardé à 4 séries (choix de l'athlète).
+- **Vendredi S7 — re-test du 21-15-9 de S2**, référence 6:58, objectif zéro pause.
+- **Le cardio passe avant les accessoires dès S3** : juste après le travail principal (le vendredi, après le bench d'appoint). Si le temps manque, ce sont les accessoires de fin qui sautent, plus le metcon. Règle durable ajoutée à `CLAUDE.md` § 3.1 pour les cycles suivants.
+- **Force intacte** : mouvements A et charges, RDL, Front Squat, Power Clean, tirage, test bench S7. Ratio tirage:poussée amélioré (S3 2,14, S4 1,76, S5 2,00).
+- **Garde-fou** : `dev/pont_peak_checks.js` § 8 (aérobie lundi, EMOM burpees jeudi, stratégie vendredi, bench d'appoint à 4 séries, re-test S7).
+
 ## V5.2.24 — Coach IA fait partie de l'app ; « Passer à S3 » ouvre S3 · lundi
 
 **Pourquoi** : retour de l'athlète (2026-10-16) après V5.2.23. Séance S2 · vendredi faite, puis « Passer à S3 » depuis le résumé : l'app ouvrait S3 · vendredi, et Coach IA supposait à tort que la semaine n'avait pas été avancée. L'athlète veut un coach qui fait partie de l'app, pas un vérificateur externe.

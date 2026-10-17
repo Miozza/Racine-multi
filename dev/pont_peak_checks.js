@@ -14,6 +14,12 @@
     5. Le metcon du mardi épargne épaules et lats.
     6. Ratio tirage:poussée ≥ 1,5 en séries, S1-S5.
     7. Aucune charge en livres au-dessus du 1RM de l'athlète de référence.
+    8. Moteur S3-S5 (2026-10-17) : lundi aérobie ≥ 20 min au rythme
+       conversation, jeudi EMOM de burpees, bench d'appoint du vendredi à
+       4 séries (choix de l'athlète : le cardio ne se paie pas sur le bench),
+       re-test du 21-15-9 le vendredi S7. Dès S3, le metcon passe avant tout
+       bloc d'accessoires (le temps qui manque coupe les accessoires, pas le
+       cardio).
 
   Usage :
     node dev/pont_peak_checks.js
@@ -190,6 +196,27 @@ try {
     if (Math.abs(ctx.parseLoad(m.load) - attendu) > 3) ecarts.push(d + ' S' + w + ' ' + m.name + ' ' + m.load + ' ≠ ' + attendu.toFixed(1));
   });
   assert(ecarts.length === 0, 'Mouvements A en livres = référence × mult (' + (ecarts.join(' | ') || '15 charges conformes') + ').');
+
+  // ─── 8. Moteur cardio S3-S5 ──────────────────────────────────────────────
+  const moteur = [];
+  [3, 4, 5].forEach(w => {
+    const aero = (P.getBlocks('lundi', w) || []).filter(b => b.kind === 'wod')[0] || {};
+    if (!(parseInt(aero.time, 10) >= 20 && /rythme conversation/i.test(aero.text || ''))) moteur.push('lundi S' + w + ' sans aérobie ≥ 20 min');
+    if (!/^EMOM \d+ : \d+ Burpees poids du corps/.test(P.getWodText('jeudi', w))) moteur.push('jeudi S' + w + ' sans EMOM burpees');
+    if (!/Stratégie :/.test(P.getWodText('vendredi', w))) moteur.push('vendredi S' + w + ' sans stratégie écrite');
+  });
+  [1, 2, 3, 4, 5].forEach(w => {
+    const b = exs('vendredi', w).filter(e => /Bench/.test(e.name))[0] || {};
+    if (!/^4×/.test(b.format || '')) moteur.push('vendredi S' + w + ' ' + b.name + ' ' + b.format + ' (4 séries attendues)');
+  });
+  [3, 4, 5, 6, 7].forEach(w => days.forEach(d => {
+    const bl = P.getBlocks(d, w) || [];
+    const iw = bl.findIndex(b => b.kind === 'wod');
+    const ia = bl.findIndex(b => (b.kind === 'accessory' || b.kind === 'hypertrophy') && !/Bench volume/.test(b.title));
+    if (iw < 0 || (ia >= 0 && iw > ia)) moteur.push(d + ' S' + w + ' : metcon après les accessoires');
+  }));
+  if (!/21-15-9 de S2/.test(P.getWodText('vendredi', 7))) moteur.push('vendredi S7 sans re-test du 21-15-9');
+  assert(moteur.length === 0, 'Moteur S3-S5 : aérobie lundi, EMOM burpees jeudi, stratégie vendredi, bench d\'appoint à 4 séries, metcon avant les accessoires dès S3, re-test S7 (' + (moteur.join(' | ') || 'conforme') + ').');
 } catch (err) {
   errors.push('Erreur pendant les tests pont_peak : ' + (err && err.stack ? err.stack : err));
 }
