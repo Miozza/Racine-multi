@@ -5,8 +5,11 @@
 //   - Séance B « Semaine de course » (~40 min) — semaine de compétition.
 // Public depuis V5.2.28 : l'athlète le choisit lui-même dans l'onglet Cycle.
 // Les clés mardi/jeudi sont des identifiants internes moteur ; l'affichage
-// passe par dayMeta[day].label. La séance non faite se marque « manquée »
-// avec la raison « au choix » pour passer à la semaine suivante.
+// passe par dayMeta[day].label.
+// UNE SEULE SEMAINE, qui ne se termine jamais vraiment (V5.2.30, demande de
+// l'athlète) : les deux mêmes séances se répètent, sans S2…S8 à faire avancer
+// ni séance à marquer « manquée ». La progression ne dépend pas de la
+// semaine : le moteur de charges la tire de l'historique et du RPE.
 //
 // ── L'ATHLÈTE ET CE QUI COMMANDE TOUT ──────────────────────────────────────
 // 18 ans, 5'10, 140 lb, 6 km en 20:37. Un peu d'expérience en salle.
@@ -42,7 +45,8 @@
 // jambe, leg curl + leg extension, machines à mollets debout et assis. Les
 // appareils réduisent aussi la technique à apprendre et les courbatures
 // (peu d'excentrique sous charge libre) — exactement la règle 1.
-// La S1 est à −15 % : c'est la semaine qui donnerait des courbatures.
+// Pas de semaine allégée : il n'y a qu'une semaine. La première séance se
+// prend plus légère par consigne (cycleRules), le moteur recale ensuite.
 //
 // ── SÉANCE B : LÉGÈRE PAR DÉCLARATION ──────────────────────────────────────
 // Chaque exercice chargé de B porte « léger » dans sa note : c'est ce que lit
@@ -56,11 +60,10 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return { name:name, format:format, load:load || "—", rest:rest || "60 sec", note:note || "" };
   }
 
-  // S1 allégée, puis charges pleines : le moteur fait la suite sur le RPE.
-  var WEEK_LABELS = ["S1 — Installation", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
-  function loadPct(week){ return Number(week) === 1 ? 0.85 : 1; }
+  // Une seule semaine, répétée : la progression vient du moteur, pas d'ici.
+  var WEEK_LABELS = ["Séances à répéter"];
   function cmLoad(base, week, suffix){
-    var n = Math.round((Number(base) || 0) * loadPct(week) / 5) * 5;
+    var n = Math.round((Number(base) || 0) / 5) * 5;
     return n + " lb" + (suffix ? " " + suffix : "");
   }
 
@@ -137,28 +140,22 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     label: "Jambes du coureur — cross-country",
     phase: 0,
     phaseName: "Force des jambes pour la course",
-    phaseEnd: "8 semaines. Ensuite : on recommence le même cycle avec les charges atteintes.",
+    phaseEnd: "Pas de fin : les deux mêmes séances se répètent chaque semaine, les charges montent avec le RPE.",
     impact: "Une séance par semaine, au choix : A (force, ~60 min) en semaine normale, B (entretien, ~40 min) en semaine de course. Construit pour un gym à appareils, sans boîte : presse à jambes, leg curl, leg extension, machines à mollets. Force lourde et rapide, jamais à l'échec, pour courir plus économique sans courbatures.",
     days: ["mardi", "jeudi"],
     weekLabels: WEEK_LABELS,
     weekGoals: [
-      "Charges allégées de 15 % : c'est la semaine qui pourrait donner des courbatures. Apprends les deux séances.",
-      "Charges pleines. RPE 7 maximum, montée rapide.",
-      "Mêmes séances. Si tout est sous RPE 7, le moteur monte la charge.",
-      "Mêmes séances, mêmes règles. Rien à l'échec.",
-      "Mêmes séances. Les courbatures devraient avoir disparu.",
-      "Mêmes séances. Note ton RPE honnêtement : c'est lui qui règle les charges.",
-      "Mêmes séances. Semaine de course ? Prends la séance B.",
-      "Dernière semaine du cycle. Relance-le pour continuer."
+      "Les deux mêmes séances, à répéter chaque semaine : A en semaine normale, B en semaine de course. Pas de semaines à faire avancer — les charges progressent avec ton RPE."
     ],
     rest: "2:00–2:30 principal / 1:00 accessoire",
     tag: "COURSE",
     objective: "performance course",
     audience: "coureur",
     frequency: 1,
-    durationWeeks: 8,
+    durationWeeks: 1,
     cycleRules: [
-      "Une seule séance par semaine : A en semaine normale, B en semaine de course. L'autre se marque « manquée » (raison : au choix).",
+      "Une seule séance par semaine : A en semaine normale, B en semaine de course. Les deux mêmes séances se répètent, sans semaine à faire avancer.",
+      "Première séance : prends des charges plus légères que ce que tu penses pouvoir faire. C'est celle qui donnerait des courbatures ; le moteur ajuste ensuite sur ton RPE.",
       "Place la séance un jour de course facile ou de repos, au moins 48 h avant des intervalles ou une course. Jamais la veille d'une compétition.",
       "Rien à l'échec : RPE 7 maximum en A, RPE 6 en B. Une courbature qui dure plus de 2 jours veut dire trop lourd.",
       "Cheville et releveurs des orteils : pas de saut répété sur place, Squat Jump un saut à la fois avec réception tenue 2 secondes. Une douleur qui monte pendant une série arrête la série.",
