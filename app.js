@@ -1,5 +1,5 @@
-// Racine V5.2.27 — Programme privé : jambes du coureur de cross-country
-var APP_VERSION = "V5.2.27";
+// Racine V5.2.28 — Jambes du coureur : programme public
+var APP_VERSION = "V5.2.28";
 
 // Architecture stable
 // programs/*.js = plan prévu

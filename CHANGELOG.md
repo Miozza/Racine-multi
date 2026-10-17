@@ -1,3 +1,10 @@
+## V5.2.28 — Jambes du coureur : programme public
+
+**Pourquoi** : décision de l'athlète (2026-10-17). Les profils vivent sur chaque téléphone : le coureur crée son profil sur le sien et ne peut pas recevoir la permission accordée depuis le panneau admin d'un autre appareil. Il doit pouvoir choisir le programme lui-même dans l'onglet Cycle.
+
+- **`course_maxence` passe en public** dans `programs/index.js`. Le libellé affiché ne nomme personne ; seul l'identifiant porte un prénom. Son objective « performance course » n'est dans aucune liste de `scripts/season/suggest.js` : il ne remonte pas devant un programme aligné en fin de cycle.
+- Compteur de programmes publics de `dev/program_catalog_checks.js` : 32 → 33. `dev/course_maxence_checks.js` épingle désormais la visibilité publique.
+
 ## V5.2.27 — Programme privé : jambes du coureur de cross-country
 
 **Pourquoi** : demande de l'athlète (2026-10-17). Un coureur de cross-country de 18 ans (6 km en 20:37), un peu d'expérience en salle, cheville et releveurs des orteils sensibles, veut renforcer ses jambes une fois par semaine pour courir plus vite — sans courbatures qui nuisent à la course.

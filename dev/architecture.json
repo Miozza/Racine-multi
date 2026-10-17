@@ -685,7 +685,7 @@
         }
       ],
       "consumes": [],
-      "size": 4059,
+      "size": 4093,
       "lines": 69
     },
     {
@@ -2394,7 +2394,7 @@
     },
     {
       "path": "programs/course_maxence.js",
-      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules) : jambes du coureur de cross-country, deux séances fixes faites une fois par semaine au choix (A force ~60 min, B semaine de course ~40 min déclarée légère). Privé. Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules) : jambes du coureur de cross-country, deux séances fixes faites une fois par semaine au choix (A force ~60 min, B semaine de course ~40 min déclarée légère). Public (décision du 2026-10-17). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
         "getBlocks",
@@ -2420,8 +2420,8 @@
         }
       ],
       "consumes": [],
-      "size": 11023,
-      "lines": 167
+      "size": 11103,
+      "lines": 168
     },
     {
       "path": "programs/epaules_3d.js",

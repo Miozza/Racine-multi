@@ -87,7 +87,9 @@ newlyPrivateIds.forEach(id => {
 // V5.1.4 — le cycle de réhabilitation devient public : l'athlète le choisit
 // elle-même dans l'onglet Cycle au lieu de recevoir une permission. Décision
 // explicite, d'où le passage de 31 à 32.
-assert(index.filter(p => p && p.visibility === 'public').length === 32, 'Les 32 programmes publics demeurent accessibles à tous.');
+// V5.2.28 — jambes du coureur (course_maxence) publié sur décision explicite
+// de l'athlète (2026-10-17) : le coureur le choisit lui-même sur son téléphone.
+assert(index.filter(p => p && p.visibility === 'public').length === 33, 'Les 33 programmes publics demeurent accessibles à tous.');
 // Un programme public ne doit jamais etre un cul-de-sac pour un athlete sans
 // permission : au moins une de ses suites declarees doit etre publique.
 index.filter(p => p && p.visibility === 'public' && (p.suggestedNext || []).length).forEach(p => {

@@ -37,7 +37,7 @@ const minutes = blocks => blocks.reduce((t, b) => t + (parseInt(b.time, 10) || 0
 const names = blocks => blocks.flatMap(b => (b.exercises || []).map(e => e.name)).join('|');
 
 assert(!!P && typeof P.getBlocks === 'function', 'course_maxence est enregistré et fournit getBlocks().');
-assert(entry.visibility === 'private', 'le programme est privé.');
+assert(entry.visibility === 'public', 'le programme est publié : sélectionnable sans permission.');
 assert(!/maxence/i.test(String(entry.name) + ' ' + P.label + ' ' + P.impact), 'aucun prénom dans ce qui est affiché.');
 assert(P.days.length === 2 && Number(entry.frequency) === 1, 'deux séances, une par semaine au choix.');
 
