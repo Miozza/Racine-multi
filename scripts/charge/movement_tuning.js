@@ -14,7 +14,7 @@
     // isIsolationMovement() — historique.js
     isolationPatterns: [
       /lateral raise/, /rear delt/, /curl/, /rope extension/, /pushdown/,
-      /face pull/, /trap 3/, /serratus/, /calf/, /fly/
+      /face pull/, /trap 3/, /serratus/, /calf/, /fly/, /leg extension/
     ],
     // isTechnicalMovement() — historique.js
     technicalPatterns: [
@@ -582,6 +582,13 @@
       // Soleaire assis (programs/course_maxence.js) : machine ou barre sur les
       // genoux, repere a l'echelle de l'athlete de reference.
       {pattern:/seated calf/, load:90},
+      // Appareils de musculation (programs/course_maxence.js), a l'echelle de
+      // l'athlete de reference. La presse a une jambe AVANT la presse : la
+      // recherche concatene les alias et le premier motif qui matche gagne.
+      {pattern:/single leg leg press/, load:180},
+      {pattern:/leg press/, load:450},
+      {pattern:/leg curl/, load:110},
+      {pattern:/leg extension/, load:110},
       {pattern:/kb swing|kettlebell swing/, load:53},
       {pattern:/step up|box step/, load:35},
       {pattern:/farmer carry|farmer walk/, load:70},

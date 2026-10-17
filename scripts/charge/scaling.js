@@ -194,7 +194,8 @@ function coachUserLoadRatioSource(label){
   var fam = null, famName = '';
   if(/clean|snatch|jerk/.test(n)){ fam = ratios._olympic; famName = 'haltérophilie'; }
   else if(/rdl|romanian|deadlift|hip thrust|good morning|hyperextension|hip abduction|pull through/.test(n)){ fam = ratios._hinge; famName = 'charnière de hanche'; }
-  else if(/squat|lunge|step up|leg press|calf|bulgarian/.test(n)){ fam = ratios._lowerBody; famName = 'bas du corps'; }
+  // leg curl AVANT la famille tirage : son /curl/ le classait avec les biceps.
+  else if(/squat|lunge|step up|leg press|leg curl|leg extension|calf|bulgarian/.test(n)){ fam = ratios._lowerBody; famName = 'bas du corps'; }
   else if(/row|pull up|pulldown|curl|face pull|rear delt|lat |shrug/.test(n)){ fam = ratios._upperPull; famName = 'tirage'; }
   else if(/press|push up|pushup|dip|fly|chest/.test(n)){ fam = ratios._upperPush; famName = 'poussée'; }
   if(fam > 0) return {ratio: coachClampScaleRatio(fam, label, 'famille'), source: famName, borrowed:true};

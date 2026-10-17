@@ -1,5 +1,5 @@
-// Racine V5.2.29 — Jambes du coureur : Squat Jump à la place du Box Jump
-var APP_VERSION = "V5.2.29";
+// Racine V5.2.30 — Jambes du coureur : refait pour un gym à appareils
+var APP_VERSION = "V5.2.30";
 
 // Architecture stable
 // programs/*.js = plan prévu

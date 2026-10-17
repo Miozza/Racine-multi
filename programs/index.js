@@ -61,7 +61,7 @@
     // l'identifiant porte un prénom. Son objective « performance course »
     // n'est dans aucune liste de scripts/season/suggest.js : il score bas en
     // fin de cycle et ne remonte pas devant un programme aligné.
-    { id: "course_maxence", file: "programs/course_maxence.js", name: "Jambes du coureur — cross-country", phase: 0, macroRole: "alternative", macroStatus: "force pour la course", durationWeeks: 8, minWeeks: 4, maxWeeks: 16, visibility: "public", fillsGap: ["course", "cross-country", "jambes", "1 jour"], objective: "performance course", frequency: 1, suggestedNext: [] },
+    { id: "course_maxence", file: "programs/course_maxence.js", name: "Jambes du coureur — cross-country", phase: 0, macroRole: "alternative", macroStatus: "force pour la course", durationWeeks: 1, minWeeks: 1, maxWeeks: 1, visibility: "public", fillsGap: ["course", "cross-country", "jambes", "1 jour"], objective: "performance course", frequency: 1, suggestedNext: [] },
     // Archivé le 2026-10-09 : Coach IA n'écrit plus de semaines (les programmes
     // passent par une conversation Claude et Claude Code). Toujours chargé,
     // comme tout programme archivé, pour qu'un profil qui l'aurait actif ne
