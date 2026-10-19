@@ -32,10 +32,12 @@
 // Convention du dépôt (CLAUDE.md § 3.1) : les nombres écrits sont ceux de
 // l'athlète de référence (scripts/profiles/reference.js) ; scaling.js les
 // ramène au niveau de Maxence, puis son historique prend la main.
-//   Leg Press             4×6 : 450 lb ; B : 3×4 à 385 lb (≈ −15 %)
-//   Single-Leg Leg Press  180 lb ; Leg Curl / Leg Extension 110 lb
-//   Standing Calf Raise   180 lb (comme arnold_split_strict). Un seul exercice
-//                         de mollets par séance (V5.2.31, choix de l'athlète).
+//   Leg Press             4×4 RPE 8 : 495 lb ; B : 3×3 à 420 lb (≈ −15 %)
+//   Hip Thrust            3×6 RPE 8 : 300 lb (1RM réf 400) ; B : 2×5 à 255 lb
+//   Single-Leg Leg Press  3×5 : 200 lb ; B : 170 lb
+//   Leg Curl              3×6 : 120 lb
+//   Standing Calf Raise   4×6 lourd : 220 lb ; B : 2×6 à 185 lb. Un seul
+//                         exercice de mollets par séance (choix de l'athlète).
 // Repères déclarés dans movement_tuning.js (defaultLoadSeeds). Le poids
 // affiché d'une presse ou d'une pile varie d'une machine à l'autre : le
 // premier résultat loggé recale tout, c'est voulu.
@@ -46,6 +48,14 @@
 // jambe, leg curl + leg extension, machine à mollets debout. Les
 // appareils réduisent aussi la technique à apprendre et les courbatures
 // (peu d'excentrique sous charge libre) — exactement la règle 1.
+//
+// ── V5.2.32 : UN COMPLÉMENT, PAS UN DEUXIÈME ENTRAÎNEMENT ──────────────────
+// L'athlète est un coureur de niveau provincial (15e / 180 au cross), en club
+// de course ET de natation : son cardio n'est pas une lacune. La séance ne
+// garde donc que ce que la course et la natation ne donnent pas — force
+// lourde (4×4 RPE 8), poussée de hanche, mollets/Achille lourds, ischios,
+// cheville. Retirés : leg extension (peu de transfert à la course) et gainage
+// latéral (couvert par la natation et le club). Durée gardée à ~60 min.
 // Pas de semaine allégée : il n'y a qu'une semaine. La première séance se
 // prend plus légère par consigne (cycleRules), le moteur recale ensuite.
 //
@@ -74,36 +84,36 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
 
   function seanceA(week){
     return [
-      {time:"8 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:WARMUP},
+      {time:"7 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:WARMUP},
       {time:"5 min", title:"A. Puissance", tag:"Puissance", kind:"secondary", exercises:[
         ex("Squat Jump", "3×3", "poids du corps", "1:30",
            "UN saut à la fois : quart de squat, saut le plus haut possible, réception douce et silencieuse sur l'avant-pied puis les talons, genoux souples. Tu TIENS la réception 2 secondes avant le saut suivant — jamais d'enchaînement rebondi, pour la cheville. Chaque saut est frais : qualité, pas fatigue.")
       ]},
-      {time:"13 min", title:"B. Presse à jambes", tag:"Principal", kind:"main", exercises:[
-        ex("Leg Press", "4×6", cmLoad(450, week), "2:30",
-           "Pieds largeur des hanches au milieu de la plateforme. Descends jusqu'à environ 90° aux genoux, bassin collé au dossier — s'il décolle, c'est trop bas. Pousse le plus vite possible, sans verrouiller les genoux en haut. RPE 7 : il te reste 3 reps. Chaque machine est différente : à la 1re séance, ajuste la charge sur la 1re série, le moteur apprend ensuite.")
+      {time:"13 min", title:"B. Presse lourde", tag:"Principal", kind:"main", exercises:[
+        ex("Leg Press", "4×4", cmLoad(495, week), "2:30",
+           "Lourd et rapide : c'est la force que la course ne te donne pas. Pieds largeur des hanches, descends jusqu'à environ 90° aux genoux, bassin collé au dossier. Pousse le plus vite possible, sans verrouiller les genoux. RPE 8 : il te reste 2 reps, jamais à l'échec. Chaque machine est différente : à la 1re séance, ajuste la charge sur la 1re série.")
       ]},
-      {time:"8 min", title:"C. Ischios & quadriceps", tag:"Superset", kind:"accessory", exercises:[
-        ex("Leg Curl", "3×8", cmLoad(110, week), "0:30 avant C2",
-           "Couché ou assis, selon la machine. Fléchis vite, redescends en 2 secondes. Les ischios protègent la foulée : RPE 7, jamais de crampe recherchée."),
-        ex("Leg Extension", "2×10", cmLoad(110, week), "1:00 après C2",
-           "Monte jusqu'à la jambe tendue, pause 1 sec, descente contrôlée. Renforce le genou du coureur. RPE 7.")
+      {time:"9 min", title:"C. Poussée de hanche", tag:"Principal", kind:"main", exercises:[
+        ex("Hip Thrust", "3×6", cmLoad(300, week), "2:00",
+           "Machine à hip thrust, ou barre sur les hanches avec le haut du dos appuyé sur un banc. Ce sont les fessiers qui propulsent la foulée. Monte vite, pause 1 sec en haut, côtes basses, aucune cambrure du bas du dos. RPE 8.")
       ]},
-      {time:"7 min", title:"D. Une jambe à la fois", tag:"Unilatéral", kind:"accessory", exercises:[
-        ex("Single-Leg Leg Press", "3×6/jambe", cmLoad(180, week), "1:00",
-           "Même presse, un seul pied au centre de la plateforme. Genou aligné sur le pied, poussée rapide comme une foulée. Commence par la jambe la plus faible. RPE 7.")
+      {time:"8 min", title:"D. Une jambe à la fois", tag:"Unilatéral", kind:"accessory", exercises:[
+        ex("Single-Leg Leg Press", "3×5/jambe", cmLoad(200, week), "1:00",
+           "Même presse, un seul pied au centre de la plateforme. Genou aligné sur le pied, poussée rapide comme une foulée. Commence par la jambe la plus faible. RPE 8.")
       ]},
-      {time:"5 min", title:"E. Mollets", tag:"Accessoire", kind:"accessory", exercises:[
-        ex("Standing Calf Raise", "3×10", cmLoad(180, week), "1:00",
-           "Machine à mollets debout, genoux tendus. Pause 1 sec en haut, descente complète. RPE 7.")
+      {time:"6 min", title:"E. Ischios", tag:"Accessoire", kind:"accessory", exercises:[
+        ex("Leg Curl", "3×6", cmLoad(120, week), "1:00",
+           "Couché ou assis, selon la machine. Fléchis vite, redescends en 2 secondes. Des ischios forts protègent les fins de course rapides. RPE 8, jamais de crampe recherchée.")
       ]},
-      {time:"6 min", title:"F. Cheville & tronc", tag:"Prévention", kind:"core", exercises:[
-        ex("Tibialis Raise", "2×15", "poids du corps", "0:20 avant F2",
-           "Dos au mur, talons à un pied du mur : lève les orteils le plus haut possible, descends lentement. C'est le muscle qui te fait mal : effort modéré, tu arrêtes si la douleur monte pendant la série."),
-        ex("Side Plank", "2×30 sec/côté", "poids du corps", "0:45 après F2",
-           "Corps en ligne, hanches hautes. Le bassin stable d'un coureur, c'est ça.")
+      {time:"7 min", title:"F. Mollets lourds", tag:"Accessoire", kind:"accessory", exercises:[
+        ex("Standing Calf Raise", "4×6", cmLoad(220, week), "1:30",
+           "Machine à mollets debout, genoux tendus. Lourd : le mollet et le tendon d'Achille encaissent plusieurs fois ton poids à chaque foulée. Montée rapide, pause 1 sec en haut, descente complète en 2 secondes. RPE 8.")
       ]},
-      {time:"3 min", title:"G. Retour au calme", tag:"Mobilité", kind:"mobility", text:COOLDOWN}
+      {time:"4 min", title:"G. Cheville", tag:"Prévention", kind:"accessory", exercises:[
+        ex("Tibialis Raise", "2×15", "poids du corps", "0:45",
+           "Dos au mur, talons à un pied du mur : lève les orteils le plus haut possible, descends lentement. C'est le muscle qui te fait mal : effort modéré, tu arrêtes si la douleur monte pendant la série.")
+      ]},
+      {time:"3 min", title:"H. Retour au calme", tag:"Mobilité", kind:"mobility", text:COOLDOWN}
     ];
   }
 
@@ -114,21 +124,25 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Squat Jump", "2×3", "poids du corps", "1:30",
            "Mêmes consignes qu'en A : un saut à la fois, réception tenue 2 secondes. Léger : tu cherches à te sentir vif, pas à te fatiguer.")
       ]},
-      {time:"9 min", title:"B. Presse rapide", tag:"Entretien", kind:"main", exercises:[
-        ex("Leg Press", "3×4", cmLoad(385, week), "2:00",
+      {time:"8 min", title:"B. Presse rapide", tag:"Entretien", kind:"main", exercises:[
+        ex("Leg Press", "3×3", cmLoad(420, week), "2:00",
            "Léger, volontairement : environ 15 % de moins qu'en A, RPE 6. Chaque rep pousse vite et facile. On garde la force sans rien laisser dans les jambes pour la course.")
       ]},
-      {time:"6 min", title:"C. Une jambe à la fois", tag:"Entretien", kind:"accessory", exercises:[
-        ex("Single-Leg Leg Press", "2×5/jambe", cmLoad(180, week), "1:00",
-           "Léger : même charge qu'en A, moins de reps. Poussée rapide, retour contrôlé.")
+      {time:"6 min", title:"C. Poussée de hanche", tag:"Entretien", kind:"accessory", exercises:[
+        ex("Hip Thrust", "2×5", cmLoad(255, week), "1:30",
+           "Léger : environ 15 % de moins qu'en A, RPE 6. Montée rapide, pause 1 sec en haut.")
       ]},
-      {time:"6 min", title:"D. Mollets & cheville", tag:"Prévention", kind:"accessory", exercises:[
-        ex("Standing Calf Raise", "2×10", cmLoad(180, week), "0:20 avant D2",
+      {time:"5 min", title:"D. Une jambe à la fois", tag:"Entretien", kind:"accessory", exercises:[
+        ex("Single-Leg Leg Press", "2×4/jambe", cmLoad(170, week), "1:00",
+           "Léger : poussée rapide, retour contrôlé, RPE 6.")
+      ]},
+      {time:"6 min", title:"E. Mollets & cheville", tag:"Prévention", kind:"accessory", exercises:[
+        ex("Standing Calf Raise", "2×6", cmLoad(185, week), "0:20 avant E2",
            "Léger : pause en haut, aucune brûlure recherchée."),
-        ex("Tibialis Raise", "2×15", "poids du corps", "0:45 après D2",
+        ex("Tibialis Raise", "2×15", "poids du corps", "0:45 après E2",
            "Dos au mur, effort modéré. Tu arrêtes si la douleur monte pendant la série.")
       ]},
-      {time:"3 min", title:"E. Retour au calme", tag:"Mobilité", kind:"mobility", text:COOLDOWN}
+      {time:"3 min", title:"F. Retour au calme", tag:"Mobilité", kind:"mobility", text:COOLDOWN}
     ];
   }
 
@@ -140,7 +154,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     phase: 0,
     phaseName: "Force des jambes pour la course",
     phaseEnd: "Pas de fin : les deux mêmes séances se répètent chaque semaine, les charges montent avec le RPE.",
-    impact: "Une séance par semaine, au choix : A (force, ~60 min) en semaine normale, B (entretien, ~40 min) en semaine de course. Construit pour un gym à appareils, sans boîte : presse à jambes, leg curl, leg extension, machines à mollets. Force lourde et rapide, jamais à l'échec, pour courir plus économique sans courbatures.",
+    impact: "Une séance par semaine, au choix : A (force, ~60 min) en semaine normale, B (entretien, ~40 min) en semaine de course. Construit pour un gym à appareils, sans boîte : presse à jambes, hip thrust, leg curl, machine à mollets. Un complément à la course : seulement ce qu'elle ne travaille pas. Force lourde et rapide, jamais à l'échec, pour courir plus économique sans courbatures.",
     days: ["mardi", "jeudi"],
     weekLabels: WEEK_LABELS,
     weekGoals: [
@@ -156,17 +170,18 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       "Une seule séance par semaine : A en semaine normale, B en semaine de course. Les deux mêmes séances se répètent, sans semaine à faire avancer.",
       "Première séance : prends des charges plus légères que ce que tu penses pouvoir faire. C'est celle qui donnerait des courbatures ; le moteur ajuste ensuite sur ton RPE.",
       "Place la séance un jour de course facile ou de repos, au moins 48 h avant des intervalles ou une course. Jamais la veille d'une compétition.",
-      "Rien à l'échec : RPE 7 maximum en A, RPE 6 en B. Une courbature qui dure plus de 2 jours veut dire trop lourd.",
+      "Rien à l'échec : RPE 8 maximum en A, RPE 6 en B. Une courbature qui dure plus de 2 jours veut dire trop lourd.",
+      "C'est un complément à la course et à la natation, pas un deuxième entraînement : semaine chargée ou fatigue, la séance B ou rien. Dis à ton entraîneur de club quel jour tu la places.",
       "Cheville et releveurs des orteils : pas de saut répété sur place, Squat Jump un saut à la fois avec réception tenue 2 secondes. Une douleur qui monte pendant une série arrête la série.",
       "Montée toujours rapide, descente contrôlée : la vitesse est le travail, pas la fatigue."
     ],
     dayIntentions: {
-      mardi: "Construire de la force lourde et rapide dans les jambes, puis renforcer mollets, cheville et tronc.",
+      mardi: "Construire de la force lourde et rapide dans les jambes et les hanches, puis des mollets et une cheville plus solides.",
       jeudi: "Garder la force en semaine de course sans rien laisser dans les jambes."
     },
     dayMeta: {
-      mardi: {label:"Séance A — Force",           base:"Presse + leg curl", focus:"Squat jump, presse à jambes 4×6, leg curl + leg extension, presse à une jambe, mollets debout, tibial, gainage latéral. ~55 min."},
-      jeudi: {label:"Séance B — Semaine de course", base:"Presse légère", focus:"Squat jump, presse à jambes 3×4 légère, presse à une jambe, mollets, tibial. ~36 min."}
+      mardi: {label:"Séance A — Force",           base:"Presse lourde + hip thrust", focus:"Squat jump, presse à jambes 4×4 lourde, hip thrust, presse à une jambe, leg curl, mollets lourds, tibial. ~60 min."},
+      jeudi: {label:"Séance B — Semaine de course", base:"Presse légère", focus:"Squat jump, presse à jambes 3×3 légère, hip thrust léger, presse à une jambe, mollets, tibial. ~40 min."}
     }
   };
 
