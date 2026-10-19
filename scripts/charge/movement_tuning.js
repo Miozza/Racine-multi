@@ -361,6 +361,26 @@
       // Le plancher d'une hausse meritee n'est PAS defini ici : il vient de
       // coachRpeEarnedLoad(), qui relit l'echelon RPE reel de l'athlete.
     },
+    // Couche Brain V1.16 — coachSafeSuggestedLoad() (scripts/charge/suggestion.js).
+    //
+    // Cette couche repasse sur l'historique APRES le moteur principal. Elle
+    // lisait l'historique brut : un test 300 x 1 @9,5 (Back Squat, profil
+    // Bertin) devenait la « derniere charge » d'un 5 x 3 a RPE 8 et sortait a
+    // 305 lb, 98 % de l'e1RM, la ou le moteur proposait 220.
+    brainV116: {
+      // Une ligne dont les reps s'eloignent de la fourchette du jour de plus
+      // de `repGapRatio` x reps max n'est jamais une charge de base brute :
+      // 1 rep lue pour une cible de 3, c'est un autre effort.
+      repGapRatio: 0.5,
+      // Plafond de securite : la couche ne monte jamais au-dela de la charge
+      // que l'e1RM retenu permet pour les reps du jour a ce RPE (Epley
+      // inverse, RIR = 10 - RPE). 9 et non le RPE cible 8 : l'echelon RPE
+      // pose deja une hausse apres un RPE 7 qui, en arithmetique Epley,
+      // atterrit pres de RPE 9. Un plafond au RPE cible gelerait toute
+      // progression normale ; celui-ci arrete ce qui n'a rien d'une serie de
+      // travail (5 x 3 a 98 % de l'e1RM).
+      capacityRpe: 9
+    },
     // scripts/charge/kalman.js — capacite estimee (e1RM) avec son incertitude.
     //
     // Le moteur a regles decide QUOI faire (intention, reps, deload, plafonds,

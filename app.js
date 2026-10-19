@@ -1,5 +1,5 @@
-// Racine V5.2.31 — Jambes du coureur : un seul exercice de mollets
-var APP_VERSION = "V5.2.31";
+// Racine V5.2.32 — Brain V1.16 : un test 1RM n'est plus une charge de travail
+var APP_VERSION = "V5.2.32";
 
 // Architecture stable
 // programs/*.js = plan prévu

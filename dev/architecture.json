@@ -628,6 +628,26 @@
       ]
     },
     {
+      "path": "dev/brain_v116_checks.js",
+      "size": 10549,
+      "lines": 175,
+      "role": "Garde-fou de la couche Brain V1.16 (coachSafeSuggestedLoad) : meme historique que le moteur principal (nature de contexte, jours de test, reps projetees), plafond de capacite, frein warning preserve, et une trace qui rapporte la charge affichee avec la decision du moteur a cote.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": [
+        "scripts/charge/suggestion.js",
+        "scripts/charge/trace.js",
+        "scripts/charge/movement_tuning.js"
+      ]
+    },
+    {
       "path": "dev/client_charge_safety_checks.js",
       "size": 16971,
       "lines": 292,

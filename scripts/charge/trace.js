@@ -212,11 +212,38 @@
       }
     }catch(e){ gap={effet:'illisible',pourquoi:String(e&&e.message)}; }
 
-    var decision=null;
+    // Deux lectures, dans l'ordre ou l'ecran les produit : le moteur principal,
+    // puis la porte que l'ecran appelle (coachSuggestForExercise →
+    // CoachCharge.suggestLoad), qui ajoute la couche Brain V1.16. La trace ne
+    // lisait que la premiere : elle disait 220 lb pendant que l'ecran affichait
+    // 305 (Back Squat, profil Bertin). `suggestion` est desormais ce que
+    // l'athlete VOIT ; `suggestion.moteur` garde la decision du moteur.
+    var moteur=null;
     try{
       var d=guardedSuggestedLoadDecision(label,programLoad,target,ctx);
-      decision={propose:(d&&(d.loadNum||d.loadNum===0))?d.loadNum:null, texte:(d&&d.loadText)||'', severite:(d&&d.severity)||'', raison:(d&&d.reason)||''};
-    }catch(e){ decision={propose:null,texte:'',severite:'',raison:'Suggestion impossible : '+(e&&e.message)}; }
+      moteur={propose:(d&&(d.loadNum||d.loadNum===0))?d.loadNum:null, texte:(d&&d.loadText)||'', severite:(d&&d.severity)||'', raison:(d&&d.reason)||''};
+    }catch(e){ moteur={propose:null,texte:'',severite:'',raison:'Suggestion impossible : '+(e&&e.message)}; }
+    var decision=Object.assign({},moteur,{source:'moteur',ecart:false,moteur:moteur});
+    try{
+      var finalFn=(window.CoachCharge&&typeof CoachCharge.suggestLoad==='function')?CoachCharge.suggestLoad
+        :(typeof coachSafeSuggestedLoad==='function'?coachSafeSuggestedLoad:null);
+      if(finalFn&&moteur.propose!==null){
+        var shown=String(finalFn(nameOrLabel,programLoad,target,ctx)||'');
+        var hint=(window.__coachLoadHints||{})[norm(label)]||null;
+        var shownNum=num(shown);
+        var ecart=shown!==moteur.texte;
+        decision={
+          propose:(shownNum||shownNum===0)?shownNum:moteur.propose,
+          texte:shown||moteur.texte,
+          severite:(ecart&&hint&&hint.severity)||moteur.severite,
+          // Le (!) lit l'indice : c'est sa phrase qui accompagne la charge vue.
+          raison:(hint&&hint.load===shown&&hint.reason)||moteur.raison,
+          source:ecart?'brain':'moteur',
+          ecart:ecart,
+          moteur:moteur
+        };
+      }
+    }catch(e){ decision.raisonAffichage='Charge affichee impossible a relire : '+(e&&e.message); }
     // Capacite estimee (Kalman) telle que la suggestion ci-dessus l'a lue.
     var capacite=null;
     try{
@@ -284,12 +311,16 @@
   // Une ligne de resume par mouvement : lisible sans deplier le JSON.
   function summaryLine(t){
     var h=t.historique;
-    return t.mouvement+' — propose '+(t.suggestion&&t.suggestion.propose!==null?t.suggestion.propose+' lb':'—')
+    var s=t.suggestion||{};
+    return t.mouvement+' — propose '+(s.propose!==null&&s.propose!==undefined?s.propose+' lb':'—')
+      +(s.ecart&&s.moteur?' (couche Brain V1.16 ; moteur '+(s.moteur.propose!==null?s.moteur.propose+' lb':'—')+')':'')
       +' | programme '+(t.programme.chargeEcrite||'—')+' (lu '+(t.programme.chargeLue===null?'—':t.programme.chargeLue)+')'
       +' | historique '+h.retenues+'/'+h.lignesTracees+' retenu'
       +(h.ecartees?' — '+Object.keys(h.motifsDEcart)[0]:'')
       +' | contexte '+(t.contexteDuJour.limite?'LIMITE ['+t.contexteDuJour.intentions.join(',')+']':'normal');
   }
+
+  api.summaryLine = summaryLine;
 
   // Trace de tous les exercices chargés d'une journée du cycle actif.
   // `seen` (optionnel) : ensemble des mouvements deja reconstitues. Sur une
