@@ -1,4 +1,4 @@
-## V5.2.32 — Jambes du coureur : un complément, pas un deuxième entraînement
+## V5.2.33 — Jambes du coureur : un complément, pas un deuxième entraînement
 
 **Pourquoi** : précisions de l'athlète (2026-10-17). Le coureur est de niveau provincial (15e sur 180 au cross, 6 km), en club de course et de natation : son cardio n'est pas une lacune. Cette séance est secondaire et doit combler ce que la course et la natation ne travaillent pas. Durée gardée à ~60 min.
 
@@ -6,6 +6,16 @@
 - **Retirés** : leg extension (peu de transfert à la course) et planche latérale (tronc couvert par la natation et le club).
 - **Séance B (~40 min, légère)** : presse 3×3, hip thrust 2×5, presse à une jambe 2×4/jambe, mollets 2×6, tous à ≈ −15 % et déclarés « léger ».
 - Règles du cycle : RPE 8 maximum en A ; « semaine chargée ou fatigue : la séance B ou rien » ; prévenir l'entraîneur de club du jour choisi.
+
+## V5.2.32 — Brain V1.16 : un test 1RM n'est plus une charge de travail
+
+**Pourquoi** : profil Bertin, Pont Peak S4 lundi. Back Squat 5×3 à RPE 8 : le moteur proposait 220 lb, l'écran affichait **305 lb** (98 % de l'e1RM) avec la source « Brain ». La couche Brain V1.16 (`coachSafeSuggestedLoad`) relisait l'historique brut : le test 300 × 1 @9,5 du 28 septembre devenait la « dernière charge » de la séance, sans conversion de reps, et la pente se calculait entre des doubles de vitesse et ce test. La trace, elle, disait 220.
+
+- **Même historique que le moteur principal** : filtre de nature de contexte (`coachFilterHistoryForProgression`, les lignes vitesse/technique ne servent plus de base à une séance normale) ; jours de test exclus (`CoachKalman.isTestContext`, « montée vers NRM », « NRM test ») ; une ligne aux reps loin de la cible (seuil `brainV116.repGapRatio`) est projetée par Epley vers la cible, jamais prise telle quelle. Historique filtré vide → la décision du moteur fait foi.
+- **Plafond de capacité** : la couche ne dépasse jamais la charge que l'e1RM retenu permet pour les reps du jour à RPE 9 (`brainV116.capacityRpe`), arrondie au cran supérieur du rack. Au-dessus, la charge du moteur est gardée et le (!) le dit. L'indice du (!) est restauré : il explique la charge affichée, plus celle refusée.
+- **La trace montre l'écran** : `CoachChargeTrace.movement().suggestion` est la charge affichée (porte `CoachCharge.suggestLoad`), avec `suggestion.moteur`, `source` (`moteur` / `brain`) et `ecart`. Le résumé signale l'écart ; l'explication Coach IA aussi.
+- Cas Bertin : **305 → 220 lb**. Historiques homogènes : charges inchangées.
+- `dev/brain_v116_checks.js` : cas Bertin, test 3RM lu pour un 4×5, non-régression homogène, plafond, frein `warning`.
 
 ## V5.2.31 — Jambes du coureur : un seul exercice de mollets
 

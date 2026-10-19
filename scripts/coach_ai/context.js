@@ -953,6 +953,7 @@
     var lines = ["Explication du moteur pour « " + str(t.mouvement) + " »" + (found ? " (" + found.day + " S" + found.week + ", " + str(found.block.title) + ")" : " (hors de la semaine en cours : sans prescription du programme)") + " :"];
     var s = t.suggestion || {};
     lines.push("- Charge proposée MAINTENANT : " + (s.propose != null ? fmtLb(s.propose) : "aucune") + (str(s.raison) ? " — " + str(s.raison) : "") + (str(s.severite) ? " [" + str(s.severite) + "]" : ""));
+    if(s.ecart && s.moteur) lines.push("- Moteur principal : " + (s.moteur.propose != null ? fmtLb(s.moteur.propose) : "aucune") + " ; la charge affichée vient de la couche Brain V1.16.");
     var p = t.programme || {};
     if(str(p.chargeEcrite)){
       var e = p.echelle;

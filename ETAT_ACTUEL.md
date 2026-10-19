@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.32
+# ETAT ACTUEL — V5.2.33
 
-Version actuelle : V5.2.32
+Version actuelle : V5.2.33
 
 ## État courant
+
+### Couche Brain de raffinement — même historique que le moteur
+
+`coachSafeSuggestedLoad` lit désormais l'historique filtré comme le moteur principal (nature de contexte, jours de test exclus, reps lointaines projetées par Epley) et ne dépasse jamais la capacité estimée (RPE 9, `brainV116` dans `movement_tuning.js`). La trace rapporte la charge affichée, avec la décision du moteur à côté. Cas d'origine : Back Squat 5×3, 305 → 220 lb.
 
 ### Jambes du coureur — cross-country (public)
 

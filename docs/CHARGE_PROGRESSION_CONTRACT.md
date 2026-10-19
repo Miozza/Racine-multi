@@ -303,6 +303,23 @@ Deux invariants :
 Tout réglage de cette traduction vit dans `progressionSpeed`
 (`scripts/charge/movement_tuning.js`), jamais en dur dans une fonction.
 
+#### La couche Brain V1.16 lit le même historique que le moteur (depuis V5.2.32)
+
+`coachSafeSuggestedLoad` repasse sur l'historique **après** `guardedSuggestedLoadDecision`.
+Elle lit les mêmes lignes que lui, jamais l'historique brut :
+
+- filtre de nature de contexte (`coachFilterHistoryForProgression`) ; une ligne admise
+  à poids réduit (repli) n'y sert jamais de charge de base ;
+- un jour de test (`CoachKalman.isTestContext`, formats `kalman.testFormatPatterns`)
+  n'est pas une charge de travail ;
+- une ligne dont les reps s'éloignent de la cible au-delà de `brainV116.repGapRatio`
+  est projetée par Epley vers la cible, jamais prise telle quelle.
+
+Elle ne dépasse jamais la charge que l'e1RM retenu permet pour les reps du jour à
+`brainV116.capacityRpe` ; au-dessus, la décision du moteur fait foi et le (!) le dit.
+La trace (`CoachChargeTrace`) rapporte la charge **affichée**, avec la décision du moteur
+à côté. Garde-fou : `dev/brain_v116_checks.js`.
+
 #### Le portail Brain amortit, il ne gèle pas (depuis V4.5.59)
 
 Le portail de confiance (`coachBrainApplyStatsGate`) retient une hausse que Brain
