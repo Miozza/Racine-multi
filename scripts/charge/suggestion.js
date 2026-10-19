@@ -1999,6 +1999,11 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     var hintKey = (typeof coachNormalizeMoveText==='function') ? coachNormalizeMoveText(label) : '';
     var baseHint = (hintKey && window.__coachLoadHints) ? window.__coachLoadHints[hintKey] : null;
     var baseKalman = (baseHint && baseHint.kalman) ? baseHint.kalman : null;
+    // Instantane des indices tels que le moteur principal les a laisses : le
+    // portail stats ci-dessous re-stocke un indice AVANT le plafond de
+    // capacite. Sans restauration, l'ecran gardait la charge du moteur et le
+    // (!) expliquait celle que le plafond venait de refuser.
+    var hintsBefore = window.__coachLoadHints ? Object.assign({}, window.__coachLoadHints) : null;
     var mv = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(label) : null;
     var histAll = (mv && Array.isArray(mv.history)) ? mv.history : [];
     if(!histAll.length) return base.loadText;
@@ -2034,8 +2039,85 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
     // ici et corrompt la moyenne mobile / tendance du moteur Brain V1.16
     // ci-dessous, même si `base` (guardedSuggestedLoadDecision) l'ignore.
     function isImplausible(r){ return (typeof coachIsImplausibleLoadRow==='function') && coachIsImplausibleLoadRow(label,r,Number(targetReps)||8); }
-    var hist = histAll.filter(function(r){ return !isDeloadRow(r) && !isCalibrationSeed(r) && !isImplausible(r) && rowLoad(r) > 0 && rowRpe(r) > 0; });
+
+    // Meme historique que le moteur principal. Cette couche relisait
+    // l'historique BRUT : un test 300 x 1 @9,5 apres des doubles de vitesse
+    // devenait la base d'un 5 x 3 a RPE 8 et sortait a 305 lb, quand le moteur
+    // proposait 220. Trois filtres, aucun reecrit ici :
+    //  1. nature de contexte — coachFilterHistoryForProgression(), le filtre
+    //     du moteur principal (motif « Nature de contexte differente » de la
+    //     trace). Une ligne admise a poids reduit (repli quand aucune ligne de
+    //     meme nature n'existe) aide le moteur a ne pas etre aveugle ; ici elle
+    //     deviendrait la charge de base brute, donc elle est ecartee ;
+    //  2. jour de test — CoachKalman.isTestContext(), lu sur le format
+    //     (« montee vers 1RM », « 3RM test »). Un test n'est pas une charge de
+    //     travail ;
+    //  3. reps compatibles — au-dela de repGapRatio, la charge brute d'une
+    //     ligne ne dit rien de la charge du jour : elle est projetee par Epley
+    //     vers la cible (sur une COPIE, la ligne stockee n'est jamais touchee).
+    //     Projeter plutot qu'exclure : exclure renvoyait la couche a une ligne
+    //     plus ancienne, donc plus legere que ce que le moteur venait de lire.
+    var V116 = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.brainV116) || {};
+    var tMinDay = Number(ctx && ctx.targetMin) || Number(targetReps) || 8;
+    var tMaxDay = Number(ctx && ctx.targetMax) || Number(targetReps) || tMinDay;
+    function isTestRow(r){
+      var rc = (typeof coachHistoryContext==='function') ? coachHistoryContext(r) : null;
+      var fmt = {format: (rc && rc.format) || (r && r.planned && r.planned.format) || ''};
+      if(window.CoachKalman && typeof CoachKalman.isTestContext==='function') return CoachKalman.isTestContext(fmt);
+      var K = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.kalman) || {};
+      return typeof coachMatchesAnyTuningPattern==='function' && coachMatchesAnyTuningPattern(coachNormalizeMoveText(fmt.format), K.testFormatPatterns);
+    }
+    function repsIncompatible(r){
+      var reps = rowReps(r), ratio = Number(V116.repGapRatio);
+      if(!reps || !(ratio > 0)) return false;
+      var gap = reps < tMinDay ? tMinDay - reps : (reps > tMaxDay ? reps - tMaxDay : 0);
+      return gap > tMaxDay * ratio;
+    }
+    function projectToTarget(r){
+      if(!repsIncompatible(r) || typeof epley1RM!=='function') return r;
+      var reps = rowReps(r), toward = reps < tMinDay ? tMinDay : tMaxDay;
+      var projected = epley1RM(rowLoad(r), reps) / (1 + toward / 30);
+      // Sans charge prescrite : une projection n'a jamais « depasse » une
+      // suggestion qu'elle n'a pas recue (couche 4).
+      return Object.assign({}, r, {load: projected, externalLoad: projected, reps: toward,
+        planned: Object.assign({}, r.planned || {}, {load: null}), __v116ProjectedFrom: rowLoad(r) + ' x ' + reps});
+    }
+    var sameNature = (typeof coachFilterHistoryForProgression==='function') ? coachFilterHistoryForProgression(histAll, ctx) : histAll;
+    var hist = sameNature.filter(function(r){
+      if(typeof coachHistoryWeight==='function' && coachHistoryWeight(r) < 1) return false;
+      return !isDeloadRow(r) && !isCalibrationSeed(r) && !isImplausible(r) && rowLoad(r) > 0 && rowRpe(r) > 0
+        && !isTestRow(r);
+    }).map(projectToTarget);
     if(!hist.length) return base.loadText;
+
+    // Plafond de capacite : la couche raffine une charge de travail, elle ne
+    // depasse jamais ce que l'e1RM retenu permet pour les reps du jour au RPE
+    // capacityRpe. e1RM retenu = la meilleure des deux lectures : l'ancre de
+    // force du moteur (coachStrengthAnchorOneRm : athlete_state, references,
+    // profil) et les lignes retenues ci-dessus, RIR compte (meme convention
+    // que kalman.js : RIR = 10 - RPE, borne a maxRir). Sans e1RM, pas de
+    // plafond : le comportement d'avant reste intact.
+    function capacityCap(){
+      var K = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.kalman) || {};
+      var maxRir = Number(K.maxRir) || 4;
+      var capRpe = Number(V116.capacityRpe);
+      if(!(capRpe > 0) || typeof epley1RM!=='function') return null;
+      function rirOf(rpe){ return Math.max(0, Math.min(maxRir, 10 - (Number(rpe) || 10))); }
+      var anchor = (typeof coachStrengthAnchorOneRm==='function') ? coachStrengthAnchorOneRm(label, mv) : null;
+      var e1 = (anchor && anchor.oneRm > 0) ? anchor.oneRm : 0;
+      hist.forEach(function(r){
+        var reps = rowReps(r);
+        if(reps > 0) e1 = Math.max(e1, epley1RM(rowLoad(r), reps + rirOf(rowRpe(r))));
+      });
+      if(!(e1 > 0)) return null;
+      var reps = Math.max(1, Number(targetReps) || tMinDay);
+      var raw = e1 / (1 + (reps + rirOf(capRpe)) / 30);
+      // Arrondi au cran SUPERIEUR du rack : un plafond qu'on ne peut pas
+      // charger gelerait les petites charges (un Goblet Squat a 10 lb n'a pas
+      // de 10,5), sans rien proteger de plus.
+      var up = (typeof roundLoadForExercise==='function') ? roundLoadForExercise(label, raw, 'up') : raw;
+      return {e1RM: e1, load: Math.max(raw, Number(up) || 0), reps: reps, rpe: capRpe};
+    }
 
     var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, rowLoad(hist[hist.length-1])) : 5;
     var maxJump = (typeof coachMaxJumpForExercise==='function')  ? coachMaxJumpForExercise(label, rowLoad(hist[hist.length-1]))  : 5;
@@ -2241,6 +2323,25 @@ window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context)
       reason=safeDecision.reason;
       repsSuggestion='';
       safeDecision.loadText=coachFormatSuggestedLoad(label,newLoad,base.loadText,'');
+    }
+
+    // Au-dessus du plafond de capacite, la decision du moteur principal fait
+    // foi — et le (!) le dit, sans rien recalculer d'autre.
+    var cap = (newLoad > baseNum) ? capacityCap() : null;
+    if(cap && newLoad > cap.load){
+      try{
+        if(hintsBefore){
+          window.__coachLoadHints = hintsBefore;
+          if(baseHint && baseHint.load === base.loadText){
+            var capHint = Object.assign({}, baseHint, {reason: String(baseHint.reason || base.reason || '')
+              + ' Couche Brain V1.16 ecartee : ' + newLoad + ' lb depasserait la capacite estimee (e1RM '
+              + Math.round(cap.e1RM) + ' lb → ' + cap.load + ' lb max pour ' + cap.reps
+              + ' reps @RPE ' + cap.rpe + ').'});
+            Object.keys(hintsBefore).forEach(function(k){ if(hintsBefore[k] === baseHint) hintsBefore[k] = capHint; });
+          }
+        }
+      }catch(e){}
+      return base.loadText;
     }
 
     if(newLoad === baseNum && !newReps && !(safeDecision&&safeDecision.brainStats)) return base.loadText;
