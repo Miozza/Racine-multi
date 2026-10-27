@@ -610,6 +610,17 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   var contextLimitReason=(typeof coachContextProgressionReason==='function')?coachContextProgressionReason(moveContext):'';
   var isDeload=coachIsDeloadWeekOrContext(moveContext);
   var seedReason="Charge du programme, arrondie selon l'equipement.";
+  // Une serie technique, legere ou de WOD dit « au moins ce poids », jamais
+  // « au plus ». Quand elle est la SEULE evidence d'un mouvement principal
+  // (admise a poids reduit par le repli de coachFilterHistoryForProgression),
+  // elle ne sert plus d'ancre au saut maximal, aux freins ni au portail Brain :
+  // le programme mis a l'echelle du profil reprend la main, comme pour un
+  // mouvement vierge. Cas mesure : Bench Press 5x3 de Pont Peak S4, programme
+  // 195 lb x ratio 1,22 = 238 lb, ramene a 155 lb par l'unique serie loggee —
+  // 155 x 5 d'un bloc technique « ≈65-70 % de tes charges habituelles ».
+  var limitedOnlyEvidence=!contextLimited&&!isDeload&&hist.length>0&&hist.every(function(r){
+    return coachHistoryWeight(r)<1&&coachHistoryContextIsLimited(r);
+  });
   // Un emprunt reste un emprunt, et l'athlete a le droit de le savoir : sans
   // cette phrase, 250 lb tires d'une moyenne de famille sortaient avec le meme
   // libelle qu'une charge mesuree sur lui.
@@ -672,7 +683,8 @@ function coachBuildSuggestionContext(nameOrKey,currentLoad,targetReps,context){
   return {early:false, ctx:{
     nameOrKey:nameOrKey, currentLoad:currentLoad, moveContext:moveContext, label:label,
     target:target, mv:mv, range:range, cap:cap, histAll:histAll, hist:hist,
-    last:last, lastLoad:lastLoad, lastHasValidLoad:lastHasValidLoad, lastRpe:lastRpe,
+    last:last, lastLoad:lastLoad, lastHasValidLoad:lastHasValidLoad&&!limitedOnlyEvidence, lastRpe:lastRpe,
+    limitedOnlyEvidence:limitedOnlyEvidence,
     bestControlled:bestControlled, historySignal:historySignal, programNum:programNum,
     originalText:originalText, contextLimited:contextLimited, contextLimitReason:contextLimitReason,
     isDeload:isDeload, suggested:programNum, severity:"ok", reason:seedReason, mode:"nearest",
@@ -713,6 +725,13 @@ function coachRuleUnprovenScaleWatch(ctx){
 function coachRuleWeightedHistoryWatch(ctx){
   if(!ctx.historyWeighted)return;
   ctx.severity=ctx.severity==="ok"?"watch":ctx.severity;
+  if(ctx.limitedOnlyEvidence){
+    ctx.reason=(ctx.reason?ctx.reason+" ":"")
+      +"Seules des seances technique, legeres ou de WOD existent sur ce mouvement : elles comptent comme plancher, "
+      +"jamais comme plafond d'un travail principal. La charge part du programme mis a ton echelle.";
+    ctx.brainAdjusted=true;
+    return;
+  }
   ctx.reason=(ctx.reason?ctx.reason+" ":"")
     +"Aucune seance de meme nature que celle du jour : le moteur s'appuie sur "
     +ctx.hist.length+" seance"+(ctx.hist.length>1?"s":"")
@@ -1511,7 +1530,7 @@ function coachRuleSpeedStimulusBand(ctx){
 }
 
 function coachRuleRecentHardBrake(ctx){
-  if(!ctx.contextLimited&&!ctx.isDeload){
+  if(!ctx.contextLimited&&!ctx.isDeload&&!ctx.limitedOnlyEvidence){
     var recentHardBrake=coachRecentUnresolvedHighRpeBrake(ctx.hist,ctx.label,ctx.moveContext,ctx.target,ctx.suggested);
     if(recentHardBrake&&ctx.suggested>recentHardBrake.load){
       ctx.suggested=recentHardBrake.rpe>=9.5?Math.max(0,recentHardBrake.load-coachLoadStepForExercise(ctx.label,ctx.currentLoad)):recentHardBrake.load;
@@ -1528,6 +1547,11 @@ function coachRuleRecentHardBrake(ctx){
 // lourd reussi au meme RPE comme "non resolu" et faire retomber suggested
 // sous ce plancher, ce qui doit etre corrige ici.
 function coachRuleFloorValidation(ctx){
+  // Evidence de contexte limite seulement : plancher, jamais plafond.
+  if(ctx.limitedOnlyEvidence&&ctx.bestControlled&&ctx.suggested<ctx.bestControlled.load){
+    ctx.suggested=ctx.bestControlled.load;ctx.mode="nearest";
+    return;
+  }
   if(!ctx.contextLimited&&!ctx.isDeload&&!isTechnicalMovement(ctx.label)&&ctx.last&&ctx.lastHasValidLoad){
     var floorReps=coachHistoryRepsNumber(ctx.last);
     var floorRepsReached=!ctx.target||!floorReps||floorReps>=ctx.target;

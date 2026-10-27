@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.33
+# ETAT ACTUEL — V5.2.34
 
-Version actuelle : V5.2.33
+Version actuelle : V5.2.34
 
 ## État courant
+
+### Une série technique est un plancher, jamais un plafond
+
+Quand les seules séances d'un mouvement principal viennent d'un contexte technique, léger ou WOD (admises à poids réduit), elles ne servent plus d'ancre au saut maximal, aux freins RPE ni au portail Brain : la charge part du programme mis à l'échelle du profil, et la meilleure série contrôlée reste un plancher. Cas d'origine : Bench Press 5×3 de Pont Peak S4, 155 → 240 lb.
 
 ### Couche Brain de raffinement — même historique que le moteur
 
