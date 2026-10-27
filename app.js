@@ -1,5 +1,5 @@
-// Racine V5.2.33 — Jambes du coureur : un complément, pas un deuxième entraînement
-var APP_VERSION = "V5.2.33";
+// Racine V5.2.34 — Une série technique est un plancher, jamais un plafond
+var APP_VERSION = "V5.2.34";
 
 // Architecture stable
 // programs/*.js = plan prévu

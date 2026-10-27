@@ -1157,6 +1157,41 @@ try {
     resetState();
   }
 
+  // ── Une serie technique est un plancher, jamais un plafond ──────────────
+  // Cas reel (Pont Peak S4) : Bench Press 5x3 ecrit 195 lb, ratio bench 1,22.
+  // L'unique ligne de Bench Press etait 155 x 5 @8 d'un bloc technique
+  // (« ≈65-70 % de tes charges habituelles »). Admise a poids reduit, elle
+  // servait d'ancre au saut maximal (165) puis au portail Brain (155).
+  {
+    resetState();
+    ctx.state.profile = {onboarded:true, scaleRatios:{bench:1.22, _upperPush:1.22, _overall:1.0}};
+    const tech = ctx.coachBuildMovementContext('Bench Press', {kind:'secondary', blockTitle:'B. Bench Press', format:'3×5',
+      note:'≈65-70 % de tes charges habituelles. RPE 7 maximum. Réduis la charge dès que la technique se détériore.'});
+    assert(ctx.coachIsLimitedProgressionContext(tech) === true,
+      'La seance de reference est bien technique (sinon ce test ne prouverait rien).');
+    const ligne = {date:'2026-08-03', load:155, externalLoad:155, capacityLoad:155, hasValidLoad:true, reps:5, rpe:8,
+      range:'strength', status:'context_logged', context:tech, planned:{load:140, reps:5, format:'3×5', context:tech}};
+    ctx.state.athleteState.movements['Bench Press'] = {ranges:{}, status:'ok', history:[ligne]};
+    const lourd = ctx.coachBuildMovementContext('Bench Press', {kind:'main', blockTitle:'A. Bench Press', format:'5×3',
+      load:'195 lb', note:'Touch-and-go contrôlé, aucun rebond. RPE 8.'});
+    const d = ctx.guardedSuggestedLoadDecision('Bench Press', '195 lb', 3, lourd);
+    assert(d.loadNum >= 235,
+      'Une serie technique ne plafonne pas un 5x3 principal : programme 195 x 1,22 ≈ 240 lb (obtenu ' + d.loadNum + ' lb).');
+    assert(/plancher/.test(String(d.reason)),
+      'Le (!) dit pourquoi la serie technique n\'a pas servi d\'ancre.');
+
+    // Plancher : un programme ecrit plus bas que la serie technique ne la sous-suggere pas.
+    const bas = ctx.guardedSuggestedLoadDecision('Bench Press', '95 lb', 3, lourd);
+    assert(bas.loadNum >= 155,
+      'La serie technique reste un plancher : jamais sous 155 lb (obtenu ' + bas.loadNum + ' lb).');
+
+    // Le jour technique, lui, n'est pas concerne : la ligne y est de meme nature.
+    const encoreTech = ctx.guardedSuggestedLoadDecision('Bench Press', '140 lb', 5, tech);
+    assert(!/plancher, jamais comme plafond/.test(String(encoreTech.reason)),
+      'Un jour technique ne passe pas par la regle « plancher, jamais plafond ».');
+    resetState();
+  }
+
   // ── Ponderation du filtre de contexte ───────────────────────────────────
   // Le filtre etait binaire. Une semaine legere ou technique se coupait donc
   // integralement des semaines normales : un mouvement pouvait afficher 0

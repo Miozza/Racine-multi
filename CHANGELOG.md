@@ -1,3 +1,15 @@
+## V5.2.34 — Une série technique est un plancher, jamais un plafond
+
+**Pourquoi** : profil Bertin, Pont Peak S4 mardi. Bench Press 5×3 écrit 195 lb, ratio bench 1,22 : le programme demandait ~238 lb, l'écran affichait **155 lb** (source « Brain »). L'unique ligne de Bench Press était 155 × 5 @8 du 3 août, en bloc technique (« ≈65-70 % de tes charges habituelles ») — S1-S3 se faisaient au Paused Bench Press, mouvement distinct. Admise à poids réduit par le repli de `coachFilterHistoryForProgression`, elle servait d'ancre au saut maximal (165 lb), puis le portail Brain (confiance 48 %) ramenait à 155.
+
+- **`coachBuildSuggestionContext`** : nouveau drapeau `limitedOnlyEvidence` — jour principal, et toutes les lignes retenues sont des copies à poids réduit d'un contexte limité (technique, léger, WOD, récupération). La dernière ligne n'est alors plus une charge valide pour les règles d'ancrage : saut maximal, freins RPE, signal d'historique, garde d'échelle, portail Brain.
+- **`coachRuleRecentHardBrake`** : ne freine pas sur ces seules lignes.
+- **`coachRuleFloorValidation`** : la meilleure série contrôlée reste un **plancher**.
+- Le (!) le dit : « elles comptent comme plancher, jamais comme plafond d'un travail principal ».
+- Cas Bertin, cycle Pont Peak complet comparé avant/après : Bench Press S4 **155 → 240 lb**, S5 **155 → 265 lb** ; Seated Cable Row S4-S5 120 → 150 lb (plancher : 150 × 25 @6,5 en WOD) ; porte du test S7 155 → 165 lb. Les 182 autres suggestions sont inchangées.
+- **Hors périmètre** : la porte « 90% » du test S7 se résout par `coachStrengthAnchorOneRm`, qui lit `state.movementRefs` (`bench__strength` = 155 × 5, écrit par la même séance technique) avant les tests du profil. Elle se corrige d'elle-même dès qu'une séance principale de Bench Press est loggée (S4-S5).
+- `dev/charge_engine_checks.js` : cas Bertin, plancher, jour technique non concerné.
+
 ## V5.2.33 — Jambes du coureur : un complément, pas un deuxième entraînement
 
 **Pourquoi** : précisions de l'athlète (2026-10-17). Le coureur est de niveau provincial (15e sur 180 au cross, 6 km), en club de course et de natation : son cardio n'est pas une lacune. Cette séance est secondaire et doit combler ce que la course et la natation ne travaillent pas. Durée gardée à ~60 min.

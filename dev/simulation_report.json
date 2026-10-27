@@ -2,8 +2,8 @@
   "summary": {
     "version": "V1.16-multi",
     "personas": 10,
-    "pass": 7,
-    "warn": 3,
+    "pass": 8,
+    "warn": 2,
     "fail": 0,
     "programsCovered": [
       "client_beginner_foundation_2d",
@@ -33,7 +33,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 75,
@@ -547,7 +547,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 105,
@@ -1061,7 +1061,7 @@
         "blocksOk": true,
         "blockCount": 8,
         "blockError": null,
-        "visibleCount": 33
+        "visibleCount": 34
       },
       "computedValues": {
         "backSquat5RM": 120,
@@ -1577,7 +1577,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 175,
@@ -2091,7 +2091,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 270,
@@ -2607,7 +2607,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 240,
@@ -3121,7 +3121,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 175,
@@ -3159,21 +3159,21 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Power Clean",
-            "load": 65,
+            "load": 70,
             "reps": 3,
-            "rpe": 7.4,
-            "e1rm": 71.5,
-            "suggestedLoad": 65,
-            "suggestionReason": "65 lb",
+            "rpe": 7.6,
+            "e1rm": 77,
+            "suggestedLoad": 70,
+            "suggestionReason": "70 lb",
             "deloadWeek": false,
             "severity": "ok",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 7.599999999999999,
+          "avgRpe": 7.716666666666668,
           "trend": {
             "status": "progression propre",
-            "delta": 22.571428571428566
+            "delta": 31.999999999999996
           }
         },
         {
@@ -3337,48 +3337,48 @@
             },
             {
               "week": 2,
-              "suggested": 50,
-              "load": 50,
+              "suggested": 55,
+              "load": 55,
               "reps": 3,
-              "rpe": 8.1,
+              "rpe": 8.2,
               "deloadWeek": false,
-              "reason": "50 lb"
+              "reason": "55 lb"
             },
             {
               "week": 3,
-              "suggested": 50,
-              "load": 50,
-              "reps": 5,
-              "rpe": 7.5,
-              "deloadWeek": false,
-              "reason": "50 lb"
-            },
-            {
-              "week": 4,
               "suggested": 55,
               "load": 55,
-              "reps": 4,
+              "reps": 5,
               "rpe": 7.7,
               "deloadWeek": false,
               "reason": "55 lb"
             },
             {
-              "week": 5,
+              "week": 4,
               "suggested": 60,
               "load": 60,
               "reps": 4,
-              "rpe": 7.3,
+              "rpe": 7.8,
               "deloadWeek": false,
               "reason": "60 lb"
             },
             {
-              "week": 6,
+              "week": 5,
               "suggested": 65,
               "load": 65,
-              "reps": 3,
+              "reps": 4,
               "rpe": 7.4,
               "deloadWeek": false,
               "reason": "65 lb"
+            },
+            {
+              "week": 6,
+              "suggested": 70,
+              "load": 70,
+              "reps": 3,
+              "rpe": 7.6,
+              "deloadWeek": false,
+              "reason": "70 lb"
             }
           ]
         },
@@ -3635,7 +3635,7 @@
         "blocksOk": true,
         "blockCount": 5,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 195,
@@ -4329,7 +4329,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 155,
@@ -4835,7 +4835,7 @@
     {
       "id": "chaos_donnees",
       "name": "Utilisateur données incohérentes",
-      "status": "WARN",
+      "status": "PASS",
       "programId": "client_hypertrophy_5d",
       "programCheck": {
         "selectedVisible": true,
@@ -4843,7 +4843,7 @@
         "blocksOk": true,
         "blockCount": 6,
         "blockError": null,
-        "visibleCount": 32
+        "visibleCount": 33
       },
       "computedValues": {
         "backSquat5RM": 210,
@@ -4858,9 +4858,7 @@
         "dbRdl": 80,
         "hipThrust8RM": 335
       },
-      "warnings": [
-        "Incline DB Press: suggestion au-dessus de la charge échouée à 0 rep (7.5 -> 8) — historique incohérent, à vérifier"
-      ],
+      "warnings": [],
       "fails": [],
       "progressionPointCount": 36,
       "movementSummaries": [
@@ -5063,21 +5061,21 @@
           "last": {
             "date": "2026-08-08",
             "movement": "Incline DB Press",
-            "load": 7.5,
+            "load": 2.5,
             "reps": 8,
-            "rpe": 9.5,
-            "e1rm": 9.5,
-            "suggestedLoad": 10,
-            "suggestionReason": "10 lb / main",
+            "rpe": 8,
+            "e1rm": 3.1666666666666665,
+            "suggestedLoad": 5,
+            "suggestionReason": "5 lb / main",
             "deloadWeek": false,
             "severity": "ok",
             "confidence": 0.8333333333333334,
             "failed": false
           },
-          "avgRpe": 8.316666666666668,
+          "avgRpe": 7.483333333333334,
           "trend": {
-            "status": "progression propre",
-            "delta": 185.00000000000003
+            "status": "stable (reps variables)",
+            "delta": -4.9999999999999964
           }
         }
       ],
@@ -5415,30 +5413,30 @@
             },
             {
               "week": 4,
-              "suggested": 8,
-              "load": 10,
-              "reps": 8,
-              "rpe": 8.3,
+              "suggested": 2.5,
+              "load": 2.5,
+              "reps": 10,
+              "rpe": 6.1,
               "deloadWeek": false,
-              "reason": "8 lb / main"
+              "reason": "2.5 lb / main"
             },
             {
               "week": 5,
-              "suggested": 10,
-              "load": 10,
-              "reps": 7,
-              "rpe": 10,
+              "suggested": 5,
+              "load": 5,
+              "reps": 8,
+              "rpe": 8.7,
               "deloadWeek": false,
-              "reason": "10 lb / main"
+              "reason": "5 lb / main ⚠"
             },
             {
               "week": 6,
-              "suggested": 10,
-              "load": 7.5,
+              "suggested": 5,
+              "load": 2.5,
               "reps": 8,
-              "rpe": 9.5,
+              "rpe": 8,
               "deloadWeek": false,
-              "reason": "10 lb / main"
+              "reason": "5 lb / main"
             }
           ]
         }
