@@ -291,6 +291,21 @@ persiste persiste toujours localement.
   - hors-ligne : envoi en attente, l'app fonctionne normalement.
 - Étendre cette copie (autres profils, relecture automatique, fusion) demande une
   nouvelle décision explicite.
+- **L'agent lit cette sauvegarde — c'est sa raison d'être** (décision du 2026-10-27).
+  Dépôt `Miozza/racine-sauvegarde`. Dès qu'une question porte sur les charges,
+  les séances ou une suggestion du moteur de l'athlète : l'attacher en lecture
+  (`add_repo`, `access: "read"`) **sans attendre qu'on le demande**, le cloner,
+  puis lire :
+  - `racine/<profil>-resume.md` d'abord : ratios, semaine courante, séances
+    prévues avec la charge du moteur, historique récent ;
+  - `racine/<profil>-profil.json` : export complet. Pour rejouer le vrai moteur,
+    l'importer avec `CoachProfiles.importProfileBlob` dans un Chromium headless
+    (Playwright) servi depuis ce dépôt, puis appeler `coachSuggestForExercise` ;
+  - `racine/demandes/` : les demandes déposées pour Claude Code.
+
+  Lecture seule : ne jamais y pousser. Ne jamais copier ces données dans ce dépôt
+  (il est public), ni dans un fichier `data/`, ni dans un test : un cas tiré de
+  l'historique s'écrit avec ses seuls chiffres utiles.
 
 **Coach IA — chemin par défaut : copier-coller, pas de réseau.**
 Un abonnement Claude Pro **ne couvre pas l'API** : la facturation API est
