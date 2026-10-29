@@ -1,3 +1,13 @@
+## V5.2.35 — Pont Moteur + jambes : l'épaule guérit, le moteur avance
+
+**Pourquoi** : profil Bertin, blessure à l'épaule droite (trapèze bas et cou) sur un snatch d'un bras, aggravée par le Strict Press lourd de Pont Peak S4. La compétition est reportée à début février. Pont Peak ne peut pas continuer : sa fin est faite de doubles lourds au Strict Press et d'un test 1RM au Bench Press. Le Peak est trop tôt (8 semaines finiraient fin décembre) et met trop les épaules à contribution (Wall Balls, Pull-Ups, Clean & Jerk).
+
+- **Nouveau programme privé `moteur_jambes`**, 5 semaines, 4 jours, `nextPhase: competition_peak`. Lundi : Back Squat et aérobie long. Mardi : Bench Press à RPE 7, benchmark 50 cal Bike ou intervalles au seuil, Chest Supported Row conditionnel. Jeudi : Front Squat et EMOM Burpees/Bike/Box. Vendredi : Hip Thrust (à la place du RDL) et metcon long au format du Peak, avec Air Squats à la place des Wall Balls.
+- **Épaule** : rien au-dessus de la tête, ni traction, ni ski, ni curl en S1-S4. Règle douleur écrite dans le cycle (au-dessus de 3 sur 10, ou douleur qui monte : le mouvement sort). Row remplacé par le Bike si le cou réagit.
+- **S5, test de retour** : en bloc technique, non capturé. Mardi : Strict Press barre vide, Wall Balls, Pull-Up. Jeudi : Power Clean. Re-test du 50 cal Bike et de l'AMRAP 20 de S1.
+- Charges à l'échelle de l'athlète de référence. Bench 315 reporté après la compétition (reprise de Pont Peak).
+- `dev/moteur_jambes_checks.js` : épaule épargnée, test S5, metcon après le travail principal, auto-progression des mouvements principaux.
+
 ## V5.2.34 — Une série technique est un plancher, jamais un plafond
 
 **Pourquoi** : profil Bertin, Pont Peak S4 mardi. Bench Press 5×3 écrit 195 lb, ratio bench 1,22 : le programme demandait ~238 lb, l'écran affichait **155 lb** (source « Brain »). L'unique ligne de Bench Press était 155 × 5 @8 du 3 août, en bloc technique (« ≈65-70 % de tes charges habituelles ») — S1-S3 se faisaient au Paused Bench Press, mouvement distinct. Admise à poids réduit par le repli de `coachFilterHistoryForProgression`, elle servait d'ancre au saut maximal (165 lb), puis le portail Brain (confiance 48 %) ramenait à 155.
