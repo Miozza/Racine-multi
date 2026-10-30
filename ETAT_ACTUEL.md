@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.34
+# ETAT ACTUEL — V5.2.35
 
-Version actuelle : V5.2.34
+Version actuelle : V5.2.35
 
 ## État courant
+
+### Pont — Moteur + jambes (privé)
+
+Programme privé `moteur_jambes`, 5 semaines (2 novembre → 6 décembre 2026), qui prend le relais de Pont Peak après une blessure à l'épaule droite. La compétition passe à début février : le Peak commence le 7 décembre. Jambes lourdes (Back Squat, Front Squat, Hip Thrust), moteur au centre (aérobie 24 → 32 min, intervalles au Bike, EMOM, metcon long au format du Peak), Bench Press à RPE 7 s'il reste indolore. Rien au-dessus de la tête, ni traction, ni ski, ni curl en S1-S4 ; S5 teste le retour (Strict Press barre vide, Wall Balls, Pull-Up, Power Clean) et refait les deux benchmarks moteur de S1. Garde-fou : `dev/moteur_jambes_checks.js`.
 
 ### Une série technique est un plancher, jamais un plafond
 

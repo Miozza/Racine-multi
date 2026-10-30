@@ -1,5 +1,5 @@
-// Racine V5.2.34 — Une série technique est un plancher, jamais un plafond
-var APP_VERSION = "V5.2.34";
+// Racine V5.2.35 — Pont Moteur + jambes : l'épaule guérit, le moteur avance
+var APP_VERSION = "V5.2.35";
 
 // Architecture stable
 // programs/*.js = plan prévu

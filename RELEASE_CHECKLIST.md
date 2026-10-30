@@ -51,6 +51,7 @@ node dev/rehab_stephanie_checks.js
 node dev/course_maxence_checks.js
 node dev/phase2_fable5_checks.js
 node dev/pont_peak_checks.js
+node dev/moteur_jambes_checks.js
 node dev/crossfit_quality_checks.js
 node dev/strict_muscle_up_checks.js
 node dev/github_backup_checks.js

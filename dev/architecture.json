@@ -1094,6 +1094,22 @@
       "consumes": []
     },
     {
+      "path": "dev/moteur_jambes_checks.js",
+      "size": 3513,
+      "lines": 64,
+      "role": "Contrat du Pont — Moteur + jambes : 5 semaines vers le Peak, epaule epargnee en S1-S4 (ni au-dessus de la tete, ni traction, ni ski, ni curl), test de retour S5 en bloc technique, metcon apres le travail principal, mouvements principaux en progression a l'echelle de reference.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [
+        {
+          "path": "RELEASE_CHECKLIST.md",
+          "vector": "release-checklist-cmd",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "dev/prescription_checks.js",
       "size": 8737,
       "lines": 148,
@@ -2798,6 +2814,32 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 376
+        },
+        {
+          "path": "programs/index.js",
+          "vector": "index-entry",
+          "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/moteur_jambes.js",
+      "size": 17867,
+      "lines": 211,
+      "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules) : Pont — Moteur + jambes, 5 semaines entre Pont Peak et competition_peak pendant une blessure a l'epaule droite (jambes lourdes, moteur central, rien au-dessus de la tete avant le test de retour S5). Prive, enregistre dans window.COACH_BERTIN_PROGRAMS et indexe par programs/index.js.",
+      "category": "ACTIF",
+      "exposes": [
+        "getBlocks",
+        "getWodText",
+        "dayMeta",
+        "cycleRules"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 386
         },
         {
           "path": "programs/index.js",
