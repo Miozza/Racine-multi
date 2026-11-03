@@ -111,6 +111,7 @@
     var score = str(r.result);
     if(!score && positive(r.rounds) != null) score = positive(r.rounds) + " rounds";
     if(score) parts.push("score " + score);
+    if(str(r.cardio) && score.indexOf(str(r.cardio)) < 0) parts.push("cardio " + str(r.cardio));
     if(str(r.lastRoundRemaining)) parts.push(str(r.lastRoundRemaining));
     if(positive(r.rpe) != null) parts.push("RPE " + positive(r.rpe));
     return parts;
@@ -601,6 +602,12 @@
   // La précision RÉCENTE et la tendance, jamais la précision à vie : celle-ci
   // est cumulative, elle se fige avec le volume et noie le progrès récent
   // (CLAUDE.md §8).
+  // Calories / mètres par machine : moyennes lues par scripts/session/wod_cardio.js.
+  function cardioLines(){
+    try{ return window.CoachWodCardio ? CoachWodCardio.contextLines(hist()) : []; }
+    catch(e){ return []; }
+  }
+
   function brainLines(){
     var lines = [];
     var mem = null;
@@ -721,6 +728,7 @@
       .concat(missedLines(opts.notes))
       .concat(noteLines(opts.notes))
       .concat(brainLines())
+      .concat(cardioLines())
       .concat(constraintLines())
       .concat(planLines());
     return lines.join("\n");

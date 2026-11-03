@@ -50,7 +50,7 @@
   // `wodText` en est volontairement absent : ce n'est pas une performance,
   // c'est l'identité du conditionnement. Un WOD non fait doit quand même dire
   // LEQUEL n'a pas été fait, sinon l'historique montre un trou anonyme.
-  var PERFORMANCE_FIELDS = ['rpe','result','rounds','roundSplits','lastRoundRemaining'];
+  var PERFORMANCE_FIELDS = ['rpe','result','rounds','roundSplits','lastRoundRemaining','cardio'];
 
   function clean(v){ return String(v === undefined || v === null ? '' : v); }
   function esc(v){ return typeof escHtml === 'function' ? escHtml(v) : clean(v); }

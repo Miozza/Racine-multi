@@ -9483,3 +9483,29 @@ ol.cai-list { padding-left: 20px; }
   font-size:11px;
   margin-top:2px;
 }
+
+/* Saisie cardio du WOD — calories / mètres par machine (scripts/session/wod_cardio.js) */
+.wcd-rows{ display:flex; flex-direction:column; gap:6px; }
+.wcd-row{ display:flex; align-items:center; gap:6px; min-width:0; }
+.wcd-row select, .wcd-row input{
+  background:var(--panel); border:1px solid var(--border); color:var(--text);
+  border-radius:8px; padding:8px 6px; font-family:var(--font-hud); font-size:14px;
+  min-width:0; height:38px; box-sizing:border-box;
+}
+.wcd-row input:focus, .wcd-row select:focus{ outline:none; border-color:var(--blue); }
+.wcd-machine{ flex:1.3 1 0; }
+.wcd-min{ flex:0 0 52px; width:52px; text-align:center; }
+.wcd-val{ flex:1 1 0; width:0; text-align:center; color:var(--cyan) !important; }
+.wcd-unit{ flex:0 0 58px; width:58px; }
+.wcd-row input::-webkit-inner-spin-button, .wcd-row input::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0; }
+.wcd-row input[type=number]{ -moz-appearance:textfield; }
+.wcd-unit-txt{ font-family:var(--font-hud); font-size:10px; color:var(--muted); letter-spacing:.06em; }
+.wcd-del{ background:none; border:none; color:var(--muted); font-size:14px; padding:4px; cursor:pointer; }
+.wcd-add{
+  background:none; border:none; color:var(--cyan); font-family:var(--font-main);
+  font-size:12px; padding:8px 0 2px; cursor:pointer; text-align:left;
+}
+.wcd-sum{ font-size:12px; color:var(--text2); }
+.wcd-sum-line{ margin-top:6px; }
+.wcd-sum-line strong, .wcd-ref strong{ font-family:var(--font-hud); color:var(--cyan); font-weight:700; }
+.wcd-ref{ margin-top:4px; color:var(--muted); }

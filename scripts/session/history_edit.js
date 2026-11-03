@@ -171,6 +171,20 @@
     card.appendChild(wrap);
   }
 
+  // Calories / mètres par machine (scripts/session/wod_cardio.js). Une séance
+  // d'avant ce champ est pré-remplie depuis sa note quand les nombres
+  // correspondent aux morceaux du WOD — rien n'est écrit tant que l'athlète
+  // n'enregistre pas la correction.
+  function cardioField(card, key, row){
+    if(!card || !window.CoachWodCardio || String(key).indexOf('wod_') !== 0) return;
+    try{
+      var wrap = document.createElement('div');
+      wrap.innerHTML = CoachWodCardio.controlHtml(key, {wodText: row.wodText, saved: row.cardio, row: row});
+      card.appendChild(wrap);
+      CoachWodCardio.bind(key, wrap);
+    }catch(e){ /* la correction reste possible sans ce champ */ }
+  }
+
   function textCard(key, row, container){
     var card = document.createElement('div');
     card.className = 'sf-card';
@@ -188,6 +202,7 @@
       '</div>';
     container.appendChild(card);
     roundsField(card, key, row);
+    cardioField(card, key, row);
     noteField(card, key, row.note);
     return card;
   }
@@ -279,7 +294,14 @@
   }
 
   function applyEdits(){
-    return mergeInto(entryResults(editing.entry), collectFields());
+    var edited = collectFields();
+    // Un moteur aérobie n'a pas d'autre score que ses calories : elles
+    // deviennent le résultat quand celui-ci est vide (comme à la saisie).
+    Object.keys(edited).forEach(function(key){
+      var f = edited[key];
+      if(f && txt(f.cardio) && f.result !== undefined && !txt(f.result)) f.result = txt(f.cardio);
+    });
+    return mergeInto(entryResults(editing.entry), edited);
   }
 
   // ── Cycle de vie ──────────────────────────────────────────────────────────

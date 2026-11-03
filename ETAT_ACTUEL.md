@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.2.35
+# ETAT ACTUEL — V5.2.36
 
-Version actuelle : V5.2.35
+Version actuelle : V5.2.36
 
 ## État courant
+
+### Calories et mètres du cardio
+
+La carte WOD de l'écran résultats propose une saisie cardio : une ligne par morceau machine lu dans le texte du WOD (« 10 min Bike, 4 min Row, 10 min Bike »), avec machine, minutes, valeur et unité (cal ou m) modifiables, et « + Ajouter une machine » pour un effort hors plan. Champ additif `cardio` sur la ligne WOD. La carte affiche le total, le rythme du jour et la moyenne / le meilleur rythme par machine ; Coach IA reçoit ces repères. Les séances d'avant se lisent dans la note quand les nombres correspondent aux morceaux. Aucune charge n'en dépend. Garde-fou : `dev/wod_cardio_checks.js`.
 
 ### Pont — Moteur + jambes (privé)
 

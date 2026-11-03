@@ -78,7 +78,10 @@
   function scoreText(row){
     if(!row) return '';
     var result = clean(row.result).trim();
+    var cardio = clean(row.cardio).trim();
+    if(result && cardio && result.indexOf(cardio) < 0) return result + ' · ' + cardio;
     if(result) return result;
+    if(cardio) return cardio;
     var rounds = clean(row.rounds).trim();
     if(rounds) return rounds + ' round' + (Number(rounds) > 1 ? 's' : '');
     return '';

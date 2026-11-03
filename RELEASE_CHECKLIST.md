@@ -67,6 +67,7 @@ node dev/history_edit_checks.js
 node dev/amrap_rounds_checks.js
 node dev/wod_skip_checks.js
 node dev/wod_history_checks.js
+node dev/wod_cardio_checks.js
 node dev/mini_timer_checks.js
 node dev/schedule_reminder_checks.js
 node dev/interval_timer_checks.js

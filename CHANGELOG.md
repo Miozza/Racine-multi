@@ -1,3 +1,13 @@
+## V5.2.36 — Calories et mètres du cardio, enfin des chiffres
+
+**Pourquoi** : profil Bertin, Moteur + jambes S1 lundi. « 10 min Bike, 4 min Row, 10 min Bike » n'avait qu'un RPE et une note : les calories finissaient en texte libre (« 86 calories plus 51 calories plus 74 »), sans moyenne ni capacité possibles.
+
+- **Nouveau `scripts/session/wod_cardio.js`** (`window.CoachWodCardio`) : sur la carte WOD, une ligne par morceau machine lu dans le texte (Bike, Row, Ski, Course ; « …, 2 fois » répète la séquence). Machine, minutes, valeur et unité (cal / m) restent modifiables — utile quand le Row passe au Bike. « + Ajouter une machine » pour un effort hors plan, sur n'importe quel WOD.
+- **Champ additif `cardio`** sur la ligne WOD, texte lisible (`Bike 10 min 86 cal · Row 4 min 51 cal · Bike 10 min 74 cal`). Aucune migration ; un export ancien reste importable. Sans autre score, il devient le `result` ; un score AMRAP / For Time n'est jamais remplacé. Une ligne annulée le perd, comme les autres champs de performance.
+- **Moyenne et capacité** : rythme moyen pondéré (total ÷ minutes) et meilleur rythme, par machine et par unité (split /500 m en mètres au Row et au Ski). Affichés sous la saisie, valeur attendue en indication dans le champ, transmis à Coach IA (« Repères cardio »).
+- **Séances d'avant** : lues dans la note seulement quand le nombre de valeurs avec « cal » correspond aux morceaux (2026-10-26 et 2026-11-02). L'édition d'une séance passée pré-remplit la saisie depuis la note ; rien n'est écrit sans enregistrer.
+- Aucune charge n'en dépend (§ 3.2). `dev/wod_cardio_checks.js`.
+
 ## V5.2.35 — Pont Moteur + jambes : l'épaule guérit, le moteur avance
 
 **Pourquoi** : profil Bertin, blessure à l'épaule droite (trapèze bas et cou) sur un snatch d'un bras, aggravée par le Strict Press lourd de Pont Peak S4. La compétition est reportée à début février. Pont Peak ne peut pas continuer : sa fin est faite de doubles lourds au Strict Press et d'un test 1RM au Bench Press. Le Peak est trop tôt (8 semaines finiraient fin décembre) et met trop les épaules à contribution (Wall Balls, Pull-Ups, Clean & Jerk).
