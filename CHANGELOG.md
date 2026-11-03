@@ -1,3 +1,11 @@
+## V5.2.37 — « Pour le temps » a son temps final, noté au chrono
+
+**Pourquoi** : profil Bertin, Moteur + jambes S1 mardi. « Pour le temps : 50 cal Bike » n'avait ni chrono montant ni champ de temps final : la détection ne lisait que « for time » et « cap », en anglais.
+
+- **`wodIsForTime()` (`app.js`)** : source unique pour Résultats, chrono, rounds, pastilles et historique. Reconnaît For Time, Pour le temps, RFT, cap N. Ne prend plus « scapula » ni « capacité » pour un cap.
+- **Temps noté au chrono** : en séance guidée, ⏸ sur le chrono montant d'un WOD pour le temps note le temps (« Temps noté : 03:12 »). Il arrive présélectionné dans Résultats, où le corriger le remplace.
+- Tous les WOD « pour le temps » de Moteur + jambes sont détectés (benchmark Bike S1, re-test S5, metcons longs). Aucune charge n'en dépend (§ 3.2). `dev/for_time_checks.js`.
+
 ## V5.2.36 — Calories et mètres du cardio, enfin des chiffres
 
 **Pourquoi** : profil Bertin, Moteur + jambes S1 lundi. « 10 min Bike, 4 min Row, 10 min Bike » n'avait qu'un RPE et une note : les calories finissaient en texte libre (« 86 calories plus 51 calories plus 74 »), sans moyenne ni capacité possibles.

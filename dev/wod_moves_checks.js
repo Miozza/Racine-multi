@@ -50,7 +50,7 @@ function extractFunction(src, name){
   return null;
 }
 
-const NAMES = ['splitWodSegments','stripWodSegmentLabel','parseWodLeadingReps','boundWodMoveName','wodSegmentLoad','wodSegmentSlot','parseWodStructure','wodFormatMinutes'];
+const NAMES = ['splitWodSegments','stripWodSegmentLabel','parseWodLeadingReps','boundWodMoveName','wodSegmentLoad','wodSegmentSlot','parseWodStructure','wodFormatMinutes','wodIsForTime'];
 const CONSTS = [
   ['WOD_TIME_UNIT_RE',     /var WOD_TIME_UNIT_RE\s*=\s*[^\n]+\n/],
   ['WOD_DURATION_PREP_RE', /var WOD_DURATION_PREP_RE\s*=\s*[^\n]+\n/],
