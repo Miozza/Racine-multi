@@ -581,7 +581,7 @@ function startGuidedTimer(){
         guidedTimer.elapsed=Math.min(guidedTimer.duration,guidedTimer.elapsed+1);
         guidedTimerIntervalTick();
         guidedIntervalTransitionTick();
-        if(guidedTimer.elapsed>=guidedTimer.duration){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);}
+        if(guidedTimer.elapsed>=guidedTimer.duration){stopGuidedTimer();guidedBipEnd();vibrate([300,100,300,100,300]);guidedTimerRecordForTime();}
       } else {
         guidedTimer.remaining=Math.max(0,guidedTimer.remaining-1);
         // Sur un format d'intervalles, les trois derniers bips appartiennent à
@@ -596,7 +596,23 @@ function startGuidedTimer(){
     });
   });
 }
-function pauseGuidedTimer(){stopGuidedTimer();updateGuidedTimerDisplay();}
+function pauseGuidedTimer(){stopGuidedTimer();updateGuidedTimerDisplay();guidedTimerRecordForTime();}
+
+// For Time : ⏸ à la fin du WOD note le temps du chrono sur la ligne WOD
+// (même clé que l'écran Résultats, `wod_<titre>`). Plus besoin de s'en
+// souvenir jusqu'à la fin de la séance. Une nouvelle pause remplace le temps :
+// c'est le dernier arrêt qui compte. Corrigeable dans Résultats.
+function guidedTimerRecordForTime(){
+  try{
+    if(guidedTimer.mode!=="up" || !(guidedTimer.elapsed>0)) return;
+    var st=(typeof guidedSessionState!=="undefined" && guidedSessionState.blocks) ? guidedSessionState.blocks[guidedSessionState.index] : null;
+    if(!st || st.kind!=="wod" || typeof wodIsForTime!=="function" || !wodIsForTime(st.text)) return;
+    var clock=formatClock(guidedTimer.elapsed);
+    setGuidedResult("wod_"+st.title,"result",clock);
+    var hint=document.querySelector("#guidedSession .guided-timer-hint");
+    if(hint) hint.textContent="Temps noté : "+clock+" · repris dans Résultats";
+  }catch(e){ /* le chrono reste utilisable */ }
+}
 
 // ── Rounds AMRAP tapés sur le chrono ────────────────────────────────────────
 // Un tap n'importe où sur la carte du chrono (hors boutons) = un round de plus.

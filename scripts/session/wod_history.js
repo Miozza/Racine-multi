@@ -42,7 +42,7 @@
     var t = clean(text);
     if(/\bemom\b/i.test(t)) return 'emom';
     if(/\bamrap\b/i.test(t)) return 'amrap';
-    if(/for time|cap\b/i.test(t)) return 'fortime';
+    if(typeof wodIsForTime === 'function' ? wodIsForTime(t) : /for time|cap\b/i.test(t)) return 'fortime';
     return '';
   }
   var FORMAT_LABELS = {amrap:'AMRAP', emom:'EMOM', fortime:'For Time'};
