@@ -1484,8 +1484,8 @@
     },
     {
       "path": "dev/wod_cardio_checks.js",
-      "size": 8591,
-      "lines": 111,
+      "size": 10099,
+      "lines": 130,
       "role": "Garde-fous de la saisie cardio : morceaux machine lus dans le texte du WOD (et pas les quantités imposées d'AMRAP), texte durable relisible, moyennes par machine et par unité, lecture prudente des notes anciennes, score donné au moteur aérobie sans écraser un score AMRAP, nettoyage d'une ligne annulée, branchements.",
       "category": "ACTIF",
       "exposes": [],
@@ -4424,8 +4424,8 @@
     },
     {
       "path": "scripts/session/wod_cardio.js",
-      "size": 17914,
-      "lines": 366,
+      "size": 22063,
+      "lines": 452,
       "role": "Saisie cardio des conditionnements (porte window.CoachWodCardio) : calories ou mètres par machine (Bike, Row, Ski, Course) et par morceau lu dans le texte du WOD (« 10 min Bike, 4 min Row »). Champ additif `cardio` sur la ligne WOD, texte relisible ; rythme moyen pondéré et meilleur rythme par machine et unité, affichés sur la carte et transmis à Coach IA. Lit les notes d'avant ce champ seulement quand les nombres correspondent aux morceaux. Ne touche à aucune charge ni clé de stockage.",
       "category": "ACTIF",
       "exposes": [

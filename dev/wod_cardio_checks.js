@@ -14,6 +14,8 @@
     5. La collecte donne un score à un moteur aérobie, sans jamais écraser un
        score AMRAP / For Time ; une ligne annulée perd aussi `cardio`.
     6. Le module ne touche pas aux charges et est branché partout où il faut.
+    7. Saisie pendant la séance guidée : bouton Cardio, même cache que Résultats.
+    8. Zéro rep saisi reste zéro au rendu suivant.
 
   Usage :
     node dev/wod_cardio_checks.js
@@ -102,6 +104,23 @@ assert(/CoachWodCardio\.controlHtml/.test(results) && /CoachWodCardio\.finalizeR
 assert(/CoachWodCardio/.test(read('scripts/session/history_edit.js')), 'L\'édition d\'une séance passée permet de saisir les calories.');
 assert(/CoachWodCardio\.contextLines/.test(read('scripts/coach_ai/context.js')), 'Coach IA lit les repères cardio.');
 assert(/<script src="scripts\/session\/wod_cardio\.js\?v=[^"]+" defer><\/script>/.test(read('index.html')), 'index.html charge le module.');
+
+// ─── 7. Pendant la séance guidée ──────────────────────────────────────────
+const view = read('scripts/session/view.js');
+assert(/CoachWodCardio\.buttonHtml\("wod_"\+st\.title/.test(view) && /wodCardioBtn\+wodHistoBtn\+wodNoteBtn/.test(view),
+  'Séance guidée : bouton Cardio sous la clé de la ligne WOD, à gauche de Histo.');
+assert(/setGuidedResult\(key, 'cardio', text\)/.test(src), 'La modale écrit dans le cache que lit l\'écran résultats.');
+const btn = C.buttonHtml('wod_B. Moteur aérobie', WOD);
+assert(/data-wcd-open='1'/.test(btn) && /Cardio/.test(btn), 'Le bouton ouvre la saisie.');
+
+// ─── 8. Zéro rep reste zéro (rapport du 2026-11-03) ───────────────────────
+const fnSrc = (view.match(/function guidedNumberOr\([\s\S]*?\n\}/) || [''])[0];
+assert(fnSrc, 'guidedNumberOr existe dans view.js.');
+const g = {}; vm.runInNewContext(fnSrc + '; this.f = guidedNumberOr;', g);
+assert(g.f('0', 8) === 0 && g.f(0, 8) === 0, '0 rep saisi reste 0.');
+assert(g.f('', 8) === 8 && g.f(undefined, 8) === 8 && g.f('abc', 8) === 8, 'Rien de lisible : la cible.');
+assert(!/Number\(getGuidedResult\([^)]*'reps'[^)]*\)\)\s*\|\|/.test(view + results),
+  'Aucun « Number(reps) || cible » ne traite 0 comme du vide.');
 
 if(errors.length){
   console.error('✗ wod_cardio_checks — ' + errors.length + ' échec(s) :');
