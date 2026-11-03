@@ -9509,3 +9509,5 @@ ol.cai-list { padding-left: 20px; }
 .wcd-sum-line{ margin-top:6px; }
 .wcd-sum-line strong, .wcd-ref strong{ font-family:var(--font-hud); color:var(--cyan); font-weight:700; }
 .wcd-ref{ margin-top:4px; color:var(--muted); }
+.wcd-hint{ margin-top:10px; font-size:12px; color:var(--muted); }
+.wcd-modal .wcd > .sf-label:first-child{ margin-top:4px !important; }

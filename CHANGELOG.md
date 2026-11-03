@@ -6,6 +6,8 @@
 - **Champ additif `cardio`** sur la ligne WOD, texte lisible (`Bike 10 min 86 cal · Row 4 min 51 cal · Bike 10 min 74 cal`). Aucune migration ; un export ancien reste importable. Sans autre score, il devient le `result` ; un score AMRAP / For Time n'est jamais remplacé. Une ligne annulée le perd, comme les autres champs de performance.
 - **Moyenne et capacité** : rythme moyen pondéré (total ÷ minutes) et meilleur rythme, par machine et par unité (split /500 m en mètres au Row et au Ski). Affichés sous la saisie, valeur attendue en indication dans le champ, transmis à Coach IA (« Repères cardio »).
 - **Séances d'avant** : lues dans la note seulement quand le nombre de valeurs avec « cal » correspond aux morceaux (2026-10-26 et 2026-11-02). L'édition d'une séance passée pré-remplit la saisie depuis la note ; rien n'est écrit sans enregistrer.
+- **Pendant la séance guidée** : bouton « ∑ Cardio » dans la ligne du WOD, à gauche de Histo. Il ouvre la même saisie dans une modale, morceau par morceau, et l'écran Résultats la retrouve pré-remplie (même cache). Le compteur du bouton dit combien de morceaux sont notés.
+- **Correction — 0 rep redevenait la cible** : `Number(v) || cible` traitait 0 comme du vide. En séance guidée, changer de bloc remettait la cible et l'écrivait dans le cache ; l'écran Résultats faisait de même. Nouveau `guidedNumberOr()` (`scripts/session/view.js`) : seul un champ vide ou illisible prend la cible.
 - Aucune charge n'en dépend (§ 3.2). `dev/wod_cardio_checks.js`.
 
 ## V5.2.35 — Pont Moteur + jambes : l'épaule guérit, le moteur avance

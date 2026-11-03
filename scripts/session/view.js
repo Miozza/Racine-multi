@@ -142,6 +142,14 @@ function setGuidedResult(key, field, value){
   guidedResultCache[key][field]=String(value);
   syncSessionEntryFromGuided(key, field, value);
 }
+// Un nombre saisi, ou le repli SEULEMENT si rien de lisible n'a été saisi.
+// `Number(v) || repli` traitait 0 comme du vide : 0 rep tapé pendant la séance
+// redevenait la cible au rendu suivant (rapport de l'athlète, 2026-11-03).
+function guidedNumberOr(v, fallback){
+  if(v===undefined || v===null || String(v).trim()==='') return fallback;
+  var n=Number(v);
+  return isFinite(n) ? n : fallback;
+}
 function guidedNumberText(v){
   var n=Number(v);
   if(!isFinite(n)) return String(v||'');
@@ -423,7 +431,7 @@ function renderGuidedResultPanel(e){
   var suggestedLoad=parseLoad(e.load)||0;
   suggestedLoad=suggestedLoad?roundLoadForExercise(e.title, suggestedLoad, "nearest", e.load):0;
   var loadVal=getGuidedResult(key,'load',suggestedLoad?suggestedLoad:'');
-  var repsVal=Number(getGuidedResult(key,'reps',defaultReps))||defaultReps;
+  var repsVal=guidedNumberOr(getGuidedResult(key,'reps',defaultReps),defaultReps);
   var rpeVal=Number(getGuidedResult(key,'rpe',8))||8;
   if(loadVal!=='' && loadVal!==undefined) setGuidedResult(key,'load',loadVal);
   setGuidedResult(key,'reps',repsVal);
@@ -612,10 +620,14 @@ function renderGuidedSession(){
     // donc la taille des chiffres du chrono ne bouge pas (UI_CONSTRAINTS).
     var wodHistoBtn = "";
     try{ if(window.CoachWodHistory) wodHistoBtn = CoachWodHistory.buttonHtml(st.title)||""; }catch(e){}
+    // Calories / mètres pendant la séance (scripts/session/wod_cardio.js) :
+    // même gabarit, même ligne, à gauche de l'historique.
+    var wodCardioBtn = "";
+    try{ if(window.CoachWodCardio) wodCardioBtn = CoachWodCardio.buttonHtml("wod_"+st.title, st.text||"")||""; }catch(e){}
     html+="<div class='guided-wod-head'>"+
           "<div class='guided-wod-kicker-row'>"+
             "<div class='guided-wod-kicker'>"+escHtml((cfg&&cfg.label)||"WOD")+"</div>"+
-            "<div class='guided-wod-kicker-actions'>"+wodHistoBtn+wodNoteBtn+"</div>"+
+            "<div class='guided-wod-kicker-actions'>"+wodCardioBtn+wodHistoBtn+wodNoteBtn+"</div>"+
           "</div>"+
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
           "</div>";

@@ -76,7 +76,7 @@ function appendSessionEntryCard(item, container){
   var safeKey = escHtml(item.key);
   var loadValue = escHtml(getGuidedResult(item.key,'load',suggestedDisplay));
   var defaultReps = Math.round((item.targetMin + item.targetMax) / 2);
-  var currentReps = Number(getGuidedResult(item.key,'reps',defaultReps)) || defaultReps;
+  var currentReps = guidedNumberOr(getGuidedResult(item.key,'reps',defaultReps), defaultReps);
   var currentRpe = Number(getGuidedResult(item.key,'rpe',8)) || 8;
 
   card.innerHTML=

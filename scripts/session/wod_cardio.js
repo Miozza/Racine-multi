@@ -347,6 +347,92 @@
     return Object.keys(totals).map(function(u){ return Math.round(totals[u]) + ' ' + u; }).join(' + ');
   }
 
+  // ── Saisie PENDANT la séance guidée ─────────────────────────────────────
+  // Attendre l'écran résultats, c'est oublier les chiffres du premier morceau.
+  // Petit bouton « Cardio » dans la ligne du kicker WOD (même gabarit que
+  // Histo et Notes : aucune rangée ajoutée, le chrono garde sa taille). Il
+  // ouvre la même saisie dans une modale et écrit dans guidedResultCache, sous
+  // la clé de la ligne WOD : l'écran résultats la retrouve, pré-remplie.
+  function guidedRead(key){
+    try{ return typeof getGuidedResult === 'function' ? clean(getGuidedResult(key, 'cardio', '')) : ''; }
+    catch(e){ return ''; }
+  }
+  function badgeCount(key){ return parse(guidedRead(key)).length; }
+
+  function buttonHtml(key, wodText){
+    key = clean(key);
+    if(!key) return '';
+    var count = badgeCount(key);
+    var label = 'Calories / mètres du cardio';
+    return "<button type='button' class='gvn-btn-mini wcd-btn" + (count ? " has-notes" : "") + "'"
+      + " data-wcd-open='1' data-wcd-btn-key='" + esc(key) + "' data-wcd-text='" + esc(wodText) + "'"
+      + " aria-label='" + esc(label) + "' title='" + esc(label) + "'>"
+      + "<span class='gvn-mini-ico' aria-hidden='true'>∑</span>"
+      + "<span class='gvn-mini-label'>Cardio</span>"
+      + (count ? "<span class='gvn-mini-count'>" + count + "</span>" : "")
+      + "</button>";
+  }
+
+  function refreshButtons(key){
+    Array.prototype.forEach.call(document.querySelectorAll('[data-wcd-btn-key]'), function(btn){
+      if(btn.getAttribute('data-wcd-btn-key') !== key) return;
+      var count = badgeCount(key);
+      btn.classList.toggle('has-notes', count > 0);
+      var badge = btn.querySelector('.gvn-mini-count');
+      if(count){
+        if(!badge){ badge = document.createElement('span'); badge.className = 'gvn-mini-count'; btn.appendChild(badge); }
+        badge.textContent = String(count);
+      } else if(badge && badge.parentNode){ badge.parentNode.removeChild(badge); }
+    });
+  }
+
+  function closeModal(){
+    var modal = document.getElementById('wcdModal');
+    if(!modal) return;
+    modal.classList.remove('visible');
+    setTimeout(function(){
+      modal.remove();
+      try{ if(typeof unlockBodyScrollForModal === 'function') unlockBodyScrollForModal(); }catch(e){}
+    }, 220);
+  }
+
+  function openModal(key, wodText){
+    var existing = document.getElementById('wcdModal');
+    if(existing) existing.remove();
+    var modal = document.createElement('div');
+    modal.id = 'wcdModal';
+    modal.className = 'tuto-modal wcd-modal';
+    modal.innerHTML = "<div class='tuto-modal-inner'>"
+      + "<div class='tuto-topline'>CARDIO DE LA SÉANCE</div>"
+      + controlHtml(key, {wodText: wodText, saved: guidedRead(key)})
+      + "<div class='wcd-hint'>Note chaque machine en finissant ton morceau : tout se retrouve dans Résultats.</div>"
+      + "<button type='button' id='wcdCloseBtn' class='btn-accent' style='width:100%;margin-top:14px'>OK</button>"
+      + "</div>";
+    document.body.appendChild(modal);
+    try{ if(typeof lockBodyScrollForModal === 'function') lockBodyScrollForModal(); }catch(e){}
+    setTimeout(function(){ modal.classList.add('visible'); }, 20);
+    bind(key, modal, {onChange: function(text){
+      try{ if(typeof setGuidedResult === 'function') setGuidedResult(key, 'cardio', text); }catch(e){}
+      refreshButtons(key);
+    }});
+    document.getElementById('wcdCloseBtn').onclick = closeModal;
+    modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+  }
+
+  // Délégation globale : la carte WOD est reconstruite à chaque rendu de bloc.
+  try{
+    document.addEventListener('click', function(e){
+      var t = e && e.target;
+      if(!t || !t.closest) return;
+      var btn = t.closest('[data-wcd-open]');
+      if(!btn) return;
+      e.preventDefault(); e.stopPropagation();
+      openModal(btn.getAttribute('data-wcd-btn-key'), btn.getAttribute('data-wcd-text') || '');
+    }, false);
+  }catch(e){ /* hors navigateur (suites dev/) */ }
+
+  api.buttonHtml = buttonHtml;
+  api.openModal = openModal;
   api.totalText = totalText;
   api.MACHINES = MACHINES;
   api.UNITS = UNITS;
