@@ -1,5 +1,5 @@
-// Racine V5.2.35 — Pont Moteur + jambes : l'épaule guérit, le moteur avance
-var APP_VERSION = "V5.2.35";
+// Racine V5.2.36 — Calories et mètres du cardio, enfin des chiffres
+var APP_VERSION = "V5.2.36";
 
 // Architecture stable
 // programs/*.js = plan prévu

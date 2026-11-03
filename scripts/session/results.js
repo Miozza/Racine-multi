@@ -290,6 +290,10 @@ function renderSessionEntry(){
       // aucune migration, et un export produit avant reste importable.
       wodInner += '<input class="sf-input" id="wod_text_'+item.key+'" data-key="'+item.key+'" data-field="wodText" type="hidden" value="'+escHtml(item.wodText||'')+'"/>';
       wodInner += '<input class="sf-input" id="wod_rpe_value_'+item.key+'" data-key="'+item.key+'" data-field="rpe" type="hidden" value="8"/>';
+      // Calories / mètres par machine (scripts/session/wod_cardio.js) : une
+      // valeur durable au lieu d'un nombre perdu dans la note. Sans le module,
+      // la carte reste saisissable exactement comme avant.
+      try{ if(window.CoachWodCardio) wodInner += CoachWodCardio.controlHtml(item.key, {wodText:item.wodText, saved:getGuidedResult(item.key,'cardio','')}); }catch(e){}
       wodInner += '<span class="sf-label" style="margin-top:12px">RPE</span>';
       wodInner += '<div class="sf-chips" id="wod_rpe_'+item.key+'">';
       [6,7,8,9,10].forEach(function(n){
@@ -341,6 +345,13 @@ function renderSessionEntry(){
             var sel = document.getElementById('wod_time_'+it.key);
             var val = sel ? sel.value : '';
             preview.innerHTML = '<strong style="color:var(--cyan)">'+(val||'—')+'</strong> · RPE '+selectedRpe;
+            return;
+          }
+
+          // Moteur aérobie : ni rounds ni temps, le score est le total cardio.
+          var cardioTxt = (!it.isAmrap && window.CoachWodCardio) ? CoachWodCardio.totalText(getGuidedResult(it.key,'cardio','')) : '';
+          if(cardioTxt){
+            preview.innerHTML = '<strong style="color:var(--cyan)">'+escHtml(cardioTxt)+'</strong> · RPE '+selectedRpe;
             return;
           }
 
@@ -481,6 +492,12 @@ function renderSessionEntry(){
           });
         }
 
+        try{
+          if(window.CoachWodCardio){
+            CoachWodCardio.bind(it.key, card, {onChange:function(text){ setGuidedResult(it.key,'cardio',text); updatePreview(); }});
+          }
+        }catch(e){ /* la carte WOD reste saisissable */ }
+
         // Annulation du conditionnement. L'apercu devient l'etat d'annulation
         // et les champs de performance passent hors saisie — ils restent
         // visibles pour que l'athlete voie ce qu'il annule.
@@ -562,6 +579,9 @@ function collectSessionResults(){
   // partout ailleurs. Un RPE laissé sur un metcon non fait entrerait dans les
   // moyennes de fatigue (scripts/season/suggest.js, la collecte ML de
   // scripts/session/save.js) qui lisent `rpe` sans distinction de nature.
+  // Calories / mètres : texte normalisé, et score des WOD qui n'en avaient pas.
+  // Avant l'annulation, qui retire ensuite `cardio` d'une ligne non faite.
+  try{ if(window.CoachWodCardio) CoachWodCardio.finalizeResults(results); }catch(e){}
   try{ if(window.CoachWodSkip) CoachWodSkip.stripPerformanceFields(results); }catch(e){}
 
   return results;
