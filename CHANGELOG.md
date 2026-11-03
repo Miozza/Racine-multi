@@ -8,7 +8,9 @@
 - **Séances d'avant** : lues dans la note seulement quand le nombre de valeurs avec « cal » correspond aux morceaux (2026-10-26 et 2026-11-02). L'édition d'une séance passée pré-remplit la saisie depuis la note ; rien n'est écrit sans enregistrer.
 - **Pendant la séance guidée** : bouton « ∑ Cardio » dans la ligne du WOD, à gauche de Histo. Il ouvre la même saisie dans une modale, morceau par morceau, et l'écran Résultats la retrouve pré-remplie (même cache). Le compteur du bouton dit combien de morceaux sont notés.
 - **Correction — 0 rep redevenait la cible** : `Number(v) || cible` traitait 0 comme du vide. En séance guidée, changer de bloc remettait la cible et l'écrivait dans le cache ; l'écran Résultats faisait de même. Nouveau `guidedNumberOr()` (`scripts/session/view.js`) : seul un champ vide ou illisible prend la cible.
-- Aucune charge n'en dépend (§ 3.2). `dev/wod_cardio_checks.js`.
+- **Correction — « Pour le temps » sans champ de temps** : la détection ne lisait que « for time » et « cap ». « Pour le temps : 50 cal Bike » (benchmark du mardi) n'avait ni chrono montant ni temps final. Nouveau `wodIsForTime()` (`app.js`), source unique pour Résultats, chrono, rounds, pastilles et historique : For Time, Pour le temps, RFT, cap N. Il ne prend plus « scapula » ni « capacité » pour un cap.
+- **Temps noté au chrono** : en séance guidée, ⏸ sur le chrono montant d'un WOD pour le temps note le temps (« Temps noté : 03:12 »). Il arrive présélectionné dans Résultats, où le corriger le remplace.
+- Aucune charge n'en dépend (§ 3.2). `dev/wod_cardio_checks.js`, `dev/for_time_checks.js`.
 
 ## V5.2.35 — Pont Moteur + jambes : l'épaule guérit, le moteur avance
 

@@ -38,7 +38,7 @@ function collectSessionExercises(opts){
         kind:"wod", isWod:true,
         wodText:wodText, wodMoves:moves, wodRounds:rounds,
         isAmrap:/amrap/i.test(wodText), isEmom:/emom/i.test(wodText),
-        isForTime:/for time|cap/i.test(wodText), durationMin:durMin
+        isForTime:(typeof wodIsForTime==="function"?wodIsForTime(wodText):/for time|cap/i.test(wodText)), durationMin:durMin
       });
     }
   });
@@ -216,7 +216,12 @@ function renderSessionEntry(){
         var expectedSec = parseCapSeconds(item.wodText,item.durationMin);
         if(!expectedSec || isNaN(expectedSec)) expectedSec = Math.max(60, Math.round((item.durationMin || 8) * 60));
         expectedSec = normalizeForTimeGoalSeconds(expectedSec);
-        wodInner += '<div class="wod-expected">For time — objectif présélectionné : <strong>'+formatClock(expectedSec)+'</strong> · choix 00:00–60:00</div>';
+        // Temps noté au chrono de la séance guidée (scripts/session/timer.js) :
+        // c'est lui qui arrive sélectionné, pas l'objectif du programme.
+        var notedTime = String(getGuidedResult(item.key,'result','')||'').match(/^(\d{1,2}):(\d{2})$/);
+        var notedSec = notedTime ? Number(notedTime[1])*60+Number(notedTime[2]) : 0;
+        if(notedSec>0 && notedSec<=3600) expectedSec = notedSec;
+        wodInner += '<div class="wod-expected">For time — '+(notedSec>0?'temps du chrono':'objectif présélectionné')+' : <strong>'+formatClock(expectedSec)+'</strong> · choix 00:00–60:00</div>';
         wodInner += '<span class="sf-label">TEMPS FINAL</span>';
         wodInner += '<select class="sf-input" id="wod_time_'+item.key+'" data-key="'+item.key+'" data-field="result">';
         buildTimeOptions(expectedSec).forEach(function(sec){
@@ -478,7 +483,9 @@ function renderSessionEntry(){
         }
 
         var timeSel = document.getElementById('wod_time_'+it.key);
-        if(timeSel) timeSel.addEventListener('change',updatePreview);
+        // Le cache est prioritaire à la collecte : un temps du chrono qu'on
+        // corrige ici doit suivre la correction, sinon l'ancien gagnerait.
+        if(timeSel) timeSel.addEventListener('change',function(){ setGuidedResult(it.key,'result',timeSel.value); updatePreview(); });
 
         var rpeEl = document.getElementById('wod_rpe_'+it.key);
         if(rpeEl){

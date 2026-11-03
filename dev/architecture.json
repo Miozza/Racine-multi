@@ -4,7 +4,7 @@
   "loadingModel": "script-tags",
   "loadingNote": "100% balises <script defer> dans index.html avec cache-bust ?v=. Zéro import/export ES. Service worker réseau-d'abord sans précache. Programmes enregistrés via window.COACH_BERTIN_PROGRAMS et indexés par programs/index.js. Suites dev/ en Node (require) hors navigateur.",
   "categoryCounts": {
-    "ACTIF": 247,
+    "ACTIF": 248,
     "POINT_ENTREE": 3
   },
   "files": [
@@ -1487,6 +1487,16 @@
       "size": 10099,
       "lines": 130,
       "role": "Garde-fous de la saisie cardio : morceaux machine lus dans le texte du WOD (et pas les quantités imposées d'AMRAP), texte durable relisible, moyennes par machine et par unité, lecture prudente des notes anciennes, score donné au moteur aérobie sans écraser un score AMRAP, nettoyage d'une ligne annulée, branchements.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
+      "path": "dev/for_time_checks.js",
+      "size": 4932,
+      "lines": 84,
+      "role": "Garde-fous « pour le temps » : wodIsForTime (app.js) reconnaît For Time, Pour le temps, RFT et cap N sans prendre « scapula » ni « capacité » ; source unique pour résultats, chrono, rounds et historique ; temps du chrono noté à la pause et présélectionné dans Résultats ; WOD de Moteur + jambes détectés.",
       "category": "ACTIF",
       "exposes": [],
       "consumedBy": [],

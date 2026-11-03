@@ -645,6 +645,15 @@ function wodFormatMinutes(text){
   var n=m?Number(m[1]):0;
   return (n>=1&&n<=60)?n:0;
 }
+// Un WOD « pour le temps » — en anglais OU en français. La détection lisait
+// seulement « for time » et « cap » : « Pour le temps : 50 cal Bike » (Moteur
+// + jambes, mardi) n'avait ni chrono montant ni champ de temps final
+// (rapport de l'athlète, 2026-11-03). Source unique : résultats, chrono,
+// pastilles et historique la lisent tous. `\bcap\b` et non `cap` : la
+// sous-chaîne attrapait « capacité ».
+function wodIsForTime(text){
+  return /\bfor\s*time\b|\bpour\s+le\s+temps\b|\bRFT\b|\btime\s*cap\b|\bcap\b\s*[:=]?\s*\d|\(cap\b/i.test(String(text||""));
+}
 function wodTimerConfig(block){
   var txt=String((block&&block.text)||""),seconds=parseTimeToSeconds(block&&block.time),label="Timer",mode="down",isEmom=false;
   var fmtMin=wodFormatMinutes(txt);
@@ -660,7 +669,7 @@ function wodTimerConfig(block){
   }
   else if(/AMRAP/i.test(txt)){label="AMRAP "+Math.round(seconds/60)+" min";}
   else if(/EMOM/i.test(txt)){label="EMOM "+Math.round(seconds/60)+" min";isEmom=true;}
-  else if(/For time|Cap/i.test(txt)){label="CAP "+Math.round(seconds/60)+" min";mode="up";}
+  else if(wodIsForTime(txt)){label="CAP "+Math.round(seconds/60)+" min";mode="up";}
   else if(/zone\s*2/i.test(txt)&&seconds){label="Zone 2 "+Math.round(seconds/60)+" min";}
   if(!seconds){seconds=8*60;label="Timer 8 min";}
   return{seconds:seconds,label:label,mode:mode,isEmom:isEmom,intervals:intervals};
@@ -1158,7 +1167,7 @@ function parseWodStructure(text){
   // For time 21-15-9 : les reps sont une pyramide, donc on affiche "21-15-9" pour chaque mouvement.
   var scheme = null;
   var schemeMatch = raw.match(/(\d+\s*[-–]\s*\d+\s*[-–]\s*\d+)/);
-  if(/for time|cap/i.test(raw) && schemeMatch){ scheme = schemeMatch[1].replace(/\s/g,''); }
+  if(wodIsForTime(raw) && schemeMatch){ scheme = schemeMatch[1].replace(/\s/g,''); }
 
   var main = raw
     .replace(/^[^:]*:\s*/,'')
@@ -1166,6 +1175,7 @@ function parseWodStructure(text){
     .replace(/\bAMRAP\s*\d+\b/ig,'')
     .replace(/\bEMOM\s*\d+\b/ig,'')
     .replace(/\bFor time\b/ig,'')
+    .replace(/\bPour le temps\b/ig,'')
     .replace(/\bCap\s*\d+\s*min\b/ig,'')
     .trim();
 
@@ -1201,7 +1211,7 @@ function parseWodStructure(text){
 // Estime les rounds attendus selon durée et type
 function estimateWodRounds(text, durationMin){
   if(/emom/i.test(text)) return {min:durationMin,max:durationMin,def:durationMin};
-  if(/for time|cap/i.test(text)) return {min:1,max:1,def:1};
+  if(wodIsForTime(text)) return {min:1,max:1,def:1};
   if(durationMin<=6)  return {min:2,max:4,def:3};
   if(durationMin<=10) return {min:3,max:6,def:4};
   if(durationMin<=15) return {min:4,max:8,def:5};
