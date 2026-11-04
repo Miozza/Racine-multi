@@ -1,5 +1,5 @@
-// Racine V5.2.37 — « Pour le temps » a son temps final, noté au chrono
-var APP_VERSION = "V5.2.37";
+// Racine V5.2.39 — Réhabilitation : le conditionnement reste en fin de séance
+var APP_VERSION = "V5.2.39";
 
 // Architecture stable
 // programs/*.js = plan prévu
