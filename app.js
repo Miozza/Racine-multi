@@ -1,5 +1,5 @@
-// Racine V5.2.37 — « Pour le temps » a son temps final, noté au chrono
-var APP_VERSION = "V5.2.37";
+// Racine V5.2.38 — Cycle de réhabilitation : back squat, 5 journées, 20 metcons
+var APP_VERSION = "V5.2.38";
 
 // Architecture stable
 // programs/*.js = plan prévu

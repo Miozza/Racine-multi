@@ -1,8 +1,33 @@
-# ETAT ACTUEL — V5.2.37
+# ETAT ACTUEL — V5.2.38
 
-Version actuelle : V5.2.37
+Version actuelle : V5.2.38
 
 ## État courant
+
+### Réhabilitation Stéphanie — révision sur retours de l'athlète
+
+`programs/rehab_stephanie.js`, **public** (elle le choisit dans l'onglet Cycle) :
+**5 séances** de 45 min sur 4 semaines. Fessiers · Tirage-bras-tronc ·
+Unilatéral & cuisses · Renforcement profond · **Cuisses — back squat**.
+
+Révision du 2026-11-03, quatre retours :
+- **Variation** : 20 metcons différents (un par séance et par semaine) et un
+  bloc accessoire qui tourne. Les mouvements PRINCIPAUX ne tournent pas — sans
+  répétition, le moteur de charges n'a pas d'historique à lire. Cinq formats de
+  cardio : intervalles, AMRAP, EMOM, pour le temps, zone 2.
+- **Back squat** sur sa propre journée (samedi), bilatéral et borné à la
+  parallèle par la boîte. La barre sur le dos faisait déjà partie des positions
+  tolérées.
+- **Cuisses** : deux mouvements chargés par semaine au lieu d'un, dont le
+  goblet squat **talons surélevés** — à profondeur égale, ça réduit la flexion
+  de hanche demandée et transfère la charge sur les quadriceps. Il n'y a ni
+  presse à jambes ni extension de jambes dans ce gym.
+- **Pull-through retiré** (refusé par l'athlète). Un garde-fou interdit son
+  retour, au même titre qu'un mouvement écarté pour la blessure.
+
+Le cardio passe désormais juste après le bloc principal (décision du
+2026-10-17) : si la séance déborde, ce sont les accessoires qui sautent.
+Garde-fou : `dev/rehab_stephanie_checks.js`.
 
 ### Calories et mètres du cardio
 

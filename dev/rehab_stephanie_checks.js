@@ -55,7 +55,7 @@ assert(!!P && typeof P.getBlocks === 'function', 'rehab_stephanie est enregistr�
 assert(entry.visibility === 'public', 'le cycle est publié : sélectionnable sans permission.');
 assert(!/st[ée]phanie/i.test(String(entry.name) + ' ' + String(P.label) + ' ' + String(P.impact)),
   'aucun prénom dans ce que le catalogue affiche.');
-assert(Array.isArray(P.days) && P.days.length === 4, 'le cycle compte 4 séances par semaine.');
+assert(Array.isArray(P.days) && P.days.length === 5, 'le cycle compte 5 séances par semaine.');
 assert(Number(entry.durationWeeks) === 4, 'le cycle dure 4 semaines.');
 
 // Toutes les séances de toutes les semaines, à plat : exercices d'un côté,
@@ -104,7 +104,11 @@ const INTERDITS = [
   [/romanian deadlift|\brdl\b|stiff[- ]leg/i, 'RDL'],
   [/single[- ]?leg hip thrust|hip thrust unilat/i, 'hip thrust unilatéral'],
   [/ski ?erg|rameur|\browing\b/i, 'SkiErg / rameur'],
-  [/burpee/i, 'burpee (appui sur les bras)']
+  [/burpee/i, 'burpee (appui sur les bras)'],
+  // Refusé par l'athlète le 2026-11-03. Un mouvement qu'elle a écarté ne
+  // revient pas par une révision distraite : c'est la même promesse qu'un
+  // mouvement écarté pour la blessure.
+  [/pull[- ]?through/i, 'pull-through (refusé par l\'athlète)']
 ];
 // « Pallof Press » est le seul « press » du cycle et n'a rien d'un overhead :
 // c'est un anti-rotation, bras devant. On le retire avant de chercher.
@@ -192,10 +196,68 @@ const cardio = [];
 sessions.forEach(s => s.blocks.filter(b => b.kind === 'wod').forEach(b => cardio.push(b)));
 assert(cardio.every(b => /vélo/i.test(b.text)), 'tout le cardio du cycle est du vélo.');
 const I = ctx.window.CoachIntervalTimer;
-assert(cardio.every(b => !!I.parse(b.text) || /AMRAP/i.test(b.text) || /zone\s*2/i.test(b.text)),
-  'chaque bloc cardio est un format que le chrono sait lire (intervalles, AMRAP ou zone 2).');
-const formats = new Set(cardio.map(b => I.parse(b.text) ? 'intervalles' : (/AMRAP/i.test(b.text) ? 'amrap' : 'zone2')));
-assert(formats.size === 3, 'le cardio varie : intervalles, mini-WOD et zone 2 sont tous présents.');
+// Tout metcon doit être lisible par UN des chronos de la séance. Un format que
+// le chrono ne reconnaît pas sort en « Timer 8 min » générique : l'athlète se
+// retrouve devant un compte à rebours qui ne correspond à rien de ce qui est
+// écrit.
+function formatOf(text){
+  if(I.parse(text)) return 'intervalles';
+  if(/\bAMRAP\b/i.test(text)) return 'amrap';
+  if(/\bEMOM\b/i.test(text)) return 'emom';
+  if(/\bpour\s+le\s+temps\b|\bfor\s*time\b|\bcap\b\s*[:=]?\s*\d/i.test(text)) return 'pour le temps';
+  if(/zone\s*2/i.test(text)) return 'zone2';
+  return null;
+}
+cardio.forEach(b => assert(!!formatOf(b.text),
+  'metcon lisible par le chrono : « ' + String(b.text).slice(0, 40) + '… »'));
+
+// La variation demandée par l'athlète (2026-11-03) : un metcon différent par
+// séance ET par semaine. C'est la seule chose qui change vraiment d'une
+// semaine à l'autre, donc c'est elle qu'on épingle.
+const textes = new Set(cardio.map(b => b.text));
+assert(textes.size === cardio.length,
+  'les ' + cardio.length + ' metcons du cycle sont tous différents (' + textes.size + ' textes distincts).');
+const formats = new Set(cardio.map(b => formatOf(b.text)));
+assert(formats.size >= 4,
+  'au moins 4 formats de cardio différents sur le cycle (' + [...formats].join(', ') + ').');
+// Et la variation se voit SEMAINE PAR SEMAINE sur une même séance, pas
+// seulement en moyenne sur le cycle.
+P.days.forEach(day => {
+  const parSemaine = new Set(WEEKS.map(w => P.getWodText(day, w)));
+  assert(parSemaine.size === WEEKS.length, day + ' : un metcon différent à chacune des 4 semaines.');
+});
+
+// ── Cuisses : la réponse à « je ne sens pas mes cuisses » ───────────────────
+// Deux mouvements de cuisses chargés par semaine, et le back squat présent
+// dans les quatre. Si une révision future les retire, la plainte revient.
+WEEKS.forEach(w => {
+  const noms = P.days.reduce((acc, d) => acc.concat(
+    (P.getBlocks(d, w) || []).reduce((a, b) => a.concat((b.exercises || []).map(e => e.name)), [])), []);
+  assert(noms.indexOf('Back Squat') >= 0, 'S' + w + ' : le back squat est au programme.');
+  const cuisses = noms.filter(n => /back squat|goblet squat|reverse lunge|step-up/i.test(n));
+  assert(cuisses.length >= 3, 'S' + w + ' : au moins 3 mouvements de cuisses chargés (' + cuisses.length + ').');
+});
+
+// ── Les principaux ne tournent pas ──────────────────────────────────────────
+// C'est l'autre moitié du marché passé avec l'athlète : le metcon varie, le
+// mouvement principal reste, parce que c'est lui qui donne au moteur de
+// charges de l'historique à lire.
+P.days.forEach(day => {
+  const mains = WEEKS.map(w => ((P.getBlocks(day, w) || []).find(b => b.kind === 'main') || {exercises:[{}]}).exercises[0].name);
+  assert(new Set(mains).size === 1,
+    day + ' : le mouvement principal est le même aux 4 semaines (' + [...new Set(mains)].join(' / ') + ').');
+});
+
+// ── Le cardio passe avant les accessoires ───────────────────────────────────
+// Décision du 2026-10-17 : quand la séance déborde, ce sont les accessoires
+// qui sautent, jamais le metcon.
+sessions.forEach(s => {
+  const iWod = s.blocks.findIndex(b => b.kind === 'wod');
+  const iMain = s.blocks.findIndex(b => b.kind === 'main');
+  const iAcc = s.blocks.findIndex(b => b.kind === 'accessory' || b.kind === 'core');
+  assert(iMain < iWod && iWod < iAcc,
+    s.day + ' S' + s.week + ' : principal → cardio → accessoires, dans cet ordre.');
+});
 
 // ── 8. Fiches techniques et vidéos ──────────────────────────────────────────
 // Les mouvements chargés passent par leur nom ; les mouvements de mobilité

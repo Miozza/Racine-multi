@@ -45,7 +45,7 @@
     //     sans objectif déclaré. C'est le prix de la sélection libre.
     // Le libellé affiché ne nomme personne ; seul l'identifiant porte un
     // prénom, et il n'est jamais montré.
-    { id: "rehab_stephanie", file: "programs/rehab_stephanie.js", name: "Réhabilitation & renforcement profond", phase: 0, macroRole: "alternative", macroStatus: "réhabilitation", durationWeeks: 4, minWeeks: 4, maxWeeks: 8, visibility: "public", fillsGap: ["réhabilitation", "retour de blessure", "mobilité", "hanche", "épaule"], objective: "réhabilitation", frequency: 4, suggestedNext: [] },
+    { id: "rehab_stephanie", file: "programs/rehab_stephanie.js", name: "Réhabilitation & renforcement profond", phase: 0, macroRole: "alternative", macroStatus: "réhabilitation", durationWeeks: 4, minWeeks: 4, maxWeeks: 8, visibility: "public", fillsGap: ["réhabilitation", "retour de blessure", "mobilité", "hanche", "épaule"], objective: "réhabilitation", frequency: 5, suggestedNext: [] },
     // ARCHIVÉ (V5.1.3) — remplacé par rehab_stephanie. Le fichier vit dans
     // programs/archive/ et reste CHARGÉ : un cycle déjà commencé, un cycle en
     // pause ou un historique qui le référence doivent continuer de se résoudre.

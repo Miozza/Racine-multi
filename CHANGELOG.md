@@ -1,3 +1,26 @@
+## V5.2.38 — Réhabilitation : back squat, cinquième journée, 20 metcons
+
+**Pourquoi** : quatre retours de l'athlète (2026-11-03). Plus de variation d'une semaine à l'autre ; du back squat ; des metcons plus variés — celui du jour unilatéral était le bon exemple ; et deux refus nets : le pull-through, et « je n'ai pas l'impression de travailler mes cuisses ».
+
+**Ce qui change**
+
+- **Une 5e journée** : *Cuisses — back squat*. Bilatéral et lourd, séparé de la journée unilatérale. La boîte derrière elle reste le repère de profondeur, à la parallèle. La barre sur le haut du dos faisait déjà partie des positions tolérées de son brief initial — l'épaule n'est pas sollicitée au-dessus de la ligne.
+- **Les cuisses, trois leviers** — ce gym n'a ni presse à jambes ni extension de jambes (`data/equipment.js`) : le back squat à la barre, **deux** mouvements de cuisses chargés par semaine au lieu d'un, et le goblet squat **talons surélevés** sur deux plaques. Ce dernier point n'est pas du confort : à profondeur égale, surélever les talons réduit la flexion de hanche demandée et transfère la charge sur les quadriceps. C'est précisément ce qu'il faut quand la hanche pince en flexion.
+- **20 metcons différents**, un par séance et par semaine, sur cinq formats que le chrono sait lire : intervalles, AMRAP, EMOM, pour le temps, zone 2. Contenu limité à ce qu'elle accepte — vélo, air squats à la parallèle, step-ups sur boîte 24 po, gainage. Un bloc accessoire tourne aussi chaque semaine.
+- **Les mouvements principaux, eux, ne tournent pas.** C'est l'autre moitié du marché : le moteur de charges apprend par mouvement, et un principal qui revient chaque semaine lui donne l'historique dont il a besoin pour affiner le poids. La variation se joue là où elle se sent — la fin de séance.
+- **Pull-through retiré.** Sa place va au deuxième mouvement de cuisses. Un garde-fou l'interdit désormais au même titre qu'un mouvement écarté pour la blessure : un mouvement qu'elle a refusé ne revient pas par une révision distraite.
+- **Le cardio passe avant les accessoires** dans les cinq séances (décision du 2026-10-17) : quand la séance déborde des 45 min, ce sont les accessoires qui sautent, jamais le metcon.
+
+**Repères de charge**
+
+Back squat : 1RM de référence 315 → 235 lb écrits pour 4×8, ce qui redescend autour de 70 lb réels pour elle — la barre et deux plaques de 12,5. Comme partout dans `programs/`, les nombres sont à l'échelle de l'athlète de référence : y écrire ses charges réelles donnerait une double réduction (CLAUDE.md § 3.1). Deux repères ajoutés à `movement_tuning.js` : `frog pump` et `clamshell` au poids du corps, qui n'en avaient aucun.
+
+**Ce qui ne change pas**
+
+Les exclusions liées aux blessures, la limite de profondeur réécrite dans chaque metcon qui contient des air squats, le curl plafonné à RPE 7, la progression S1→S4 (reps, +5 %, allègement), et la mobilité — le seul bloc dont la répétition est l'effet recherché.
+
+Garde-fous : `dev/rehab_stephanie_checks.js` épingle maintenant les 5 journées, les 20 metcons distincts, un metcon différent par semaine sur chaque séance, la présence du back squat aux quatre semaines, au moins trois mouvements de cuisses chargés par semaine, la stabilité des principaux, l'ordre principal → cardio → accessoires, et l'absence de pull-through.
+
 ## V5.2.37 — « Pour le temps » a son temps final, noté au chrono
 
 **Pourquoi** : profil Bertin, Moteur + jambes S1 mardi. « Pour le temps : 50 cal Bike » n'avait ni chrono montant ni champ de temps final : la détection ne lisait que « for time » et « cap », en anglais.

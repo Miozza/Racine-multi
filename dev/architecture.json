@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 265243,
-      "lines": 1742,
+      "size": 336096,
+      "lines": 2284,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 40484,
-      "lines": 564,
+      "size": 53910,
+      "lines": 730,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -108,8 +108,8 @@
     },
     {
       "path": "README.md",
-      "size": 8273,
-      "lines": 132,
+      "size": 8813,
+      "lines": 134,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
       "exposes": [],
@@ -140,8 +140,8 @@
     },
     {
       "path": "app.js",
-      "size": 154580,
-      "lines": 3020,
+      "size": 171621,
+      "lines": 3331,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
       "exposes": [
@@ -1244,8 +1244,8 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": [],
-      "size": 13575,
-      "lines": 220
+      "size": 17090,
+      "lines": 282
     },
     {
       "path": "dev/repro_bug1_charges_client.js",
@@ -2204,8 +2204,8 @@
     },
     {
       "path": "index.html",
-      "size": 26680,
-      "lines": 505,
+      "size": 26956,
+      "lines": 509,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2767,8 +2767,8 @@
     },
     {
       "path": "programs/index.js",
-      "size": 21998,
-      "lines": 168,
+      "size": 23240,
+      "lines": 177,
       "role": "Registre central des programmes : construit COACH_BERTIN_PROGRAM_INDEX (ordre + visibilité public/private) et les macrocycles. Ne charge AUCUN script (les <script> restent dans index.html).",
       "category": "ACTIF",
       "exposes": [
@@ -2975,8 +2975,8 @@
         }
       ],
       "consumes": [],
-      "size": 21152,
-      "lines": 283
+      "size": 31890,
+      "lines": 407
     },
     {
       "path": "programs/retour_au_travail.js",
@@ -3511,8 +3511,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 30455,
-      "lines": 551,
+      "size": 35970,
+      "lines": 644,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
