@@ -1,3 +1,17 @@
+## V5.2.39 — Réhabilitation : le conditionnement reste en fin de séance
+
+**Pourquoi** : demande du créateur pour ce cycle précis. La V5.2.38 avait déplacé le cardio juste après le bloc principal, en appliquant la règle d'ordre du dépôt (décision du 2026-10-17).
+
+**Ce qui change**
+
+Le conditionnement repasse **en fin de séance** sur les cinq journées de `rehab_stephanie`. Ordre : règle → mobilité → principal → accessoires → conditionnement → retour au calme. Seule la sortie mobilité suit le metcon — on ne termine pas sur un effort dur sans retour au calme. Les blocs sont relettrés en conséquence (le superset du vendredi devient C1/C2).
+
+**Pourquoi c'est une exception, et pourquoi elle est écrite**
+
+La règle générale veut le cardio tôt parce qu'elle suppose que le metcon est ce qu'il faut sauver quand la séance déborde. Dans un cycle de retour de blessure, l'hypothèse s'inverse : ce qui doit survivre à une séance écourtée, c'est le renforcement et la mobilité ; le vélo est la partie qui peut sauter. L'exception est donc consignée aux trois endroits où un agent la cherchera — `CLAUDE.md` § 3.1 (à côté de la règle qu'elle excepte), l'en-tête de `programs/rehab_stephanie.js`, et `dev/rehab_stephanie_checks.js`, qui épingle désormais l'ordre inverse : appliquer la règle générale à ce programme fait tomber le garde-fou au lieu de passer en silence.
+
+Aucun autre programme n'est touché : Pont Peak garde son cardio tôt, et son propre garde-fou le vérifie.
+
 ## V5.2.38 — Réhabilitation : back squat, cinquième journée, 20 metcons
 
 **Pourquoi** : quatre retours de l'athlète (2026-11-03). Plus de variation d'une semaine à l'autre ; du back squat ; des metcons plus variés — celui du jour unilatéral était le bon exemple ; et deux refus nets : le pull-through, et « je n'ai pas l'impression de travailler mes cuisses ».

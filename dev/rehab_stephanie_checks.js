@@ -248,15 +248,26 @@ P.days.forEach(day => {
     day + ' : le mouvement principal est le même aux 4 semaines (' + [...new Set(mains)].join(' / ') + ').');
 });
 
-// ── Le cardio passe avant les accessoires ───────────────────────────────────
-// Décision du 2026-10-17 : quand la séance déborde, ce sont les accessoires
-// qui sautent, jamais le metcon.
+// ── Le conditionnement reste à la FIN ───────────────────────────────────────
+// EXCEPTION ASSUMÉE à la règle d'ordre du dépôt (décision du 2026-11-04).
+// CLAUDE.md § 3.1 demande que le cardio passe juste après le principal, pour
+// que ce soient les accessoires qui sautent quand le temps manque. Ce cycle
+// fait l'inverse, volontairement : c'est un cycle de réhabilitation, et ce qui
+// doit survivre à une séance écourtée est le renforcement et la mobilité, pas
+// le vélo.
+// Cette assertion est le seul endroit qui empêche un agent d'« arranger »
+// l'ordre en appliquant la règle générale à ce programme. Sans elle, le
+// conditionnement remonterait à la première révision distraite.
+// Seule la sortie (mobilité) a le droit de suivre le metcon : on ne termine
+// pas une séance sur un effort dur sans retour au calme.
 sessions.forEach(s => {
   const iWod = s.blocks.findIndex(b => b.kind === 'wod');
-  const iMain = s.blocks.findIndex(b => b.kind === 'main');
-  const iAcc = s.blocks.findIndex(b => b.kind === 'accessory' || b.kind === 'core');
-  assert(iMain < iWod && iWod < iAcc,
-    s.day + ' S' + s.week + ' : principal → cardio → accessoires, dans cet ordre.');
+  const travail = ['main', 'accessory', 'core', 'secondary', 'hypertrophy', 'technique'];
+  const dernierTravail = s.blocks.reduce((acc, b, i) => travail.indexOf(b.kind) >= 0 ? i : acc, -1);
+  assert(iWod > dernierTravail,
+    s.day + ' S' + s.week + ' : le conditionnement vient après tout le travail de force.');
+  assert(s.blocks.slice(iWod + 1).every(b => b.kind === 'mobility'),
+    s.day + ' S' + s.week + ' : rien après le conditionnement, sauf le retour au calme.');
 });
 
 // ── 8. Fiches techniques et vidéos ──────────────────────────────────────────

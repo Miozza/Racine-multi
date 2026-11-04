@@ -1,5 +1,5 @@
-// Racine V5.2.38 — Cycle de réhabilitation : back squat, 5 journées, 20 metcons
-var APP_VERSION = "V5.2.38";
+// Racine V5.2.39 — Réhabilitation : le conditionnement reste en fin de séance
+var APP_VERSION = "V5.2.39";
 
 // Architecture stable
 // programs/*.js = plan prévu

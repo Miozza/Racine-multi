@@ -254,9 +254,17 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
   }
 
   // ── Séances ───────────────────────────────────────────────────────────────
-  // Ordre voulu : règle → mobilité → PRINCIPAL → metcon → accessoires → sortie.
-  // Le metcon passe avant les accessoires (décision du 2026-10-17) : si la
-  // séance déborde des 45 min, ce sont les accessoires qui sautent.
+  // Ordre voulu : règle → mobilité → PRINCIPAL → accessoires → CONDITIONNEMENT
+  // → sortie.
+  //
+  // EXCEPTION ASSUMÉE À LA RÈGLE D'ORDRE DU DÉPÔT (décision du 2026-11-04).
+  // CLAUDE.md § 3.1 demande que le cardio passe juste après le principal, pour
+  // que ce soient les accessoires qui sautent quand le temps manque. Ce cycle
+  // fait l'inverse, volontairement : c'est un cycle de réhabilitation. Ce qui
+  // doit survivre à une séance écourtée, ici, c'est le renforcement et la
+  // mobilité — pas le vélo. Le conditionnement reste donc en fin de séance, et
+  // dev/rehab_stephanie_checks.js l'épingle dans ce sens : un agent qui
+  // appliquerait la règle générale à ce programme fera tomber le garde-fou.
   function rsBlocks(day, week){
     var w = wk(week);
 
@@ -268,12 +276,12 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Hip Thrust", rsSets(4, 10, week), rsLoad(300, week), "90 sec",
            "Deux jambes. Pause 1 sec en haut, bassin fini par les fessiers. Aucune hyperextension lombaire. Stop immédiat si pincement à l'aine droite. " + w.rpe + ".")
       ]},
-      metconBlock("lundi", week, 10, "B. Cardio vélo"),
-      rotationBlock("lundi", week, 6, "C. Fessier isolé", "Isolation", "accessory"),
-      {time:"5 min", title:"D. Tronc", tag:"Core", kind:"core", exercises:[
+      rotationBlock("lundi", week, 6, "B. Fessier isolé", "Isolation", "accessory"),
+      {time:"5 min", title:"C. Tronc", tag:"Core", kind:"core", exercises:[
         ex("Dead Bug", rsSets(3, 10, week), "poids du corps", "45 sec",
            "Bras vers le plafond seulement si l'épaule gauche ne dit rien ; sinon bras au sol. Bas du dos collé, expiration lente.")
       ]},
+      metconBlock("lundi", week, 10, "D. Cardio vélo"),
       coolBlock(3, "Hip Switch 6/côté + Half-Kneeling Hip Flexor Stretch 30 sec")
     ];
 
@@ -285,16 +293,16 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Ring Row", rsSets(4, 12, week), "poids du corps", "75 sec",
            "L'angle du corps EST la charge : plus tu te redresses, plus c'est facile. Ajuste-le pour finir chaque série à " + w.rpe + ". Coudes près du corps, épaules basses et en arrière, jamais de traction au-dessus des épaules.")
       ]},
-      metconBlock("mardi", week, 15, "B. Cardio vélo"),
-      {time:"4 min", title:"C. Triceps", tag:"Isolation", kind:"accessory", exercises:[
+      {time:"4 min", title:"B. Triceps", tag:"Isolation", kind:"accessory", exercises:[
         ex("Tricep Pushdown", rsSets(3, 10, week), rsLoad(70, week), "60 sec",
            "Coudes collés au corps, épaules basses. Extension complète sans hausser l'épaule gauche. " + w.rpe + ".")
       ]},
-      {time:"4 min", title:"D. Biceps", tag:"Isolation", kind:"accessory", exercises:[
+      {time:"4 min", title:"C. Biceps", tag:"Isolation", kind:"accessory", exercises:[
         ex("DB Curl", rsSets(3, 10, week), rsLoad(15, week, "/ main"), "60 sec",
            "Léger, volontairement : RPE 7 maximum cette semaine et toutes les autres. Coudes fixes près du corps, aucun élan d'épaule. Si le coude ou l'épaule tire, tu descends de charge le jour même.")
       ]},
-      rotationBlock("mardi", week, 5, "E. Tronc et haut du dos", "Core", "core")
+      rotationBlock("mardi", week, 5, "D. Tronc et haut du dos", "Core", "core"),
+      metconBlock("mardi", week, 15, "E. Cardio vélo")
     ];
 
     // C — Unilatéral : fentes, et le deuxième mouvement de cuisses.
@@ -305,12 +313,12 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("DB Reverse Lunge", rsSets(3, 8, week, "/jambe"), rsLoad(45, week, "/ main"), "75 sec",
            "Haltères le long du corps. Pas arrière, genou avant aligné sur le pied, bassin de face — aucune rotation de hanche. Descente contrôlée, pas de profondeur cherchée. " + w.rpe + ".")
       ]},
-      metconBlock("jeudi", week, 12, "B. Cardio vélo"),
-      {time:"8 min", title:"C. Cuisses — talons surélevés", tag:"Cuisses", kind:"accessory", exercises:[
+      {time:"8 min", title:"B. Cuisses — talons surélevés", tag:"Cuisses", kind:"accessory", exercises:[
         ex("Goblet Squat", rsSets(3, 10, week), rsLoad(75, week), "75 sec",
            "Talons sur deux plaques de 2,5 lb. C'est ce qui met la charge dans les cuisses sans demander plus de flexion à la hanche. Boîte derrière toi réglée à la parallèle : tu descends jusqu'au CONTACT, jamais plus bas. " + w.rpe + ".")
       ]},
-      rotationBlock("jeudi", week, 4, "D. Tronc", "Core", "core"),
+      rotationBlock("jeudi", week, 4, "C. Tronc", "Core", "core"),
+      metconBlock("jeudi", week, 12, "D. Cardio vélo"),
       coolBlock(2, "Adductor Rockback 8/côté + Hip Switch 6/côté")
     ];
 
@@ -322,14 +330,14 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Hip Thrust", rsSets(3, 12, week), rsLoad(255, week), "90 sec",
            "Deux jambes, 3 secondes de descente contrôlée sur chaque répétition. Plus léger que lundi, c'est voulu : le tempo est la charge. Côtes basses, aucune hyperextension. " + w.rpe + ".")
       ]},
-      metconBlock("vendredi", week, 15, "B. Cardio vélo"),
-      rotationBlock("vendredi", week, 6, "C. Moyen fessier", "Isolation", "accessory"),
-      {time:"6 min", title:"D. Superset tronc", tag:"Superset", kind:"core", exercises:[
-        ex("Dead Bug", rsSets(3, 10, week), "poids du corps", "0 sec avant D2",
+      rotationBlock("vendredi", week, 6, "B. Moyen fessier", "Isolation", "accessory"),
+      {time:"6 min", title:"C. Superset tronc", tag:"Superset", kind:"core", exercises:[
+        ex("Dead Bug", rsSets(3, 10, week), "poids du corps", "0 sec avant C2",
            "Bras vers le plafond seulement si l'épaule gauche est silencieuse, sinon bras au sol. Enchaîne directement sur le Pallof Press."),
-        ex("Pallof Press", rsSets(3, 10, week, "/côté"), rsLoad(30, week), "60 sec après D2",
+        ex("Pallof Press", rsSets(3, 10, week, "/côté"), rsLoad(30, week), "60 sec après C2",
            "Câble à hauteur de sternum, bras devant et jamais au-dessus. " + Math.max(1, 3 + w.setsDelta) + " tours au total avec le dead bug.")
-      ]}
+      ]},
+      metconBlock("vendredi", week, 15, "D. Cardio vélo")
     ];
 
     // E — Cuisses : back squat bilatéral, la journée ajoutée.
@@ -340,16 +348,15 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
         ex("Back Squat", rsSets(4, 8, week), rsLoad(235, week), "2:00",
            "Barre sur le haut du dos. Boîte derrière toi réglée à la parallèle : tu t'arrêtes à son CONTACT, jamais plus bas. Un seul pincement à l'aine = la boîte monte d'un cran. Aucune série à l'échec. " + w.rpe + ".")
       ]},
-      metconBlock("samedi", week, 12, "B. Cardio vélo"),
-      {time:"7 min", title:"C. Cuisses — unilatéral chargé", tag:"Cuisses", kind:"accessory", exercises:[
+      {time:"7 min", title:"B. Cuisses — unilatéral chargé", tag:"Cuisses", kind:"accessory", exercises:[
         ex("Step-Up", rsSets(3, 8, week, "/jambe"), rsLoad(40, week, "/ main"), "60–75 sec",
            "Boîte 24 po, haltères le long du corps. Pousse par le talon, genou aligné sur le pied, aucune rotation de hanche. Descente lente, sans élan de la jambe arrière. " + w.rpe + ".")
       ]},
-      rotationBlock("samedi", week, 3, "D. Tronc", "Core", "core"),
+      rotationBlock("samedi", week, 3, "C. Tronc", "Core", "core"),
+      metconBlock("samedi", week, 12, "D. Cardio vélo"),
       coolBlock(2, "Adductor Rockback 8/côté + Half-Kneeling Hip Flexor Stretch 30 sec")
     ];
   }
-
   window.COACH_BERTIN_PROGRAMS.rehab_stephanie = {
     id: "rehab_stephanie",
     label: "Réhabilitation & renforcement profond",

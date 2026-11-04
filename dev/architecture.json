@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 336096,
-      "lines": 2284,
+      "size": 337632,
+      "lines": 2298,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -76,8 +76,8 @@
     },
     {
       "path": "CLAUDE.md",
-      "size": 20987,
-      "lines": 423,
+      "size": 30490,
+      "lines": 571,
       "role": "Instructions permanentes pour agents IA (seul fichier lu automatiquement).",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 53910,
-      "lines": 730,
+      "size": 54277,
+      "lines": 735,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -108,7 +108,7 @@
     },
     {
       "path": "README.md",
-      "size": 8813,
+      "size": 9041,
       "lines": 134,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
@@ -140,7 +140,7 @@
     },
     {
       "path": "app.js",
-      "size": 171621,
+      "size": 171619,
       "lines": 3331,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
@@ -1244,8 +1244,8 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": [],
-      "size": 17090,
-      "lines": 282
+      "size": 17966,
+      "lines": 293
     },
     {
       "path": "dev/repro_bug1_charges_client.js",
@@ -2975,8 +2975,8 @@
         }
       ],
       "consumes": [],
-      "size": 31890,
-      "lines": 407
+      "size": 32403,
+      "lines": 414
     },
     {
       "path": "programs/retour_au_travail.js",
