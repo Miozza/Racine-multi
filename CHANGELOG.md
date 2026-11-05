@@ -1,3 +1,11 @@
+## V5.2.40 — Moteur + jambes : EMOM de S2 à 10 cal de Bike
+
+**Pourquoi** : retour de l'athlète après le jeudi de S1 (2026-11-05). L'EMOM 12 à 12 cal de Bike a été complété, mais à effort maximal sur le vélo dès la 9e minute (RPE 9). S2 prévoyait 14 cal sur 14 minutes : deux hausses en même temps, sur le maillon déjà au maximum.
+
+**Ce qui change**
+
+Jeudi S2 : minutes paires **10 cal Bike** au lieu de 14. La durée (EMOM 14) et les burpees (8) ne bougent pas : la progression de la semaine vient des deux minutes de plus, sur un rythme que l'athlète peut tenir jusqu'au bout. S3 et S4 gardent 14 et 15 cal : en 4 stations, le Bike ne revient qu'une minute sur quatre, avec trois minutes de récupération au lieu d'une.
+
 ## V5.2.39 — Réhabilitation : le conditionnement reste en fin de séance
 
 **Pourquoi** : demande du créateur pour ce cycle précis. La V5.2.38 avait déplacé le cardio juste après le bloc principal, en appliquant la règle d'ordre du dépôt (décision du 2026-10-17).

@@ -1,5 +1,5 @@
-// Racine V5.2.39 — Réhabilitation : le conditionnement reste en fin de séance
-var APP_VERSION = "V5.2.39";
+// Racine V5.2.40 — Moteur + jambes : EMOM de S2 à 10 cal de Bike
+var APP_VERSION = "V5.2.40";
 
 // Architecture stable
 // programs/*.js = plan prévu
