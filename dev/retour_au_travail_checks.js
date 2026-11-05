@@ -17,7 +17,7 @@ function assert(cond, msg){ (cond ? notes : errors).push(msg); }
 
 const ctx = { window:{}, console };
 vm.createContext(ctx);
-['programs/index.js', 'programs/retour_au_travail.js']
+['programs/wod_format.js', 'programs/index.js', 'programs/retour_au_travail.js']
   .forEach(f => vm.runInContext(read(f), ctx, {filename:f}));
 
 const index = ctx.window.COACH_BERTIN_PROGRAM_INDEX || [];

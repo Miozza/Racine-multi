@@ -40,7 +40,7 @@
         ex("Bulgarian Split Squat", "2×8", "léger", "1:00 après B2", "Équilibre, pas de brûlure.")]});
     }
     blocks.push({time:"8 min", title:"C. Flush aérobie", tag:"Conditioning", kind:"wod",
-      text:"Zone 2 très facile 8 min (bike/row/marche rapide). Conversation possible en continu. Objectif : circulation, pas performance."});
+      wod:{format:"steady", minutes:8, template:"Zone 2 très facile {minutes} min ({moves}).", sep:"/", moves:[{name:"bike"}, {name:"row"}, {name:"marche rapide"}], note:"Conversation possible en continu. Objectif : circulation, pas performance."}});
     blocks.push({time:"6 min", title:"D. Mobilité + respiration", tag:"Mobilité", kind:"mobility",
       text:"Respiration nasale 2 min allongé + étirements doux hanches/pecs/lats. Sors du gym plus frais qu'en entrant."});
     return blocks;
@@ -69,7 +69,7 @@
     dayIntentions: {},
     dayMeta: {},
     cycleRules: ["Aucun PR cette semaine.", "Aucune série à l'échec.", "Le finisher reste en zone 2."],
-    getBlocks: function(day, week){ return deloadBlocks(day); }
+    getBlocks: function(day, week){ return window.RacineWod.fill(deloadBlocks(day)); }
   };
 
   // ─── Semaine de tests ───────────────────────────────────────────────────────
@@ -97,7 +97,7 @@
         ex("Goblet Squat", "2×10", "léger", "1:00", "Mouvement plaisir, aucune donnée à prendre.")]});
     }
     blocks.push({time:"6 min", title:"C. Flush court", tag:"Conditioning", kind:"wod",
-      text:"Zone 2 facile 6 min. Les tests fatiguent le système nerveux, pas besoin d'en rajouter."});
+      wod:{format:"steady", minutes:6, template:"Zone 2 facile {minutes} min.", moves:[], note:"Les tests fatiguent le système nerveux, pas besoin d'en rajouter."}});
     blocks.push({time:"5 min", title:"D. Mobilité", tag:"Mobilité", kind:"mobility",
       text:"Étirements doux ciblés sur les mouvements testés aujourd'hui."});
     return blocks;
@@ -126,6 +126,6 @@
     dayIntentions: {},
     dayMeta: {},
     cycleRules: ["Chaque test s'arrête à RPE 8.", "Inscris tous les résultats dans la séance.", "Pas de WOD intense cette semaine."],
-    getBlocks: function(day, week){ return testsBlocks(day); }
+    getBlocks: function(day, week){ return window.RacineWod.fill(testsBlocks(day)); }
   };
 })();

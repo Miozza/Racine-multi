@@ -60,6 +60,7 @@ ctx.globalThis = ctx;
   'scripts/charge/historique.js',
   'scripts/charge/scaling.js',
   'scripts/charge/suggestion.js',
+  'programs/wod_format.js',
   'programs/index.js',
   'programs/pont_peak.js'
 ].forEach(file => {

@@ -25,12 +25,16 @@
 
   var api = window.CoachAIPlan = window.CoachAIPlan || {};
 
-  var SCHEMA = 1;
+  // Schéma 2 (V5.3.0) : ajout de `wodAdjustments`, les ajustements de metcon
+  // structuré (programs/wod_format.js). Migration 1 → 2 : la liste est créée
+  // vide ; semaines, ajustements d'exercice et versions passent tels quels.
+  var SCHEMA = 2;
   var VERSIONS_KEPT = 3;   // instantanés gardés pour revenir en arrière
   var MAX_WEEKS = 12;
   var MAX_BLOCKS = 10;
   var MAX_EXERCISES = 10;
   var MAX_ADJUSTMENTS = 60;  // plafonné : le stockage local n'a pas de copie serveur
+  var MAX_WOD_ADJUSTMENTS = 60;
 
   // Même liste que le contrat de bloc (CLAUDE.md §3.1). Un kind inconnu
   // casserait le rendu et la capture de résultats : on le ramène à
@@ -50,7 +54,7 @@
   function str(v){ return String(v==null?"":v).trim(); }
   function nowIso(){ try{ return new Date().toISOString(); }catch(e){ return String(Date.now()); } }
 
-  function defaults(){ return {schema:SCHEMA, updatedAt:null, weeks:{}, adjustments:[], versions:[]}; }
+  function defaults(){ return {schema:SCHEMA, updatedAt:null, weeks:{}, adjustments:[], wodAdjustments:[], versions:[]}; }
 
   // Migration ascendante : on part du défaut et on recouvre avec l'existant.
   // Un plan écrit par une version antérieure garde ses semaines.
@@ -60,6 +64,7 @@
     out.updatedAt = raw.updatedAt || null;
     out.weeks = (raw.weeks && typeof raw.weeks === "object") ? raw.weeks : {};
     out.adjustments = Array.isArray(raw.adjustments) ? raw.adjustments.slice(-MAX_ADJUSTMENTS) : [];
+    out.wodAdjustments = Array.isArray(raw.wodAdjustments) ? raw.wodAdjustments.slice(-MAX_WOD_ADJUSTMENTS) : [];
     out.versions = Array.isArray(raw.versions) ? raw.versions.slice(-VERSIONS_KEPT) : [];
     out.schema = SCHEMA;
     return out;
@@ -215,7 +220,8 @@
     versions.push({
       at: nowIso(),
       weeks: JSON.parse(JSON.stringify(plan.weeks || {})),
-      adjustments: JSON.parse(JSON.stringify(plan.adjustments || []))
+      adjustments: JSON.parse(JSON.stringify(plan.adjustments || [])),
+      wodAdjustments: JSON.parse(JSON.stringify(plan.wodAdjustments || []))
     });
     return versions.slice(-VERSIONS_KEPT);
   }
@@ -310,6 +316,9 @@
   // du template. Ne mute jamais les objets du programme — copie comme
   // RacineMovementSwaps.applyToWorkout.
   api.applyToWorkout = function(w, day, week){
+    return applyWodAdjustments(applyExerciseAdjustments(w, day, week), day, week);
+  };
+  function applyExerciseAdjustments(w, day, week){
     var adjustments;
     try{ adjustments = read().adjustments; }catch(e){ return w; }
     if(!adjustments.length || !w || !Array.isArray(w.blocks)) return w;
@@ -344,7 +353,104 @@
       return nb;
     });
     return w;
+  }
+
+  // ── Ajustements de metcon (structure programs/wod_format.js) ───────────
+  //
+  // Un ajustement de metcon est une liste d'OPÉRATIONS (RacineWod.applyOps),
+  // jamais un texte, et aucune n'a de champ de charge. Il vise le N-ième
+  // bloc metcon d'un jour (`index`, 1 par défaut : un titre change d'une
+  // semaine à l'autre, la position non), d'un programme, sur une plage de
+  // semaines : une seule (portée « séance ») ou jusqu'à la fin du cycle
+  // (`toWeek` null). Comme les ajustements d'exercice, c'est une surcouche :
+  // le programme d'origine n'est jamais muté, et l'historique n'est pas touché.
+
+  function wodTargets(w, index){
+    var n = 0, out = null;
+    (w && w.blocks || []).forEach(function(b, i){
+      if(b && b.kind === "wod"){ n++; if(n === (Number(index) || 1)) out = i; }
+    });
+    return out;
+  }
+  function wodCovers(a, program, day, week){
+    if(str(a.program) && program && str(a.program) !== str(program)) return false;
+    if(str(a.day).toLowerCase() !== str(day).toLowerCase()) return false;
+    var from = Number(a.fromWeek) || 1, to = a.toWeek == null ? Infinity : Number(a.toWeek);
+    return week >= from && week <= to;
+  }
+  function currentProgram(){
+    try{ return typeof activeProgramId === "function" ? activeProgramId() : ""; }catch(e){ return ""; }
+  }
+
+  api.listWodAdjustments = function(){ return read().wodAdjustments.slice(); };
+
+  // Applique les opérations sur UN metcon (structure) ; sert à apply() pour
+  // vérifier avant d'écrire, et à applyToWorkout() pour afficher.
+  api.applyWodOps = function(spec, ops){
+    if(!window.RacineWod) return {ok:false, error:"Module metcon indisponible."};
+    return RacineWod.applyOps(spec, ops);
   };
+
+  api.addWodAdjustment = function(adj){
+    adj = adj || {};
+    var day = str(adj.day).toLowerCase();
+    var from = Number(adj.fromWeek);
+    var to = adj.toWeek == null ? null : Number(adj.toWeek);
+    if(!day) return {ok:false, error:"Jour manquant."};
+    if(isNaN(from) || from < 1) return {ok:false, error:"Numéro de semaine invalide."};
+    if(to != null && (isNaN(to) || to < from)) return {ok:false, error:"Fin de portée invalide."};
+    if(!Array.isArray(adj.ops) || !adj.ops.length) return {ok:false, error:"Aucune opération."};
+    var plan = read();
+    plan.versions = snapshot(plan);
+    plan.wodAdjustments.push({
+      program: str(adj.program),
+      day: day,
+      index: Number(adj.index) || 1,
+      block: str(adj.block),
+      fromWeek: from,
+      toWeek: to,
+      ops: JSON.parse(JSON.stringify(adj.ops)),
+      reason: str(adj.reason),
+      createdAt: nowIso()
+    });
+    plan.wodAdjustments = plan.wodAdjustments.slice(-MAX_WOD_ADJUSTMENTS);
+    if(!write(plan)) return {ok:false, error:"Écriture impossible (stockage local)."};
+    return {ok:true};
+  };
+
+  // Retire les ajustements de metcon qui touchent cette semaine et ce jour.
+  api.removeWodAdjustment = function(week, day, index){
+    var plan = read(), program = currentProgram(), before = plan.wodAdjustments.length;
+    plan.wodAdjustments = plan.wodAdjustments.filter(function(a){
+      return !(wodCovers(a, program, day, Number(week)) && (Number(a.index) || 1) === (Number(index) || 1));
+    });
+    if(plan.wodAdjustments.length === before) return {ok:false, error:"Aucun ajustement de metcon correspondant."};
+    plan.versions = snapshot(plan);
+    if(!write(plan)) return {ok:false, error:"Écriture impossible (stockage local)."};
+    return {ok:true};
+  };
+
+  function applyWodAdjustments(w, day, week){
+    var list;
+    try{ list = read().wodAdjustments; }catch(e){ return w; }
+    if(!list.length || !w || !Array.isArray(w.blocks) || !window.RacineWod) return w;
+    var program = currentProgram(), weekNum = Number(week);
+    list.forEach(function(a){
+      if(!wodCovers(a, program, day, weekNum)) return;
+      var i = wodTargets(w, a.index);
+      if(i == null || !w.blocks[i].wod) return;
+      var r = RacineWod.applyOps(w.blocks[i].wod, a.ops);
+      if(!r.ok) return;   // ex. : la semaine suivante n'a pas ce mouvement
+      var spec = r.spec;
+      if(!/Ajusté par Coach IA/.test(str(spec.note))) spec.note = [str(spec.note), "Ajusté par Coach IA."].filter(Boolean).join(" ");
+      var nb = Object.assign({}, w.blocks[i], {wod:spec, aiAdjusted:true});
+      nb.text = RacineWod.render(spec);
+      w.blocks = w.blocks.slice();
+      w.blocks[i] = nb;
+    });
+    return w;
+  }
+  api.applyWodAdjustmentsToWorkout = applyWodAdjustments;
 
   api.undo = function(){
     var plan = read();
@@ -353,6 +459,9 @@
     var last = versions.pop();
     plan.weeks = (last && last.weeks) || {};
     plan.adjustments = (last && Array.isArray(last.adjustments)) ? last.adjustments : [];
+    // Un instantané d'avant le schéma 2 n'a pas de metcons : on garde l'état
+    // courant plutôt que d'effacer des ajustements que l'instantané ignore.
+    if(last && Array.isArray(last.wodAdjustments)) plan.wodAdjustments = last.wodAdjustments;
     plan.versions = versions;
     if(!write(plan)) return {ok:false, error:"Écriture impossible (stockage local)."};
     return {ok:true, at:last && last.at};

@@ -85,7 +85,7 @@ function shouldersV2Blocks(day,week){
       shouldersV2Ex("Weighted Dips",isDeload?"2×6 facile":p.dips,isDeload?"0 lb":"0-45 lb","0:30 avant C2","Lockout propre. 0 lb si poids du corps."),
       shouldersV2Ex("Overhead Rope Extension",p.triOh,"50-60 lb","1:00 après C2","Longue portion triceps. Coudes stables.")
     ]},
-    {time:"8 min",title:"D. WOD fonte",tag:"WOD",kind:"wod",text:"AMRAP 8 : 8 DB Bench + 10 KB Swing + 12 Sit-Up. "+p.wodNote+"."},
+    {time:"8 min",title:"D. WOD fonte",tag:"WOD",kind:"wod",wod:window.RacineWod.withNote({format:"amrap", minutes:8, moves:[{reps:"8", name:"DB Bench"}, {reps:"10", name:"KB Swing"}, {reps:"12", name:"Sit-Up"}]}, p.wodNote+".")},
     {time:"2 min",title:"E. Mini-reset",tag:"Mobilité",kind:"mobility",text:"Pec stretch 45 sec/côté + respiration 30 sec."}
   ];
 
@@ -102,7 +102,7 @@ function shouldersV2Blocks(day,week){
       shouldersV2Ex("Rear Delt Fly câble",p.rear,"15-20 lb","0:30 avant C2","Arrière d'épaule, sans transformer en rowing."),
       shouldersV2Ex("Face Pull",p.face,"60-70 lb","1:00 après C2","Rotation externe, cou relâché.")
     ]},
-    {time:"10 min",title:"D. WOD pull / engine",tag:"WOD",kind:"wod",text:"EMOM 10 : min 1 = 12 cal Row ; min 2 = 8-10 Ring Row. "+p.wodNote+". RPE global 7-8, pas de sprint."},
+    {time:"10 min",title:"D. WOD pull / engine",tag:"WOD",kind:"wod",wod:window.RacineWod.withNote({format:"emom", style:"sequence", minutes:10, moves:[{reps:"12", unit:"cal", name:"Row", minute:1}, {reps:"8-10", name:"Ring Row", minute:2}]}, p.wodNote+". RPE global 7-8, pas de sprint.")},
     {time:"2 min",title:"E. Mini-reset",tag:"Mobilité",kind:"mobility",text:"Lat stretch 45 sec/côté + respiration 30 sec."}
   ];
 
@@ -119,7 +119,7 @@ function shouldersV2Blocks(day,week){
       shouldersV2Ex("Hip Thrust",p.hip,"225-275 lb","0:30 avant C2","Pause en haut. Fessiers, pas lombaires."),
       shouldersV2Ex("DB RDL",p.hinge,"60-70 lb / main","1:00 après C2","Ischios. Dos neutre. Aucun ego.")
     ]},
-    {time:"8 min",title:"D. WOD jambes / engine",tag:"WOD",kind:"wod",text:"For time 21-15-9 : Cal Bike + Box Step-Up. "+p.wodNote+". Cap 8 min. Zéro épaules directes, zéro bras direct."},
+    {time:"8 min",title:"D. WOD jambes / engine",tag:"WOD",kind:"wod",wod:window.RacineWod.withNote({format:"fortime", ladder:"21-15-9", template:"For time {ladder} : {moves}.", moves:[{unit:"Cal", name:"Bike"}, {name:"Box Step-Up"}]}, p.wodNote+". Cap 8 min. Zéro épaules directes, zéro bras direct.")},
     {time:"2 min",title:"E. Mini-reset",tag:"Mobilité",kind:"mobility",text:"Couch stretch 45 sec/côté + respiration 30 sec."}
   ];
 
@@ -140,14 +140,14 @@ function shouldersV2Blocks(day,week){
     {time:"6 min",title:"D. Power Clean",tag:"Haltéro",kind:"accessory",exercises:[
       shouldersV2ExFixed("Power Clean",p.clean,p.cleanLoad,"1:00","Technique seulement dans ce cycle : vitesse propre, aucune rep grindée.")
     ]},
-    {time:"8 min",title:"E. WOD full body court",tag:"WOD",kind:"wod",text:"AMRAP 8 : 5 Power Clean + 8 Wall Balls + 10 cal Row. "+p.wodNote+". Modéré, pas redline."},
+    {time:"8 min",title:"E. WOD full body court",tag:"WOD",kind:"wod",wod:window.RacineWod.withNote({format:"amrap", minutes:8, moves:[{reps:"5", name:"Power Clean"}, {reps:"8", name:"Wall Balls"}, {reps:"10", unit:"cal", name:"Row"}]}, p.wodNote+". Modéré, pas redline.")},
     {time:"2 min",title:"F. Mini-reset",tag:"Mobilité",kind:"mobility",text:"Lat stretch 45 sec/côté + respiration 30 sec."}
   ];
 }
 
-window.COACH_BERTIN_PROGRAMS.shoulders3d_v2.getBlocks = function(day, week){ return shouldersV2Blocks(day, week); };
+window.COACH_BERTIN_PROGRAMS.shoulders3d_v2.getBlocks = function(day, week){ return window.RacineWod.fill(shouldersV2Blocks(day, week)); };
 window.COACH_BERTIN_PROGRAMS.shoulders3d_v2.getWodText = function(day, week){
-  var b = shouldersV2Blocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
+  var b = window.COACH_BERTIN_PROGRAMS.shoulders3d_v2.getBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
   return b ? b.text : "";
 };
 window.COACH_BERTIN_PROGRAMS.shoulders3d_v2.cycleRules = [

@@ -25,6 +25,7 @@ function assert(cond, msg){ if(!cond){ console.error('FAIL:', msg); failures++; 
 
 const ctx = { console, Object, String, Number, Array };
 ctx.window = ctx;
+vm.runInNewContext(fs.readFileSync(path.join(root, 'programs/wod_format.js'), 'utf8'), ctx);
 vm.runInNewContext(fs.readFileSync(path.join(root, 'programs/moteur_jambes.js'), 'utf8'), ctx);
 const P = ctx.COACH_BERTIN_PROGRAMS.moteur_jambes;
 

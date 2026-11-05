@@ -90,116 +90,116 @@
         monMain:"Tempo Back Squat", monFormat:"4×5", monLoad:"195 lb", // 268 × 0,72
         monNote:"Tempo 3-1-X : 3 s de descente, 1 s d'arrêt au fond, remontée explosive. RPE 7. Dos verrouillé, zéro rebond.",
         rdl:"3×8", rdlLoad:"180 lb",
-        monWod:"AMRAP 8 : 8 Toes-to-Bar, 12 cal Bike.",
+        monWod:{format:"amrap", minutes:8, sep:", ", moves:[{reps:"8", name:"Toes-to-Bar"}, {reps:"12", unit:"cal", name:"Bike"}]},
         tueMain:"Paused Bench Press", tueFormat:"4×5", tueLoad:"165 lb", // 228 × 0,72
         tueNote:"Pause 1 s immobile sur la poitrine, sans relâcher. RPE 7. Omoplates serrées, fessiers sur le banc.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"135 lb",
-        tueWod:"AMRAP 6 : 10 Box Jumps 24 po, 30 Double-Unders.",
+        tueWod:{format:"amrap", minutes:6, sep:", ", moves:[{reps:"10", name:"Box Jumps", load:"24 po"}, {reps:"30", name:"Double-Unders"}]},
         thuMain:"Landmine Press", thuFormat:"4×8/bras", thuLoad:"45 lb",
         thuNote:"Demi-genou, côtes basses. RPE 7. Laisse l'omoplate glisser vers le haut en fin de poussée.",
-        thuWod:"AMRAP 7 : 12 cal Row, 10 KB Swings 24 kg.",
+        thuWod:{format:"amrap", minutes:7, sep:", ", moves:[{reps:"12", unit:"cal", name:"Row"}, {reps:"10", name:"KB Swings", load:"24 kg"}]},
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"AMRAP 12 : 15 Wall Balls 20 lb (cible 10 pi), 12 cal Row, 9 Toes-to-Bar."
+        friWod:{format:"amrap", minutes:12, sep:", ", moves:[{reps:"15", name:"Wall Balls", load:"20 lb", detail:"(cible 10 pi)"}, {reps:"12", unit:"cal", name:"Row"}, {reps:"9", name:"Toes-to-Bar"}]}
       },
       2: {
         monMain:"Tempo Back Squat", monFormat:"5×3", monLoad:"215 lb", // 268 × 0,80
         monNote:"Tempo 3-1-X. RPE 8. Si le dos arrondit à la remontée, la charge est trop haute.",
         rdl:"3×8", rdlLoad:"185 lb",
-        monWod:"EMOM 10 : minutes impaires 12 cal Ski ; minutes paires 10 Hanging Knee Raise.",
+        monWod:{format:"emom", style:"alternate", minutes:10, template:"EMOM {minutes} : {moves}.", moves:[{reps:"12", unit:"cal", name:"Ski", minute:1}, {reps:"10", name:"Hanging Knee Raise", minute:2}]},
         tueMain:"Paused Bench Press", tueFormat:"5×3", tueLoad:"180 lb", // 228 × 0,80
         tueNote:"Pause 1 s sur la poitrine. RPE 8. La barre repart du même point à chaque rep.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"145 lb",
-        tueWod:"3 RFT : 10 Shuttle Runs de 10 m (aller-retour, ≈ 200 m), 15 Air Squats.",
+        tueWod:{format:"fortime", rounds:3, template:"{rounds} RFT : {moves}.", sep:", ", moves:[{reps:"10", name:"Shuttle Runs", detail:"de 10 m (aller-retour, ≈ 200 m)"}, {reps:"15", name:"Air Squats"}]},
         thuMain:"Landmine Press", thuFormat:"4×6/bras", thuLoad:"55 lb",
         thuNote:"Demi-genou, côtes basses. RPE 8. Aucune rotation du tronc.",
-        thuWod:"EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 12 cal Row ; minutes paires 12 Goblet Squats 53 lb.",
+        thuWod:{format:"emom", style:"alternate", minutes:8, moves:[{reps:"12", unit:"cal", name:"Row", minute:1}, {reps:"12", name:"Goblet Squats", load:"53 lb", minute:2}]},
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"21-15-9 : Wall Balls 20 lb, Burpees — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14)."
+        friWod:{format:"fortime", cap:14, ladder:"21-15-9", template:"{ladder} : {moves} — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap {cap}).", sep:", ", moves:[{name:"Wall Balls", load:"20 lb"}, {name:"Burpees"}]}
       },
       3: {
         monMain:"Tempo Back Squat", monFormat:"montée vers 3RM", monLoad:"235 lb", // 268 × 0,87
         monNote:"3RM au tempo 3-1-X. RPE 9 max, jamais d'échec. Ce chiffre devient la référence de la variation.",
         rdl:"3×6", rdlLoad:"195 lb",
         monTime:"20 min",
-        monWod:"Moteur aérobie, 20 min sans arrêt : 5 min Bike puis 5 min Row, 2 fois. Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici.",
+        monWod:{format:"steady", minutes:20, template:"Moteur aérobie, {minutes} min sans arrêt : {moves}, 2 fois.", sep:" puis ", moves:[{reps:"5", unit:"min", name:"Bike"}, {reps:"5", unit:"min", name:"Row"}], note:"Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici."},
         tueMain:"Paused Bench Press", tueFormat:"montée vers 3RM", tueLoad:"200 lb", // 228 × 0,87
         tueNote:"3RM avec pause 1 s. RPE 9 max, jamais d'échec. Pareur obligatoire.",
         pull:"Pendlay Row", pullFormat:"4×6", pullLoad:"155 lb",
-        tueWod:"EMOM 8 en alternance, un seul mouvement par minute : minutes impaires 40 Double-Unders ; minutes paires 8 Box Jumps 24 po.",
+        tueWod:{format:"emom", style:"alternate", minutes:8, moves:[{reps:"40", name:"Double-Unders", minute:1}, {reps:"8", name:"Box Jumps", load:"24 po", minute:2}]},
         thuMain:"Landmine Press", thuFormat:"4×5/bras", thuLoad:"65 lb",
         thuNote:"RPE 9, pas de RM. Gainage solide, stop si l'épaule monte vers l'oreille.",
-        thuWod:"EMOM 10 : 6 Burpees poids du corps chaque minute. Rythme constant, un burpee toutes les 3-4 s : fini en 25-30 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier.",
+        thuWod:{format:"emom", style:"each", minutes:10, moves:[{reps:"6", name:"Burpees", load:"poids du corps"}], note:"Rythme constant, un burpee toutes les 3-4 s : fini en 25-30 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier."},
         cleanFormat:"EMOM 8 × 2", cleanLoad:"70-75%",
         cleanNote:"70-75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Une rep lente = fin du bloc.",
-        friWod:"EMOM 16 en 4 stations, une station par minute, 4 tours : 1) 12 cal Row, 2) 12 Wall Balls 20 lb, 3) 8 Burpees over the bar, 4) 40 Double-Unders. Stratégie : chaque station finie en 35-40 s, 20 s de souffle. Burpees over the bar en step-up dès que le souffle monte : ralentir, jamais s'arrêter."
+        friWod:{format:"emom", style:"stations", minutes:16, moves:[{reps:"12", unit:"cal", name:"Row", minute:1}, {reps:"12", name:"Wall Balls", load:"20 lb", minute:2}, {reps:"8", name:"Burpees over the bar", minute:3}, {reps:"40", name:"Double-Unders", minute:4}], note:"Stratégie : chaque station finie en 35-40 s, 20 s de souffle. Burpees over the bar en step-up dès que le souffle monte : ralentir, jamais s'arrêter."}
       },
       4: {
         monMain:"Back Squat", monFormat:"5×3", monLoad:"250 lb", // 315 × 0,80
         monNote:"Retour au mouvement de compétition. RPE 8. Descente contrôlée, remontée explosive.",
         rdl:"3×6", rdlLoad:"195 lb",
         monTime:"22 min",
-        monWod:"Moteur aérobie, 22 min sans arrêt : 6 min Bike, 5 min Row, 6 min Bike, 5 min Row. Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici.",
+        monWod:{format:"steady", minutes:22, template:"Moteur aérobie, {minutes} min sans arrêt : {moves}.", sep:", ", moves:[{reps:"6", unit:"min", name:"Bike"}, {reps:"5", unit:"min", name:"Row"}, {reps:"6", unit:"min", name:"Bike"}, {reps:"5", unit:"min", name:"Row"}], note:"Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici."},
         tueMain:"Bench Press", tueFormat:"5×3", tueLoad:"195 lb", // 245 × 0,80
         tueNote:"Touch-and-go contrôlé, aucun rebond. RPE 8. Omoplates serrées, fessiers sur le banc.",
         pull:"Weighted Pull-up", pullFormat:"4×4", pullLoad:"80%",
-        tueWod:"4 × (1:00 Shuttle Runs de 10 m / 1:00 repos) — compte les allers-retours, garde le même nombre à chaque intervalle.",
+        tueWod:{format:"intervals", sets:4, work:"1:00", rest:"1:00", template:"{sets} × ({work} {moves} / {rest} repos) — compte les allers-retours, garde le même nombre à chaque intervalle.", moves:[{name:"Shuttle Runs", detail:"de 10 m"}]},
         thuMain:"Strict Press", thuFormat:"5×3", thuLoad:"125 lb", // 155 × 0,80
         thuNote:"RPE 8. Fessiers serrés, aucune cambrure, tête qui passe à travers en fin de poussée.",
-        thuWod:"EMOM 10 : 7 Burpees poids du corps chaque minute. Rythme constant, un burpee toutes les 3-4 s : fini en 30-35 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier.",
+        thuWod:{format:"emom", style:"each", minutes:10, moves:[{reps:"7", name:"Burpees", load:"poids du corps"}], note:"Rythme constant, un burpee toutes les 3-4 s : fini en 30-35 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier."},
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
-        friWod:"AMRAP 16 à effort 7 sur 10 : 12 cal Row, 10 Wall Balls 20 lb, 6 Burpees poids du corps. Stratégie : le Row est ta récupération, à rythme régulier sans sprint. Les 10 lancers d'une traite. Burpees réguliers : ralentir, jamais s'arrêter. Vise le même nombre de tours à chaque tranche de 4 min."
+        friWod:{format:"amrap", minutes:16, template:"AMRAP {minutes} à effort 7 sur 10 : {moves}.", sep:", ", moves:[{reps:"12", unit:"cal", name:"Row"}, {reps:"10", name:"Wall Balls", load:"20 lb"}, {reps:"6", name:"Burpees", load:"poids du corps"}], note:"Stratégie : le Row est ta récupération, à rythme régulier sans sprint. Les 10 lancers d'une traite. Burpees réguliers : ralentir, jamais s'arrêter. Vise le même nombre de tours à chaque tranche de 4 min."}
       },
       5: {
         monMain:"Back Squat", monFormat:"4×2", monLoad:"275 lb", // 315 × 0,88
         monNote:"Doubles lourds, RPE 9. Une rep en réserve, toujours. Aucune bataille.",
         rdl:"3×5", rdlLoad:"205 lb",
         monTime:"24 min",
-        monWod:"Moteur aérobie, 24 min sans arrêt : 6 min Bike puis 6 min Row, 2 fois. Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici.",
+        monWod:{format:"steady", minutes:24, template:"Moteur aérobie, {minutes} min sans arrêt : {moves}, 2 fois.", sep:" puis ", moves:[{reps:"6", unit:"min", name:"Bike"}, {reps:"6", unit:"min", name:"Row"}], note:"Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10 ; si tu ne peux plus parler, ralentis. Ce n'est pas un metcon : aller vite ne rapporte rien ici."},
         tueMain:"Bench Press", tueFormat:"4×2", tueLoad:"215 lb", // 245 × 0,88
         tueNote:"Doubles lourds, RPE 9 : préparation neurale du test. Une rep en réserve. Pareur obligatoire.",
         pull:"Weighted Pull-up", pullFormat:"4×4", pullLoad:"85%",
-        tueWod:"Pour le temps : 50 cal Bike (mini-benchmark, à refaire pendant le Peak).",
+        tueWod:{format:"fortime", sep:", ", moves:[{reps:"50", unit:"cal", name:"Bike", detail:"(mini-benchmark, à refaire pendant le Peak)"}]},
         thuMain:"Strict Press", thuFormat:"4×2", thuLoad:"135 lb", // 155 × 0,88
         thuNote:"Doubles lourds, RPE 9. Stop si le bas du dos cambre ou si la barre dérive vers l'avant.",
-        thuWod:"EMOM 10 : 8 Burpees poids du corps chaque minute. Rythme constant, un burpee toutes les 3-4 s : fini en 35-40 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier.",
+        thuWod:{format:"emom", style:"each", minutes:10, moves:[{reps:"8", name:"Burpees", load:"poids du corps"}], note:"Rythme constant, un burpee toutes les 3-4 s : fini en 35-40 s, le reste de la minute pour souffler par le nez. Le dernier tour doit ressembler au premier."},
         cleanFormat:"EMOM 10 × 3", cleanLoad:"65-70%",
         cleanNote:"Barbell cycling : 3 reps touch-and-go par minute à 65-70 % du 1RM. Cycle fluide, dos verrouillé.",
-        friWod:"Mini-benchmark pour le temps : 50 Wall Balls 20 lb, 40 cal Row, 30 Burpees, 20 Toes-to-Bar (cap 15). À refaire pendant le Peak pour mesurer la progression. Stratégie : lancers en 5 séries de 10 ; Row à rythme fixe, jamais en sprint ; Burpees en 6 séries de 5 avec 3 respirations entre ; Toes-to-Bar en 5 séries de 4."
+        friWod:{format:"fortime", template:"Mini-benchmark pour le temps : {moves}.", sep:", ", moves:[{reps:"50", name:"Wall Balls", load:"20 lb"}, {reps:"40", unit:"cal", name:"Row"}, {reps:"30", name:"Burpees"}, {reps:"20", name:"Toes-to-Bar", detail:"(cap 15)"}], note:"À refaire pendant le Peak pour mesurer la progression. Stratégie : lancers en 5 séries de 10 ; Row à rythme fixe, jamais en sprint ; Burpees en 6 séries de 5 avec 3 respirations entre ; Toes-to-Bar en 5 séries de 4."}
       },
       6: {
         monMain:"Back Squat", monFormat:"3×5", monLoad:"175 lb", // 315 × 0,55
         monNote:"Deload. Léger et propre : bouger, pas charger.",
         rdl:"2×8", rdlLoad:"135 lb",
-        monWod:"8 min Bike, conversation possible.",
+        monWod:{format:"steady", minutes:8, template:"{minutes} min {moves}, conversation possible.", moves:[{name:"Bike"}]},
         tueMain:"Bench Press", tueFormat:"3×5", tueLoad:"135 lb", // 245 × 0,55
         tueNote:"Deload. Léger, barre qui monte toute seule.",
         pull:"Pendlay Row", pullFormat:"2×6", pullLoad:"115 lb",
-        tueWod:"6 min Bike facile.",
+        tueWod:{format:"steady", minutes:6, template:"{minutes} min {moves}.", moves:[{name:"Bike", detail:"facile"}]},
         thuMain:"Strict Press", thuFormat:"3×5", thuLoad:"85 lb", // 155 × 0,55
         thuNote:"Deload. Léger, côtes basses.",
-        thuWod:"6 min Row facile.",
+        thuWod:{format:"steady", minutes:6, template:"{minutes} min {moves}.", moves:[{name:"Row", detail:"facile"}]},
         cleanFormat:"EMOM 6 × 2", cleanLoad:"60%",
         cleanNote:"Deload : 60 % du 1RM, réception propre, aucune rep lente.",
-        friWod:"12 min flush facile au choix (Bike ou Row), conversation possible."
+        friWod:{format:"steady", minutes:12, template:"{minutes} min flush facile au choix ({moves}), conversation possible.", sep:" ou ", moves:[{name:"Bike"}, {name:"Row"}]}
       },
       7: {
         monMain:"Back Squat", monFormat:"3×3", monLoad:"80%",
         monNote:"Pas de test : aucune montée vers un 1RM. 3×3 solides à la charge affichée, puis on range la barre.",
         rdl:"2×6", rdlLoad:"155 lb",
-        monWod:"8 min Bike facile + mobilité hanches.",
+        monWod:{format:"steady", minutes:8, template:"{minutes} min {moves} + mobilité hanches.", moves:[{name:"Bike", detail:"facile"}]},
         tueMain:"Bench Press", tueFormat:"montée vers 1RM", tueLoad:"90%",
         tueNote:"TEST ANCRE — 1RM, seul test du cycle. " + TEST_PROTOCOLE + " Pause touchée à la poitrine, fessiers sur le banc. Pareur obligatoire.",
         pull:"Pendlay Row", pullFormat:"2×8", pullLoad:"115 lb",
-        tueWod:"6 min Bike facile (après le test).",
+        tueWod:{format:"steady", minutes:6, template:"{minutes} min {moves}.", moves:[{name:"Bike", detail:"facile (après le test)"}]},
         thuMain:"Strict Press", thuFormat:"3×3", thuLoad:"115 lb", // modéré, ~0,75 × 155 (pas de mult : semaine de test)
         thuNote:"Modéré, aucune montée. Gainage solide, barre qui reste rapide.",
-        thuWod:"EMOM 8 : 5 Burpees poids du corps chaque minute, rythme régulier. On garde le geste, on ne se vide pas.",
+        thuWod:{format:"emom", style:"each", minutes:8, template:"EMOM {minutes} : {moves}, rythme régulier.", moves:[{reps:"5", name:"Burpees", load:"poids du corps"}], note:"On garde le geste, on ne se vide pas."},
         cleanFormat:"EMOM 8 × 2", cleanLoad:"75%",
         cleanNote:"75 % du 1RM, vitesse maximale. Chaque rep doit claquer. Aucun RM cette semaine.",
-        friWod:"Re-test du 21-15-9 de S2 : Wall Balls 20 lb, Burpees poids du corps — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap 14). Référence S2 : 6:58 avec trois pauses. Stratégie : lancers 21 = 11 puis 10 ; 15 = 8 puis 7 ; 9 d'une traite. Burpees jamais arrêtés : ralentis plutôt, step-down et step-up permis. Objectif : zéro pause."
+        friWod:{format:"fortime", cap:14, ladder:"21-15-9", template:"Re-test du {ladder} de S2 : {moves} — 10 Shuttle Runs de 10 m (aller-retour) après chaque tour (cap {cap}).", sep:", ", moves:[{name:"Wall Balls", load:"20 lb"}, {name:"Burpees", load:"poids du corps"}], note:"Référence S2 : 6:58 avec trois pauses. Stratégie : lancers 21 = 11 puis 10 ; 15 = 8 puis 7 ; 9 d'une traite. Burpees jamais arrêtés : ralentis plutôt, step-down et step-up permis. Objectif : zéro pause."}
       }
     })[week] || plan(1);
   }
@@ -240,8 +240,8 @@
         : ex("Ab Wheel Rollout", "3×8-10", "poids du corps", "1:00 après @2", "Anti-extension. Bassin rentré, côtes basses, dos qui ne creuse jamais. Rollout à genoux ; quand 10 reps propres passent, départ debout ou gilet lesté.")
       ]});
       lundi.push(engine
-        ? {time:p.monTime, title:"Moteur aérobie", tag:"Aérobie", kind:"wod", text:p.monWod}
-        : {time:"8 min", title:"Metcon court", tag:"WOD", kind:"wod", text:p.monWod});
+        ? {time:p.monTime, title:"Moteur aérobie", tag:"Aérobie", kind:"wod", wod:p.monWod}
+        : {time:"8 min", title:"Metcon court", tag:"WOD", kind:"wod", wod:p.monWod});
       lundi.push({time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + décompression suspendue 30 sec + respiration."});
       return lundi;
     }
@@ -286,7 +286,7 @@
         ex("Cable Curl", light ? "2×10-12" : "3×10-12", light ? "30-35 lb" : "40 lb", "0:45", "Coudes fixes, aucun balancement."),
         ex("Band Pull-Apart", "5×20", "bande légère", "au besoin", "100 reps au total sur la séance : une série à l'échauffement, les autres entre les blocs. Ce socle ne tourne jamais.")
       ]});
-      mardi.push({time:"8 min", title:"Metcon court", tag:"WOD", kind:"wod", text:p.tueWod + " Mardi : monostructural et bas du corps seulement, épaules et lats épargnés."});
+      mardi.push({time:"8 min", title:"Metcon court", tag:"WOD", kind:"wod", wod:window.RacineWod.withNote(p.tueWod, "Mardi : monostructural et bas du corps seulement, épaules et lats épargnés.")});
       mardi.push({time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Lat stretch 45 sec/côté + pec stretch 45 sec/côté + ouverture thoracique sur rouleau 90 sec."});
       return mardi;
     }
@@ -322,7 +322,7 @@
       ].concat(engine ? [] : [
         ex("Overhead Rope Extension", light ? "2×12" : "3×12", light ? "35-40 lb" : "50 lb", "0:45", "Coudes serrés et hauts, étirement complet en bas.")
       ])},
-      {time:engine ? "10 min" : isTest ? "8 min" : "7 min", title:engine ? "EMOM burpees" : "Metcon court", tag:"WOD", kind:"wod", text:p.thuWod + " Aucune poussée au-dessus de la tête."},
+      {time:engine ? "10 min" : isTest ? "8 min" : "7 min", title:engine ? "EMOM burpees" : "Metcon court", tag:"WOD", kind:"wod", wod:window.RacineWod.withNote(p.thuWod, "Aucune poussée au-dessus de la tête.")},
       {time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Pec stretch 45 sec/côté + lat stretch 45 sec/côté + respiration."}
     ];
 
@@ -349,7 +349,7 @@
       {time:"5 min", title:"DB Pullover", tag:"Ouverture thoracique", kind:"accessory", exercises:[
         ex("DB Pullover", light ? "2×10" : "3×12", light ? "25-30 lb" : "35 lb", "0:45", "Cross-bench, plus léger que le mardi. Respiration, ouverture thoracique, amplitude maximale contrôlée.")
       ]},
-      {time:engine ? "16 min" : (light && !isTest) ? "12 min" : "14 min", title:"Metcon long", tag:"WOD", kind:"wod", text:p.friWod},
+      {time:engine ? "16 min" : (light && !isTest) ? "12 min" : "14 min", title:"Metcon long", tag:"WOD", kind:"wod", wod:p.friWod},
       {time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch + pec stretch + 10 respirations lentes." + (isTest ? " Fin du bloc : le Peak commence lundi." : "")}
     ];
   }
@@ -387,9 +387,9 @@
   }
 
   var P = window.COACH_BERTIN_PROGRAMS.pont_peak;
-  P.getBlocks = function(day, week){ return blocks(day, week); };
+  P.getBlocks = function(day, week){ return window.RacineWod.fill(blocks(day, week)); };
   P.getWodText = function(day, week){
-    var b = blocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
+    var b = P.getBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
     return b ? b.text : "";
   };
   P.cycleRules = [

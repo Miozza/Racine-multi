@@ -64,7 +64,7 @@ ctx.globalThis = ctx;
   'scripts/charge/brain_stats.js', 'scripts/charge/brain_memory.js',
   'scripts/charge/brain_journal.js', 'scripts/charge/movement_profiles.js',
   'scripts/charge/suggestion.js', 'scripts/charge/trace.js',
-  'programs/phase2_fable5.js'
+  'programs/wod_format.js', 'programs/phase2_fable5.js'
 ].forEach(f => {
   try { vm.runInNewContext(read(f), ctx, {filename:f}); }
   catch(e){ errors.push('Chargement impossible de ' + f + ' : ' + e.message); }

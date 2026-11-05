@@ -1535,6 +1535,16 @@
       "consumes": []
     },
     {
+      "path": "dev/wod_format_checks.js",
+      "size": 13866,
+      "lines": 190,
+      "role": "Garde-fous des metcons structurés (programs/wod_format.js) : rendu, opérations sans champ de charge, standards de charge, programmes convertis et TEXT_LEGACY qui ne fait que rétrécir, plan Coach IA schéma 2 (migration, portée séance/cycle, retrait), refus d'un ajustement d'exercice visant un metcon.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/wod_moves_checks.js",
       "size": 8692,
       "lines": 143,
@@ -3079,6 +3089,24 @@
           "path": "programs/index.js",
           "vector": "index-entry",
           "line": 0
+        }
+      ],
+      "consumes": []
+    },
+    {
+      "path": "programs/wod_format.js",
+      "size": 17519,
+      "lines": 356,
+      "role": "Metcons structurés (window.RacineWod) : format, durée, mouvements d'un bloc kind:\"wod\" ; render() fabrique le texte que lisent pastilles, chrono et résultats ; applyOps() applique les opérations de Coach IA (aucun champ de charge) ; charges standards fixes des metcons.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineWod"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 357
         }
       ],
       "consumes": []

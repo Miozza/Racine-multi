@@ -112,7 +112,7 @@ assert(weird && weird.days.mardi[0].kind === 'accessory', 'Un kind hors contrat 
 // ── Écriture, relecture, retour en arrière ──────────────────────────────────
 let res = CoachAIPlan.setWeek(2, {label:'S2', days:{lundi:[{title:'A', kind:'main', exercises:[{name:'Bench Press', format:'4×8'}]}]}});
 assert(res.ok, 'setWeek écrit une semaine.');
-assert(ctxPlan.state.aiPlan && ctxPlan.state.aiPlan.schema === 1, 'Le plan porte un numéro de schéma (migration possible).');
+assert(ctxPlan.state.aiPlan && ctxPlan.state.aiPlan.schema === 2, 'Le plan porte un numéro de schéma (2 depuis les metcons structurés).');
 assert(CoachAIPlan.blocksFor('lundi', 2).length === 1, 'blocksFor relit la semaine écrite.');
 assert(CoachAIPlan.blocksFor('lundi', 9) === null, 'Une semaine non générée ne renvoie rien (pas de séance inventée).');
 

@@ -67,14 +67,14 @@ function competitionPeakBlocks(day,week){
      ]},
 
     {time:taper?"12 min":week>=3?"16 min":"15 min",title:"B. WOD Open court",tag:"Conditioning",kind:"wod",
-     text:(week===1?"AMRAP 15 : 12 wall balls 20/14 lb + 10 cal row + 8 burpees." :
-       week===2?"AMRAP 18 : 14 wall balls 20/14 lb + 12 cal row + 10 burpees." :
-       week===3?"For time 5 rounds : 12 wall balls 20/14 lb + 10 burpees + 12 cal row. Cap 16 min." :
-       week===4?"AMRAP 18 : 15 wall balls 20/14 lb + 12 box step-ups 24/20 po + 10 burpees." :
-       week===5?"Benchmark style Open — AMRAP 15 : 10 wall balls 20/14 lb + 10 cal row + 10 burpees." :
-       week===6?"AMRAP 16 : 12 wall balls 20/14 lb + 12 cal row + 8 burpees over line." :
-       week===7?"AMRAP 12 : 8 wall balls 20/14 lb + 8 cal row + 6 burpees. Reste frais." :
-       "AMRAP 10 : 6 wall balls 20/14 lb + 6 cal row + 4 burpees. Activation seulement.")+" "+p.wodNote+"."},
+     wod:window.RacineWod.withNote((week===1?{format:"amrap", minutes:15, moves:[{reps:"12", name:"wall balls", load:"20/14 lb"}, {reps:"10", unit:"cal", name:"row"}, {reps:"8", name:"burpees"}]} :
+       week===2?{format:"amrap", minutes:18, moves:[{reps:"14", name:"wall balls", load:"20/14 lb"}, {reps:"12", unit:"cal", name:"row"}, {reps:"10", name:"burpees"}]} :
+       week===3?{format:"fortime", rounds:5, template:"For time {rounds} rounds : {moves}.", moves:[{reps:"12", name:"wall balls", load:"20/14 lb"}, {reps:"10", name:"burpees"}, {reps:"12", unit:"cal", name:"row"}], note:"Cap 16 min."} :
+       week===4?{format:"amrap", minutes:18, moves:[{reps:"15", name:"wall balls", load:"20/14 lb"}, {reps:"12", name:"box step-ups", load:"24/20 po"}, {reps:"10", name:"burpees"}]} :
+       week===5?{format:"amrap", minutes:15, template:"Benchmark style Open — AMRAP {minutes} : {moves}.", moves:[{reps:"10", name:"wall balls", load:"20/14 lb"}, {reps:"10", unit:"cal", name:"row"}, {reps:"10", name:"burpees"}]} :
+       week===6?{format:"amrap", minutes:16, moves:[{reps:"12", name:"wall balls", load:"20/14 lb"}, {reps:"12", unit:"cal", name:"row"}, {reps:"8", name:"burpees over line"}]} :
+       week===7?{format:"amrap", minutes:12, moves:[{reps:"8", name:"wall balls", load:"20/14 lb"}, {reps:"8", unit:"cal", name:"row"}, {reps:"6", name:"burpees"}], note:"Reste frais."} :
+       {format:"amrap", minutes:10, moves:[{reps:"6", name:"wall balls", load:"20/14 lb"}, {reps:"6", unit:"cal", name:"row"}, {reps:"4", name:"burpees"}], note:"Activation seulement."}), p.wodNote+".")},
 
     {time:"7 min",title:"C. Reset moteur",tag:"Recovery",kind:"accessory",
      exercises:[cpEx("Bike",taper?"5 min":"6 min","zone 2","—","Faire redescendre le système. Tu dois finir mieux, pas écrasé.")]},
@@ -93,14 +93,14 @@ function competitionPeakBlocks(day,week){
      ]},
 
     {time:week>=4&&!taper?"18 min":taper?"12 min":"16 min",title:"B. Intervalles engine",tag:"Conditioning",kind:"wod",
-     text:(week===1?"EMOM 16 : min 1 = 12 cal row ; min 2 = 10 ring rows ; min 3 = 12 cal bike ; min 4 = 10 sit-ups." :
-       week===2?"EMOM 20 : min 1 = 14 cal row ; min 2 = 8 pull-ups ; min 3 = 14 cal bike ; min 4 = 12 sit-ups." :
-       week===3?"EMOM 16 : min 1 = 15 cal row ; min 2 = 10 burpees ; min 3 = 12 cal ski ; min 4 = 8 pull-ups." :
-       week===4?"AMRAP 18 : 12 cal ski + 10 pull-ups/ring rows + 12 sit-ups + 10 box step-ups 24/20 po." :
-       week===5?"Helen adapté — 3 rounds for time : 400 m row + 21 KB swings 24/16 kg + 12 pull-ups/ring rows. Cap 15 min." :
-       week===6?"EMOM 18 : min 1 = 15 cal row ; min 2 = 10 burpees ; min 3 = 10 pull-ups/ring rows." :
-       week===7?"EMOM 12 : min 1 = 10 cal row ; min 2 = 6 pull-ups/ring rows ; min 3 = 8 sit-ups." :
-       "EMOM 8 : min 1 = 8 cal row ; min 2 = 5 pull-ups/ring rows. Activation.")+" "+p.wodNote+"."},
+     wod:window.RacineWod.withNote((week===1?{format:"emom", style:"sequence", minutes:16, moves:[{reps:"12", unit:"cal", name:"row", minute:1}, {reps:"10", name:"ring rows", minute:2}, {reps:"12", unit:"cal", name:"bike", minute:3}, {reps:"10", name:"sit-ups", minute:4}]} :
+       week===2?{format:"emom", style:"sequence", minutes:20, moves:[{reps:"14", unit:"cal", name:"row", minute:1}, {reps:"8", name:"pull-ups", minute:2}, {reps:"14", unit:"cal", name:"bike", minute:3}, {reps:"12", name:"sit-ups", minute:4}]} :
+       week===3?{format:"emom", style:"sequence", minutes:16, moves:[{reps:"15", unit:"cal", name:"row", minute:1}, {reps:"10", name:"burpees", minute:2}, {reps:"12", unit:"cal", name:"ski", minute:3}, {reps:"8", name:"pull-ups", minute:4}]} :
+       week===4?{format:"amrap", minutes:18, moves:[{reps:"12", unit:"cal", name:"ski"}, {reps:"10", name:"pull-ups", detail:"/ring rows"}, {reps:"12", name:"sit-ups"}, {reps:"10", name:"box step-ups", load:"24/20 po"}]} :
+       week===5?{format:"fortime", rounds:3, template:"Helen adapté — {rounds} rounds for time : {moves}.", moves:[{reps:"400", unit:"m", name:"row"}, {reps:"21", name:"KB swings", load:"24/16 kg"}, {reps:"12", name:"pull-ups", detail:"/ring rows"}], note:"Cap 15 min."} :
+       week===6?{format:"emom", style:"sequence", minutes:18, moves:[{reps:"15", unit:"cal", name:"row", minute:1}, {reps:"10", name:"burpees", minute:2}, {reps:"10", name:"pull-ups", detail:"/ring rows", minute:3}]} :
+       week===7?{format:"emom", style:"sequence", minutes:12, moves:[{reps:"10", unit:"cal", name:"row", minute:1}, {reps:"6", name:"pull-ups", detail:"/ring rows", minute:2}, {reps:"8", name:"sit-ups", minute:3}]} :
+       {format:"emom", style:"sequence", minutes:8, moves:[{reps:"8", unit:"cal", name:"row", minute:1}, {reps:"5", name:"pull-ups", detail:"/ring rows", minute:2}], note:"Activation."}), p.wodNote+".")},
 
     {time:"7 min",title:"C. Posture rapide",tag:"Accessoire",kind:"accessory",
      exercises:[
@@ -122,14 +122,14 @@ function competitionPeakBlocks(day,week){
      exercises:[cpEx("Front Squat",p.front,p.frontLoad,taper?"1:30":"2:00","Maintenir les jambes et le rack. Aucune bataille.")]},
 
     {time:taper?"10 min":week>=4?"18 min":"14 min",title:"C. WOD haltéro sous fatigue",tag:"Conditioning",kind:"wod",
-     text:(week===1?"AMRAP 14 : 6 power cleans 135/95 lb + 10 wall balls 20/14 lb + 12 cal row." :
-       week===2?"AMRAP 18 : 5 power cleans 135/95 lb + 10 box step-ups 24/20 po + 12 wall balls 20/14 lb + 10 cal row." :
-       week===3?"For time 21-15-9 : wall balls 20/14 lb + cal row, puis 15 power cleans 135/95 lb. Cap 14 min." :
-       week===4?"AMRAP 18 : 4 power cleans 135/95 lb + 8 front squats 135/95 lb + 12 burpees + 14 cal row." :
-       week===5?"Grace adapté — For time : 30 clean and jerk 135/95 lb. Cap 8 min, puis 5 min easy row." :
-       week===6?"For time 4 rounds : 10 power cleans 135/95 lb + 12 wall balls 20/14 lb + 12 cal row. Cap 18 min." :
-       week===7?"AMRAP 10 : 4 power cleans 135/95 lb + 8 wall balls 20/14 lb + 8 cal row. Vif, frais." :
-       "AMRAP 8 : 3 power cleans 135/95 lb + 6 wall balls 20/14 lb + 6 cal row. Activation.")+" "+p.wodNote+"."},
+     wod:window.RacineWod.withNote((week===1?{format:"amrap", minutes:14, moves:[{reps:"6", name:"power cleans", load:"135/95 lb"}, {reps:"10", name:"wall balls", load:"20/14 lb"}, {reps:"12", unit:"cal", name:"row"}]} :
+       week===2?{format:"amrap", minutes:18, moves:[{reps:"5", name:"power cleans", load:"135/95 lb"}, {reps:"10", name:"box step-ups", load:"24/20 po"}, {reps:"12", name:"wall balls", load:"20/14 lb"}, {reps:"10", unit:"cal", name:"row"}]} :
+       week===3?{format:"fortime", cap:14, ladder:"21-15-9", template:"For time {ladder} : {moves}. Cap {cap} min.", moves:[{name:"wall balls", load:"20/14 lb"}, {unit:"cal", name:"row"}, {reps:"15", name:"power cleans", load:"135/95 lb", join:", puis "}]} :
+       week===4?{format:"amrap", minutes:18, moves:[{reps:"4", name:"power cleans", load:"135/95 lb"}, {reps:"8", name:"front squats", load:"135/95 lb"}, {reps:"12", name:"burpees"}, {reps:"14", unit:"cal", name:"row"}]} :
+       week===5?{format:"fortime", template:"Grace adapté — For time : {moves}.", sep:", ", moves:[{reps:"30", name:"clean and jerk", load:"135/95 lb"}], note:"Cap 8 min, puis 5 min easy row."} :
+       week===6?{format:"fortime", rounds:4, template:"For time {rounds} rounds : {moves}.", moves:[{reps:"10", name:"power cleans", load:"135/95 lb"}, {reps:"12", name:"wall balls", load:"20/14 lb"}, {reps:"12", unit:"cal", name:"row"}], note:"Cap 18 min."} :
+       week===7?{format:"amrap", minutes:10, moves:[{reps:"4", name:"power cleans", load:"135/95 lb"}, {reps:"8", name:"wall balls", load:"20/14 lb"}, {reps:"8", unit:"cal", name:"row"}], note:"Vif, frais."} :
+       {format:"amrap", minutes:8, moves:[{reps:"3", name:"power cleans", load:"135/95 lb"}, {reps:"6", name:"wall balls", load:"20/14 lb"}, {reps:"6", unit:"cal", name:"row"}], note:"Activation."}), p.wodNote+".")},
 
     cpMob("Front rack stretch 1 min + lat stretch 1 min/côté + wrist stretch 1 min + respiration 1 min.")
   ];
@@ -142,14 +142,14 @@ function competitionPeakBlocks(day,week){
      exercises:[cpEx("Transitions",taper?"3 tours faciles":"3-4 tours","6 reps / mouvement","0:45","Tester le rythme du WOD sans créer de fatigue.")]},
 
     {time:week===6?"35 min":week===4?"30 min":week===2?"24 min":week===7?"15 min":week===8?"12 min":week===5?"20 min":"20 min",title:"B. WOD long compétition",tag:"Conditioning",kind:"wod",
-     text:(week===1?"AMRAP 20 : 12 wall balls 20/14 lb + 12 cal row + 10 box step-ups 24/20 po + 8 burpees." :
-       week===2?"AMRAP 24 : 15 wall balls 20/14 lb + 15 cal row + 12 box step-ups 24/20 po + 10 burpees + 8 ring rows." :
-       week===3?"For time 5 rounds : 20 cal row + 20 wall balls 20/14 lb + 15 box step-ups 24/20 po + 10 burpees. Cap 25 min." :
-       week===4?"Chipper for time : 50 cal row + 50 wall balls 20/14 lb + 50 box step-ups 24/20 po + 40 KB swings 24/16 kg + 30 burpees + 20 ring rows. Cap 30 min." :
-       week===5?"Benchmark long — AMRAP 20 : 5 power cleans 135/95 lb + 10 wall balls 20/14 lb + 15 cal row + 20 sit-ups." :
-       week===6?"Simulation compétition — For time : 60 cal row + 50 wall balls 20/14 lb + 40 box step-ups 24/20 po + 30 burpees + 20 power cleans 135/95 lb + 10 pull-ups/ring rows. Cap 35 min." :
-       week===7?"AMRAP 15 : 10 wall balls 20/14 lb + 10 cal row + 8 box step-ups 24/20 po + 6 burpees. Reste frais." :
-       "Test court — AMRAP 12 : 8 wall balls 20/14 lb + 8 cal row + 6 burpees + 6 sit-ups. Activation compétitive.")+" "+p.wodNote+"."},
+     wod:window.RacineWod.withNote((week===1?{format:"amrap", minutes:20, moves:[{reps:"12", name:"wall balls", load:"20/14 lb"}, {reps:"12", unit:"cal", name:"row"}, {reps:"10", name:"box step-ups", load:"24/20 po"}, {reps:"8", name:"burpees"}]} :
+       week===2?{format:"amrap", minutes:24, moves:[{reps:"15", name:"wall balls", load:"20/14 lb"}, {reps:"15", unit:"cal", name:"row"}, {reps:"12", name:"box step-ups", load:"24/20 po"}, {reps:"10", name:"burpees"}, {reps:"8", name:"ring rows"}]} :
+       week===3?{format:"fortime", rounds:5, template:"For time {rounds} rounds : {moves}.", moves:[{reps:"20", unit:"cal", name:"row"}, {reps:"20", name:"wall balls", load:"20/14 lb"}, {reps:"15", name:"box step-ups", load:"24/20 po"}, {reps:"10", name:"burpees"}], note:"Cap 25 min."} :
+       week===4?{format:"fortime", template:"Chipper for time : {moves}.", moves:[{reps:"50", unit:"cal", name:"row"}, {reps:"50", name:"wall balls", load:"20/14 lb"}, {reps:"50", name:"box step-ups", load:"24/20 po"}, {reps:"40", name:"KB swings", load:"24/16 kg"}, {reps:"30", name:"burpees"}, {reps:"20", name:"ring rows"}], note:"Cap 30 min."} :
+       week===5?{format:"amrap", minutes:20, template:"Benchmark long — AMRAP {minutes} : {moves}.", moves:[{reps:"5", name:"power cleans", load:"135/95 lb"}, {reps:"10", name:"wall balls", load:"20/14 lb"}, {reps:"15", unit:"cal", name:"row"}, {reps:"20", name:"sit-ups"}]} :
+       week===6?{format:"fortime", template:"Simulation compétition — For time : {moves}.", moves:[{reps:"60", unit:"cal", name:"row"}, {reps:"50", name:"wall balls", load:"20/14 lb"}, {reps:"40", name:"box step-ups", load:"24/20 po"}, {reps:"30", name:"burpees"}, {reps:"20", name:"power cleans", load:"135/95 lb"}, {reps:"10", name:"pull-ups", detail:"/ring rows"}], note:"Cap 35 min."} :
+       week===7?{format:"amrap", minutes:15, moves:[{reps:"10", name:"wall balls", load:"20/14 lb"}, {reps:"10", unit:"cal", name:"row"}, {reps:"8", name:"box step-ups", load:"24/20 po"}, {reps:"6", name:"burpees"}], note:"Reste frais."} :
+       {format:"amrap", minutes:12, template:"Test court — AMRAP {minutes} : {moves}.", moves:[{reps:"8", name:"wall balls", load:"20/14 lb"}, {reps:"8", unit:"cal", name:"row"}, {reps:"6", name:"burpees"}, {reps:"6", name:"sit-ups"}], note:"Activation compétitive."}), p.wodNote+".")},
 
     {time:"5 min",title:"C. Cooldown obligatoire",tag:"Recovery",kind:"mobility",
      text:"Marche lente 2 min + respiration nasale 1 min + couch stretch 1 min/côté. Évalue stratégie : départ, cassures, transitions."}
@@ -157,11 +157,11 @@ function competitionPeakBlocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.competition_peak.getBlocks = function(day, week){
-  return competitionPeakBlocks(day, week);
+  return window.RacineWod.fill(competitionPeakBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.competition_peak.getWodText = function(day, week){
-  var b = competitionPeakBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
+  var b = window.COACH_BERTIN_PROGRAMS.competition_peak.getBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
   return b ? b.text : "";
 };
 

@@ -61,7 +61,7 @@
            "Charge qui laisse une posture solide du départ à l'arrivée. Épaules basses, côtes en place. " + TECHNIQUE_RULE)]},
 
       {time:"8 min", title:"E. Retour au calme", tag:"Conditioning", kind:"wod",
-       text:"Rameur ou vélo 8 min en zone facile à modérée. Conversation possible en continu. Objectif : circulation, pas performance."},
+       wod:{format:"steady", minutes:8, template:"{moves} {minutes} min en zone facile à modérée.", sep:" ou ", moves:[{name:"Rameur"}, {name:"vélo"}], note:"Conversation possible en continu. Objectif : circulation, pas performance."}},
 
       {time:"5 min", title:"F. Mobilité", tag:"Mobilité", kind:"mobility",
        text:"Couch stretch 1 min/côté + ouverture pectoraux 1 min/côté + respiration nasale 1 min. Sors du gym sans être vidé."}
@@ -88,7 +88,7 @@
            "Ne pas aller à l'échec : arrête la série tant que les reps restent propres. Utilise l'élastique d'assistance ou le Lat Pulldown si 6 reps strictes ne sortent pas. " + TECHNIQUE_RULE)]},
 
       {time:"10 min", title:"D. Conditionnement", tag:"Conditioning", kind:"wod",
-       text:"EMOM 10 min — minutes impaires : 8 calories vélo ou rameur ; minutes paires : 6 burpees contrôlés. Rythme modéré, respiration sous contrôle. Réduis les calories ou les répétitions si la minute devient serrée."},
+       wod:{format:"emom", style:"alternate", minutes:10, template:"EMOM {minutes} min — {moves}.", moves:[{reps:"8", unit:"calories", name:"vélo", minute:1}, {name:"rameur", join:" ou ", minute:1}, {reps:"6", name:"burpees", detail:"contrôlés", minute:2}], note:"Rythme modéré, respiration sous contrôle. Réduis les calories ou les répétitions si la minute devient serrée.", slotSep:" : "}},
 
       {time:"5 min", title:"E. Mobilité", tag:"Mobilité", kind:"mobility",
        text:"Étirement lats 1 min/côté + poignets 1 min + respiration nasale allongé 1 min."}
@@ -119,7 +119,7 @@
            "RPE 6. Pause 1 sec en haut, fessiers et non lombaires. " + TECHNIQUE_RULE)]},
 
       {time:"12 min", title:"E. Retour au calme", tag:"Conditioning", kind:"wod",
-       text:"10 à 15 min de marche inclinée ou de vélo facile. Zone 2, respiration nasale si possible. Aucune intensité."},
+       wod:{format:"steady", template:"10 à 15 min de {moves}.", sep:" ou de ", moves:[{name:"marche inclinée"}, {name:"vélo", detail:"facile"}], note:"Zone 2, respiration nasale si possible. Aucune intensité."}},
 
       {time:"5 min", title:"F. Mobilité", tag:"Mobilité", kind:"mobility",
        text:"Étirement ischios 1 min/côté + figure-4 1 min/côté + respiration 1 min."}
@@ -150,7 +150,7 @@
            "Charge légère, aucun élan, trapèzes relâchés. " + TECHNIQUE_RULE)]},
 
       {time:"8 min", title:"E. WOD court", tag:"Conditioning", kind:"wod",
-       text:"AMRAP 8 min à intensité modérée : 6 push-ups + 8 goblet squats + 10 calories vélo ou rameur. Les push-ups peuvent se faire sur un banc, le goblet squat reste léger. Rythme régulier : tu dois pouvoir finir sans être vidé."},
+       wod:{format:"amrap", minutes:8, template:"AMRAP {minutes} min à intensité modérée : {moves}.", moves:[{reps:"6", name:"push-ups"}, {reps:"8", name:"goblet squats"}, {reps:"10", unit:"calories", name:"vélo"}, {name:"rameur", join:" ou "}], note:"Les push-ups peuvent se faire sur un banc, le goblet squat reste léger. Rythme régulier : tu dois pouvoir finir sans être vidé."}},
 
       {time:"5 min", title:"F. Mobilité", tag:"Mobilité", kind:"mobility",
        text:"Étirement pectoraux 1 min/côté + open book 1 min/côté + respiration 1 min."},
@@ -213,9 +213,9 @@
       jeudi:    {label:"Séance 3 — Bas du corps", base:"Jambes et hanches",      focus:"Front Squat, Romanian Deadlift, Walking Lunge DB, Hip Thrust."},
       vendredi: {label:"Séance 4 — Haut du corps", base:"Haut du corps + WOD court", focus:"Strict Press, Incline DB Press, Seated Cable Row, AMRAP 8."}
     },
-    getBlocks: function(day, week){ return blocksFor(day); },
+    getBlocks: function(day, week){ return window.RacineWod.fill(blocksFor(day)); },
     getWodText: function(day, week){
-      var b = blocksFor(day).filter(function(x){ return x.kind === "wod"; })[0];
+      var b = window.RacineWod.fill(blocksFor(day)).filter(function(x){ return x.kind === "wod"; })[0];
       return b ? b.text : "";
     }
   };
