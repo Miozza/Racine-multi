@@ -1535,6 +1535,16 @@
       "consumes": []
     },
     {
+      "path": "dev/wod_format_checks.js",
+      "size": 13866,
+      "lines": 190,
+      "role": "Garde-fous des metcons structurés (programs/wod_format.js) : rendu, opérations sans champ de charge, standards de charge, programmes convertis et TEXT_LEGACY qui ne fait que rétrécir, plan Coach IA schéma 2 (migration, portée séance/cycle, retrait), refus d'un ajustement d'exercice visant un metcon.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/wod_moves_checks.js",
       "size": 8692,
       "lines": 143,

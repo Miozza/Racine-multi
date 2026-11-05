@@ -92,6 +92,33 @@ Les outils sont de deux natures :
 Même posture que `scripts/profiles/prescription.js` (carte Accepter/Refuser)
 et que l'Avis IA existant (`do_not_auto_apply`).
 
+### 3.1 Metcons — `proposer_metcon` (V5.3.0, décision du 2026-11-05)
+
+Un metcon structuré (`programs/wod_format.js`, voir CLAUDE.md § 3.1) se
+modifie par **opérations** : `regler` (format, durée, cap, tours, échelle,
+intervalles, consigne), `modifier` (reps, unité, détail, minute d'un
+mouvement), `remplacer`, `ajouter`, `retirer`. Coach IA peut tout changer
+d'un metcon, **sauf une charge** : aucune opération n'a de champ de poids. Un
+mouvement déjà présent garde sa charge fixe ; un mouvement nouveau reçoit le
+standard de `RacineWod.standardLoad` ; un mouvement chargé sans standard est
+refusé.
+
+- **Portée** choisie à chaque proposition : `seance` (une semaine) ou `cycle`
+  (cette semaine et les suivantes, pour ce jour). La carte montre le texte
+  exact de chaque semaine touchée avant Accepter ; une opération sur un
+  mouvement absent d'une semaine y est sautée et affichée « inchangé ».
+- **Stockage** : `state.aiPlan.wodAdjustments` (schéma 2), surcouche
+  appliquée dans `CoachAIPlan.applyToWorkout` après les ajustements
+  d'exercice. Le programme n'est jamais muté, l'historique jamais touché.
+  Le metcon vise le N-ième bloc `wod` du jour (un titre change d'une semaine
+  à l'autre, la position non). `proposer_retrait_metcon` annule.
+- **Lecture** : `consulter_seance` (et le contexte de la semaine) affiche une
+  ligne « Structure du metcon » : c'est là que le modèle lit les noms exacts.
+- **Bug corrigé** : `proposer_ajustement` ne vise qu'un exercice. Avant
+  V5.3.0, un ajustement nommant un metcon (« EMOM moteur ») était enregistré,
+  affiché « accepté », et ne changeait rien. Il est maintenant refusé, avec
+  renvoi vers `proposer_metcon` ; un exercice absent l'est aussi.
+
 ---
 
 ## 4. Où vont les données
@@ -108,6 +135,10 @@ et que l'Avis IA existant (`do_not_auto_apply`).
 
 `state.aiPlan` porte un numéro de **schéma** et une migration ascendante
 (CLAUDE.md §2.1). Un plan écrit par une version antérieure garde ses semaines.
+Schéma 2 (V5.3.0) : ajout de `wodAdjustments`, créé vide ; rien d'autre ne
+change. La migration se fait à la lecture, et le plan est réécrit au schéma 2
+au premier ajustement accepté. Une version antérieure qui réimporte un export
+récent ignore `wodAdjustments` (ses metcons restent ceux du programme).
 
 **Aucun `localStorage.clear()`, aucune suppression en masse**, nulle part dans
 le domaine. `CoachAIChat.clear()` fait un `removeItem` sur la seule clé de
@@ -283,6 +314,10 @@ mutent pas les templates ; `chat.js` n'applique jamais un patch ; aucune
 suppression de clé non ciblée ; tous les plafonds présents ; la clé API absente
 du state de profil et inaccessible à l'export et à la prescription ;
 `context.js` en lecture seule ; un seul fichier avec `fetch()`.
+
+`node dev/wod_format_checks.js` tient les metcons : rendu, opérations sans
+charge, standards, migration 1 → 2, portées séance / cycle, retrait, et le
+refus d'un ajustement d'exercice visant un metcon.
 
 ---
 

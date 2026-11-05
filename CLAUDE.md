@@ -177,6 +177,17 @@ Ne **jamais** écrire ici une « charge de travail » déjà réduite : la doubl
 réduction rend les poids ridicules. Un mouvement sans repère se déclare dans
 `scripts/charge/movement_tuning.js` (`defaultLoadSeeds`), jamais en dur ailleurs.
 
+**Metcon structuré** (décision du 2026-11-05) : un metcon s'écrit
+`{time, title, tag, kind:"wod", wod:{format, minutes, moves:[{reps, unit,
+name, load, minute}], template?, note?}}` — jamais `text`. `programs/wod_format.js`
+(`window.RacineWod`) fabrique le texte, et le programme passe ses blocs dans
+`RacineWod.fill()` au retour de `getBlocks`. C'est ce qui permet à Coach IA de
+modifier un metcon (`proposer_metcon`). Le texte rendu est ce que lisent
+pastilles, chrono et résultats : ne pas changer son contrat. Tout nouveau
+programme est structuré ; `TEXT_LEGACY` de `dev/wod_format_checks.js` ne fait
+que rétrécir. Un bac à sable `dev/` qui charge un programme charge
+`programs/wod_format.js` avant lui.
+
 **Metcon** (`kind:"wod"`) : tout mouvement chargé porte sa charge **écrite**
 dans le texte — jamais à l'appréciation de l'athlète (décision du 2026-10-15).
 Format : `15 Wall Balls 20 lb`, `24 po` pour une boîte, `poids du corps` si
@@ -368,6 +379,10 @@ pas en ajouter un. Deux raisons :
 - sur le poids exact, le moteur est meilleur : e1RM réels, frein RPE récent,
   ratios du profil, tailles du rack. Un modèle ne sait rien de tout ça de façon
   fiable depuis une conversation.
+
+Un metcon se modifie par opérations (`proposer_metcon`, portée séance ou
+cycle) : tout change sauf la charge, qui vient du programme ou de
+`RacineWod.standardLoad`. Voir `docs/COACH_AI.md` § 3.1.
 
 L'intensité voulue passe par le champ `intention`
 (`technique` / `legere` / `facile`), reporté dans la note — les mots que

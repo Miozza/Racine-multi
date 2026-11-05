@@ -1,3 +1,20 @@
+## V5.3.0 — Metcons structurés : Coach IA peut changer un metcon
+
+**Pourquoi** : demande de l'athlète (2026-11-05). Coach IA avait « accepté » deux fois de passer l'EMOM du jeudi de S2 à 10 cal, et rien n'avait changé : un metcon était un texte, et l'ajustement d'exercice ne sait viser qu'un exercice. Pour que Coach IA puisse changer un metcon, il fallait qu'un metcon soit fait de mouvements, comme le reste de la séance.
+
+**Ce qui change**
+
+- `programs/wod_format.js` (`window.RacineWod`) : un metcon s'écrit `wod:{format, minutes, moves:[…], note}`. Le texte est fabriqué à partir de la structure — **identique au caractère près** à l'ancien sur les 8 programmes convertis (630 séances comparées, 0 différence) : pastilles, chrono, saisie de résultat et historique lisent toujours ce texte.
+- **Convertis** : Moteur + jambes, Pont Peak, Phase 2 — Fable 5, Épaules 3D v2, Retour au travail, Réhabilitation, Compétition Peak, semaines de transition. Les autres programmes restent en texte ; tout nouveau programme est structuré (`dev/wod_format_checks.js`).
+- **Coach IA — `proposer_metcon`** : format, durée, cap, tours, reps ou calories, consigne ; remplacer, ajouter, retirer un mouvement. Portée au choix : la séance, ou le reste du cycle. La carte montre le texte exact de chaque semaine avant Accepter. `proposer_retrait_metcon` annule.
+- **Aucune charge** : aucune opération n'a de champ de poids. Un mouvement déjà là garde sa charge fixe, un nouveau reçoit le standard de Racine (Wall Balls 20/14 lb, KB Swings 24/16 kg, boîte 24/20 po…), un mouvement chargé sans standard est refusé.
+- **Bug corrigé** : `proposer_ajustement` sur un metcon (« EMOM moteur ») ou sur un exercice absent est refusé, au lieu d'être marqué accepté sans effet.
+- Le contexte de Coach IA montre la structure de chaque metcon (« Structure du metcon »), pour qu'il vise les noms exacts.
+
+**Données**
+
+`state.aiPlan` passe au schéma 2 : ajout de `wodAdjustments`, créé vide. Semaines, ajustements d'exercice et versions passent tels quels ; aucune clé renommée. Vérifié dans Chromium sur l'export réel de l'athlète (72 séances) : historique et état de l'athlète inchangés, 65 charges suggérées identiques avant/après, export réimportable dans la version précédente (qui ignore `wodAdjustments`).
+
 ## V5.2.40 — Moteur + jambes : EMOM de S2 à 10 cal de Bike
 
 **Pourquoi** : retour de l'athlète après le jeudi de S1 (2026-11-05). L'EMOM 12 à 12 cal de Bike a été complété, mais à effort maximal sur le vélo dès la 9e minute (RPE 9). S2 prévoyait 14 cal sur 14 minutes : deux hausses en même temps, sur le maillon déjà au maximum.

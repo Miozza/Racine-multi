@@ -1,5 +1,5 @@
-// Racine V5.2.40 — Moteur + jambes : EMOM de S2 à 10 cal de Bike
-var APP_VERSION = "V5.2.40";
+// Racine V5.3.0 — Metcons structurés : Coach IA peut changer un metcon
+var APP_VERSION = "V5.3.0";
 
 // Architecture stable
 // programs/*.js = plan prévu

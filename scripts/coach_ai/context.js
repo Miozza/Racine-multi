@@ -368,6 +368,15 @@
     }
     return null;
   }
+  function wodStructureLine(spec){
+    var s = RacineWod.summary(spec);
+    var mv = s.mouvements.map(function(m){
+      return [m.reps, m.unite, m.nom].filter(Boolean).join(" ")
+        + (m.charge_fixe ? " [charge fixe " + m.charge_fixe + "]" : "")
+        + (m.minute ? " (minute " + m.minute + ")" : "");
+    }).join(" | ");
+    return "Structure du metcon (modifiable par proposer_metcon) : " + s.format + (mv ? " — " + mv : "");
+  }
   function workoutLines(day, week){
     day = str(day).toLowerCase();
     week = Number(week);
@@ -388,6 +397,10 @@
       } else if(str(b.text)){
         clip(b.text, BLOCK_TEXT_LIMIT).split(/\n+/).forEach(function(t){ if(str(t)) lines.push("      " + str(t)); });
       }
+      // Metcon structuré (programs/wod_format.js) : la structure est ce que
+      // `proposer_metcon` modifie. Sans elle, le modèle devinerait les noms
+      // exacts des mouvements à partir du texte.
+      if(b.wod && window.RacineWod) lines.push("      " + wodStructureLine(b.wod));
     });
     if(!lines.length) lines.push("  (aucun bloc)");
     return lines;

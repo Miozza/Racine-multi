@@ -1,8 +1,33 @@
-# ETAT ACTUEL — V5.2.40
+# ETAT ACTUEL — V5.3.0
 
-Version actuelle : V5.2.40
+Version actuelle : V5.3.0
 
 ## État courant
+
+### Metcons structurés — Coach IA peut changer un metcon (V5.3.0)
+
+Un metcon s'écrit en **structure** (`programs/wod_format.js`, `window.RacineWod`) :
+format, durée, mouvements chiffrés. Le texte affiché en est fabriqué, identique
+au caractère près à l'ancien : pastilles, chrono, résultats et historique ne
+changent pas.
+
+- **Convertis** : Moteur + jambes, Pont Peak, Phase 2 — Fable 5, Épaules 3D v2,
+  Retour au travail, Réhabilitation (Stéphanie), Compétition Peak, semaines de
+  transition (Deload, Tests). Jambes du coureur (Maxence) n'a pas de metcon.
+  Les autres programmes restent en texte (`TEXT_LEGACY`, qui ne fait que
+  rétrécir) ; tout nouveau programme est structuré. Programme de Christian : à
+  convertir quand il sera nommé.
+- **Coach IA** : `proposer_metcon` change format, durée, reps/calories,
+  consigne, remplace / ajoute / retire un mouvement — jamais une charge (charge
+  fixe du programme ou standard de Racine). Portée choisie à chaque fois :
+  séance, ou reste du cycle. Aperçu du texte exact par semaine avant Accepter.
+  `proposer_retrait_metcon` annule.
+- **Bug corrigé** : un ajustement d'exercice visant un metcon était marqué
+  « accepté » sans rien changer. Il est maintenant refusé.
+- **Données** : `state.aiPlan` passe au schéma 2 (`wodAdjustments` ajouté,
+  vide) ; rien d'autre ne change. Vérifié sur l'export réel : 72 séances,
+  65 charges suggérées identiques avant/après, export réimportable dans
+  l'ancienne version.
 
 ### Réhabilitation Stéphanie — révision sur retours de l'athlète
 

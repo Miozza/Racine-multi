@@ -186,6 +186,68 @@
         }
       },
       {
+        name: "proposer_metcon",
+        description: "Proposer de changer un metcon (bloc WOD) : format, durée, cap, tours, répétitions ou calories, consigne, et remplacer, ajouter ou retirer un mouvement. "
+                   + "Le metcon visé montre une ligne « Structure du metcon » dans la séance ; les noms de mouvement s'écrivent comme dans cette structure. "
+                   + "Aucun champ de poids : un mouvement déjà présent garde sa charge fixe, un mouvement nouveau reçoit la charge standard de Racine (refusé s'il n'en a pas). "
+                   + "Portée « seance » : la semaine visée seulement. Portée « cycle » : la semaine visée et toutes les suivantes du programme, pour ce jour ; une opération sur un mouvement absent d'une semaine y est sautée.",
+        input_schema: {
+          type: "object",
+          properties: {
+            semaine: {type: "integer", description: "Numéro de semaine visé (première semaine touchée)."},
+            jour: {type: "string", description: "Jour visé, en minuscules (« jeudi »)."},
+            bloc: {type: "integer", description: "Rang du metcon dans la journée quand il y en a plusieurs (1 par défaut)."},
+            portee: {type: "string", enum: ["seance", "cycle"], description: "« seance » : cette semaine seulement. « cycle » : cette semaine et les suivantes."},
+            operations: {
+              type: "array",
+              description: "Changements, appliqués dans l'ordre.",
+              items: {
+                type: "object",
+                properties: {
+                  op: {type: "string", enum: ["regler", "modifier", "remplacer", "ajouter", "retirer"],
+                       description: "regler : format ou paramètres du metcon. modifier : répétitions/unité/détail/minute d'un mouvement. remplacer : un mouvement par un autre. ajouter / retirer : un mouvement."},
+                  format: {type: "string", enum: ["amrap", "emom", "fortime", "intervals", "steady", "free"], description: "(regler) Nouveau format."},
+                  style: {type: "string", enum: ["each", "alternate", "sequence", "stations"], description: "(regler, EMOM) each : tout chaque minute ; alternate : minutes impaires / paires ; sequence : min 1, min 2… ; stations : 1), 2)…"},
+                  minutes: {type: "integer", description: "(regler) Durée en minutes (AMRAP, EMOM, aérobie)."},
+                  cap: {type: "integer", description: "(regler) Cap en minutes d'un « pour le temps »."},
+                  tours: {type: "integer", description: "(regler) Nombre de tours."},
+                  echelle: {type: "string", description: "(regler) Échelle de répétitions, ex. « 21-15-9 »."},
+                  series: {type: "integer", description: "(regler) Nombre d'intervalles."},
+                  travail: {type: "string", description: "(regler) Durée d'un intervalle de travail, ex. « 3 min »."},
+                  repos: {type: "string", description: "(regler) Repos entre intervalles, ex. « 1:30 »."},
+                  consigne: {type: "string", description: "(regler) Nouvelle consigne du metcon (remplace l'ancienne)."},
+                  mouvement: {type: "string", description: "(modifier, remplacer, retirer) Mouvement visé, nom de la structure."},
+                  vers: {type: "string", description: "(remplacer) Nouveau mouvement, nom réel et stable."},
+                  nom: {type: "string", description: "(ajouter) Mouvement ajouté, nom réel et stable."},
+                  reps: {type: "string", description: "(modifier, remplacer, ajouter) Répétitions ou quantité, ex. « 10 », « 8-10 »."},
+                  unite: {type: "string", description: "(modifier, remplacer, ajouter) Unité devant le nom : « cal », « min », « m », « sec », ou vide."},
+                  detail: {type: "string", description: "(modifier, remplacer, ajouter) Précision après le nom, ex. « à la parallèle », « /jambe »."},
+                  minute: {type: "integer", description: "(EMOM) Minute ou station du mouvement : 1 = minutes impaires, 2 = minutes paires en alternance."},
+                  position: {type: "integer", description: "(ajouter) Place dans la liste, à partir de 1. Vide : à la fin."}
+                },
+                required: ["op"]
+              }
+            },
+            raison: {type: "string", description: "Pourquoi, en une phrase. L'athlète la lit avant d'accepter."}
+          },
+          required: ["semaine", "jour", "portee", "operations", "raison"]
+        }
+      },
+      {
+        name: "proposer_retrait_metcon",
+        description: "Proposer d'annuler les changements Coach IA déjà acceptés sur un metcon, pour une semaine et un jour : le metcon revient à ce que le programme prévoit (une portée « cycle » est retirée en entier).",
+        input_schema: {
+          type: "object",
+          properties: {
+            semaine: {type: "integer", description: "Une semaine touchée par le changement."},
+            jour: {type: "string", description: "Jour, en minuscules."},
+            bloc: {type: "integer", description: "Rang du metcon dans la journée (1 par défaut)."},
+            raison: {type: "string", description: "Pourquoi, en une phrase."}
+          },
+          required: ["semaine", "jour", "raison"]
+        }
+      },
+      {
         name: "proposer_retrait_remplacement",
         description: "Proposer de retirer un remplacement de mouvement actif : le mouvement d'origine du programme revient partout.",
         input_schema: {
@@ -214,7 +276,7 @@
     ];
   }
 
-  var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_retrait_remplacement", "proposer_retrait_ajustement"];
+  var PROPOSALS = ["proposer_remplacement", "proposer_ajustement", "proposer_metcon", "proposer_retrait_metcon", "proposer_retrait_remplacement", "proposer_retrait_ajustement"];
   var READS = ["consulter_mouvement", "consulter_seance", "consulter_programme", "consulter_historique", "expliquer_charge", "consulter_bilan"];
 
   api.tools = tools;
@@ -266,6 +328,58 @@
   // ── Rendu lisible d'une proposition ────────────────────────────────────
   // L'athlète doit pouvoir décider sans lire du JSON.
 
+  // ── Metcons structurés : de la proposition à l'aperçu ──────────────────
+  //
+  // Les champs de l'outil sont en français ; RacineWod.applyOps lit ses noms
+  // à lui. La traduction se fait ici, une fois, pour describe() et apply().
+  var WOD_FIELD = {tours:"rounds", echelle:"ladder", series:"sets", travail:"work", repos:"rest", consigne:"note", unite:"unit"};
+  function wodOps(input){
+    return (Array.isArray(input && input.operations) ? input.operations : []).map(function(o){
+      var out = {};
+      Object.keys(o || {}).forEach(function(k){ out[WOD_FIELD[k] || k] = o[k]; });
+      return out;
+    });
+  }
+  function lastWeek(){
+    try{ if(typeof totalWeeks === "function"){ var n = Number(totalWeeks()); if(n >= 1) return n; } }catch(e){}
+    return 12;
+  }
+  function wodRange(input){
+    var from = Number(input && input.semaine) || 1;
+    var to = str(input && input.portee) === "cycle" ? Math.max(from, lastWeek()) : from;
+    var weeks = [];
+    for(var w = from; w <= to; w++) weeks.push(w);
+    return weeks;
+  }
+  function wodBlockOf(day, week, index){
+    if(typeof buildWorkout !== "function") return null;
+    var w = null;
+    try{ w = buildWorkout(str(day).toLowerCase(), week); }catch(e){ return null; }
+    var n = 0, found = null;
+    ((w && w.blocks) || []).forEach(function(b){
+      if(b && b.kind === "wod"){ n++; if(n === (Number(index) || 1)) found = b; }
+    });
+    return found;
+  }
+  // Une ligne par semaine : le texte que l'athlète verra, ou pourquoi rien.
+  function wodPreview(input){
+    var ops = wodOps(input);
+    return wodRange(input).map(function(week){
+      var b = wodBlockOf(input.jour, week, input.bloc);
+      if(!b) return {week:week, ok:false, error:"aucun metcon ce jour-là"};
+      if(!b.wod) return {week:week, ok:false, error:"metcon écrit en texte, non modifiable"};
+      var r = window.RacineWod ? RacineWod.applyOps(b.wod, ops) : {ok:false, error:"module metcon indisponible"};
+      return r.ok ? {week:week, ok:true, title:str(b.title), text:RacineWod.render(r.spec), skipped:r.skipped || []}
+                  : {week:week, ok:false, error:r.error};
+    });
+  }
+  api.previewMetcon = function(input){ return wodPreview(input || {}); };
+  function normMove(v){
+    var s = str(v).toLowerCase();
+    try{ s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }catch(e){}
+    return s.replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
   api.describe = function(patch){
     patch = patch || {};
     var name = str(patch.name);
@@ -296,6 +410,31 @@
           str(input.raison)
         ].filter(Boolean),
         footer: "La charge reste calculée par le moteur."
+      };
+    }
+
+    if(name === "proposer_metcon"){
+      var weeks = wodRange(input);
+      var range = weeks.length > 1 ? "Semaines " + weeks[0] + " à " + weeks[weeks.length - 1] : "Semaine " + weeks[0];
+      var lines = [range + " · " + str(input.jour) + (str(input.portee) === "cycle" ? " (jusqu'à la fin du cycle)" : "")];
+      var prev = [];
+      try{ prev = wodPreview(input); }catch(e){}
+      prev.forEach(function(p){
+        lines.push("S" + p.week + " : " + (p.ok ? p.text : "inchangé — " + p.error));
+      });
+      if(str(input.raison)) lines.push(str(input.raison));
+      return {
+        title: "Changer le metcon" + (prev[0] && prev[0].title ? " « " + prev[0].title + " »" : ""),
+        lines: lines,
+        footer: "Coach IA ne choisit aucune charge : charges fixes du programme ou standards de Racine."
+      };
+    }
+
+    if(name === "proposer_retrait_metcon"){
+      return {
+        title: "Annuler les changements du metcon",
+        lines: ["Semaine " + str(input.semaine) + " · " + str(input.jour), str(input.raison)].filter(Boolean),
+        footer: "Le metcon revient à ce que le programme prévoit."
       };
     }
 
@@ -339,6 +478,23 @@
 
       if(name === "proposer_ajustement"){
         if(!window.CoachAIPlan) return {ok:false, error:"Module de plan indisponible."};
+        // Un ajustement ne vise qu'un EXERCICE de la séance. Avant V5.3.0, un
+        // ajustement sur « EMOM moteur » (un metcon) était enregistré, affiché
+        // comme accepté, et ne changeait rien (rapport de l'athlète, 2026-11-05).
+        if(typeof buildWorkout === "function"){
+          var wk = null;
+          try{ wk = buildWorkout(str(input.jour).toLowerCase(), Number(input.semaine)); }catch(e){ wk = null; }
+          if(wk && Array.isArray(wk.blocks)){
+            var target = normMove(input.mouvement), isExercise = false, isWod = false;
+            wk.blocks.forEach(function(b){
+              (b.exercises || []).forEach(function(e){ if(normMove(e && e.name) === target) isExercise = true; });
+              if(b.kind === "wod" && normMove(String(b.title || "").replace(/^[A-H]\.\s*/, "")) === target) isWod = true;
+            });
+            if(!isExercise) return {ok:false, error: isWod
+              ? "« " + str(input.mouvement) + " » est un metcon : un ajustement d'exercice ne le change pas. Demande à Coach IA de passer par proposer_metcon."
+              : "Aucun exercice « " + str(input.mouvement) + " » en semaine " + str(input.semaine) + " · " + str(input.jour) + " : rien n'a été changé."};
+          }
+        }
         var res = CoachAIPlan.addAdjustment({
           week: input.semaine,
           day: input.jour,
@@ -352,6 +508,40 @@
         if(!res.ok) return res;
         logPatch(patch, "accepted");
         return {ok:true, message:"Ajustement appliqué sur " + str(input.mouvement) + "."};
+      }
+
+      if(name === "proposer_metcon"){
+        if(!window.CoachAIPlan || !CoachAIPlan.addWodAdjustment) return {ok:false, error:"Module de plan indisponible."};
+        var ops = wodOps(input);
+        if(!ops.length) return {ok:false, error:"Aucun changement proposé."};
+        var prev = wodPreview(input);
+        var good = prev.filter(function(p){ return p.ok; });
+        if(!good.length){
+          var first = prev[0] || {};
+          return {ok:false, error:"Rien n'a été changé" + (first.week ? " (S" + first.week + " : " + first.error + ")" : "") + "."};
+        }
+        var cycle = str(input.portee) === "cycle";
+        var added = CoachAIPlan.addWodAdjustment({
+          program: (typeof activeProgramId === "function") ? activeProgramId() : "",
+          day: input.jour,
+          index: Number(input.bloc) || 1,
+          block: good[0].title,
+          fromWeek: Number(input.semaine),
+          toWeek: cycle ? null : Number(input.semaine),
+          ops: ops,
+          reason: str(input.raison)
+        });
+        if(!added.ok) return added;
+        logPatch(patch, "accepted");
+        return {ok:true, message:"Metcon ajusté : " + good.map(function(p){ return "S" + p.week; }).join(", ") + "."};
+      }
+
+      if(name === "proposer_retrait_metcon"){
+        if(!window.CoachAIPlan || !CoachAIPlan.removeWodAdjustment) return {ok:false, error:"Module de plan indisponible."};
+        var gone2 = CoachAIPlan.removeWodAdjustment(Number(input.semaine), input.jour, Number(input.bloc) || 1);
+        if(!gone2.ok) return gone2;
+        logPatch(patch, "accepted");
+        return {ok:true, message:"Metcon revenu au programme (S" + str(input.semaine) + " · " + str(input.jour) + ")."};
       }
 
       if(name === "proposer_retrait_remplacement"){
