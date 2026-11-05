@@ -80,6 +80,19 @@ r = W.applyOps(emom, [{op:"ajouter", nom:"Kettlebell Halo", reps:"5"}]);
 assert(!r.ok, 'mouvement chargé sans standard : refusé (aucune charge à deviner)');
 r = W.applyOps(emom, [{op:"retirer", mouvement:"Absent"}]);
 assert(!r.ok, 'aucune opération applicable : refus, pas de faux succès');
+r = W.applyOps({format:"emom", style:"sequence", minutes:8, moves:[{reps:"12", unit:"cal", name:"Ski", minute:1}, {reps:"10", name:"Ring Row", minute:2}]},
+  [{op:"remplacer", mouvement:"Row", vers:"Bike"}]);
+assert(!r.ok, '« Row » ne vise jamais « Ring Row » (pas de correspondance par sous-chaîne)');
+r = W.applyOps({format:"amrap", minutes:8, moves:[{reps:"10", name:"Wall Balls", load:"20 lb"}]}, [{op:"modifier", mouvement:"Wall Ball", reps:"8"}]);
+assert(r.ok && r.spec.moves[0].reps === "8", 'Singulier / pluriel toléré : « Wall Ball » vise « Wall Balls »');
+const aero = {format:"steady", minutes:24, template:"Moteur aérobie, {minutes} min sans arrêt : {moves}.", sep:", ",
+  moves:[{reps:"10", unit:"min", name:"Bike"}, {reps:"4", unit:"min", name:"Row"}, {reps:"10", unit:"min", name:"Bike"}]};
+r = W.applyOps(aero, [{op:"modifier", mouvement:"Row", reps:"6"}]);
+assert(!r.ok && /26 min/.test(r.error), 'Aérobie : un segment changé sans la durée est refusé (26 min ≠ 24)');
+r = W.applyOps(aero, [{op:"modifier", mouvement:"Row", reps:"6"}, {op:"regler", minutes:26}]);
+assert(r.ok && /^Moteur aérobie, 26 min/.test(W.render(r.spec)), 'Aérobie : segment et durée changés ensemble, accepté');
+assert(W.validate({format:"steady", minutes:20, template:"Moteur aérobie, {minutes} min sans arrêt : {moves}, 2 fois.", sep:" puis ",
+  moves:[{reps:"5", unit:"min", name:"Bike"}, {reps:"5", unit:"min", name:"Row"}]}).length === 0, 'Aérobie « …, 2 fois » : 2 × (5 + 5) = 20, valide');
 r = W.applyOps(emom, [{op:"regler", format:"amrap"}]);
 assert(r.ok && /^AMRAP 14 : /.test(W.render(r.spec)), 'changer de format : phrase par défaut du nouveau format');
 const src = read('programs/wod_format.js');
@@ -176,6 +189,7 @@ assert(!heavy.ok, 'Mouvement chargé sans standard : refus');
 assert(Patch.apply({name:'proposer_retrait_metcon', input:{semaine:2, jour:'jeudi', raison:'x'}}).ok && emomText(2) === s2Before,
   'proposer_retrait_metcon : S2 revient au programme');
 assert(/14 cal Row/.test(emomText(3)), 'Le retrait de S2 ne touche pas l\'ajustement du cycle (S3)');
+assert(Plan.undo().ok && /minutes paires 9 cal Bike/.test(emomText(2)), 'Annuler après un retrait remet l\'ajustement retiré (instantané pris avant)');
 
 // Le schéma des outils : aucun champ de charge dans proposer_metcon.
 const tool = Patch.tools().filter(t => t.name === 'proposer_metcon')[0];

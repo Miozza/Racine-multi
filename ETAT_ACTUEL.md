@@ -1,10 +1,14 @@
-# ETAT ACTUEL — V5.3.0
+# ETAT ACTUEL — V5.3.1
 
-Version actuelle : V5.3.0
+Version actuelle : V5.3.1
 
 ## État courant
 
-### Metcons structurés — Coach IA peut changer un metcon (V5.3.0)
+### Metcons — correctifs d'audit (V5.3.1)
+
+Coach IA ne vise plus « Ring Row » quand on lui dit « Row » (singulier / pluriel seulement) ; « annuler » après un retrait de metcon restaure ; un aérobie en segments doit tomber juste sur sa durée.
+
+### Metcons structurés — Coach IA peut changer un metcon
 
 Un metcon s'écrit en **structure** (`programs/wod_format.js`, `window.RacineWod`) :
 format, durée, mouvements chiffrés. Le texte affiché en est fabriqué, identique

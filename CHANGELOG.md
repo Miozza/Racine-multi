@@ -1,3 +1,11 @@
+## V5.3.1 — Metcons : correctifs d'audit
+
+**Pourquoi** : audit de V5.3.0. Trois corrections arrivées après la fusion de la PR #141.
+
+- **Coach IA ne vise plus le mauvais mouvement.** Une opération sur « Row » modifiait « Ring Row » quand le Row était absent — en silence sur une semaine non regardée avec la portée « cycle ». La correspondance tolère seulement le singulier / pluriel (« Wall Ball » = « Wall Balls »).
+- **« Annuler » après un retrait de metcon restaure.** L'instantané était pris après le retrait.
+- **Un aérobie en segments tombe juste sur sa durée.** Changer « 4 min Row » en « 6 min Row » sans passer la durée de 24 à 26 min est refusé. Les répétitions écrites (« …, 2 fois ») sont comptées.
+
 ## V5.3.0 — Metcons structurés : Coach IA peut changer un metcon
 
 **Pourquoi** : demande de l'athlète (2026-11-05). Coach IA avait « accepté » deux fois de passer l'EMOM du jeudi de S2 à 10 cal, et rien n'avait changé : un metcon était un texte, et l'ajustement d'exercice ne sait viser qu'un exercice. Pour que Coach IA puisse changer un metcon, il fallait qu'un metcon soit fait de mouvements, comme le reste de la séance.

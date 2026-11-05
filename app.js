@@ -1,5 +1,5 @@
-// Racine V5.3.0 — Metcons structurés : Coach IA peut changer un metcon
-var APP_VERSION = "V5.3.0";
+// Racine V5.3.1 — Metcons : correctifs d'audit
+var APP_VERSION = "V5.3.1";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -153,6 +153,17 @@
       else if(k !== "moves" && k !== "stations" && k !== "tours" && (spec[k] == null || spec[k] === "")) errors.push("La phrase utilise {" + k + "} sans valeur.");
     });
     if((spec.format === "amrap" || spec.format === "emom") && !spec.minutes) errors.push("Un " + spec.format.toUpperCase() + " a besoin d'une durée.");
+    // Aérobie en segments (« 10 min Bike, 4 min Row, 10 min Bike ») : la somme
+    // tombe juste sur la durée annoncée, répétitions comprises (« …, 2 fois »).
+    // Sans ça, changer un segment laisserait « 24 min sans arrêt » mentir.
+    if(spec.format === "steady" && spec.minutes && (spec.moves || []).length){
+      var segs = spec.moves.filter(function(m){ return /^min$/i.test(str(m.unit)) && /^\d+$/.test(str(m.reps)); });
+      if(segs.length === spec.moves.length){
+        var times = Number((tpl.match(/(\d+) fois/) || [])[1]) || 1;
+        var sum = segs.reduce(function(acc, m){ return acc + Number(m.reps); }, 0) * times;
+        if(sum !== Number(spec.minutes)) errors.push("Segments : " + sum + " min au total, la durée annoncée est " + spec.minutes + " min.");
+      }
+    }
     // Un EMOM à plusieurs minutes tombe juste sur son cycle (CLAUDE.md § 3.1).
     if(spec.format === "emom" && spec.style && spec.style !== "each" && spec.minutes){
       var cycle = groups(spec).length;
@@ -204,11 +215,12 @@
     var key = norm(name), list = spec.moves || [];
     if(!key) return -1;
     for(var i = 0; i < list.length; i++) if(norm(list[i].name) === key) return i;
+    // Tolérance : singulier / pluriel seulement (« Wall Ball » = « Wall Balls »).
+    // Pas de sous-chaîne : « Row » ne doit jamais viser « Ring Row », surtout
+    // en portée « cycle » où la semaine suivante n'a pas le même metcon.
+    function sing(s){ return s.split(" ").map(function(w){ return w.replace(/s$/, ""); }).join(" "); }
     var hits = [];
-    list.forEach(function(m, i){
-      var n = norm(m.name);
-      if(n && (n.indexOf(key) >= 0 || key.indexOf(n) >= 0)) hits.push(i);
-    });
+    list.forEach(function(m, i){ if(sing(norm(m.name)) === sing(key)) hits.push(i); });
     return hits.length === 1 ? hits[0] : -1;
   }
   // Charge d'un mouvement nouveau : celle du même mouvement s'il est déjà dans
