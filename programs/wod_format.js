@@ -204,11 +204,12 @@
     var key = norm(name), list = spec.moves || [];
     if(!key) return -1;
     for(var i = 0; i < list.length; i++) if(norm(list[i].name) === key) return i;
+    // Tolérance : singulier / pluriel seulement (« Wall Ball » = « Wall Balls »).
+    // Pas de sous-chaîne : « Row » ne doit jamais viser « Ring Row », surtout
+    // en portée « cycle » où la semaine suivante n'a pas le même metcon.
+    function sing(s){ return s.split(" ").map(function(w){ return w.replace(/s$/, ""); }).join(" "); }
     var hits = [];
-    list.forEach(function(m, i){
-      var n = norm(m.name);
-      if(n && (n.indexOf(key) >= 0 || key.indexOf(n) >= 0)) hits.push(i);
-    });
+    list.forEach(function(m, i){ if(sing(norm(m.name)) === sing(key)) hits.push(i); });
     return hits.length === 1 ? hits[0] : -1;
   }
   // Charge d'un mouvement nouveau : celle du même mouvement s'il est déjà dans
