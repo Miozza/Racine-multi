@@ -154,38 +154,38 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
   // trop bas sans le décider.
   var METCONS = {
     lundi: [
-      "Intervalles vélo : 10 × (20 s fort / 40 s facile). Selle assez haute pour ne jamais fermer la hanche. Le « fort » est une cadence, pas une position — si la hanche pince, réduis la résistance, pas l'amplitude.",
-      "AMRAP 10 : 10 cal vélo + 10 Air Squat à la parallèle + 10 Sit-Up. Les air squats s'arrêtent à la parallèle même en AMRAP — la fatigue n'autorise pas une profondeur que la hanche refuse.",
-      "Intervalles vélo : 8 × (30 s fort / 30 s facile). Effort plus long qu'en S1, même résistance : c'est la cadence qui monte, pas la charge.",
-      "Zone 2 vélo : 10 min continu. Allure de conversation du début à la fin. RPE 5-6, jamais plus — semaine d'allègement."
+      {format:"intervals", sets:10, work:"20 s", rest:"40 s", template:"Intervalles {moves} : {sets} × ({work} fort / {rest} facile).", moves:[{name:"vélo"}], note:"Selle assez haute pour ne jamais fermer la hanche. Le « fort » est une cadence, pas une position — si la hanche pince, réduis la résistance, pas l'amplitude."},
+      {format:"amrap", minutes:10, moves:[{reps:"10", unit:"cal", name:"vélo"}, {reps:"10", name:"Air Squat", detail:"à la parallèle"}, {reps:"10", name:"Sit-Up"}], note:"Les air squats s'arrêtent à la parallèle même en AMRAP — la fatigue n'autorise pas une profondeur que la hanche refuse."},
+      {format:"intervals", sets:8, work:"30 s", rest:"30 s", template:"Intervalles {moves} : {sets} × ({work} fort / {rest} facile).", moves:[{name:"vélo"}], note:"Effort plus long qu'en S1, même résistance : c'est la cadence qui monte, pas la charge."},
+      {format:"steady", minutes:10, template:"Zone 2 {moves} : {minutes} min continu.", moves:[{name:"vélo"}], note:"Allure de conversation du début à la fin. RPE 5-6, jamais plus — semaine d'allègement."}
     ],
     mardi: [
-      "Zone 2 vélo : 15 min continu. Allure de conversation, tu dois pouvoir parler en phrases complètes du début à la fin. Selle assez haute pour éviter la flexion de hanche profonde. RPE 5-6, jamais plus — ce n'est pas un intervalle.",
-      "Intervalles vélo : 5 × (2 min fort / 1 min facile). Le « fort » reste une cadence tenue, jamais un sprint.",
-      "AMRAP 15 : 15 cal vélo + 12 Sit-Up + 20 sec Hollow Hold. Bras le long du corps sur le hollow, jamais au-dessus de la tête.",
-      "Zone 2 vélo : 15 min très facile. Tu finis la séance plus fraîche qu'en la commençant."
+      {format:"steady", minutes:15, template:"Zone 2 {moves} : {minutes} min continu.", moves:[{name:"vélo"}], note:"Allure de conversation, tu dois pouvoir parler en phrases complètes du début à la fin. Selle assez haute pour éviter la flexion de hanche profonde. RPE 5-6, jamais plus — ce n'est pas un intervalle."},
+      {format:"intervals", sets:5, work:"2 min", rest:"1 min", template:"Intervalles {moves} : {sets} × ({work} fort / {rest} facile).", moves:[{name:"vélo"}], note:"Le « fort » reste une cadence tenue, jamais un sprint."},
+      {format:"amrap", minutes:15, moves:[{reps:"15", unit:"cal", name:"vélo"}, {reps:"12", name:"Sit-Up"}, {reps:"20", unit:"sec", name:"Hollow Hold"}], note:"Bras le long du corps sur le hollow, jamais au-dessus de la tête."},
+      {format:"steady", minutes:15, template:"Zone 2 {moves} : {minutes} min très facile.", moves:[{name:"vélo"}], note:"Tu finis la séance plus fraîche qu'en la commençant."}
     ],
     jeudi: [
-      "AMRAP 12 : 12 cal vélo + 10 Air Squat à la parallèle + 8 Step-Up sur boîte 24 po. Les air squats s'arrêtent à la parallèle même en AMRAP — la fatigue n'autorise pas une profondeur que la hanche refuse. Rythme régulier.",
-      "Pour le temps (cap 12) : 3 tours de 15 cal vélo + 12 Air Squat à la parallèle + 12 Sit-Up. Les air squats s'arrêtent à la parallèle. Note ton temps final.",
-      "EMOM 12 en alternance, un seul mouvement par minute : minutes impaires 12 cal vélo ; minutes paires 10 Air Squat à la parallèle.",
-      "AMRAP 12 : 10 cal vélo + 8 Air Squat à la parallèle + 8 Step-Up sur boîte 24 po. Semaine d'allègement : allure de promenade, RPE 6."
+      {format:"amrap", minutes:12, moves:[{reps:"12", unit:"cal", name:"vélo"}, {reps:"10", name:"Air Squat", detail:"à la parallèle"}, {reps:"8", name:"Step-Up sur boîte", load:"24 po"}], note:"Les air squats s'arrêtent à la parallèle même en AMRAP — la fatigue n'autorise pas une profondeur que la hanche refuse. Rythme régulier."},
+      {format:"fortime", cap:12, rounds:3, template:"Pour le temps (cap {cap}) : {rounds} tours de {moves}.", moves:[{reps:"15", unit:"cal", name:"vélo"}, {reps:"12", name:"Air Squat", detail:"à la parallèle"}, {reps:"12", name:"Sit-Up"}], note:"Les air squats s'arrêtent à la parallèle. Note ton temps final."},
+      {format:"emom", style:"alternate", minutes:12, moves:[{reps:"12", unit:"cal", name:"vélo", minute:1}, {reps:"10", name:"Air Squat", detail:"à la parallèle", minute:2}]},
+      {format:"amrap", minutes:12, moves:[{reps:"10", unit:"cal", name:"vélo"}, {reps:"8", name:"Air Squat", detail:"à la parallèle"}, {reps:"8", name:"Step-Up sur boîte", load:"24 po"}], note:"Semaine d'allègement : allure de promenade, RPE 6."}
     ],
     vendredi: [
-      "Vélo : 4 × 3 min à environ 80 % / 1 min repos. L'effort reste une cadence tenue, jamais un sprint. Selle assez haute pour ne pas fermer la hanche.",
-      "AMRAP 15 : 12 cal vélo + 10 Sit-Up + 10 Dead Bug. Le dead bug reste lent même en AMRAP : bas du dos collé, expiration longue.",
-      "Vélo : 5 × 2 min à environ 80 % / 1 min repos. Un bloc de plus qu'en S1, même intensité.",
-      "Zone 2 vélo : 15 min continu. RPE 5-6. Semaine d'allègement : on entretient, on ne construit pas."
+      {format:"intervals", sets:4, work:"3 min", rest:"1 min", template:"{moves} : {sets} × {work} à environ 80 % / {rest} repos.", moves:[{name:"Vélo"}], note:"L'effort reste une cadence tenue, jamais un sprint. Selle assez haute pour ne pas fermer la hanche."},
+      {format:"amrap", minutes:15, moves:[{reps:"12", unit:"cal", name:"vélo"}, {reps:"10", name:"Sit-Up"}, {reps:"10", name:"Dead Bug"}], note:"Le dead bug reste lent même en AMRAP : bas du dos collé, expiration longue."},
+      {format:"intervals", sets:5, work:"2 min", rest:"1 min", template:"{moves} : {sets} × {work} à environ 80 % / {rest} repos.", moves:[{name:"Vélo"}], note:"Un bloc de plus qu'en S1, même intensité."},
+      {format:"steady", minutes:15, template:"Zone 2 {moves} : {minutes} min continu.", moves:[{name:"vélo"}], note:"RPE 5-6. Semaine d'allègement : on entretient, on ne construit pas."}
     ],
     samedi: [
-      "Intervalles vélo : 8 × (45 s fort / 45 s facile). Les cuisses viennent de travailler : la cadence reste ronde, aucun à-coup.",
-      "AMRAP 12 : 12 cal vélo + 10 Step-Up sur boîte 24 po + 10 Sit-Up.",
-      "Pour le temps (cap 12) : 4 tours de 10 cal vélo + 10 Air Squat à la parallèle. Les air squats s'arrêtent à la parallèle. Note ton temps final.",
-      "Zone 2 vélo : 12 min continu. Allure facile après un squat allégé."
+      {format:"intervals", sets:8, work:"45 s", rest:"45 s", template:"Intervalles {moves} : {sets} × ({work} fort / {rest} facile).", moves:[{name:"vélo"}], note:"Les cuisses viennent de travailler : la cadence reste ronde, aucun à-coup."},
+      {format:"amrap", minutes:12, moves:[{reps:"12", unit:"cal", name:"vélo"}, {reps:"10", name:"Step-Up sur boîte", load:"24 po"}, {reps:"10", name:"Sit-Up"}]},
+      {format:"fortime", cap:12, rounds:4, template:"Pour le temps (cap {cap}) : {rounds} tours de {moves}.", moves:[{reps:"10", unit:"cal", name:"vélo"}, {reps:"10", name:"Air Squat", detail:"à la parallèle"}], note:"Les air squats s'arrêtent à la parallèle. Note ton temps final."},
+      {format:"steady", minutes:12, template:"Zone 2 {moves} : {minutes} min continu.", moves:[{name:"vélo"}], note:"Allure facile après un squat allégé."}
     ]
   };
   function metconBlock(day, week, minutes, title){
-    return {time:minutes + " min", title:title, tag:"Cardio", kind:"wod", text:METCONS[day][wIdx(week)]};
+    return {time:minutes + " min", title:title, tag:"Cardio", kind:"wod", wod:METCONS[day][wIdx(week)]};
   }
 
   // ── Bloc accessoire qui tourne ────────────────────────────────────────────
@@ -406,9 +406,9 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     }
   };
 
-  window.COACH_BERTIN_PROGRAMS.rehab_stephanie.getBlocks = function(day, week){ return rsBlocks(day, week); };
+  window.COACH_BERTIN_PROGRAMS.rehab_stephanie.getBlocks = function(day, week){ return window.RacineWod.fill(rsBlocks(day, week)); };
   window.COACH_BERTIN_PROGRAMS.rehab_stephanie.getWodText = function(day, week){
-    var b = rsBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
+    var b = window.COACH_BERTIN_PROGRAMS.rehab_stephanie.getBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
     return b ? b.text : "Aucun cardio — séance de force seulement.";
   };
 })();

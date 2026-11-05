@@ -16,7 +16,7 @@ function assert(cond, msg){ (cond ? notes : errors).push(msg); }
 
 const ctx = { window: {}, console };
 vm.createContext(ctx);
-['programs/index.js','programs/racine_client_programs.js','programs/racine_crossfit_programs.js','programs/hypertrophie_fesse.js',
+['programs/wod_format.js','programs/index.js','programs/racine_client_programs.js','programs/racine_crossfit_programs.js','programs/hypertrophie_fesse.js',
  'programs/competition_peak.js','programs/force_performance.js','programs/hypertrophy_base.js','programs/force.js',
  'programs/general_strength_3d.js','programs/general_hypertrophy_2d.js','programs/general_hypertrophy_3d.js',
  'programs/transition_weeks.js','programs/retour_au_travail.js','programs/strict_muscle_up_cycle.js','programs/epaules_3d.js']

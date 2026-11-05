@@ -65,6 +65,7 @@ ctx.globalThis = ctx;
   'scripts/charge/brain_memory.js',
   'scripts/charge/brain_journal.js',
   'scripts/charge/suggestion.js',
+  'programs/wod_format.js',
   'programs/phase2_fable5.js'
 ].forEach(file => {
   try { vm.runInNewContext(read(file), ctx, { filename: file }); }

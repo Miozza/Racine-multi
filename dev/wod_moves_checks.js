@@ -200,7 +200,12 @@ assert(rx && rx[0].load === '53/35 lb', 'Charge Rx homme/femme lue telle quelle'
 // Aucun metcon de Pont Peak ne laisse une charge à l'appréciation de l'athlète.
 {
 const pp = read('programs/pont_peak.js');
-const wods = (pp.match(/(?:mon|tue|thu|fri)Wod:"[^"]*"/g) || []);
+// Metcons structurés : on lit les textes RENDUS par le programme.
+const ppCtx = {console}; ppCtx.window = ppCtx; vm.createContext(ppCtx);
+['programs/wod_format.js', 'programs/pont_peak.js'].forEach(f => vm.runInContext(read(f), ppCtx, {filename:f}));
+const ppP = ppCtx.COACH_BERTIN_PROGRAMS.pont_peak;
+const wods = Array.from(new Set([1,2,3,4,5,6,7].flatMap(w => ['lundi','mardi','jeudi','vendredi']
+  .flatMap(d => ppP.getBlocks(d, w).filter(b => b.kind === 'wod').map(b => b.text)))));
 const LOADED = /Wall Balls|KB Swings|Goblet Squats|Box Jumps|Walking Lunges/;
 const bad = wods.filter(w => w.split(/[,;+]/).some(seg => LOADED.test(seg) && !/\d+\s*(?:lb|kg|po)\b|poids du corps/.test(seg)));
 assert(wods.length >= 20 && bad.length === 0, 'Pont Peak : chaque mouvement chargé du metcon a sa charge (' + bad.join(' | ') + ')');

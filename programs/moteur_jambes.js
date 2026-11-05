@@ -49,33 +49,55 @@
   var ROW_RULE = " Règle épaule : si le cou ou le trapèze réagit au Row, passe au Bike, mêmes calories.";
   var PAIN_RULE = "Douleur au cou ou au trapèze au-dessus de 3 sur 10, ou qui monte pendant la séance : la série s'arrête là.";
 
+  // Metcons structurés (programs/wod_format.js) : le texte affiché est fabriqué
+  // à partir de ces structures, ce qui permet à Coach IA de les modifier.
+  var BW = "poids du corps", BOX = "24 po";
+  var AERO = "Moteur aérobie, {minutes} min sans arrêt : {moves}.";
+  var AMRAP7 = "AMRAP {minutes} à effort 7 sur 10 : {moves}.";
+  function mv(reps, unit, name, load, minute, detail){
+    var m = {reps:reps === "" || reps == null ? "" : String(reps), unit:unit || "", name:name, load:load || "", detail:detail || ""};
+    if(minute) m.minute = minute;
+    return m;
+  }
+  function withNote(spec, extra){
+    var s = JSON.parse(JSON.stringify(spec));
+    s.note = [s.note, extra].filter(Boolean).join(" ");
+    return s;
+  }
+
   function plan(week){
     return ({
       1: {squat:"4×5", squatLoad:"225 lb", front:"4×4", frontLoad:"190 lb", bench:"4×5", benchLoad:"170 lb", thrust:"4×6", thrustLoad:"285 lb", split:"40 lb / main",
-          aeroTime:"24 min", aero:"Moteur aérobie, 24 min sans arrêt : 10 min Bike, 4 min Row, 10 min Bike.",
-          intTime:"10 min", intervals:"Pour le temps : 50 cal Bike. Référence du bloc, re-test en S5.",
-          emomTime:"12 min", emom:"EMOM 12 en alternance, un seul mouvement par minute : minutes impaires 7 Burpees poids du corps ; minutes paires 12 cal Bike.",
-          longTime:"20 min", long:"AMRAP 20 à effort 7 sur 10 : 12 cal Row, 15 Air Squats, 10 Box Step-Ups 24 po, 8 Burpees poids du corps. C'est le premier vendredi du Peak, avec les Air Squats à la place du lancer. Note tes tours : re-test en S5."},
+          aeroTime:"24 min", aero:{format:"steady", minutes:24, template:AERO, sep:", ", moves:[mv(10, "min", "Bike"), mv(4, "min", "Row"), mv(10, "min", "Bike")]},
+          intTime:"10 min", intervals:{format:"fortime", moves:[mv(50, "cal", "Bike")], note:"Référence du bloc, re-test en S5."},
+          emomTime:"12 min", emom:{format:"emom", style:"alternate", minutes:12, moves:[mv(7, "", "Burpees", BW, 1), mv(12, "cal", "Bike", "", 2)]},
+          longTime:"20 min", long:{format:"amrap", minutes:20, template:AMRAP7, sep:", ", moves:[mv(12, "cal", "Row"), mv(15, "", "Air Squats"), mv(10, "", "Box Step-Ups", BOX), mv(8, "", "Burpees", BW)],
+            note:"C'est le premier vendredi du Peak, avec les Air Squats à la place du lancer. Note tes tours : re-test en S5."}},
       2: {squat:"5×4", squatLoad:"240 lb", front:"4×4", frontLoad:"200 lb", bench:"4×5", benchLoad:"175 lb", thrust:"4×6", thrustLoad:"295 lb", split:"40 lb / main",
-          aeroTime:"27 min", aero:"Moteur aérobie, 27 min sans arrêt : 9 min Bike, 9 min Row, 9 min Bike.",
-          intTime:"22 min", intervals:"5 × (3 min Bike à effort 7 sur 10 / 1:30 repos). Même cadence sur les cinq : tu peux dire trois mots, pas une phrase.",
-          emomTime:"14 min", emom:"EMOM 14 en alternance, un seul mouvement par minute : minutes impaires 8 Burpees poids du corps ; minutes paires 10 cal Bike. En S1, 12 cal passaient encore, mais à effort maximal dès la 9e minute : en S2, la progression vient des 2 minutes de plus, pas des calories.",
-          longTime:"24 min", long:"AMRAP 24 à effort 7 sur 10 : 15 cal Row, 15 Air Squats, 12 Box Step-Ups 24 po, 10 Burpees poids du corps. Stratégie : le Row à rythme fixe, Burpees jamais arrêtés, ralentis plutôt."},
+          aeroTime:"27 min", aero:{format:"steady", minutes:27, template:AERO, sep:", ", moves:[mv(9, "min", "Bike"), mv(9, "min", "Row"), mv(9, "min", "Bike")]},
+          intTime:"22 min", intervals:{format:"intervals", sets:5, work:"3 min", rest:"1:30", moves:[mv("", "", "Bike", "", 0, "à effort 7 sur 10")], note:"Même cadence sur les cinq : tu peux dire trois mots, pas une phrase."},
+          emomTime:"14 min", emom:{format:"emom", style:"alternate", minutes:14, moves:[mv(8, "", "Burpees", BW, 1), mv(10, "cal", "Bike", "", 2)],
+            note:"En S1, 12 cal passaient encore, mais à effort maximal dès la 9e minute : en S2, la progression vient des 2 minutes de plus, pas des calories."},
+          longTime:"24 min", long:{format:"amrap", minutes:24, template:AMRAP7, sep:", ", moves:[mv(15, "cal", "Row"), mv(15, "", "Air Squats"), mv(12, "", "Box Step-Ups", BOX), mv(10, "", "Burpees", BW)],
+            note:"Stratégie : le Row à rythme fixe, Burpees jamais arrêtés, ralentis plutôt."}},
       3: {squat:"5×3", squatLoad:"250 lb", front:"5×3", frontLoad:"210 lb", bench:"4×5", benchLoad:"180 lb", thrust:"4×6", thrustLoad:"305 lb", split:"45 lb / main",
-          aeroTime:"30 min", aero:"Moteur aérobie, 30 min sans arrêt : 10 min Bike, 10 min Row, 10 min Bike.",
-          intTime:"24 min", intervals:"6 × (3 min Bike à effort 8 sur 10 / 1:00 repos). Le dernier intervalle doit ressembler au premier.",
-          emomTime:"16 min", emom:"EMOM 16 en 4 stations, une station par minute, 4 tours : 1) 8 Burpees poids du corps, 2) 14 cal Bike, 3) 10 Box Jumps 24 po, 4) 15 Air Squats.",
-          longTime:"25 min", long:"Pour le temps, 5 tours : 20 cal Bike, 20 Air Squats, 15 Box Step-Ups 24 po, 10 Burpees poids du corps. Cap 25 min. Stratégie : Burpees en 2 séries de 5, Step-Ups d'une traite."},
+          aeroTime:"30 min", aero:{format:"steady", minutes:30, template:AERO, sep:", ", moves:[mv(10, "min", "Bike"), mv(10, "min", "Row"), mv(10, "min", "Bike")]},
+          intTime:"24 min", intervals:{format:"intervals", sets:6, work:"3 min", rest:"1:00", moves:[mv("", "", "Bike", "", 0, "à effort 8 sur 10")], note:"Le dernier intervalle doit ressembler au premier."},
+          emomTime:"16 min", emom:{format:"emom", style:"stations", minutes:16, moves:[mv(8, "", "Burpees", BW, 1), mv(14, "cal", "Bike", "", 2), mv(10, "", "Box Jumps", BOX, 3), mv(15, "", "Air Squats", "", 4)]},
+          longTime:"25 min", long:{format:"fortime", rounds:5, cap:25, template:"Pour le temps, {rounds} tours : {moves}. Cap {cap} min.", sep:", ", moves:[mv(20, "cal", "Bike"), mv(20, "", "Air Squats"), mv(15, "", "Box Step-Ups", BOX), mv(10, "", "Burpees", BW)],
+            note:"Stratégie : Burpees en 2 séries de 5, Step-Ups d'une traite."}},
       4: {squat:"4×3", squatLoad:"270 lb", front:"4×3", frontLoad:"215 lb", bench:"4×5", benchLoad:"185 lb", thrust:"4×5", thrustLoad:"315 lb", split:"45 lb / main",
-          aeroTime:"32 min", aero:"Moteur aérobie, 32 min sans arrêt : 8 min Bike, 8 min Row, 8 min Bike, 8 min Row.",
-          intTime:"26 min", intervals:"4 × (5 min Bike à effort 7 sur 10 / 1:30 repos). Cadence régulière, aucune accélération en fin d'intervalle.",
-          emomTime:"20 min", emom:"EMOM 20 en 4 stations, une station par minute, 5 tours : 1) 9 Burpees poids du corps, 2) 15 cal Bike, 3) 12 Box Jumps 24 po, 4) 20 Air Squats.",
-          longTime:"30 min", long:"Chipper pour le temps : 50 cal Row, 50 Air Squats, 50 Box Step-Ups 24 po, 40 cal Bike, 30 Burpees poids du corps. Cap 30 min. Stratégie : chaque bloc découpé en séries de 10, Burpees en séries de 5 avec 3 respirations entre."},
+          aeroTime:"32 min", aero:{format:"steady", minutes:32, template:AERO, sep:", ", moves:[mv(8, "min", "Bike"), mv(8, "min", "Row"), mv(8, "min", "Bike"), mv(8, "min", "Row")]},
+          intTime:"26 min", intervals:{format:"intervals", sets:4, work:"5 min", rest:"1:30", moves:[mv("", "", "Bike", "", 0, "à effort 7 sur 10")], note:"Cadence régulière, aucune accélération en fin d'intervalle."},
+          emomTime:"20 min", emom:{format:"emom", style:"stations", minutes:20, moves:[mv(9, "", "Burpees", BW, 1), mv(15, "cal", "Bike", "", 2), mv(12, "", "Box Jumps", BOX, 3), mv(20, "", "Air Squats", "", 4)]},
+          longTime:"30 min", long:{format:"fortime", cap:30, template:"Chipper pour le temps : {moves}. Cap {cap} min.", sep:", ", moves:[mv(50, "cal", "Row"), mv(50, "", "Air Squats"), mv(50, "", "Box Step-Ups", BOX), mv(40, "cal", "Bike"), mv(30, "", "Burpees", BW)],
+            note:"Stratégie : chaque bloc découpé en séries de 10, Burpees en séries de 5 avec 3 respirations entre."}},
       5: {squat:"3×3", squatLoad:"250 lb", front:"3×3", frontLoad:"205 lb", bench:"4×5", benchLoad:"175 lb", thrust:"3×6", thrustLoad:"295 lb", split:"40 lb / main",
-          aeroTime:"24 min", aero:"Moteur aérobie, 24 min sans arrêt : 10 min Bike, 4 min Row, 10 min Bike. Compare ton souffle à S1.",
-          intTime:"10 min", intervals:"Re-test pour le temps : 50 cal Bike. Compare au temps de S1.",
-          emomTime:"10 min", emom:"EMOM 10 : 8 Burpees poids du corps chaque minute. Rythme constant, le dernier tour doit ressembler au premier.",
-          longTime:"20 min", long:"Re-test de S1 — AMRAP 20 à effort 7 sur 10 : 12 cal Row, 15 Air Squats, 10 Box Step-Ups 24 po, 8 Burpees poids du corps. Objectif : au moins un tour de plus qu'en S1."}
+          aeroTime:"24 min", aero:{format:"steady", minutes:24, template:AERO, sep:", ", moves:[mv(10, "min", "Bike"), mv(4, "min", "Row"), mv(10, "min", "Bike")], note:"Compare ton souffle à S1."},
+          intTime:"10 min", intervals:{format:"fortime", template:"Re-test pour le temps : {moves}.", moves:[mv(50, "cal", "Bike")], note:"Compare au temps de S1."},
+          emomTime:"10 min", emom:{format:"emom", style:"each", minutes:10, moves:[mv(8, "", "Burpees", BW)], note:"Rythme constant, le dernier tour doit ressembler au premier."},
+          longTime:"20 min", long:{format:"amrap", minutes:20, template:"Re-test de S1 — " + AMRAP7, sep:", ", moves:[mv(12, "cal", "Row"), mv(15, "", "Air Squats"), mv(10, "", "Box Step-Ups", BOX), mv(8, "", "Burpees", BW)],
+            note:"Objectif : au moins un tour de plus qu'en S1."}}
     })[week] || plan(1);
   }
 
@@ -102,7 +124,7 @@
         ex("Back Squat", p.squat, p.squatLoad, "1:00 avant A2", "RPE " + (w >= 3 ? "8" : "7") + ", jamais au-delà : le moteur passe ensuite. Barre posée bas sur le trapèze ; si elle appuie sur la zone blessée, garde la prise plus large."),
         ex("Tibialis Raise", "3×15", "poids du corps", "1:00 après A2", "Pendant la pause du squat. Dos au mur, lent, sans élan.")
       ]},
-      {time:p.aeroTime, title:"B. Moteur aérobie", tag:"Aérobie", kind:"wod", text:p.aero + " Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10." + ROW_RULE},
+      {time:p.aeroTime, title:"B. Moteur aérobie", tag:"Aérobie", kind:"wod", wod:withNote(p.aero, "Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10." + ROW_RULE)},
       {time:"8 min", title:"C. Unilatéral + gainage", tag:"Jambes", kind:"accessory", exercises:[
         ex("Bulgarian Split Squat", "3×8/jambe", p.split, "0:30 avant C2", "Torse droit, genou avant qui suit les orteils. Épaules basses : si tenir les haltères tire sur le trapèze, garde-les près du corps."),
         ex("Dead Bug", "3×8/côté", "poids du corps", "1:00 après C2", "Côtes basses, bas du dos collé au sol.")
@@ -120,7 +142,7 @@
           ex("Bench Press", p.bench, p.benchLoad, "1:00 avant @2", "RPE 7, une marge de 3 reps. Omoplates serrées, fessiers sur le banc. " + PAIN_RULE),
           ex("Hip Airplane", "3×5/côté", "poids du corps", "1:00 après @2", "Pendant la pause du bench. Main au rack, sur une jambe : ouvre puis ferme le bassin lentement.")
         ]},
-        {time:p.intTime, title:w === 1 || back ? "Benchmark Bike" : "Intervalles au seuil", tag:"Moteur", kind:"wod", text:p.intervals},
+        {time:p.intTime, title:w === 1 || back ? "Benchmark Bike" : "Intervalles au seuil", tag:"Moteur", kind:"wod", wod:p.intervals},
         {time:"6 min", title:"Tirage sans douleur", tag:"Haut du dos", kind:"accessory", exercises:[
           ex("Chest Supported Row", "3×10", "95 lb", "1:00", "Léger, poitrine collée, cou long, aucun haussement d'épaules. Si le cou ou le trapèze réagit, saute le bloc : il revient la semaine suivante.")
         ]},
@@ -142,7 +164,7 @@
           ex("Front Squat", p.front, p.frontLoad, "0:45 avant @2", "RPE " + (w >= 3 ? "8" : "7") + ", jamais au-delà. Coudes hauts, torse droit. Le Peak en fait chaque jeudi."),
           ex("Single-Leg Calf Raise", "3×12/jambe", "poids du corps", "0:45 après @2", "Pendant la pause du front squat. Sur une marche, amplitude complète.")
         ]},
-        {time:p.emomTime, title:"EMOM moteur", tag:"WOD", kind:"wod", text:p.emom + " Aucune poussée au-dessus de la tête."},
+        {time:p.emomTime, title:"EMOM moteur", tag:"WOD", kind:"wod", wod:withNote(p.emom, "Aucune poussée au-dessus de la tête.")},
         {time:"6 min", title:"Anti-rotation", tag:"Tronc", kind:"core", exercises:[
           ex("Pallof Press", "3×10/côté", "léger à modéré", "0:30", "Bras devant la poitrine, jamais au-dessus. Bassin stable.")
         ]},
@@ -158,7 +180,7 @@
         ex("Hip Thrust", p.thrust, p.thrustLoad, "0:45 avant A2", "Pause 1 s en haut, menton rentré, côtes basses. Remplace le RDL : aucune barre tenue à bout de bras."),
         ex("Dead Bug", "3×8/côté", "poids du corps", "0:45 après A2", "Pendant la pause du hip thrust. Bas du dos collé au sol.")
       ]},
-      {time:p.longTime, title:"B. Metcon long", tag:"WOD", kind:"wod", text:p.long + ROW_RULE},
+      {time:p.longTime, title:"B. Metcon long", tag:"WOD", kind:"wod", wod:withNote(p.long, ROW_RULE.trim())},
       {time:"4 min", title:"C. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Marche lente 2 min + couch stretch 1 min/côté. Note tes tours ou ton temps."}
     ];
   }
@@ -178,9 +200,9 @@
   }
 
   var P = window.COACH_BERTIN_PROGRAMS.moteur_jambes;
-  P.getBlocks = function(day, week){ return blocks(day, week); };
+  P.getBlocks = function(day, week){ return window.RacineWod.fill(blocks(day, week)); };
   P.getWodText = function(day, week){
-    var b = blocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
+    var b = P.getBlocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
     return b ? b.text : "";
   };
   P.cycleRules = [

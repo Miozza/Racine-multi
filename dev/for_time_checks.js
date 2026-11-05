@@ -71,8 +71,14 @@ assert(/getGuidedResult\(item\.key,'result',''\)/.test(results) && /setGuidedRes
   'Résultats : temps du chrono présélectionné, et une correction le remplace.');
 
 // ─── 5. Programme Moteur + jambes ─────────────────────────────────────────
-const mj = read('programs/moteur_jambes.js');
-const texts = (mj.match(/(?:intervals|long):"[^"]*[Pp]our le temps[^"]*"/g) || []).map(s => s.replace(/^\w+:"|"$/g, ''));
+// Les metcons sont structurés (programs/wod_format.js) : on lit le texte RENDU
+// par le programme, celui que voient chrono et résultats, pas le source.
+const mjCtx = {console}; mjCtx.window = mjCtx; vm.createContext(mjCtx);
+['programs/wod_format.js', 'programs/moteur_jambes.js'].forEach(f => vm.runInContext(read(f), mjCtx, {filename:f}));
+const mjP = mjCtx.COACH_BERTIN_PROGRAMS.moteur_jambes;
+const texts = Array.from(new Set([1,2,3,4,5].flatMap(w => ['lundi','mardi','jeudi','vendredi']
+  .flatMap(d => mjP.getBlocks(d, w).filter(b => b.kind === 'wod').map(b => b.text)))))
+  .filter(t => /[Pp]our le temps/.test(t));
 assert(texts.length >= 3, 'Moteur + jambes contient des WOD « pour le temps » (' + texts.length + ').');
 texts.forEach(t => assert(f(t), 'Moteur + jambes détecté : « ' + t.slice(0, 60) + ' »'));
 

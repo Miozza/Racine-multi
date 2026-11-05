@@ -3084,6 +3084,24 @@
       "consumes": []
     },
     {
+      "path": "programs/wod_format.js",
+      "size": 17519,
+      "lines": 356,
+      "role": "Metcons structurés (window.RacineWod) : format, durée, mouvements d'un bloc kind:\"wod\" ; render() fabrique le texte que lisent pastilles, chrono et résultats ; applyOps() applique les opérations de Coach IA (aucun champ de charge) ; charges standards fixes des metcons.",
+      "category": "ACTIF",
+      "exposes": [
+        "RacineWod"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 357
+        }
+      ],
+      "consumes": []
+    },
+    {
       "path": "programs/tutorials.js",
       "size": 80888,
       "lines": 313,

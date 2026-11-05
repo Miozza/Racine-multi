@@ -25,6 +25,7 @@ const assert = (c, m) => (c ? notes : errors).push(m);
 const ctx = { setInterval: () => 1, clearInterval(){}, document: { getElementById: () => null }, Date, Math, String, Number };
 ctx.window = ctx;
 vm.runInNewContext(read('scripts/session/schedule_reminder.js'), ctx);
+vm.runInNewContext(read('programs/wod_format.js'), ctx);
 vm.runInNewContext(read('programs/pont_peak.js'), ctx);
 const R = ctx.CoachScheduleReminder, P = ctx.COACH_BERTIN_PROGRAMS.pont_peak;
 const MIN = 60000, T0 = 1e12;

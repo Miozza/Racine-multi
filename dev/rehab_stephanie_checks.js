@@ -41,7 +41,7 @@ function assert(cond, msg){ if(!cond){ console.error('FAIL:', msg); failures++; 
 const ctx = { window:{}, console };
 ctx.window.COACH_BERTIN_PROGRAMS = {};
 vm.createContext(ctx);
-['programs/index.js','programs/rehab_stephanie.js','programs/tutorials.js','data/movements_media.js',
+['programs/wod_format.js','programs/index.js','programs/rehab_stephanie.js','programs/tutorials.js','data/movements_media.js',
  'scripts/session/interval_timer.js'].forEach(f => vm.runInContext(read(f), ctx, {filename:f}));
 
 const P = ctx.window.COACH_BERTIN_PROGRAMS.rehab_stephanie;
