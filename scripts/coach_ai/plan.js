@@ -421,11 +421,12 @@
   // Retire les ajustements de metcon qui touchent cette semaine et ce jour.
   api.removeWodAdjustment = function(week, day, index){
     var plan = read(), program = currentProgram(), before = plan.wodAdjustments.length;
+    var versions = snapshot(plan);   // AVANT le retrait : c'est ce qu'« annuler » restaure
     plan.wodAdjustments = plan.wodAdjustments.filter(function(a){
       return !(wodCovers(a, program, day, Number(week)) && (Number(a.index) || 1) === (Number(index) || 1));
     });
     if(plan.wodAdjustments.length === before) return {ok:false, error:"Aucun ajustement de metcon correspondant."};
-    plan.versions = snapshot(plan);
+    plan.versions = versions;
     if(!write(plan)) return {ok:false, error:"Écriture impossible (stockage local)."};
     return {ok:true};
   };
