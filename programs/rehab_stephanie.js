@@ -257,12 +257,15 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
   // Ordre voulu : règle → mobilité → PRINCIPAL → accessoires → CONDITIONNEMENT
   // → sortie.
   //
-  // EXCEPTION ASSUMÉE À LA RÈGLE D'ORDRE DU DÉPÔT (décision du 2026-11-04).
+  // EXCEPTION PROPRE À CE PROGRAMME (décision du 2026-11-04).
   // CLAUDE.md § 3.1 demande que le cardio passe juste après le principal, pour
-  // que ce soient les accessoires qui sautent quand le temps manque. Ce cycle
-  // fait l'inverse, volontairement : c'est un cycle de réhabilitation. Ce qui
-  // doit survivre à une séance écourtée, ici, c'est le renforcement et la
-  // mobilité — pas le vélo. Le conditionnement reste donc en fin de séance, et
+  // que ce soient les accessoires qui sautent quand le temps manque. CE cycle
+  // fait l'inverse, sur demande explicite du créateur : le conditionnement
+  // reste en fin de séance.
+  // Ce n'est PAS une règle de catégorie : la règle générale reste la règle
+  // partout ailleurs, et un autre cycle de réhabilitation placera son cardio
+  // tôt sauf demande contraire. L'autorité de cette exception est la demande
+  // faite pour ce programme, pas un principe sur la réhabilitation.
   // dev/rehab_stephanie_checks.js l'épingle dans ce sens : un agent qui
   // appliquerait la règle générale à ce programme fera tomber le garde-fou.
   function rsBlocks(day, week){

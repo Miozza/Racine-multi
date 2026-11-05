@@ -6,11 +6,11 @@
 
 Le conditionnement repasse **en fin de séance** sur les cinq journées de `rehab_stephanie`. Ordre : règle → mobilité → principal → accessoires → conditionnement → retour au calme. Seule la sortie mobilité suit le metcon — on ne termine pas sur un effort dur sans retour au calme. Les blocs sont relettrés en conséquence (le superset du vendredi devient C1/C2).
 
-**Pourquoi c'est une exception, et pourquoi elle est écrite**
+**Une exception pour ce programme, pas une règle de catégorie**
 
-La règle générale veut le cardio tôt parce qu'elle suppose que le metcon est ce qu'il faut sauver quand la séance déborde. Dans un cycle de retour de blessure, l'hypothèse s'inverse : ce qui doit survivre à une séance écourtée, c'est le renforcement et la mobilité ; le vélo est la partie qui peut sauter. L'exception est donc consignée aux trois endroits où un agent la cherchera — `CLAUDE.md` § 3.1 (à côté de la règle qu'elle excepte), l'en-tête de `programs/rehab_stephanie.js`, et `dev/rehab_stephanie_checks.js`, qui épingle désormais l'ordre inverse : appliquer la règle générale à ce programme fait tomber le garde-fou au lieu de passer en silence.
+L'exception vaut pour `rehab_stephanie` **et pour lui seul**, sur demande explicite du créateur. La règle générale reste la règle partout ailleurs, y compris pour un futur cycle de réhabilitation : son autorité est la demande faite pour ce cycle, pas un principe sur la réhabilitation. Elle est consignée aux trois endroits où un agent la cherchera — `CLAUDE.md` § 3.1 (à côté de la règle qu'elle excepte), l'en-tête de `programs/rehab_stephanie.js`, et `dev/rehab_stephanie_checks.js`, qui épingle l'ordre inverse : appliquer la règle générale à ce programme fait tomber le garde-fou au lieu de passer en silence.
 
-Aucun autre programme n'est touché : Pont Peak garde son cardio tôt, et son propre garde-fou le vérifie.
+Aucun autre programme n'est touché. Vérifié en exécutant le catalogue : Pont Peak place son cardio tôt dès la S3 (comme le dit la règle), Moteur + jambes l'a tôt sur trois de ses cinq journées, et le diff de cette branche ne touche que `programs/rehab_stephanie.js`, son garde-fou, et la ligne `frequency` du catalogue.
 
 ## V5.2.38 — Réhabilitation : back squat, cinquième journée, 20 metcons
 

@@ -194,13 +194,14 @@ l'athlète manque de temps, ce sont les accessoires de fin qui sautent, jamais
 le metcon. Pont Peak l'applique dès S3 ; un cycle suivant le place au moins
 aussi tôt.
 
-**Exception — cycles de réhabilitation** (décision du 2026-11-04) :
-`rehab_stephanie` garde son conditionnement **en fin de séance**. La règle
-ci-dessus suppose que le metcon est ce qu'il faut sauver ; dans un cycle de
-retour de blessure, c'est l'inverse — le renforcement et la mobilité passent
-d'abord, et le vélo est la partie qui peut être écourtée. Ne pas « corriger »
-l'ordre de ce programme : `dev/rehab_stephanie_checks.js` l'épingle dans ce
-sens et tombera.
+**Exception — `rehab_stephanie` uniquement** (décision du 2026-11-04) : ce
+programme-là garde son conditionnement **en fin de séance**, sur demande
+explicite du créateur. Ce n'est **pas** une règle de catégorie : la règle
+ci-dessus reste la règle pour tous les autres programmes, y compris un futur
+cycle de réhabilitation, qui placera son cardio tôt sauf demande contraire.
+La seule autorité de cette exception est la demande faite pour ce cycle, pas
+un principe sur la réhabilitation. Ne pas « corriger » l'ordre de ce
+programme : `dev/rehab_stephanie_checks.js` l'épingle dans ce sens et tombera.
 
 **Semaine légère / deload / reprise** : deux verrous, à poser volontairement.
 `coachIsDeloadWeekOrContext()` lit le libellé et l'objectif de semaine (mots

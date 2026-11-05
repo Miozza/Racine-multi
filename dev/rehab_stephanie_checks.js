@@ -249,12 +249,12 @@ P.days.forEach(day => {
 });
 
 // ── Le conditionnement reste à la FIN ───────────────────────────────────────
-// EXCEPTION ASSUMÉE à la règle d'ordre du dépôt (décision du 2026-11-04).
+// EXCEPTION PROPRE À CE PROGRAMME (décision du 2026-11-04).
 // CLAUDE.md § 3.1 demande que le cardio passe juste après le principal, pour
-// que ce soient les accessoires qui sautent quand le temps manque. Ce cycle
-// fait l'inverse, volontairement : c'est un cycle de réhabilitation, et ce qui
-// doit survivre à une séance écourtée est le renforcement et la mobilité, pas
-// le vélo.
+// que ce soient les accessoires qui sautent quand le temps manque. CE cycle
+// fait l'inverse, sur demande explicite du créateur — et seulement celui-ci :
+// la règle générale reste la règle pour tous les autres programmes, y compris
+// un futur cycle de réhabilitation.
 // Cette assertion est le seul endroit qui empêche un agent d'« arranger »
 // l'ordre en appliquant la règle générale à ce programme. Sans elle, le
 // conditionnement remonterait à la première révision distraite.

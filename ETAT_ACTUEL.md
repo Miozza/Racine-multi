@@ -27,10 +27,10 @@ Révision du 2026-11-03, quatre retours :
 
 **Le conditionnement reste en fin de séance** (décision du 2026-11-04), par
 exception à la règle d'ordre du dépôt (CLAUDE.md § 3.1, qui veut le cardio
-juste après le principal). Cette règle suppose que le metcon est ce qu'il faut
-sauver quand le temps manque ; dans un cycle de retour de blessure, c'est
-l'inverse — le renforcement et la mobilité passent d'abord. Seul le retour au
-calme suit le metcon.
+juste après le principal) — **pour ce programme uniquement**, sur demande
+explicite du créateur. Ce n'est pas une règle de catégorie : la règle générale
+reste la règle partout ailleurs, y compris pour un futur cycle de
+réhabilitation. Seul le retour au calme suit le metcon.
 Garde-fou : `dev/rehab_stephanie_checks.js`, qui épingle cet ordre-là et
 tombera si quelqu'un applique la règle générale à ce programme.
 

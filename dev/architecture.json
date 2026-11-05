@@ -60,7 +60,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 337632,
+      "size": 337808,
       "lines": 2298,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
@@ -76,8 +76,8 @@
     },
     {
       "path": "CLAUDE.md",
-      "size": 30490,
-      "lines": 571,
+      "size": 30624,
+      "lines": 572,
       "role": "Instructions permanentes pour agents IA (seul fichier lu automatiquement).",
       "category": "ACTIF",
       "exposes": [],
@@ -92,7 +92,7 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 54277,
+      "size": 54305,
       "lines": 735,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
@@ -108,7 +108,7 @@
     },
     {
       "path": "README.md",
-      "size": 9041,
+      "size": 8997,
       "lines": 134,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
@@ -1244,7 +1244,7 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": [],
-      "size": 17966,
+      "size": 17973,
       "lines": 293
     },
     {
@@ -2975,8 +2975,8 @@
         }
       ],
       "consumes": [],
-      "size": 32403,
-      "lines": 414
+      "size": 32559,
+      "lines": 417
     },
     {
       "path": "programs/retour_au_travail.js",
