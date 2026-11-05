@@ -59,7 +59,7 @@
       2: {squat:"5×4", squatLoad:"240 lb", front:"4×4", frontLoad:"200 lb", bench:"4×5", benchLoad:"175 lb", thrust:"4×6", thrustLoad:"295 lb", split:"40 lb / main",
           aeroTime:"27 min", aero:"Moteur aérobie, 27 min sans arrêt : 9 min Bike, 9 min Row, 9 min Bike.",
           intTime:"22 min", intervals:"5 × (3 min Bike à effort 7 sur 10 / 1:30 repos). Même cadence sur les cinq : tu peux dire trois mots, pas une phrase.",
-          emomTime:"14 min", emom:"EMOM 14 en alternance, un seul mouvement par minute : minutes impaires 8 Burpees poids du corps ; minutes paires 10 cal Bike. En S1, 12 cal ont lâché à la 9e minute : en S2, la progression vient des 2 minutes de plus, pas des calories.",
+          emomTime:"14 min", emom:"EMOM 14 en alternance, un seul mouvement par minute : minutes impaires 8 Burpees poids du corps ; minutes paires 10 cal Bike. En S1, 12 cal passaient encore, mais à effort maximal dès la 9e minute : en S2, la progression vient des 2 minutes de plus, pas des calories.",
           longTime:"24 min", long:"AMRAP 24 à effort 7 sur 10 : 15 cal Row, 15 Air Squats, 12 Box Step-Ups 24 po, 10 Burpees poids du corps. Stratégie : le Row à rythme fixe, Burpees jamais arrêtés, ralentis plutôt."},
       3: {squat:"5×3", squatLoad:"250 lb", front:"5×3", frontLoad:"210 lb", bench:"4×5", benchLoad:"180 lb", thrust:"4×6", thrustLoad:"305 lb", split:"45 lb / main",
           aeroTime:"30 min", aero:"Moteur aérobie, 30 min sans arrêt : 10 min Bike, 10 min Row, 10 min Bike.",

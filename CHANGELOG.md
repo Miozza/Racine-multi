@@ -1,6 +1,6 @@
 ## V5.2.40 — Moteur + jambes : EMOM de S2 à 10 cal de Bike
 
-**Pourquoi** : retour de l'athlète après le jeudi de S1 (2026-11-05). L'EMOM 12 à 12 cal de Bike a lâché à partir de la 9e minute (RPE 9). S2 prévoyait 14 cal sur 14 minutes : deux hausses en même temps, sur le maillon qui venait de céder.
+**Pourquoi** : retour de l'athlète après le jeudi de S1 (2026-11-05). L'EMOM 12 à 12 cal de Bike a été complété, mais à effort maximal sur le vélo dès la 9e minute (RPE 9). S2 prévoyait 14 cal sur 14 minutes : deux hausses en même temps, sur le maillon déjà au maximum.
 
 **Ce qui change**
 
