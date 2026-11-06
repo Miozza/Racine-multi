@@ -33,7 +33,8 @@ assert(P && P.weekLabels.length === 5 && P.weekGoals.length === 5, '5 semaines')
 assert(P.nextPhase === 'competition_peak', 'mène au Peak');
 
 const OVERHEAD = /wall ?ball|strict press|push press|jerk|snatch|pull-?up|chin-?up|toes-to-bar|\bski|curl|pullover|overhead|handstand|thruster|kb swing|lateral raise/i;
-const MAIN_REF = { 'Back Squat':315, 'Front Squat':265, 'Bench Press':245, 'Hip Thrust':315 };
+// Back Extension : lest tenu contre la poitrine, pas un %1RM (décision du 2026-11-06).
+const MAIN_REF = { 'Back Squat':315, 'Front Squat':265, 'Bench Press':245, 'Back Extension':45 };
 const LIMIT_WORDS = /léger|legere|technique|facile|deload|récupération|vitesse/i;
 
 for(let w = 1; w <= 5; w++){
@@ -54,6 +55,11 @@ for(let w = 1; w <= 5; w++){
       assert(!LIMIT_WORDS.test(e.note), tag + ' : ' + e.name + ' garde son auto-progression');
     }));
   });
+}
+
+for(let w = 1; w <= 5; w++){
+  const names = P.getBlocks('vendredi', w).flatMap(b => (b.exercises || []).map(e => e.name));
+  assert(names.includes('Back Extension') && !names.includes('Hip Thrust'), 'S' + w + ' vendredi : Back Extension à la place du Hip Thrust');
 }
 
 const tech = d => P.getBlocks(d, 5).filter(b => b.kind === 'technique').map(b => b.text).join(' ');

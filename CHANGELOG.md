@@ -1,3 +1,13 @@
+## V5.3.2 — Pont Moteur + jambes : Back Extension à la place du Hip Thrust
+
+**Pourquoi** : demande de l'athlète (2026-11-06) : le Hip Thrust est difficile et désagréable à faire. Le remplaçant doit garder la règle du bloc pour l'épaule droite : aucune charge qui pend des bras ni qui pèse sur le trapèze.
+
+- **Vendredi, bloc A** : `Back Extension` à 45°, plaque serrée contre la poitrine. S1 4×10 25 lb · S2 4×12 25 lb · S3 4×10 35 lb · S4 4×8 45 lb · S5 3×10 35 lb.
+- **Moteur** : `back extension` est déclarée dans `scripts/charge/movement_tuning.js`, avec un poids de départ de 25 lb, et classée comme **lest sur le poids du corps** (comme les tractions lestées). La plaque s'ajoute au poids du torse : pas de ratio emprunté au Hip Thrust, pas d'Epley sur 25 lb. La charge écrite passe donc telle quelle, puis l'historique prend la main.
+- **Tuto** : nouvelle fiche `Back Extension` (`programs/tutorials.js`).
+- `dev/moteur_jambes_checks.js` épingle la Back Extension le vendredi et plafonne son lest à 45 lb.
+- Vérifié dans Chromium sur l'export réel de l'athlète : le moteur suggère 25 / 25 / 35 / 45 / 35 lb pour S1 à S5.
+
 ## V5.3.1 — Metcons : correctifs d'audit
 
 **Pourquoi** : audit de V5.3.0. Trois corrections arrivées après la fusion de la PR #141.

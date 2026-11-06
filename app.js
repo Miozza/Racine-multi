@@ -1,5 +1,5 @@
-// Racine V5.3.1 — Metcons : correctifs d'audit
-var APP_VERSION = "V5.3.1";
+// Racine V5.3.2 — Back Extension à la place du Hip Thrust
+var APP_VERSION = "V5.3.2";
 
 // Architecture stable
 // programs/*.js = plan prévu

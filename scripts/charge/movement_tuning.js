@@ -543,6 +543,8 @@
     // toujours en premier).
     defaultLoadSeeds: [
       {pattern:/weighted pull up|weighted pullup|weighted dip|weighted dips/, load:0},
+      // Back Extension 45° : lest tenu contre la poitrine (programs/moteur_jambes.js).
+      {pattern:/back extension/, load:25},
       {pattern:/db shoulder press/, load:35},
       {pattern:/lateral raise.*(cable|poulie)/, load:30},
       {pattern:/lateral raise.*(haltere|dumbbell|db)/, load:20},
@@ -627,7 +629,10 @@
     ],
     // coachIsBodyweightExternalLoadMovement() — historique.js
     bodyweightExternalLoadPatterns: [
-      /weighted pull up|weighted pullup|weighted dip|weighted dips/
+      /weighted pull up|weighted pullup|weighted dip|weighted dips/,
+      // Le lest de la Back Extension s'ajoute au poids du torse : pas de ratio
+      // emprunte au Hip Thrust, pas d'Epley sur 25 lb de plaque.
+      /back extension/
     ]
   };
 
