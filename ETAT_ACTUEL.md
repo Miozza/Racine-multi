@@ -1,10 +1,14 @@
-# ETAT ACTUEL — V5.3.1
+# ETAT ACTUEL — V5.3.2
 
-Version actuelle : V5.3.1
+Version actuelle : V5.3.2
 
 ## État courant
 
-### Metcons — correctifs d'audit (V5.3.1)
+### Pont — Moteur + jambes : Back Extension le vendredi (V5.3.2)
+
+Le Hip Thrust du vendredi devient une Back Extension à 45°, avec une plaque tenue contre la poitrine (25 → 25 → 35 → 45 → 35 lb). Le moteur traite cette charge comme un lest : il la prend telle quelle, sans ratio ni Epley. Nouvelle fiche tuto.
+
+### Metcons — correctifs d’audit
 
 Coach IA ne vise plus « Ring Row » quand on lui dit « Row » (singulier / pluriel seulement) ; « annuler » après un retrait de metcon restaure ; un aérobie en segments doit tomber juste sur sa durée.
 

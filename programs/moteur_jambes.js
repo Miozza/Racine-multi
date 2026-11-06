@@ -3,15 +3,19 @@
 // une blessure à l'épaule droite (trapèze bas, cou) sur un snatch d'un bras.
 // La compétition passe à début février : competition_peak (8 sem.) commence
 // le 7 décembre, ce bloc l'amène prêt et l'épaule guérie.
-// Méthode : jambes lourdes (Back Squat, Front Squat, Hip Thrust), moteur au
+// Méthode : jambes lourdes (Back Squat, Front Squat), Back Extension, moteur au
 // centre (aérobie long, intervalles au seuil, EMOM, metcon long), bench
 // seulement s'il reste indolore. Rien au-dessus de la tête jusqu'à S5, qui
 // teste le retour (Wall Ball, Pull-Up, Strict Press, Power Clean) avant le Peak.
 // Ce n'est pas un programme de réhabilitation : le reste du corps travaille.
 //
 // CHARGES — échelle de l'ATHLÈTE DE RÉFÉRENCE (scripts/profiles/reference.js :
-// Back Squat 315, Front Squat 265, Bench 245, Hip Thrust 8RM 315), ramenées
-// au niveau réel par scripts/charge/scaling.js. Jamais une charge déjà réduite.
+// Back Squat 315, Front Squat 265, Bench 245), ramenées au niveau réel par
+// scripts/charge/scaling.js. Jamais une charge déjà réduite.
+// Back Extension (vendredi, depuis le 2026-11-06 : le Hip Thrust était
+// désagréable) : la charge est un LEST tenu contre la poitrine, pas une charge
+// totale — le moteur la prend telle quelle (bodyweightExternalLoadPatterns,
+// scripts/charge/movement_tuning.js). 25 → 25 → 35 → 45 → 35 lb.
 //   Back Squat  S1 ×0,72 · S2 ×0,76 · S3 ×0,80 · S4 ×0,85 · S5 ×0,80
 //   Front Squat S1 ×0,72 · S2 ×0,75 · S3 ×0,79 · S4 ×0,82 · S5 ×0,77
 //   Bench Press S1 ×0,70 · S2 ×0,72 · S3 ×0,74 · S4 ×0,76 · S5 ×0,72 (RPE 7)
@@ -27,7 +31,7 @@
     phaseName: "Moteur et jambes, épaule épargnée, avant le Peak",
     phaseEnd: "2026-12-06",
     nextPhase: "competition_peak",
-    impact: "Bloc de 5 semaines entre Pont Peak et le Peak, pendant que l'épaule droite guérit. Jambes lourdes (Back Squat, Front Squat, Hip Thrust), moteur au centre de chaque séance, bench seulement s'il reste indolore. Aucun mouvement au-dessus de la tête avant S5, qui teste le retour des mouvements du Peak.",
+    impact: "Bloc de 5 semaines entre Pont Peak et le Peak, pendant que l'épaule droite guérit. Jambes lourdes (Back Squat, Front Squat), chaîne postérieure en Back Extension, moteur au centre de chaque séance, bench seulement s'il reste indolore. Aucun mouvement au-dessus de la tête avant S5, qui teste le retour des mouvements du Peak.",
     days: ["lundi", "mardi", "jeudi", "vendredi"],
     weekLabels: ["S1 Base moteur", "S2 Volume", "S3 Seuil", "S4 Grosse semaine", "S5 Retour + re-test"],
     weekGoals: [
@@ -42,8 +46,8 @@
     mult: [0.72, 0.76, 0.80, 0.85, 0.80],
     rest: "0:45–2:00",
     tag: "moteur jambes épaule",
-    versionDate: "2026-10-29",
-    versionLabel: "2026-10-29 — Pont Moteur + jambes V1, épaule droite épargnée"
+    versionDate: "2026-11-06",
+    versionLabel: "2026-11-06 — Pont Moteur + jambes V2, Back Extension à la place du Hip Thrust"
   };
 
   var ROW_RULE = " Règle épaule : si le cou ou le trapèze réagit au Row, passe au Bike, mêmes calories.";
@@ -67,32 +71,32 @@
 
   function plan(week){
     return ({
-      1: {squat:"4×5", squatLoad:"225 lb", front:"4×4", frontLoad:"190 lb", bench:"4×5", benchLoad:"170 lb", thrust:"4×6", thrustLoad:"285 lb", split:"40 lb / main",
+      1: {squat:"4×5", squatLoad:"225 lb", front:"4×4", frontLoad:"190 lb", bench:"4×5", benchLoad:"170 lb", ext:"4×10", extLoad:"25 lb", split:"40 lb / main",
           aeroTime:"24 min", aero:{format:"steady", minutes:24, template:AERO, sep:", ", moves:[mv(10, "min", "Bike"), mv(4, "min", "Row"), mv(10, "min", "Bike")]},
           intTime:"10 min", intervals:{format:"fortime", moves:[mv(50, "cal", "Bike")], note:"Référence du bloc, re-test en S5."},
           emomTime:"12 min", emom:{format:"emom", style:"alternate", minutes:12, moves:[mv(7, "", "Burpees", BW, 1), mv(12, "cal", "Bike", "", 2)]},
           longTime:"20 min", long:{format:"amrap", minutes:20, template:AMRAP7, sep:", ", moves:[mv(12, "cal", "Row"), mv(15, "", "Air Squats"), mv(10, "", "Box Step-Ups", BOX), mv(8, "", "Burpees", BW)],
             note:"C'est le premier vendredi du Peak, avec les Air Squats à la place du lancer. Note tes tours : re-test en S5."}},
-      2: {squat:"5×4", squatLoad:"240 lb", front:"4×4", frontLoad:"200 lb", bench:"4×5", benchLoad:"175 lb", thrust:"4×6", thrustLoad:"295 lb", split:"40 lb / main",
+      2: {squat:"5×4", squatLoad:"240 lb", front:"4×4", frontLoad:"200 lb", bench:"4×5", benchLoad:"175 lb", ext:"4×12", extLoad:"25 lb", split:"40 lb / main",
           aeroTime:"27 min", aero:{format:"steady", minutes:27, template:AERO, sep:", ", moves:[mv(9, "min", "Bike"), mv(9, "min", "Row"), mv(9, "min", "Bike")]},
           intTime:"22 min", intervals:{format:"intervals", sets:5, work:"3 min", rest:"1:30", moves:[mv("", "", "Bike", "", 0, "à effort 7 sur 10")], note:"Même cadence sur les cinq : tu peux dire trois mots, pas une phrase."},
           emomTime:"14 min", emom:{format:"emom", style:"alternate", minutes:14, moves:[mv(8, "", "Burpees", BW, 1), mv(10, "cal", "Bike", "", 2)],
             note:"En S1, 12 cal passaient encore, mais à effort maximal dès la 9e minute : en S2, la progression vient des 2 minutes de plus, pas des calories."},
           longTime:"24 min", long:{format:"amrap", minutes:24, template:AMRAP7, sep:", ", moves:[mv(15, "cal", "Row"), mv(15, "", "Air Squats"), mv(12, "", "Box Step-Ups", BOX), mv(10, "", "Burpees", BW)],
             note:"Stratégie : le Row à rythme fixe, Burpees jamais arrêtés, ralentis plutôt."}},
-      3: {squat:"5×3", squatLoad:"250 lb", front:"5×3", frontLoad:"210 lb", bench:"4×5", benchLoad:"180 lb", thrust:"4×6", thrustLoad:"305 lb", split:"45 lb / main",
+      3: {squat:"5×3", squatLoad:"250 lb", front:"5×3", frontLoad:"210 lb", bench:"4×5", benchLoad:"180 lb", ext:"4×10", extLoad:"35 lb", split:"45 lb / main",
           aeroTime:"30 min", aero:{format:"steady", minutes:30, template:AERO, sep:", ", moves:[mv(10, "min", "Bike"), mv(10, "min", "Row"), mv(10, "min", "Bike")]},
           intTime:"24 min", intervals:{format:"intervals", sets:6, work:"3 min", rest:"1:00", moves:[mv("", "", "Bike", "", 0, "à effort 8 sur 10")], note:"Le dernier intervalle doit ressembler au premier."},
           emomTime:"16 min", emom:{format:"emom", style:"stations", minutes:16, moves:[mv(8, "", "Burpees", BW, 1), mv(14, "cal", "Bike", "", 2), mv(10, "", "Box Jumps", BOX, 3), mv(15, "", "Air Squats", "", 4)]},
           longTime:"25 min", long:{format:"fortime", rounds:5, cap:25, template:"Pour le temps, {rounds} tours : {moves}. Cap {cap} min.", sep:", ", moves:[mv(20, "cal", "Bike"), mv(20, "", "Air Squats"), mv(15, "", "Box Step-Ups", BOX), mv(10, "", "Burpees", BW)],
             note:"Stratégie : Burpees en 2 séries de 5, Step-Ups d'une traite."}},
-      4: {squat:"4×3", squatLoad:"270 lb", front:"4×3", frontLoad:"215 lb", bench:"4×5", benchLoad:"185 lb", thrust:"4×5", thrustLoad:"315 lb", split:"45 lb / main",
+      4: {squat:"4×3", squatLoad:"270 lb", front:"4×3", frontLoad:"215 lb", bench:"4×5", benchLoad:"185 lb", ext:"4×8", extLoad:"45 lb", split:"45 lb / main",
           aeroTime:"32 min", aero:{format:"steady", minutes:32, template:AERO, sep:", ", moves:[mv(8, "min", "Bike"), mv(8, "min", "Row"), mv(8, "min", "Bike"), mv(8, "min", "Row")]},
           intTime:"26 min", intervals:{format:"intervals", sets:4, work:"5 min", rest:"1:30", moves:[mv("", "", "Bike", "", 0, "à effort 7 sur 10")], note:"Cadence régulière, aucune accélération en fin d'intervalle."},
           emomTime:"20 min", emom:{format:"emom", style:"stations", minutes:20, moves:[mv(9, "", "Burpees", BW, 1), mv(15, "cal", "Bike", "", 2), mv(12, "", "Box Jumps", BOX, 3), mv(20, "", "Air Squats", "", 4)]},
           longTime:"30 min", long:{format:"fortime", cap:30, template:"Chipper pour le temps : {moves}. Cap {cap} min.", sep:", ", moves:[mv(50, "cal", "Row"), mv(50, "", "Air Squats"), mv(50, "", "Box Step-Ups", BOX), mv(40, "cal", "Bike"), mv(30, "", "Burpees", BW)],
             note:"Stratégie : chaque bloc découpé en séries de 10, Burpees en séries de 5 avec 3 respirations entre."}},
-      5: {squat:"3×3", squatLoad:"250 lb", front:"3×3", frontLoad:"205 lb", bench:"4×5", benchLoad:"175 lb", thrust:"3×6", thrustLoad:"295 lb", split:"40 lb / main",
+      5: {squat:"3×3", squatLoad:"250 lb", front:"3×3", frontLoad:"205 lb", bench:"4×5", benchLoad:"175 lb", ext:"3×10", extLoad:"35 lb", split:"40 lb / main",
           aeroTime:"24 min", aero:{format:"steady", minutes:24, template:AERO, sep:", ", moves:[mv(10, "min", "Bike"), mv(4, "min", "Row"), mv(10, "min", "Bike")], note:"Compare ton souffle à S1."},
           intTime:"10 min", intervals:{format:"fortime", template:"Re-test pour le temps : {moves}.", moves:[mv(50, "cal", "Bike")], note:"Compare au temps de S1."},
           emomTime:"10 min", emom:{format:"emom", style:"each", minutes:10, moves:[mv(8, "", "Burpees", BW)], note:"Rythme constant, le dernier tour doit ressembler au premier."},
@@ -176,9 +180,9 @@
     // vendredi
     return [
       {time:"8 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:"Row 3 min (ou Bike si le trapèze réagit) + glute bridge 2×15 + 2 tours lents : 5 Air Squats, 5 Box Step-Ups, 3 Burpees."},
-      {time:"10 min", title:"A. Hip Thrust", tag:"Chaîne postérieure", kind:"main", exercises:[
-        ex("Hip Thrust", p.thrust, p.thrustLoad, "0:45 avant A2", "Pause 1 s en haut, menton rentré, côtes basses. Remplace le RDL : aucune barre tenue à bout de bras."),
-        ex("Dead Bug", "3×8/côté", "poids du corps", "0:45 après A2", "Pendant la pause du hip thrust. Bas du dos collé au sol.")
+      {time:"10 min", title:"A. Back Extension", tag:"Chaîne postérieure", kind:"main", exercises:[
+        ex("Back Extension", p.ext, p.extLoad, "0:45 avant A2", "Banc à 45°, coussin sous les hanches, pieds tournés vers l'extérieur. Plaque serrée contre la poitrine, menton rentré : rien ne pend des bras. Descends en arrondissant le haut du dos, remonte en serrant les fessiers, pause 1 s en haut, sans cambrer. Remplace le RDL et le Hip Thrust."),
+        ex("Dead Bug", "3×8/côté", "poids du corps", "0:45 après A2", "Pendant la pause de la back extension. Bas du dos collé au sol.")
       ]},
       {time:p.longTime, title:"B. Metcon long", tag:"WOD", kind:"wod", wod:withNote(p.long, ROW_RULE.trim())},
       {time:"4 min", title:"C. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Marche lente 2 min + couch stretch 1 min/côté. Note tes tours ou ton temps."}
@@ -209,25 +213,25 @@
     "Épaule droite épargnée : aucun mouvement au-dessus de la tête, aucune traction, aucun ski, aucun curl de S1 à S4.",
     "Règle douleur : 0-2 sur 10 qui ne monte pas, on continue. Au-dessus de 3 sur 10, ou qui monte pendant la séance ou le lendemain, le mouvement sort.",
     "Choc électrique dans le bras qui revient, fourmillements, ou perte de force : arrêt du haut du corps et consultation avant la séance suivante.",
-    "Jambes lourdes : Back Squat le lundi, Front Squat le jeudi, Hip Thrust le vendredi, RPE 7 en S1-S2 puis 8, jamais au-delà.",
+    "Jambes lourdes : Back Squat le lundi, Front Squat le jeudi, Back Extension le vendredi, RPE 7 en S1-S2 puis 8, jamais au-delà.",
     "Moteur au centre : aérobie 24 → 27 → 30 → 32 min au rythme conversation, intervalles au seuil le mardi, EMOM le jeudi, metcon long le vendredi.",
     "Row permis tant que le cou ne réagit pas ; sinon Bike, mêmes calories.",
     "Bench Press à RPE 7 seulement s'il reste indolore. Tirage sur banc incliné léger, sauté au moindre signal du cou.",
     "Le metcon suit le travail principal : si le temps manque, ce sont les accessoires de fin qui sautent.",
     "S5 : test de retour (Strict Press barre vide, Wall Balls, Pull-Up, Power Clean). Passé à 0-2 sur 10 : le Peak commence lundi. Sinon, une semaine de plus dans ce bloc.",
     "Re-tests S5 : 50 cal Bike (mardi) et AMRAP 20 du vendredi, comparés à S1.",
-    "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel."
+    "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Exception : le lest de la Back Extension se prend tel quel."
   ];
   P.dayIntentions = {
     lundi: "Jambes + aérobie : Back Squat lourd avec Tibialis Raise pendant les pauses, aérobie long au rythme conversation, Bulgarian Split Squat et Dead Bug.",
     mardi: "Bench prudent + seuil : Bench Press à RPE 7 s'il reste indolore, benchmark ou intervalles au Bike, tirage sur banc incliné, Side Plank.",
     jeudi: "Front Squat + EMOM : front squat lourd, EMOM burpees/Bike/box, Pallof Press. Aucune poussée au-dessus de la tête.",
-    vendredi: "Chaîne postérieure + metcon long : Hip Thrust à la place du RDL, puis le metcon long au format du Peak, sans Wall Balls."
+    vendredi: "Chaîne postérieure + metcon long : Back Extension à la place du RDL et du Hip Thrust, puis le metcon long au format du Peak, sans Wall Balls."
   };
   P.dayMeta = {
     lundi:   {label:"Lundi",   base:"Squat + aérobie",     focus:"Back Squat, moteur aérobie long, Bulgarian Split Squat, Dead Bug."},
     mardi:   {label:"Mardi",   base:"Bench + seuil",       focus:"Bench Press RPE 7, intervalles Bike, Chest Supported Row, Side Plank."},
     jeudi:   {label:"Jeudi",   base:"Front squat + EMOM",  focus:"Front Squat, EMOM moteur, Pallof Press."},
-    vendredi:{label:"Vendredi",base:"Hip thrust + metcon", focus:"Hip Thrust, metcon long 20-30 min."}
+    vendredi:{label:"Vendredi",base:"Back extension + metcon", focus:"Back Extension, metcon long 20-30 min."}
   };
 })();
