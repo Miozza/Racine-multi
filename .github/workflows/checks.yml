@@ -24,8 +24,8 @@ name: Validations
 on:
   pull_request:
   push:
-    # Sur main, la PR a déjà tout validé : inutile de repayer le run.
-    branches-ignore: [main]
+    # Valider aussi les commits directs sur main, sans modifier le déploiement.
+    branches: ['**']
   workflow_dispatch:
 
 permissions:
