@@ -82,6 +82,7 @@ node dev/pc_progress_compare_checks.js
 node dev/deload_guard_checks.js
 node dev/coach_ai_checks.js
 node dev/verify-architecture.js
+node dev/ci_hygiene_audit.js
 ```
 
 Documents d’implémentation associés à la sécurité des charges client :
