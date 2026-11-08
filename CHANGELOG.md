@@ -1,3 +1,23 @@
+## V5.3.3 — Calibration dépassée : signalée, corrigée en un geste
+
+**Pourquoi** : les trophées n'écrivent jamais une calibration (V5.2.2, voulu). Une clé de calibration peut donc rester sous ce que l'athlète a démontré, sans que rien ne le dise. Cas qui a lancé la question : `backSquat5RM` à 235 lb depuis la saisie initiale, 300 × 1 @9,5 le 2026-09-28.
+
+**Mesuré sur l'export réel avant d'écrire du code** (Chromium, toutes les semaines réelles de tous les programmes) : passer `backSquat5RM` de 235 à 265 change 147 charges sur 4 494 (Pont Peak S6, Force, Goblet Squat, Overhead Squat, Thruster des programmes clients…), mais **aucune** charge de Back Squat de Moteur + jambes S1-S5 (215 / 220 / 230 / 230 / 230 lb des deux côtés) : l'historique y décide. Le +36 lb du bilan V5.2.17 date d'août-septembre.
+
+**Et la calibration n'était pas périmée.** Epley étire 300 × 1 en un 5RM de 266 lb, mais les séries de 5 de l'athlète disent ≈ 225-230 (215 × 5 @8, 220 × 3 @8). Un single réussi est surtout technique et nerveux ; il prouve un 1RM, pas un 5RM. D'où les deux règles de preuve ci-dessous. Avec elles, le Back Squat ne déclenche plus rien.
+
+- **Détection, lecture seule** : `CoachOnboarding.calibrationGaps()` (`scripts/profiles/onboarding.js`). Preuves : record, `movementRefs.<mvKey>__strength`, séries de l'historique filtrées par `coachFilterHistoryForProgression`.
+  - Une preuve ne vaut que pour une clé **à 3 reps près** (un 5RM se prouve entre 2 et 8 reps).
+  - Le **RPE** compte en reps en réserve (RPE 8 ≈ 2, convention de `reference.js`, plafonné à 4), puis conversion Epley par `coachRefAtTargetReps`.
+  - Signal si la preuve est plus récente que la calibration et la dépasse de plus de 5 % (`STALE_CALIBRATION_MIN_GAIN`), et si l'arrondi au rack peut l'exprimer.
+  - Jamais une preuve : contexte limité (technique, léger, WOD), tentative ratée, copie à poids réduit, lest sur le poids du corps.
+- **Jamais à la baisse** : une calibration au-dessus de la dernière tentative quasi maximale (RPE ≥ 9) est montrée, sans rien proposer. Une série sous-maximale ne dit jamais qu'une calibration est trop haute.
+- **Affichage** : panneau Calibration du moteur (« DB RDL 8RM : calibré 75 lb · démontré ≈ 94 lb (85 × 10 @8, 9 juil.) »), contexte Coach IA (même ligne), et une phrase dans le (!) seulement quand la charge affichée est la charge du programme mise à l'échelle par ce ratio.
+- **Un geste** : « Mettre à jour à … lb » (arrondi au rack, vers le bas) → confirmation → `setCalibrationValue`. Annulable.
+- **Données** : `setCalibrationValue` date chaque saisie dans `state.profile.calibrationLog[clé]` (valeur et ratio d'avant, preuve). Clé **optionnelle** : un ancien export reste importable, une version antérieure l'ignore. Aucun fichier `data/` touché.
+- **Profil réel** : Back Squat, Bench, Front Squat, Strict Press, Power Clean, Hip Thrust, Chest Row : rien. Signalés : Bulgarian 8RM 50 → 55, DB RDL 8RM 75 → 85, Barbell Row 8RM 185 → 190, Incline DB 10RM 55 → 60. Le signal seul ne change aucune charge (10 744 charges identiques avant/après).
+- `dev/calibration_readout_checks.js` : le cas réel (300 × 1 ne fait rien proposer), une vraie série de 5, contexte technique / WOD / raté, record antérieur, écart sous le seuil, calibration au-dessus, matrice identique bit à bit, acceptation (un seul appel, seules `_lowerBody` et `_overall` recalculées), annulation.
+
 ## V5.3.2 — Pont Moteur + jambes : Back Extension à la place du Hip Thrust
 
 **Pourquoi** : demande de l'athlète (2026-11-06) : le Hip Thrust est difficile et désagréable à faire. Le remplaçant doit garder la règle du bloc pour l'épaule droite : aucune charge qui pend des bras ni qui pèse sur le trapèze.

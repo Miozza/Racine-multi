@@ -227,6 +227,18 @@
       });
     }
 
+    // V5.3.3 — calibration dépassée par ce que l'athlète a démontré. Calculé
+    // par Racine (CoachOnboarding.calibrationGaps), sans modèle : le modèle
+    // doit citer la CAUSE d'un écart suggéré/fait, pas seulement le constater.
+    var calGaps = [];
+    try{ calGaps = (window.CoachOnboarding && typeof CoachOnboarding.calibrationGaps === "function") ? (CoachOnboarding.calibrationGaps() || []) : []; }catch(e){ calGaps = []; }
+    if(calGaps.length){
+      lines.push("Calibration du moteur comparée à ce que l'athlète a démontré (ratio = calibration / référence ; aucune mise à jour n'est faite sans son accord, dans Calibration du moteur) :");
+      calGaps.forEach(function(g){
+        lines.push("  - " + str(g.text) + (g.proposed ? " → mise à jour proposée : " + g.proposed + " lb" : ""));
+      });
+    }
+
     var programId = "";
     try{ programId = (typeof activeProgramId === "function") ? activeProgramId() : str(c.goal); }catch(e){ programId = str(c.goal); }
     var programLabel = "";

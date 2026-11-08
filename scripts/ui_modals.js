@@ -248,8 +248,18 @@ function loadInfoPayload(exercise, shownLoad){
     // V5.2.18 — la consigne écrite dans le programme (note + format), pour
     // la relire dans le (!) sans quitter la séance. Affichage seulement.
     programNote: String(exercise.note||"").trim(),
-    programFormat: String(exercise.format||"").trim()
+    programFormat: String(exercise.format||"").trim(),
+    // V5.3.3 — une phrase quand la charge affichée dépend d'une calibration
+    // dépassée. Lecture seule : elle n'en propose pas une autre.
+    calibrationNote: calibrationNoteForExercise(exercise, finalLoad)
   };
+}
+function calibrationNoteForExercise(exercise, shownLoad){
+  if(!window.CoachOnboarding||typeof CoachOnboarding.calibrationNoteFor!=="function")return "";
+  try{
+    var label=(typeof canonicalMovementLabel==="function")?canonicalMovementLabel(loadHistoryExerciseName(exercise)):chargeKeyFromName(exercise.name);
+    return CoachOnboarding.calibrationNoteFor(label, exercise.load, shownLoad)||"";
+  }catch(e){return "";}
 }
 function loadInfoText(exercise, shownLoad){
   var payload=loadInfoPayload(exercise, shownLoad);
@@ -592,6 +602,7 @@ function renderLoadInfoModalBody(msg){
     var capacityLine='';
     try{ if(window.CoachKalman&&typeof CoachKalman.explainLine==='function')capacityLine=CoachKalman.explainLine(hint.kalman)||''; }catch(e){ capacityLine=''; }
     var capacityHtml=capacityLine?'<div class="tuto-section compact"><div class="tuto-section-title">Capacit\u00e9 estim\u00e9e</div><p>'+escapeHtml(capacityLine)+'</p></div>':'';
+    var calibrationHtml=hint.calibrationNote?'<div class="tuto-section compact"><div class="tuto-section-title">Calibration</div><p>'+escapeHtml(hint.calibrationNote)+'</p></div>':'';
     var programNoteHtml=hint.programNote?'<div class="tuto-section compact"><div class="tuto-section-title">Note du programme</div>'+
       (hint.programFormat?'<p><small>Format : '+escapeHtml(hint.programFormat)+'</small></p>':'')+
       '<p>'+escapeHtml(hint.programNote)+'</p></div>':'';
@@ -601,6 +612,7 @@ function renderLoadInfoModalBody(msg){
       '<div class="tuto-goal"><strong>Charge sugg\u00e9r\u00e9e : '+escapeHtml(hint.load||"\u2014")+'</strong></div>'+ 
       programNoteHtml+
       sourceHtml+
+      calibrationHtml+
       capacityHtml+
       '<div class="tuto-section"><div class="tuto-section-title">Historique des poids utilis\u00e9s</div><ul>'+lis+'</ul></div>'+ 
       analysisHtml;
