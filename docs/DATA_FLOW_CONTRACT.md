@@ -60,6 +60,12 @@ retirée du code — aucun envoi réseau lors d'une sauvegarde de séance.
 - Migration unique `profile.recordsBackfill` : remplit les champs vides depuis `state.history`, ne modifie jamais un record existant.
 - N ecrivent jamais athlete_state, movementRefs ni une cle de calibration du profil.
 
+### state.profile.calibrationLog (V5.3.3, optionnel)
+
+- `{cle: {date, value, previous, previousRatio, source, prior?}}` : date de la derniere saisie d une cle de calibration, et ce qu elle remplace.
+- Ecrit uniquement par `CoachOnboarding.setCalibrationValue` / `undoCalibrationValue`. Absent d un ancien profil ou export : rien ne casse, la date retombe sur la creation du profil.
+- Lu par `CoachOnboarding.calibrationGaps()` (lecture seule) : une calibration n est « depassee » que par une preuve plus recente qu elle. Le signal ne reecrit jamais une calibration ; seul un geste confirme de l athlete le fait.
+
 ### data/charges.js
 
 - Configuration stable des charges et de l equipement.

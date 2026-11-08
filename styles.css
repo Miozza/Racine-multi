@@ -8295,6 +8295,8 @@ button.guided-timer-label:active .guided-timer-label-text{ opacity:.62; }
 .calib-item-untested{ border-left-color:var(--blue); }
 .calib-item-stuck{ border-left-color:var(--cyan); }
 .calib-item-seedless{ border-left-color:var(--border); }
+.calib-item-calibration{ border-left-color:var(--cyan); }
+.calib-item-calibration-info{ border-left-color:var(--border); }
 .calib-item-name{
   font-size:14px;
   font-weight:600;

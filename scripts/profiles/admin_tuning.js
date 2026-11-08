@@ -318,6 +318,77 @@ window.RacineAdminTuning = window.RacineAdminTuning || {};
     return h;
   }
 
+  // ─── Calibration dépassée (V5.3.3) ──────────────────────────────────────
+  // Lecture : CoachOnboarding.calibrationGaps(). Le seul geste, « Mettre à
+  // jour », passe par CoachOnboarding.setCalibrationValue après confirmation ;
+  // « Annuler » par undoCalibrationValue. Rien ne s'écrit sans un toucher.
+  function onboarding(){ return window.CoachOnboarding || null; }
+  function gaps(){
+    var ob = onboarding();
+    if(!ob || typeof ob.calibrationGaps !== "function") return [];
+    try{ return ob.calibrationGaps() || []; }catch(e){ return []; }
+  }
+  function shortIso(iso){
+    var m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    var mois = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+    return m ? Number(m[3]) + " " + mois[Number(m[2]) - 1] : "";
+  }
+  function calibrationUndoRows(){
+    var log = (typeof state === "object" && state && state.profile && state.profile.calibrationLog) || {};
+    return Object.keys(log).filter(function(k){
+      var e = log[k];
+      return e && Number(e.previous) > 0 && String(e.source || "").indexOf("démontré") === 0;
+    }).map(function(k){ return {key: k, entry: log[k]}; });
+  }
+  function calibrationGapsHtml(){
+    var list = gaps(), undo = calibrationUndoRows();
+    if(!list.length && !undo.length) return "";
+    var h = '<h3>Calibration dépassée</h3>';
+    list.forEach(function(g){
+      var action = (g.kind === "stale" && g.proposed > 0)
+        ? '<button type="button" class="btn-ghost calib-act" data-calib-update="' + esc(g.key) + '">Mettre à jour à ' + esc(lb(g.proposed)) + ' lb</button>'
+        : "";
+      h += '<div class="calib-item calib-item-' + esc(g.kind === "stale" ? "calibration" : "calibration-info") + '">'
+        + '<div class="calib-item-name">' + esc(g.title) + '</div>'
+        + '<p class="calib-item-why">' + esc(g.text) + '</p>'
+        + action
+        + '</div>';
+    });
+    undo.forEach(function(u){
+      var title = u.key;
+      list.concat([]).forEach(function(g){ if(g.key === u.key) title = g.title; });
+      h += '<div class="calib-cap-row">'
+        + '<span class="calib-cap-name">' + esc(title) + ' : ' + esc(lb(u.entry.previous)) + ' → ' + esc(lb(u.entry.value)) + ' lb le ' + esc(shortIso(u.entry.date)) + ' (' + esc(u.entry.source) + ')</span>'
+        + '<button type="button" class="btn-ghost" data-calib-undo="' + esc(u.key) + '">Annuler</button>'
+        + '</div>';
+    });
+    return h;
+  }
+  function confirmCalibration(key){
+    var ob = onboarding();
+    var g = gaps().filter(function(x){ return x.key === key && x.kind === "stale" && x.proposed > 0; })[0];
+    if(!ob || !g) return;
+    var ok = (typeof confirm === "function") ? confirm(
+      "Mettre à jour « " + g.title + " » de " + g.calibrated + " lb à " + g.proposed + " lb ?\n\n"
+      + "Démontré : " + g.proof.load + " × " + g.proof.reps + " (" + shortIso(g.proof.date) + ").\n"
+      + "Les charges tirées de ce ratio changeront dès maintenant. Annulable ensuite.") : false;
+    if(!ok) return;
+    var res = ob.setCalibrationValue(key, g.proposed, {source: "démontré " + g.proof.load + " × " + g.proof.reps + ", " + shortIso(g.proof.date)});
+    if(!res){ status("Mise à jour non enregistrée.", false); return; }
+    if(typeof renderWorkout === "function"){ try{ renderWorkout(); }catch(e){} }
+    api.render();
+    status(g.title + " : " + g.calibrated + " → " + g.proposed + " lb. Ancienne valeur gardée, annulable ci-dessus.", true);
+  }
+  function undoCalibration(key){
+    var ob = onboarding();
+    if(!ob || typeof ob.undoCalibrationValue !== "function") return;
+    var res = ob.undoCalibrationValue(key);
+    if(!res){ status("Rien à annuler.", false); return; }
+    if(typeof renderWorkout === "function"){ try{ renderWorkout(); }catch(e){} }
+    api.render();
+    status("Calibration remise à " + lb(res.value) + " lb.", true);
+  }
+
   api.render = function(){
     var h = host();
     if(!h) return;
@@ -342,6 +413,7 @@ window.RacineAdminTuning = window.RacineAdminTuning || {};
       html += list.map(findingHtml).join("");
     }
 
+    html += calibrationGapsHtml();
     html += ceilingsHtml();
     html += '<p id="adminTuningStatus" class="status-msg"></p>';
     h.innerHTML = html;
@@ -442,6 +514,12 @@ window.RacineAdminTuning = window.RacineAdminTuning || {};
         status("Plafond retiré — le moteur redéduit ce mouvement de lui-même.", true);
       };
     });
+    Array.prototype.forEach.call(h.querySelectorAll("[data-calib-update]"), function(btn){
+      btn.onclick = function(){ confirmCalibration(btn.getAttribute("data-calib-update")); };
+    });
+    Array.prototype.forEach.call(h.querySelectorAll("[data-calib-undo]"), function(btn){
+      btn.onclick = function(){ undoCalibration(btn.getAttribute("data-calib-undo")); };
+    });
     var add = document.getElementById("adminCalibAddCap");
     if(add) add.onclick = openCeilingPicker;
   }
@@ -451,7 +529,7 @@ window.RacineAdminTuning = window.RacineAdminTuning || {};
   api.RULES = RULES;
   api.analyze = function(){
     var byMove = aggregate() || {};
-    return { byMove: byMove, precision: globalPrecision(byMove), findings: findings(byMove) };
+    return { byMove: byMove, precision: globalPrecision(byMove), findings: findings(byMove), calibrationGaps: gaps() };
   };
   api.activeProfileName = activeName;
 })();

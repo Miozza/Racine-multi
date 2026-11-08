@@ -321,13 +321,69 @@ window.CoachOnboarding = window.CoachOnboarding || {};
   // une valeur hors bande est enregistrée (avertissement non bloquant) mais
   // exclue des moyennes, et ignorée par le moteur (scaling.js). Sans ratios
   // stockés (profil non calibré), seule la valeur est écrite.
-  api.setCalibrationValue = function(key, value){
+  //
+  // V5.3.3 — chaque saisie est datée dans `state.profile.calibrationLog[key]`
+  // (clé OPTIONNELLE : un profil ou un export qui ne l'a pas reste valide, et
+  // une version antérieure l'ignore). Elle garde aussi la valeur et le ratio
+  // d'avant, pour que la saisie soit annulable (undoCalibrationValue), et la
+  // date sert à calibrationGaps() : une preuve n'est « plus récente » que si
+  // l'on sait quand la calibration a été posée.
+  // meta.source : d'où vient la valeur (texte court, affiché dans la note).
+  api.setCalibrationValue = function(key, value, meta){
     if(typeof state !== "object" || !state.profile) return null;
     var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : {};
     var d = Number(ref[key]), v = Number(value);
     if(!(d > 0) || !(v > 0)) return null;
+    var log = state.profile.calibrationLog;
+    var prior = (log && typeof log === "object") ? log[key] : null;
+    var stored = state.profile.scaleRatios;
+    var entry = {
+      date: todayIso(), value: v,
+      previous: Number(state.profile[key]) > 0 ? Number(state.profile[key]) : null,
+      previousRatio: (stored && Number(stored[key]) > 0) ? Number(stored[key]) : null,
+      source: String((meta && meta.source) || "")
+    };
+    if(prior && typeof prior === "object"){
+      entry.prior = Object.assign({}, prior);
+      delete entry.prior.prior;
+    }
+    var res = writeCalibration(key, v, v / d);
+    if(!state.profile.calibrationLog || typeof state.profile.calibrationLog !== "object") state.profile.calibrationLog = {};
+    state.profile.calibrationLog[key] = entry;
+    if(typeof save === "function") save();
+    return res;
+  };
+
+  // Annule la dernière saisie d'une clé : valeur ET ratio d'avant, mêmes
+  // familles recalculées, et la date de calibration redevient celle d'avant
+  // (sinon un signal annulé ne reviendrait jamais).
+  api.undoCalibrationValue = function(key){
+    if(typeof state !== "object" || !state.profile) return null;
+    var log = state.profile.calibrationLog;
+    var entry = (log && typeof log === "object") ? log[key] : null;
+    if(!entry || !(Number(entry.previous) > 0)) return null;
+    var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : {};
+    var d = Number(ref[key]);
+    if(!(d > 0)) return null;
+    var prevRatio = Number(entry.previousRatio) > 0 ? Number(entry.previousRatio) : Number(entry.previous) / d;
+    var res = writeCalibration(key, Number(entry.previous), prevRatio);
+    if(entry.prior && typeof entry.prior === "object") log[key] = entry.prior;
+    else delete log[key];
+    if(typeof save === "function") save();
+    return res;
+  };
+
+  function todayIso(){
+    try{ if(typeof todayIsoDate === "function") return String(todayIsoDate()).slice(0, 10); }catch(e){}
+    var t = new Date();
+    return t.getFullYear() + "-" + ("0" + (t.getMonth() + 1)).slice(-2) + "-" + ("0" + t.getDate()).slice(-2);
+  }
+
+  // Écriture commune de setCalibrationValue / undoCalibrationValue : la
+  // valeur, son ratio, et seulement les moyennes qui la contiennent.
+  function writeCalibration(key, v, ratio){
+    var ref = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : {};
     state.profile[key] = v;
-    var ratio = v / d;
     function apply(stored, level){
       if(!stored || typeof stored !== "object") return stored;
       var lvl = api.EXPERIENCE_LEVELS[level] || api.EXPERIENCE_LEVELS.intermediaire;
@@ -348,8 +404,231 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       var reg = (window.CoachProfiles && CoachProfiles.getActive) ? CoachProfiles.getActive() : null;
       if(reg && reg.scaleRatios) CoachProfiles.update(reg.id, {scaleRatios: apply(reg.scaleRatios, reg.experienceLevel || state.profile.experienceLevel)});
     }catch(e){}
-    if(typeof save === "function") save();
     return {value: v, ratio: ratio, outOfBand: !inBand(ratio)};
+  }
+
+  // ─── Calibration dépassée par ce que l'athlète a démontré (V5.3.3) ───────
+  // LECTURE SEULE. Les trophées 1RM n'écrivent jamais une clé de calibration
+  // (V5.2.2, voulu). Conséquence : une calibration peut rester figée sous les
+  // records de l'athlète sans que rien ne le dise — cas réel : Back Squat 5RM
+  // calibré 235 lb, 300 × 1 démontré le 28 sept. Cette fonction le DIT ; elle
+  // ne corrige rien. La correction passe par un geste confirmé de l'athlète
+  // (setCalibrationValue), jamais par ici.
+  //
+  // Aucune nouvelle couche de calcul : la preuve est ramenée aux reps de la
+  // clé par coachRefAtTargetReps (Epley, même conversion que V5.2.4), le
+  // contexte est jugé par coachHistoryContextIsLimited (même filtre que la
+  // progression), l'arrondi vient de roundLoadForExercise.
+  //
+  // Asymétrie voulue : une série sous-maximale prouve « au moins », jamais
+  // « au plus ». Elle peut donc montrer qu'une calibration est dépassée, mais
+  // seule une tentative quasi maximale (record, RPE ≥ 9) peut montrer qu'une
+  // calibration est au-dessus du réel — et même là, rien n'est proposé à la
+  // baisse : une blessure ou un deload expliquent un creux.
+  var STALE_CALIBRATION_MIN_GAIN = 0.05;   // écart minimal, en fraction de la calibration
+  var STALE_CALIBRATION_MAX_PROOF_REPS = 12; // au-delà, Epley ne prouve plus rien
+  // Une preuve ne vaut que pour une clé PROCHE de ses reps. Cas réel qui l'a
+  // imposé : 300 × 1 @9,5 « prouvait » un 5RM de 266 lb, alors que les séries
+  // de 5 du même athlète (215 × 5 @8, 220 × 3 @8) disent ≈ 225-230. Un single
+  // réussi est surtout technique et nerveux : Epley l'étire mal vers 5 reps.
+  // Un single prouve un 1RM ; un 5RM se prouve entre 2 et 8 reps.
+  var STALE_CALIBRATION_REP_WINDOW = 3;
+  // Reps en réserve lues sur le RPE (RPE 8 ≈ 2 en réserve, la convention de
+  // reference.js), plafonnées : sous RPE 6, l'estimation ne veut plus rien dire.
+  var STALE_CALIBRATION_MAX_RIR = 4;
+  var STALE_CALIBRATION_NEAR_MAX_RPE = 9;  // une série « au plus » doit être quasi maximale
+  api.STALE_CALIBRATION_MIN_GAIN = STALE_CALIBRATION_MIN_GAIN;
+
+  var MONTHS_SHORT = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  function isoDay(v){ var m = String(v || "").match(/^(\d{4}-\d{2}-\d{2})/); return m ? m[1] : ""; }
+  function shortDate(iso){
+    var m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? Number(m[3]) + " " + MONTHS_SHORT[Number(m[2]) - 1] : "";
+  }
+  function trophyFields(){ return (typeof TROPHY_FIELDS !== "undefined" && Array.isArray(TROPHY_FIELDS)) ? TROPHY_FIELDS : []; }
+  // Libellé de l'onglet Charge (REFERENCE_MOVEMENTS) : `movements[mvKey].name`
+  // n'est pas fiable ici (chestRow y porte le nom « Barbell Row »).
+  function movementLabel(cfg){
+    try{
+      if(cfg.mvKey && typeof REFERENCE_MOVEMENTS !== "undefined" && Array.isArray(REFERENCE_MOVEMENTS)){
+        for(var i = 0; i < REFERENCE_MOVEMENTS.length; i++) if(REFERENCE_MOVEMENTS[i].mvKey === cfg.mvKey) return String(REFERENCE_MOVEMENTS[i].label);
+      }
+    }catch(e){}
+    return String(cfg.label || cfg.profile);
+  }
+  // Le trophée qui parle du même mouvement : miroir direct (scaleKey) ou
+  // single du même nom exact (Back Squat 1RM ↔ backSquat5RM).
+  function trophyFor(cfg, label){
+    var list = trophyFields();
+    for(var i = 0; i < list.length; i++) if(list[i].scaleKey === cfg.profile) return list[i];
+    if(typeof trophyFieldForSingle === "function"){ try{ return trophyFieldForSingle(label) || null; }catch(e){} }
+    return null;
+  }
+  function rawRows(label){
+    if(typeof athleteMovementRecord !== "function") return [];
+    var mv = null;
+    try{ mv = athleteMovementRecord(label); }catch(e){ mv = null; }
+    return (mv && Array.isArray(mv.history)) ? mv.history : [];
+  }
+  function rowLoad(r){ return (typeof coachHistoryLoadNumber === "function") ? coachHistoryLoadNumber(r) : (Number(r && r.load) || 0); }
+  // Contexte limité (technique, léger, WOD, récupération), test raté ou
+  // copie à poids réduit : jamais une preuve (règle V5.2.34).
+  function rowExcluded(r){
+    if(!r) return true;
+    if(String(r.status || "").toLowerCase() === "fail") return true;
+    if(typeof coachHistoryWeight === "function" && coachHistoryWeight(r) < 1) return true;
+    return (typeof coachHistoryContextIsLimited === "function") ? !!coachHistoryContextIsLimited(r) : false;
+  }
+  // Calibration posée quand ? Saisie datée, sinon trophée miroir de MÊME
+  // valeur (c'est alors lui qui a posé la valeur), sinon création du profil
+  // (saisie initiale à l'onboarding). Sans date : on ne prétend rien.
+  function calibrationSince(key, p, calibrated, reg){
+    var log = p.calibrationLog && p.calibrationLog[key];
+    if(log && isoDay(log.date)) return {date: isoDay(log.date), basis: "saisie"};
+    var list = trophyFields();
+    for(var i = 0; i < list.length; i++){
+      if(list[i].scaleKey !== key) continue;
+      var rec = p.records && p.records[list[i].key];
+      if(rec && isoDay(rec.date) && Math.abs(Number(rec.value) - calibrated) < 1) return {date: isoDay(rec.date), basis: "record"};
+    }
+    if(reg && isoDay(reg.createdAt)) return {date: isoDay(reg.createdAt), basis: "saisie initiale"};
+    return {date: "", basis: "inconnue"};
+  }
+  function collectProofs(cfg, label, reps, p){
+    var raw = rawRows(label), proofs = [];
+    // Un record ou une référence n'a pas de contexte propre : on relit la
+    // séance du même jour à la même charge. Si elle était limitée, la preuve
+    // tombe avec elle.
+    function sessionExcluded(date, load){
+      return raw.some(function(r){
+        return isoDay(r.date || r.actualDate) === date && Math.abs(rowLoad(r) - load) < 0.01 && rowExcluded(r);
+      });
+    }
+    function add(load, r, date, source, rpe){
+      load = Number(load); r = Number(r); rpe = Number(rpe) || 0;
+      if(!(load > 0) || !(r > 0) || r > STALE_CALIBRATION_MAX_PROOF_REPS || !date) return;
+      if(Math.abs(r - reps) > STALE_CALIBRATION_REP_WINDOW) return;
+      // Reps possibles = reps faites + reps en réserve. RPE absent : aucune
+      // réserve supposée (lecture prudente, jamais gonflée).
+      var rir = (rpe > 0 && rpe < 10) ? Math.min(STALE_CALIBRATION_MAX_RIR, 10 - rpe) : 0;
+      var at = (typeof coachRefAtTargetReps === "function") ? coachRefAtTargetReps(load, r + rir, reps) : null;
+      if(!at || !(Number(at.load) > 0)) return;
+      proofs.push({load: load, reps: r, date: date, source: source, rpe: rpe, at: Number(at.load)});
+    }
+    var tf = trophyFor(cfg, label);
+    var rec = tf && p.records ? p.records[tf.key] : null;
+    if(rec && (!rec.unit || rec.unit === "lb") && isoDay(rec.date) && !sessionExcluded(isoDay(rec.date), Number(rec.value))){
+      add(rec.value, 1, isoDay(rec.date), "record", 10);
+    }
+    var ref = (cfg.mvKey && state.movementRefs) ? state.movementRefs[cfg.mvKey + "__strength"] : null;
+    if(ref && !ref.implausible && String(ref.status || "").toLowerCase() !== "fail" && isoDay(ref.date)
+       && !sessionExcluded(isoDay(ref.date), Number(ref.load))){
+      add(ref.load, ref.reps, isoDay(ref.date), "référence", ref.rpe);
+    }
+    var kept = (typeof coachFilterHistoryForProgression === "function") ? coachFilterHistoryForProgression(raw, null) : raw;
+    kept.forEach(function(r){
+      if(rowExcluded(r)) return;
+      add(rowLoad(r), r.reps || r.actualReps, isoDay(r.date || r.actualDate), "séance", r.rpe);
+    });
+    return proofs;
+  }
+  function gapText(g){
+    var pr = g.proof;
+    var base = g.title + " : calibré " + g.calibrated + " lb · démontré ≈ " + g.demonstrated + " lb ("
+      + pr.load + " × " + pr.reps + (pr.rpe > 0 && pr.rpe < 10 ? " @" + String(pr.rpe).replace(".", ",") : "") + ", " + shortDate(pr.date) + ")";
+    if(g.kind === "above") return base + " — calibration au-dessus de la dernière tentative maximale ; rien n'est proposé à la baisse.";
+    if(!(g.proposed > 0)) return base + " — la valeur démontrée sortirait de la bande de confiance : rien n'est proposé.";
+    return base;
+  }
+
+  // Liste des écarts, une entrée par clé de calibration concernée.
+  //   kind "stale" : la calibration est dépassée par une preuve plus récente
+  //                  (proposed = valeur arrondie au rack, ou null hors bande) ;
+  //   kind "above" : la calibration dépasse la dernière tentative quasi
+  //                  maximale — montré, jamais proposé.
+  api.calibrationGaps = function(){
+    var out = [];
+    try{
+      if(typeof state !== "object" || !state || !state.profile) return out;
+      if(typeof PR_FIELD_MAP !== "object" || !PR_FIELD_MAP) return out;
+      var p = state.profile;
+      var refProfile = (window.RacineProfileReference && RacineProfileReference.profile) ? RacineProfileReference.profile() : {};
+      var reg = null;
+      try{ reg = (window.CoachProfiles && CoachProfiles.getActive) ? CoachProfiles.getActive() : null; }catch(e){ reg = null; }
+      Object.keys(PR_FIELD_MAP).forEach(function(id){
+        var cfg = PR_FIELD_MAP[id], key = cfg && cfg.profile;
+        var d = Number(refProfile[key]);
+        if(!key || !(d > 0)) return;
+        var label = movementLabel(cfg);
+        // Un lest sur le poids du corps ne se convertit pas par Epley
+        // (historique.js, bodyweightExternalLoadPatterns).
+        if(typeof coachIsBodyweightExternalLoadMovement === "function" && coachIsBodyweightExternalLoadMovement(label, null)) return;
+        var reps = Number(cfg.reps) || 1;
+        // Ce que le moteur utilise vraiment : le ratio stocké, s'il est une
+        // mesure. La valeur affichée peut avoir divergé (miroir de trophée).
+        var r = p.scaleRatios ? Number(p.scaleRatios[key]) : 0;
+        var calibrated = (r > 0 && inBand(r)) ? r * d : Number(p[key]);
+        if(!(calibrated > 0)) return;
+        var since = calibrationSince(key, p, calibrated, reg);
+        if(!since.date) return;
+        var newer = collectProofs(cfg, label, reps, p).filter(function(pr){ return pr.date > since.date; });
+        if(!newer.length) return;
+        var best = newer.reduce(function(a, b){ return b.at > a.at ? b : a; });
+        var gap = {
+          key: key, label: label, reps: reps, title: label + " " + reps + "RM",
+          calibrated: Math.round(calibrated), since: since,
+          demonstrated: Math.round(best.at), proof: best,
+          gain: best.at / calibrated - 1, proposed: null, proposedRatio: null
+        };
+        if(gap.gain > STALE_CALIBRATION_MIN_GAIN){
+          gap.kind = "stale";
+          var rounded = (typeof roundLoadForExercise === "function") ? roundLoadForExercise(label, best.at, "down") : Math.floor(best.at / 5) * 5;
+          // Le rack ne sait pas l'exprimer (50 → 53 lb d'haltère) : rien à dire.
+          if(!(rounded > calibrated)) return;
+          if(inBand(rounded / d)){ gap.proposed = rounded; gap.proposedRatio = rounded / d; }
+        }else{
+          var maxes = newer.filter(function(pr){ return pr.rpe >= STALE_CALIBRATION_NEAR_MAX_RPE; });
+          if(!maxes.length) return;
+          var top = maxes.reduce(function(a, b){ return b.at > a.at ? b : a; });
+          if(!(top.at / calibrated - 1 < -STALE_CALIBRATION_MIN_GAIN)) return;
+          gap.kind = "above"; gap.proof = top; gap.demonstrated = Math.round(top.at); gap.gain = top.at / calibrated - 1;
+        }
+        gap.text = gapText(gap);
+        out.push(gap);
+      });
+    }catch(e){
+      if(window.CoachLog && CoachLog.error) CoachLog.error("calibration_gaps_failed", e, {});
+    }
+    return out;
+  };
+
+  // Phrase du (!) : seulement quand la charge affichée EST la charge du
+  // programme mise à l'échelle par un ratio qui contient une clé dépassée.
+  // Elle relit la même porte que le moteur (coachScaleProgramLoad, comme
+  // trace.js) — aucune autre charge n'est calculée ni proposée.
+  api.calibrationNoteFor = function(label, programLoad, shownLoad){
+    try{
+      var gaps = api.calibrationGaps().filter(function(g){ return g.kind === "stale"; });
+      if(!gaps.length || typeof coachUserLoadRatioSource !== "function" || typeof coachScaleProgramLoad !== "function") return "";
+      var programNum = (typeof parseLoad === "function") ? parseLoad(programLoad) : Number(programLoad);
+      var shown = (typeof parseLoad === "function") ? parseLoad(shownLoad) : Number(shownLoad);
+      if(!(programNum > 0) || !(shown > 0)) return "";
+      var src = coachUserLoadRatioSource(label) || {};
+      var hit = gaps.filter(function(g){
+        if(src.source === g.key || src.source === "_overall") return true;
+        return !!(FAMILY_KEYS[src.source] && FAMILY_KEYS[src.source].indexOf(g.key) >= 0);
+      })[0];
+      if(!hit) return "";
+      var hasHist = rawRows(label).some(function(r){
+        return (typeof coachHistoryHasValidLoad === "function") ? coachHistoryHasValidLoad(r, label, null) : rowLoad(r) > 0;
+      });
+      var scaled = coachScaleProgramLoad(label, programNum, hasHist);
+      if(!scaled || Number(scaled.load) !== Number(shown)) return "";
+      return "Cette charge vient du programme mis à ton échelle par un ratio qui s'appuie sur "
+        + hit.title + " = " + hit.calibrated + " lb, alors que tu as démontré ≈ " + hit.demonstrated + " lb ("
+        + hit.proof.load + " × " + hit.proof.reps + ", " + shortDate(hit.proof.date) + "). "
+        + (hit.proposed ? "La mise à jour à " + hit.proposed + " lb se fait dans Calibration du moteur, sur ton accord." : "");
+    }catch(e){ return ""; }
   };
 
   // Migration au chargement, idempotente : un second passage ne trouve plus

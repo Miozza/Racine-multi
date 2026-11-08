@@ -1,10 +1,14 @@
-# ETAT ACTUEL — V5.3.2
+# ETAT ACTUEL — V5.3.3
 
-Version actuelle : V5.3.2
+Version actuelle : V5.3.3
 
 ## État courant
 
-### Pont — Moteur + jambes : Back Extension le vendredi (V5.3.2)
+### Calibration dépassée : signalée, corrigée en un geste (V5.3.3)
+
+Quand une clé de calibration est dépassée par une série récente proche de ses reps (RPE lu en reps en réserve), Racine le dit : dans Réglages › Calibration du moteur, dans le contexte de Coach IA, et dans le (!) quand la charge affichée dépend de ce ratio. « Mettre à jour » demande confirmation, passe par `setCalibrationValue` et s'annule. Rien n'est réécrit automatiquement, rien n'est proposé à la baisse, et un single ne « prouve » pas un 5RM : le Back Squat 5RM à 235 lb reste juste malgré le 300 × 1. Le signal seul ne change aucune charge.
+
+### Pont — Moteur + jambes : Back Extension le vendredi
 
 Le Hip Thrust du vendredi devient une Back Extension à 45°, avec une plaque tenue contre la poitrine (25 → 25 → 35 → 45 → 35 lb). Le moteur traite cette charge comme un lest : il la prend telle quelle, sans ratio ni Epley. Nouvelle fiche tuto.
 
