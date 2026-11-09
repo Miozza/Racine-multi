@@ -277,6 +277,10 @@
     clear: clear,
     resetAll: resetAll,
     applyStore: applyStore,
+    // Mise de côté de la mémoire vive pendant la correction d'une séance
+    // passée (history_edit.js) : les deux ne se mélangent jamais.
+    exportStore: function(){ return Object.assign({}, store); },
+    importStore: function(saved){ store = Object.assign({}, saved || {}); },
     rowIsSkipped: rowIsSkipped,
     rowReasonLabel: rowReasonLabel,
     rowLabel: rowLabel,

@@ -1298,15 +1298,68 @@ function mergeHistory(localHistory,remoteData){
   merged.sort(function(a,b){return String((a.date||"")+" "+(a.time||"")).localeCompare(String((b.date||"")+" "+(b.time||"")));});
   return merged;
 }
+// Reconstruit l'état dérivé (références, RPE, athlete_state) depuis le journal.
+//
+// V5.4.0 — SANS PERTE. Une partie de cet état ne vient PAS du journal : les
+// références saisies à la main dans l'onglet Charge (recalibrage, PR, charge
+// personnalisée — updateMovementRefFromPR / updateAthleteStateFromPR /
+// applyChargeOverrideToAthleteState). Repartir de zéro les effaçait : mesuré
+// sur l'export réel du 2026-11-09, une seule correction de séance supprimait
+// 6 recalibrages du 27 oct. (CLAUDE.md § 2.1 : jamais de perte).
+// Elles sont donc mises de côté, puis REJOUÉES À LEUR DATE, intercalées entre
+// les séances : une séance plus récente peut toujours les remplacer, comme le
+// jour où elles ont été saisies — ni plus, ni moins. Même date qu'une séance :
+// après elle (on recalibre en sortant de la salle, pas avant d'y entrer).
+var REPLAYED_REF_NOTE="Saisi depuis l’app"; // note posée par updateRefsFromResults
+function manualSeedsForRebuild(){
+  var seeds=[];
+  function day(v){var m=String(v||"").match(/^\d{4}-\d{2}-\d{2}/);return m?m[0]:"";}
+  Object.keys(state.movementRefs||{}).forEach(function(k){
+    var r=state.movementRefs[k];
+    if(!r||r.note===REPLAYED_REF_NOTE)return;
+    seeds.push({kind:"ref",key:k,date:day(r.date),value:copy(r)});
+  });
+  var mvs=(state.athleteState&&state.athleteState.movements)||{};
+  Object.keys(mvs).forEach(function(label){
+    var mv=mvs[label]||{};
+    Object.keys(mv.ranges||{}).forEach(function(rg){
+      var r=mv.ranges[rg];
+      if(r&&coachIsNonPerformanceSeed({planned:r.planned}))seeds.push({kind:"range",label:label,range:rg,date:day(r.lastUpdated),value:copy(r)});
+    });
+    (mv.history||[]).forEach(function(row){
+      if(row&&coachIsNonPerformanceSeed(row))seeds.push({kind:"row",label:label,date:day(row.date),value:copy(row)});
+    });
+  });
+  // Tri stable : à date égale, l'ordre d'origine (référence, plage, ligne).
+  return seeds.map(function(s,i){s.i=i;return s;}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.i-b.i;});
+}
+function applyManualSeedForRebuild(s){
+  if(s.kind==="ref"){state.movementRefs[s.key]=s.value;return;}
+  var ast=ensureAthleteState();
+  var mv=ast.movements[s.label]=ast.movements[s.label]||{ranges:{},history:[],lastUpdated:null,status:"new"};
+  mv.ranges=mv.ranges||{};mv.history=mv.history||[];
+  if(s.kind==="range"){
+    mv.ranges[s.range]=s.value;
+    mv.status=s.value.status||mv.status;
+    if(s.date){mv.lastUpdated=s.date;mv.upgradedAt=s.date;}
+  }else{
+    mv.history.push(s.value);
+    if(mv.history.length>12)mv.history=mv.history.slice(-12);
+  }
+}
 function rebuildRefsFromHistory(){
+  var seeds=manualSeedsForRebuild(), next=0;
   state.movementRefs={};
   state.rpeHistory={};
   state.athleteState={movements:{},updatedAt:null,version:APP_VERSION};
   (state.history||[]).forEach(function(s){
     var res=s.results||s.resultats||{};
+    var d=String(s.date||todayIsoDate()).slice(0,10);
+    while(next<seeds.length&&seeds[next].date<d)applyManualSeedForRebuild(seeds[next++]);
     updateRefsFromResults(res,s.date||todayIsoDate());
     CoachCharge.updateAthleteStateFromResults(res,s.date||todayIsoDate());
   });
+  while(next<seeds.length)applyManualSeedForRebuild(seeds[next++]);
   checkDeloadAlert();
 }
 

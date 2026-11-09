@@ -125,8 +125,7 @@ function appendSessionEntryCard(item, container){
     // V5.4.0 — « Non fait » : un mouvement sauté (le temps manque, la chaleur,
     // une douleur) n'est pas une série ratée. Même noyau que le metcon
     // (scripts/session/wod_skip.js). Pas sur un mouvement hors programme :
-    // celui-là se retire avec son ✕. Pas en correction d'une séance passée :
-    // ce chemin est traité à part (history_edit.js).
+    // celui-là se retire avec son ✕.
     (skipControlAllowed(item)?movementSkipHtml(item.key):'');
 
   container.appendChild(card);
@@ -189,9 +188,10 @@ function appendSessionEntryCard(item, container){
   return card;
 }
 
+// Aussi en correction d'une séance passée (V5.4.0) : c'est ce qui permet de
+// réparer un mouvement sauté qui avait été saisi à 0 rep.
 function skipControlAllowed(item){
-  if(!item||item.isExtra||!window.CoachWodSkip)return false;
-  return !(window.CoachHistoryEdit&&CoachHistoryEdit.isActive());
+  return !!(item&&!item.isExtra&&window.CoachWodSkip);
 }
 function movementSkipHtml(key){
   try{ return CoachWodSkip.controlHtml(key,{label:'✕ Non fait'}); }catch(e){ return ''; }

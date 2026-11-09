@@ -94,7 +94,7 @@ function engineCtx(){
     navigator: {}, localStorage: { getItem(){ return null; }, setItem(){}, removeItem(){} },
     document: { getElementById: () => null, querySelectorAll: () => [] },
     APP_VERSION: 'TEST', customCharges: {}, DEFAULT_CHARGES: {}, CHARGE_ORDER: [], movements: {},
-    state: { week: 2, day: 'lundi', rpeHistory: {}, history: [], profile: {onboarded: true}, athleteState: { movements: {} } },
+    state: { week: 2, day: 'lundi', rpeHistory: {}, history: [], profile: {onboarded: true, scaleRatios: {bulgarianDb: 1, _lowerBody: 1, _overall: 1}}, athleteState: { movements: {} } },
     save(){}, focus(){ return {label: '', targetReps: {}}; }, buildWeekInfo(){ return {}; }, weekIdx(){ return 0; },
     collectSessionExercises(){ return []; }, nowIso(){ return '2026-11-09T18:00:00Z'; },
     parseTargetReps(f, fb){ const n = String(f||'').match(/\d+/g)||[]; const l = Number(n[0])||fb||8; return {min:l,max:l}; },
@@ -157,6 +157,75 @@ function engineCtx(){
   assert(res[NAME].status === 'major_fail', 'Sans Non fait, 50 lb × 0 rep reste major_fail (obtenu ' + res[NAME].status + ').');
   ctx.updateAthleteStateFromResults(res, '2026-11-09');
   assert(ctx.state.athleteState.movements[NAME].status === 'recalibrating', '… et recalibre, comme avant.');
+}
+
+// ─── 6. Corriger après coup + reconstruction SANS PERTE ───────────────────
+// La ligne du 9 nov. telle qu'enregistrée, passée en Non fait dans l'édition
+// d'historique, puis l'état reconstruit. La reconstruction remet aussi les
+// références saisies à la main (onglet Charge) : avant V5.4.0 elle les
+// effaçait — 6 recalibrages du 27 oct. sur l'export réel.
+{
+  const ctx = engineCtx();
+  const app = read('app.js');
+  [/function refKey[^\n]*/, /function resolveMovementKey[\s\S]*?\n\}/, /function updateMovementRefFromPR[\s\S]*?\n\}/,
+   /function updateAthleteStateFromPR[\s\S]*?\n\}/, /var REPLAYED_REF_NOTE=[^\n]*/, /function manualSeedsForRebuild[\s\S]*?\n\}/,
+   /function applyManualSeedForRebuild[\s\S]*?\n\}/, /function rebuildRefsFromHistory[\s\S]*?\n\}/]
+    .forEach(re => { const src = (app.match(re) || [''])[0]; if(!src) throw new Error('introuvable dans app.js : ' + re); vm.runInNewContext(src, ctx); });
+  const results = read('scripts/session/results.js');
+  vm.runInNewContext(results.match(/function updateRefsFromResults[\s\S]*?\n\}/)[0], ctx);
+  vm.runInNewContext(read('scripts/session/history_edit.js'), ctx, {filename: 'history_edit.js'});
+  ctx.movements = {backSquat: {name: 'Back Squat'}};
+  ctx.CoachCharge = {updateAthleteStateFromResults: ctx.updateAthleteStateFromResults};
+  ctx.checkDeloadAlert = () => {};
+  const day = (d, res) => ({date: d, week: 2, day: 'lundi', results: res});
+  const nov2 = ctx.enrichSessionResults({[NAME]: {load: '45', reps: '8', rpe: '7.5'}, 'Back Squat': {load: '215', reps: '5', rpe: '8'}});
+  const nov9 = ctx.enrichSessionResults({[NAME]: {load: '50', reps: '0', rpe: '8', note: 'Pas le temps'}, 'Back Squat': {load: '220', reps: '4', rpe: '9'}});
+  ctx.state.athleteState = {movements: {}}; ctx.state.movementRefs = {};
+  ctx.state.history = [day('2026-11-02', nov2), day('2026-11-09', nov9)];
+  // Recalibrage manuel du 27 oct. (onglet Charge), entre deux séances.
+  ctx.state.history.unshift(day('2026-10-26', ctx.enrichSessionResults({'Back Squat': {load: '220', reps: '3', rpe: '8'}})));
+  ctx.rebuildRefsFromHistory();
+  const cfg = {mvKey: 'backSquat', label: 'Back Squat', reps: 8, range: 'hypertrophy'};
+  ctx.updateMovementRefFromPR(cfg, 205, '2026-10-27', 8);
+  ctx.updateAthleteStateFromPR(cfg, 205, '2026-10-27', 8);
+  const refBefore = JSON.stringify(ctx.state.movementRefs.backSquat__hypertrophy);
+  const rangeBefore = JSON.stringify(ctx.state.athleteState.movements['Back Squat'].ranges.hypertrophy);
+  assert(ctx.state.athleteState.movements[NAME].status === 'recalibrating', 'Départ réel : Bulgarian Split Squat en recalibrage après le 0 rep.');
+
+  ctx.rebuildRefsFromHistory();
+  assert(JSON.stringify(ctx.state.movementRefs.backSquat__hypertrophy) === refBefore
+    && JSON.stringify(ctx.state.athleteState.movements['Back Squat'].ranges.hypertrophy) === rangeBefore,
+    'Reconstruire sans rien corriger garde le recalibrage manuel du 27 oct. (référence et plage).');
+
+  const stored = ctx.state.history[2].results;
+  const changed = ctx.CoachHistoryEdit.mergeInto(stored, {[NAME]: {load: '50', reps: '0', rpe: '8', note: 'Pas le temps',
+    skipped: '1', skipReason: 'Manque de temps'}});
+  const row = stored[NAME];
+  assert(changed && row.skipped === '1' && row.skipReason === 'Manque de temps' && row.note === 'Pas le temps',
+    'Édition : la ligne du 9 nov. devient Non fait — Manque de temps, la note reste.');
+  assert(row.load === undefined && row.reps === undefined && row.rpe === undefined && row.status === undefined && row.performanceRatio === undefined,
+    'Édition : charge, reps, RPE et l\'ancien major_fail sont retirés (obtenu ' + JSON.stringify({l: row.load, s: row.status}) + ').');
+  assert(row.planned && row.planned.format === '3×8/jambe', 'Édition : `planned` reste.');
+  ctx.rebuildRefsFromHistory();
+  const mv = ctx.state.athleteState.movements[NAME];
+  assert(mv.status !== 'recalibrating' && mv.ranges.hypertrophy.status !== 'recalibrating' && mv.ranges.hypertrophy.currentLoad >= 45,
+    'Après correction : plus de recalibrage, la capacité redevient celle du 2 nov. (obtenu ' + mv.status + ', ' + mv.ranges.hypertrophy.currentLoad + ' lb).');
+  assert(JSON.stringify(ctx.state.movementRefs.backSquat__hypertrophy) === refBefore,
+    'Après correction : le recalibrage manuel est toujours là.');
+  // Chronologie : une séance APRÈS le recalibrage le remplace encore, comme le
+  // jour même — la remise ne fige pas une saisie manuelle au-dessus du réel.
+  ctx.state.history.push(day('2026-11-16', ctx.enrichSessionResults({'Back Squat': {load: '210', reps: '8', rpe: '8'}})));
+  ctx.rebuildRefsFromHistory();
+  assert(ctx.state.movementRefs.backSquat__hypertrophy.load === 210,
+    'Une séance postérieure (210 × 8, 16 nov.) remplace toujours le recalibrage du 27 oct. (obtenu ' + ctx.state.movementRefs.backSquat__hypertrophy.load + ').');
+  // (Une fois remplacé par une séance réelle, le recalibrage n'existe plus
+  // dans l'état : retirer ensuite cette séance ne le fait pas revenir — comme
+  // dans l'app au quotidien. La suite repart donc sans la séance du 16.)
+  ctx.state.history.pop();
+  ctx.rebuildRefsFromHistory();
+  const sugg = ctx.coachSafeSuggestedLoad(NAME, '50 lb', 8, {kind: 'accessory', format: '3×8/jambe', day: 'lundi', week: 3});
+  assert(!/⚠/.test(String(sugg)) && Number(String(sugg).match(/\d+/)) >= 45,
+    'La suggestion suivante n\'est plus bridée par le faux échec (obtenu « ' + sugg + ' »).');
 }
 
 // ─── 5. Un seul noyau, et pas de débordement ──────────────────────────────

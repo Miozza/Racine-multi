@@ -3466,6 +3466,13 @@ body.racine-modal-lock {
   pointer-events: none;
 }
 .guided-result-panel .wod-skip { margin-top: 12px; }
+/* Correction d'une séance passée : la note d'un mouvement non fait reste
+   modifiable (« pas le temps », « genou ») — c'est elle qui dit le reste. */
+.sf-card.is-skipped .history-edit-note .sf-label,
+.sf-card.is-skipped .history-edit-note .sf-input {
+  opacity: 1;
+  pointer-events: auto;
+}
 .sf-card.is-skipped .wod-skip,
 .sf-card.is-skipped .wod-skip * {
   opacity: 1;

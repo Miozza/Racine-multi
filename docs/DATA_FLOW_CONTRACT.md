@@ -53,6 +53,12 @@ retirée du code — aucun envoi réseau lors d'une sauvegarde de séance.
 - Peut etre reconstruit depuis resultats si necessaire.
 - Peut refuser de remplacer une capacite principale quand le contexte est technique, WOD, recovery ou autre contexte limite.
 
+### Reconstruction de l etat derive (rebuildRefsFromHistory)
+
+- Rejoue `state.history` pour reconstruire movementRefs, rpeHistory et athlete_state (correction d une seance passee).
+- V5.4.0 : les saisies manuelles qui ne viennent pas du journal (references de l onglet Charge, sources `manual_recalibration`, `manual_pr`, `manual_charge_override`) sont mises de cote puis rejouees a leur date, entre les seances. Une seance plus recente peut toujours les remplacer. Rien n est perdu par une reconstruction.
+- Une ligne `skipped` (« Non fait ») n a ni charge ni reps ni RPE : elle ne nourrit ni le moteur, ni athlete_state, ni les moyennes.
+
 ### state.profile.records (trophees)
 
 - Records personnels dates, `{cle: {value, date, unit, source}}`. Jamais lus par le moteur de charges.

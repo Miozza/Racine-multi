@@ -280,6 +280,19 @@
     return out;
   }
 
+  function isSkippedRow(row){
+    if(window.CoachWodSkip && CoachWodSkip.rowIsSkipped) return CoachWodSkip.rowIsSkipped(row);
+    var v = txt(row && row.skipped).toLowerCase();
+    return v === '1' || v === 'true' || v === 'oui';
+  }
+  function stripSkipped(row){
+    if(window.CoachWodSkip && CoachWodSkip.stripPerformanceFields){ CoachWodSkip.stripPerformanceFields({row: row}); return; }
+    ['load','reps','rpe','result','rounds','roundSplits','lastRoundRemaining','cardio','status','performanceRatio','coachNote']
+      .forEach(function(f){ delete row[f]; });
+    row.skipped = '1';
+    if(!txt(row.skipReason)) row.skipReason = 'motif non précisé';
+  }
+
   function reclassify(row){
     if(!row || !row.planned) return;
     if(row.load === undefined || row.load === null || String(row.load).trim() === '') return;
@@ -307,6 +320,10 @@
         }
         if(txt(row[field]) !== value){ row[field] = value; changed = true; }
       });
+      // V5.4.0 — marqué « Non fait » : la ligne perd charge, reps, RPE et son
+      // ancien classement (ex. le major_fail d'un 0 rep), garde son nom et son
+      // `planned`. Même règle que la collecte du jour (wod_skip.js).
+      if(isSkippedRow(row)) stripSkipped(row);
       reclassify(row);
     });
     return changed;
@@ -333,8 +350,11 @@
     }
     // Le cache de la séance en cours est mis de côté, jamais mélangé à
     // l'édition d'une séance passée — il est restauré à la sortie.
-    editing = { index: Number(index), entry: entry, cache: window.guidedResultCache || {} };
+    editing = { index: Number(index), entry: entry, cache: window.guidedResultCache || {},
+      skips: (window.CoachWodSkip && CoachWodSkip.exportStore) ? CoachWodSkip.exportStore() : null };
     window.guidedResultCache = {};
+    // Les « Non fait » de la séance en cours restent de côté, comme le cache.
+    try{ if(window.CoachWodSkip) CoachWodSkip.resetAll(); }catch(e){}
 
     var results = entryResults(entry);
     Object.keys(results).forEach(function(key){
@@ -356,7 +376,9 @@
 
   function exit(){
     var cache = editing ? editing.cache : null;
+    var skips = editing ? editing.skips : null;
     editing = null;
+    try{ if(window.CoachWodSkip && CoachWodSkip.importStore) CoachWodSkip.importStore(skips); }catch(e){}
     window.guidedResultCache = cache || {};
     chrome(false, null);
   }

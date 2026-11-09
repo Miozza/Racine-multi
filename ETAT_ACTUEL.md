@@ -8,7 +8,7 @@ Version actuelle : V5.4.0
 
 Un mouvement sauté (manque de temps, chaleur extrême, blessure) se marque « ✕ Non fait » sur sa carte de l'écran Résultats ou dans la séance guidée, comme un metcon. La ligne garde son nom et ce qui était prévu, mais aucune charge, aucune rep, aucun RPE : le moteur ne la classe pas, ne recalibre rien, et les moyennes de RPE ne la comptent pas. Le résumé, l'historique et Coach IA disent « Non fait — motif ». Une vraie tentative à 0 rep, sans « Non fait », reste un échec majeur.
 
-Pas encore livré : marquer « Non fait » une séance déjà enregistrée. Corriger une séance passée reconstruit tout l'état depuis le journal, et efface au passage les références saisies à la main dans l'onglet Charge.
+Une séance déjà enregistrée se corrige de la même façon, depuis l'Historique. Et corriger une séance ne fait plus perdre les références saisies à la main dans l'onglet Charge : elles sont rejouées à leur date.
 
 
 ### Calibration dépassée : signalée, corrigée en un geste
