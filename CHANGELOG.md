@@ -1,3 +1,17 @@
+## V5.4.0 — « Non fait » pour les mouvements : un mouvement sauté n'est pas un échec
+
+**Pourquoi** : profil Bertin, Moteur + jambes S2 lundi (2026-11-09). Le temps a manqué, les deux accessoires de fin n'ont pas été faits. Le seul moyen de le dire était 0 rep, avec la charge suggérée (50 lb) et un RPE 8 pré-remplis. Le moteur y a lu une barre engagée qui ne monte pas : Bulgarian Split Squat en `recalibrating`, capacité 40 lb, confiance 0,30 (branche `failedAttempt` de `updateAthleteStateFromResults`), progression bloquée, et un RPE 8 fictif dans les moyennes de fatigue. Le programme dit lui-même que le temps qui manque coupe les accessoires de fin.
+
+- **Un seul noyau** : `scripts/session/wod_skip.js` (`CoachWodSkip`) sert maintenant le metcon ET le mouvement. Mêmes trois motifs, mêmes champs `skipped` / `skipReason`, même nettoyage à la collecte. Le nettoyage retire aussi `load`, `reps` et un éventuel classement. `planned` reste : on sait lequel n'a pas été fait.
+- **Écran Résultats** : lien « ✕ Non fait » sous chaque carte de mouvement du programme (pas sur un mouvement hors programme, qui se retire avec son ✕). La carte passe en retrait, les contrôles − + aussi ; « Finalement je l'ai fait » annule.
+- **Séance guidée** : le même lien sous le panneau Résultat. L'annulation vit en mémoire et la collecte la reporte sur la ligne (`applyStore`), puis retire en dernier la charge, les reps et le RPE que le panneau avait mis dans le cache.
+- **Moteur** : une ligne non faite n'est jamais classée (`enrichSessionResults`, `applyPerformanceClassification`) ni lue par `updateAthleteStateFromResults`, même si une charge y traînait encore. La règle `charge engagée + 0 rep → major_fail` est inchangée pour une vraie tentative.
+- **Lecteurs** : résumé et historique disaient déjà « Non fait — motif » ; Coach IA dit maintenant « non fait (motif) » pour un mouvement aussi. Kalman, mémoire Brain, La Saison, la collecte ML et la moyenne de RPE ignorent une ligne sans charge ni RPE.
+- **Bug évité** : la mémoire des annulations n'était jamais vidée. Elle l'est à l'ouverture et à l'abandon d'une séance, et après une sauvegarde : un Non fait du lundi ne marque pas la séance suivante.
+- **Pas encore livré, à décider** : marquer « Non fait » une séance déjà enregistrée. `rebuildRefsFromHistory()` reconstruit bien `athlete_state`, mais repart de zéro : sur l'export réel, il efface 6 références saisies à la main dans l'onglet Charge (Bench, Back Squat, Power Clean, hypertrophie et endurance, 27 oct.). Aucune charge affichée n'en dépend aujourd'hui, mais la donnée est perdue. L'édition d'historique montre désormais une ligne Non fait comme telle (note seule modifiable) au lieu d'un champ RÉSULTAT de metcon.
+- **Données** : deux champs texte sur une ligne, aucune clé de stockage, aucune migration. Un ancien export reste importable ; une version antérieure ignore les deux champs. Sur l'export réel, les 10 744 charges calculées sont identiques avant et après.
+- `dev/movement_skip_checks.js` (24 contrôles, cas réel du 9 nov.) ; `dev/wod_skip_checks.js` inchangé et vert.
+
 ## V5.3.3 — Calibration dépassée : signalée, corrigée en un geste
 
 **Pourquoi** : les trophées n'écrivent jamais une calibration (V5.2.2, voulu). Une clé de calibration peut donc rester sous ce que l'athlète a démontré, sans que rien ne le dise. Cas qui a lancé la question : `backSquat5RM` à 235 lb depuis la saisie initiale, 300 × 1 @9,5 le 2026-09-28.

@@ -1,6 +1,6 @@
 # Racine — prototype multi-utilisateur
 
-- Version : `V5.3.3`
+- Version : `V5.4.0`
 
 La version courante révise le cycle de réhabilitation sur les retours de l'athlète : une 5e journée avec **back squat** à la parallèle, deux mouvements de cuisses chargés par semaine (dont le goblet squat talons surélevés, qui déplace la charge du bassin vers les quadriceps sans demander plus de flexion à la hanche), **20 metcons différents** — un par séance et par semaine — et le pull-through retiré. Les mouvements principaux, eux, ne tournent pas : c'est ce qui donne au moteur de charges de l'historique à lire. Le conditionnement reste **en fin de séance** sur ce cycle, par exception assumée à la règle d'ordre du dépôt : dans un retour de blessure, ce qui doit survivre à une séance écourtée est le renforcement, pas le vélo.
 

@@ -117,6 +117,11 @@
     return parts;
   }
   function liftParts(r){
+    // V5.4.0 — mouvement non fait (même champs que le metcon) : ni charge ni
+    // reps à lire, et surtout pas un échec à commenter.
+    if(str(r.skipped) === "1" || str(r.skipped).toLowerCase() === "true"){
+      return ["non fait" + (str(r.skipReason) ? " (" + str(r.skipReason) + ")" : "")];
+    }
     var parts = [];
     if(positive(r.load) != null) parts.push(positive(r.load) + " lb");
     if(positive(r.reps) != null) parts.push(positive(r.reps) + " reps");

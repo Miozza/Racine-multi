@@ -207,6 +207,21 @@
     return card;
   }
 
+  // V5.4.0 — ligne « Non fait » (scripts/session/wod_skip.js) : elle n'a ni
+  // charge ni reps, donc isTextRow() l'aurait ouverte comme un WOD, avec un
+  // champ RÉSULTAT. On la montre telle quelle ; seule la note se corrige.
+  function skippedCard(key, row, container){
+    var card = document.createElement('div');
+    card.className = 'sf-card'; // pas is-skipped : la note doit rester saisissable
+    var label = (window.CoachWodSkip && CoachWodSkip.rowLabel) ? CoachWodSkip.rowLabel(row) : 'Non fait';
+    card.innerHTML =
+      '<div class="sf-header"><div class="sf-name">' + esc(movementName(key)) + '</div></div>' +
+      '<div class="wod-skip"><span class="wod-skip-state">' + esc(label) + '</span></div>';
+    container.appendChild(card);
+    noteField(card, key, row.note);
+    return card;
+  }
+
   function renderFields(){
     var container = $id('sessionFields');
     if(!container || !editing) return;
@@ -233,6 +248,10 @@
 
     keys.forEach(function(key){
       var row = results[key] || {};
+      if(window.CoachWodSkip && CoachWodSkip.rowIsSkipped(row)){
+        skippedCard(key, row, container);
+        return;
+      }
       if(isTextRow(row)){
         textCard(key, row, container);
         return;

@@ -3455,6 +3455,17 @@ body.racine-modal-lock {
   opacity: .3;
   pointer-events: none;
 }
+/* V5.4.0 — carte mouvement non faite : mêmes règles, et les contrôles − + du
+   poids, des reps et du RPE passent eux aussi hors saisie. */
+.sf-card.is-skipped .results-step-btn,
+.sf-card.is-skipped .sf-weight-unit,
+.sf-card.is-skipped .sf-badge,
+.guided-result-panel.is-skipped .guided-load-row,
+.guided-result-panel.is-skipped .guided-step-grid {
+  opacity: .3;
+  pointer-events: none;
+}
+.guided-result-panel .wod-skip { margin-top: 12px; }
 .sf-card.is-skipped .wod-skip,
 .sf-card.is-skipped .wod-skip * {
   opacity: 1;

@@ -1,5 +1,5 @@
-// Racine V5.3.3 — Calibration dépassée : signalée, corrigée en un geste
-var APP_VERSION = "V5.3.3";
+// Racine V5.4.0 — « Non fait » pour les mouvements : un mouvement sauté n'est pas un échec
+var APP_VERSION = "V5.4.0";
 
 // Architecture stable
 // programs/*.js = plan prévu

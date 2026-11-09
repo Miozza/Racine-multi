@@ -1,10 +1,17 @@
-# ETAT ACTUEL — V5.3.3
+# ETAT ACTUEL — V5.4.0
 
-Version actuelle : V5.3.3
+Version actuelle : V5.4.0
 
 ## État courant
 
-### Calibration dépassée : signalée, corrigée en un geste (V5.3.3)
+### « Non fait » pour les mouvements
+
+Un mouvement sauté (manque de temps, chaleur extrême, blessure) se marque « ✕ Non fait » sur sa carte de l'écran Résultats ou dans la séance guidée, comme un metcon. La ligne garde son nom et ce qui était prévu, mais aucune charge, aucune rep, aucun RPE : le moteur ne la classe pas, ne recalibre rien, et les moyennes de RPE ne la comptent pas. Le résumé, l'historique et Coach IA disent « Non fait — motif ». Une vraie tentative à 0 rep, sans « Non fait », reste un échec majeur.
+
+Pas encore livré : marquer « Non fait » une séance déjà enregistrée. Corriger une séance passée reconstruit tout l'état depuis le journal, et efface au passage les références saisies à la main dans l'onglet Charge.
+
+
+### Calibration dépassée : signalée, corrigée en un geste
 
 Quand une clé de calibration est dépassée par une série récente proche de ses reps (RPE lu en reps en réserve), Racine le dit : dans Réglages › Calibration du moteur, dans le contexte de Coach IA, et dans le (!) quand la charge affichée dépend de ce ratio. « Mettre à jour » demande confirmation, passe par `setCalibrationValue` et s'annule. Rien n'est réécrit automatiquement, rien n'est proposé à la baisse, et un single ne « prouve » pas un 5RM : le Back Squat 5RM à 235 lb reste juste malgré le 300 × 1. Le signal seul ne change aucune charge.
 

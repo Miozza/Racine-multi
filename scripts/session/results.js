@@ -121,9 +121,18 @@ function appendSessionEntryCard(item, container){
       '</div>'+
     '</div>'+
     // Marqueur persistant : l'historique doit savoir que la série n'était pas au programme.
-    (item.isExtra?'<input class="sf-input" data-key="'+safeKey+'" data-field="extra" type="hidden" value="1"/>':'');
+    (item.isExtra?'<input class="sf-input" data-key="'+safeKey+'" data-field="extra" type="hidden" value="1"/>':'')+
+    // V5.4.0 — « Non fait » : un mouvement sauté (le temps manque, la chaleur,
+    // une douleur) n'est pas une série ratée. Même noyau que le metcon
+    // (scripts/session/wod_skip.js). Pas sur un mouvement hors programme :
+    // celui-là se retire avec son ✕. Pas en correction d'une séance passée :
+    // ce chemin est traité à part (history_edit.js).
+    (skipControlAllowed(item)?movementSkipHtml(item.key):'');
 
   container.appendChild(card);
+  if(skipControlAllowed(item)){
+    try{ if(window.CoachWodSkip) CoachWodSkip.bind(item.key, card); }catch(e){ /* la carte reste saisissable */ }
+  }
 
   // ── Résultats compacts : poids / reps / RPE en contrôles − valeur + ──
   function syncResultField(field, value){
@@ -178,6 +187,14 @@ function appendSessionEntryCard(item, container){
   });
 
   return card;
+}
+
+function skipControlAllowed(item){
+  if(!item||item.isExtra||!window.CoachWodSkip)return false;
+  return !(window.CoachHistoryEdit&&CoachHistoryEdit.isActive());
+}
+function movementSkipHtml(key){
+  try{ return CoachWodSkip.controlHtml(key,{label:'✕ Non fait'}); }catch(e){ return ''; }
 }
 
 function renderSessionEntry(){
@@ -589,6 +606,10 @@ function collectSessionResults(){
   // Calories / mètres : texte normalisé, et score des WOD qui n'en avaient pas.
   // Avant l'annulation, qui retire ensuite `cardio` d'une ligne non faite.
   try{ if(window.CoachWodCardio) CoachWodCardio.finalizeResults(results); }catch(e){}
+  // V5.4.0 — une annulation posée dans la séance guidée vit en mémoire vive
+  // (pas de champ caché ici) : elle est reportée sur la ligne avant le
+  // nettoyage, qui retire alors load / reps / rpe réinjectés par le cache.
+  try{ if(window.CoachWodSkip&&CoachWodSkip.applyStore) CoachWodSkip.applyStore(results); }catch(e){}
   try{ if(window.CoachWodSkip) CoachWodSkip.stripPerformanceFields(results); }catch(e){}
 
   return results;
