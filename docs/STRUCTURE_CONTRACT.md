@@ -91,7 +91,7 @@ Il ne devrait plus recevoir de nouvelle logique métier profonde si un domaine c
 Règle : un problème doit être corrigé dans son domaine.
 
 ```txt
-charge / progression     scripts/charge/equipement.js, scripts/charge/mouvements.js, scripts/charge/historique.js, scripts/charge/rpe.js, scripts/charge/suggestion.js, scripts/charge/scaling.js
+charge / progression     scripts/charge/equipement.js, scripts/charge/mouvements.js, scripts/charge/historique.js, scripts/charge/rpe.js, scripts/charge/suggestion.js (+ scripts/charge/suggestion_*.js), scripts/charge/scaling.js
 session terrain         scripts/session/view.js, scripts/session/timer.js, scripts/session/results.js, scripts/session/save.js, scripts/session/index.js
 profils multi-utilisateur  scripts/profiles/storage.js, scripts/profiles/onboarding.js, scripts/profiles/ui.js
 core runtime            scripts/core/logger.js
@@ -308,10 +308,10 @@ Tout seuil ou cas particulier propre à un mouvement (saut de charge max,
 multiplicateur de deload, seuil de remontée depuis l'historique, mouvement
 "principal"/"isolation"/"technique") vit dans
 `scripts/charge/movement_tuning.js` (`window.COACH_MOVEMENT_TUNING`), jamais
-comme une nouvelle regex ou un nouveau `if` inline dans `suggestion.js` ou
-`historique.js`.
+comme une nouvelle regex ou un nouveau `if` inline dans `suggestion.js`, ses couches
+`suggestion_*.js` ou `historique.js`.
 
-Avant d'ajouter une regex sur un nom de mouvement dans ces deux fichiers :
+Avant d'ajouter une regex sur un nom de mouvement dans ces fichiers :
 vérifier si une table existante dans `movement_tuning.js` peut l'accueillir
 (ajouter une entrée à `overrides`) plutôt que d'écrire un nouveau test
 inline. `dev/movement_tuning_boundary_checks.js` fait respecter cette règle

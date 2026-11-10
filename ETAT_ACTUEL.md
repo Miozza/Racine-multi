@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.0
+# ETAT ACTUEL — V5.4.1
 
-Version actuelle : V5.4.0
+Version actuelle : V5.4.1
 
 ## État courant
+
+### Moteur de charges — `suggestion.js` découpé par couche
+
+Aucun changement de comportement : les mêmes fonctions, au caractère près, réparties en sept fichiers de `scripts/charge/` pour qu'une retouche ne mette plus 2 468 lignes en jeu. `suggestion_deload.js` (deload), `suggestion_rpe.js` (échelle et freins RPE), `suggestion_references.js` (références de travail), `suggestion_context.js` (contexte de décision), `suggestion_rules.js` (les règles), `suggestion_state.js` (classement des résultats, `athlete_state`), et `suggestion.js` qui garde l'ordre des règles et les portes publiques. Golden master et 75 garde-fous identiques avant/après.
 
 ### « Non fait » pour les mouvements
 

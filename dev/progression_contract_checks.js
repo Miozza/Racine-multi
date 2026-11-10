@@ -38,7 +38,7 @@ assert(!/showLoadInfoModal|loadInfoButtonHtml|athleteSuggestedLoad/.test(configS
 
 const mouvementSrc = read('scripts/charge/mouvements.js');
 const gestionSrc = read('scripts/charge/historique.js');
-const moteurSrc = read('scripts/charge/suggestion.js');
+const moteurSrc = ['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n');
 assert(mouvementSrc.includes('function coachBuildMovementContext'), 'Le contexte mouvement doit être centralisé dans scripts/charge/mouvements.js.');
 assert(mouvementSrc.includes('function coachMovementEquipmentFamily'), 'La famille équipement doit rester disponible pour protéger les alias.');
 assert(gestionSrc.includes('function coachFilterHistoryForProgression'), 'Le filtrage historique par contexte doit rester dans charge_gestion.js.');
@@ -123,7 +123,7 @@ const ctx = {
 ctx.window = ctx;
 ctx.globalThis = ctx;
 
-['scripts/app_helpers.js','scripts/charge/equipement.js','scripts/charge/movement_tuning.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/rpe.js','scripts/charge/historique.js','scripts/charge/scaling.js','scripts/charge/suggestion.js'].forEach(file => {
+['scripts/app_helpers.js','scripts/charge/equipement.js','scripts/charge/movement_tuning.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/rpe.js','scripts/charge/historique.js','scripts/charge/scaling.js','scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'].forEach(file => {
   try { vm.runInNewContext(read(file), ctx, { filename: file }); }
   catch(err){ fail('Chargement impossible de ' + file + ' : ' + err.message); }
 });
