@@ -1,4 +1,12 @@
-// Racine — conditionnement non fait, avec son motif (domaine session).
+// Racine — conditionnement ou mouvement non fait, avec son motif (domaine session).
+//
+// V5.4.0 — le même noyau sert aussi aux MOUVEMENTS. Cas réel (9 nov. 2026) :
+// les accessoires de fin sautés faute de temps ne pouvaient se dire qu'en
+// mettant 0 rep, avec la charge suggérée pré-remplie. Une barre « engagée » à
+// 0 rep est un échec majeur (suggestion.js, classifyPerformance) : recalibrage,
+// confiance 0,30, progression bloquée, et un RPE 8 fictif dans les moyennes.
+// Un mouvement sauté n'est pas un échec. Mêmes motifs, mêmes champs, même
+// règle de collecte que le metcon : il n'y a qu'une implémentation.
 //
 // POURQUOI CE MODULE EXISTE
 // Le metcon de fin sauté est un cas réel et récurrent : il manque du temps, il
@@ -45,12 +53,16 @@
     {id:'blessure', label:'Blessure'}
   ];
 
-  // Champs de performance à retirer d'une ligne annulée. Sous-ensemble des
-  // `data-field` écrits par la carte WOD de scripts/session/results.js.
-  // `wodText` en est volontairement absent : ce n'est pas une performance,
-  // c'est l'identité du conditionnement. Un WOD non fait doit quand même dire
-  // LEQUEL n'a pas été fait, sinon l'historique montre un trou anonyme.
-  var PERFORMANCE_FIELDS = ['rpe','result','rounds','roundSplits','lastRoundRemaining','cardio'];
+  // Champs de performance à retirer d'une ligne annulée : ceux de la carte WOD
+  // et, depuis V5.4.0, ceux de la carte mouvement (`load`, `reps`). Sans
+  // `load`, la ligne sort d'elle-même du moteur (enrichSessionResults et
+  // updateAthleteStateFromResults ignorent une ligne sans charge), de Kalman,
+  // de la mémoire Brain et de La Saison.
+  // `wodText` et `planned` en sont volontairement absents : ce ne sont pas des
+  // performances, c'est l'identité de ce qui n'a pas été fait. Une ligne non
+  // faite doit dire LAQUELLE, sinon l'historique montre un trou anonyme.
+  var PERFORMANCE_FIELDS = ['load','reps','rpe','result','rounds','roundSplits','lastRoundRemaining','cardio',
+    'status','performanceRatio','coachNote'];
 
   function clean(v){ return String(v === undefined || v === null ? '' : v); }
   function esc(v){ return typeof escHtml === 'function' ? escHtml(v) : clean(v); }
@@ -90,6 +102,22 @@
   }
   function clear(key){ delete store[clean(key)]; return true; }
   function resetAll(){ store = {}; }
+
+  // Report de la mémoire vive sur les lignes collectées. Une même annulation
+  // peut avoir été posée depuis la séance guidée, qui n'a pas de champ caché
+  // dans l'écran Résultats : c'est la mémoire qui fait foi. Appelé par
+  // collectSessionResults() juste avant stripPerformanceFields().
+  function applyStore(results){
+    if(!results || typeof results !== 'object') return results;
+    Object.keys(store).forEach(function(key){
+      var r = reasonById(store[key]);
+      if(!r) return;
+      if(!results[key] || typeof results[key] !== 'object') results[key] = {};
+      results[key].skipped = '1';
+      results[key].skipReason = r.label;
+    });
+    return results;
+  }
 
   // ── Lecture d'une ligne STOCKÉE ──────────────────────────────────────────
   // Ces deux fonctions ne regardent pas la mémoire vive : elles lisent une
@@ -152,16 +180,25 @@
   // qu'il devait trouver. C'est l'ABSENCE DE CHROME qui porte la discrétion
   // désormais ; le texte se lit à la taille du reste de la carte (styles.css,
   // .wod-skip-open). Ne pas remettre d'opacité ici.
-  function controlHtml(key){
+  // opts.label : libellé du lien (« Conditionnement non fait » par défaut,
+  // « Non fait » pour un mouvement). opts.scope : suffixe d'identifiants, pour
+  // qu'une même clé puisse avoir une surface dans la séance guidée ET dans
+  // l'écran Résultats sans doublon d'id. opts.noFields : pas de champs cachés
+  // (la séance guidée passe par la mémoire, voir applyStore).
+  function controlHtml(key, opts){
     key = clean(key);
+    opts = opts || {};
+    var sid = key + clean(opts.scope);
+    var label = clean(opts.label) || '✕ Conditionnement non fait';
     var chips = REASONS.map(function(r){
       return '<button type="button" class="sf-chip" data-skip-reason="'+esc(r.id)+'">'+esc(r.label)+'</button>';
     }).join('');
     return '' +
-      '<input class="sf-input" id="wod_skipped_'+esc(key)+'" data-key="'+esc(key)+'" data-field="skipped" type="hidden" value=""/>' +
-      '<input class="sf-input" id="wod_skipreason_'+esc(key)+'" data-key="'+esc(key)+'" data-field="skipReason" type="hidden" value=""/>' +
-      '<div class="wod-skip" id="wod_skip_'+esc(key)+'">' +
-        '<button type="button" class="wod-skip-open" data-skip-open="1">✕ Conditionnement non fait</button>' +
+      (opts.noFields ? '' :
+      '<input class="sf-input" id="wod_skipped_'+esc(sid)+'" data-key="'+esc(key)+'" data-field="skipped" data-skip-input="skipped" type="hidden" value=""/>' +
+      '<input class="sf-input" id="wod_skipreason_'+esc(sid)+'" data-key="'+esc(key)+'" data-field="skipReason" data-skip-input="skipReason" type="hidden" value=""/>') +
+      '<div class="wod-skip" id="wod_skip_'+esc(sid)+'" data-skip-host="'+esc(key)+'">' +
+        '<button type="button" class="wod-skip-open" data-skip-open="1">'+esc(label)+'</button>' +
         '<div class="wod-skip-reasons" hidden>' +
           '<span class="wod-skip-ask">Pourquoi ?</span>' +
           '<div class="sf-chips">'+chips+'</div>' +
@@ -178,14 +215,17 @@
   // carte rafraîchisse son aperçu — le module ne connaît pas cet aperçu.
   function bind(key, card, onChange){
     key = clean(key);
-    var host = document.getElementById('wod_skip_'+key);
+    // La surface est cherchée DANS la carte d'abord : deux surfaces pour la
+    // même clé (séance guidée + écran Résultats) ne se volent pas leurs ids.
+    var host = (card && card.querySelector) ? card.querySelector('.wod-skip[data-skip-host]') : null;
+    if(!host) host = document.getElementById('wod_skip_'+key);
     if(!host || !card) return;
     var openBtn  = host.querySelector('[data-skip-open]');
     var reasons  = host.querySelector('.wod-skip-reasons');
     var done     = host.querySelector('.wod-skip-done');
     var stateEl  = host.querySelector('.wod-skip-state');
-    var skipInp  = document.getElementById('wod_skipped_'+key);
-    var reasonInp= document.getElementById('wod_skipreason_'+key);
+    var skipInp  = card.querySelector('[data-skip-input="skipped"]') || document.getElementById('wod_skipped_'+key);
+    var reasonInp= card.querySelector('[data-skip-input="skipReason"]') || document.getElementById('wod_skipreason_'+key);
 
     function paint(){
       var on = isSkipped(key);
@@ -236,6 +276,11 @@
     set: set,
     clear: clear,
     resetAll: resetAll,
+    applyStore: applyStore,
+    // Mise de côté de la mémoire vive pendant la correction d'une séance
+    // passée (history_edit.js) : les deux ne se mélangent jamais.
+    exportStore: function(){ return Object.assign({}, store); },
+    importStore: function(saved){ store = Object.assign({}, saved || {}); },
     rowIsSkipped: rowIsSkipped,
     rowReasonLabel: rowReasonLabel,
     rowLabel: rowLabel,

@@ -207,6 +207,21 @@
     return card;
   }
 
+  // V5.4.0 — ligne « Non fait » (scripts/session/wod_skip.js) : elle n'a ni
+  // charge ni reps, donc isTextRow() l'aurait ouverte comme un WOD, avec un
+  // champ RÉSULTAT. On la montre telle quelle ; seule la note se corrige.
+  function skippedCard(key, row, container){
+    var card = document.createElement('div');
+    card.className = 'sf-card'; // pas is-skipped : la note doit rester saisissable
+    var label = (window.CoachWodSkip && CoachWodSkip.rowLabel) ? CoachWodSkip.rowLabel(row) : 'Non fait';
+    card.innerHTML =
+      '<div class="sf-header"><div class="sf-name">' + esc(movementName(key)) + '</div></div>' +
+      '<div class="wod-skip"><span class="wod-skip-state">' + esc(label) + '</span></div>';
+    container.appendChild(card);
+    noteField(card, key, row.note);
+    return card;
+  }
+
   function renderFields(){
     var container = $id('sessionFields');
     if(!container || !editing) return;
@@ -233,6 +248,10 @@
 
     keys.forEach(function(key){
       var row = results[key] || {};
+      if(window.CoachWodSkip && CoachWodSkip.rowIsSkipped(row)){
+        skippedCard(key, row, container);
+        return;
+      }
       if(isTextRow(row)){
         textCard(key, row, container);
         return;
@@ -259,6 +278,19 @@
       out[key][field] = txt(inp.value);
     });
     return out;
+  }
+
+  function isSkippedRow(row){
+    if(window.CoachWodSkip && CoachWodSkip.rowIsSkipped) return CoachWodSkip.rowIsSkipped(row);
+    var v = txt(row && row.skipped).toLowerCase();
+    return v === '1' || v === 'true' || v === 'oui';
+  }
+  function stripSkipped(row){
+    if(window.CoachWodSkip && CoachWodSkip.stripPerformanceFields){ CoachWodSkip.stripPerformanceFields({row: row}); return; }
+    ['load','reps','rpe','result','rounds','roundSplits','lastRoundRemaining','cardio','status','performanceRatio','coachNote']
+      .forEach(function(f){ delete row[f]; });
+    row.skipped = '1';
+    if(!txt(row.skipReason)) row.skipReason = 'motif non précisé';
   }
 
   function reclassify(row){
@@ -288,6 +320,10 @@
         }
         if(txt(row[field]) !== value){ row[field] = value; changed = true; }
       });
+      // V5.4.0 — marqué « Non fait » : la ligne perd charge, reps, RPE et son
+      // ancien classement (ex. le major_fail d'un 0 rep), garde son nom et son
+      // `planned`. Même règle que la collecte du jour (wod_skip.js).
+      if(isSkippedRow(row)) stripSkipped(row);
       reclassify(row);
     });
     return changed;
@@ -314,8 +350,11 @@
     }
     // Le cache de la séance en cours est mis de côté, jamais mélangé à
     // l'édition d'une séance passée — il est restauré à la sortie.
-    editing = { index: Number(index), entry: entry, cache: window.guidedResultCache || {} };
+    editing = { index: Number(index), entry: entry, cache: window.guidedResultCache || {},
+      skips: (window.CoachWodSkip && CoachWodSkip.exportStore) ? CoachWodSkip.exportStore() : null };
     window.guidedResultCache = {};
+    // Les « Non fait » de la séance en cours restent de côté, comme le cache.
+    try{ if(window.CoachWodSkip) CoachWodSkip.resetAll(); }catch(e){}
 
     var results = entryResults(entry);
     Object.keys(results).forEach(function(key){
@@ -337,7 +376,9 @@
 
   function exit(){
     var cache = editing ? editing.cache : null;
+    var skips = editing ? editing.skips : null;
     editing = null;
+    try{ if(window.CoachWodSkip && CoachWodSkip.importStore) CoachWodSkip.importStore(skips); }catch(e){}
     window.guidedResultCache = cache || {};
     chrome(false, null);
   }

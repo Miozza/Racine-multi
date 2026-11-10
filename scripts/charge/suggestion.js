@@ -1840,8 +1840,26 @@ function classifyPerformance(actual, planned){
 // performanceRatio / coachNote : une correction de seance passee
 // (scripts/session/history_edit.js) doit reclasser exactement comme la saisie
 // du jour, sans recopier ces regles ailleurs.
+// Ligne marquee « Non fait » (scripts/session/wod_skip.js, V5.4.0). Lue ici
+// par son seul champ, sans dependre du domaine session : le moteur doit rester
+// testable seul. Meme lecture que CoachWodSkip.rowIsSkipped.
+function coachResultRowIsSkipped(r){
+  if(!r)return false;
+  var v=String(r.skipped===undefined||r.skipped===null?'':r.skipped).toLowerCase();
+  return v==='1'||v==='true'||v==='oui';
+}
+// Un mouvement saute n'est PAS un echec : il n'est jamais classe. Sans cette
+// garde, la charge suggeree pre-remplie + 0 rep donnait major_fail
+// (classifyPerformance), donc recalibrage et progression bloquee.
+function coachClearPerformanceClassification(r){
+  if(!r)return r;
+  delete r.status;delete r.performanceRatio;delete r.coachNote;
+  return r;
+}
+
 function applyPerformanceClassification(r, planned){
   if(!r||!planned)return r;
+  if(coachResultRowIsSkipped(r))return coachClearPerformanceClassification(r);
   var c=classifyPerformance(r,planned);
   r.status=c.status;r.performanceRatio=c.ratio;
   if(c.status==="major_fail")r.coachNote="Echec majeur : niveau probablement surestime aujourd'hui. Recalibrage requis.";
@@ -1854,8 +1872,17 @@ function enrichSessionResults(results){
   var plan=plannedMapFromSessionExercises();
   Object.keys(results||{}).forEach(function(key){
     var r=results[key];
-    if(!r||r.isWod||r.load===undefined||r.load===null||r.load==='')return;
+    if(!r||r.isWod)return;
+    var skipped=coachResultRowIsSkipped(r);
+    if(!skipped&&(r.load===undefined||r.load===null||r.load===''))return;
     var lookup=plan[key]||plan[movementLabelFromKeyOrName(key)]||plan[normalizeExerciseName(key)]||null;
+    if(skipped){
+      // La ligne garde ce qui ETAIT prevu (on doit savoir lequel n'a pas ete
+      // fait), jamais un classement.
+      if(lookup&&String(key).indexOf('wod_')!==0)r.planned={load:lookup.load||null,reps:lookup.reps||null,targetMin:lookup.targetMin||null,targetMax:lookup.targetMax||null,format:lookup.format||"",kind:lookup.kind||"",context:lookup.context||null,bodyweightMovement:lookup.bodyweightMovement||false};
+      coachClearPerformanceClassification(r);
+      return;
+    }
     if(lookup){
       r.planned={load:lookup.load||null,reps:lookup.reps||null,targetMin:lookup.targetMin||null,targetMax:lookup.targetMax||null,format:lookup.format||"",kind:lookup.kind||"",context:lookup.context||null,bodyweightMovement:lookup.bodyweightMovement||false};
       applyPerformanceClassification(r,lookup);
@@ -1870,6 +1897,8 @@ function updateAthleteStateFromResults(results,dateStr){
   Object.keys(results||{}).forEach(function(key){
     var r=results[key];
     if(!r||r.isWod||r.load===undefined||r.load===null||r.load==='')return;
+    // Non fait : aucune capacite a apprendre, rien a recalibrer.
+    if(coachResultRowIsSkipped(r))return;
     var load=parseLoad(r.load), reps=Number(r.reps)||0, rpe=Number(r.rpe)||0;
     var label=movementLabelFromKeyOrName(key);
     var planned=r.planned||{};

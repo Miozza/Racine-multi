@@ -38,6 +38,7 @@ function returnFromResultsToWod(){
   // Les rounds tapés au chrono ont déjà rejoint la ligne de résultat : ils ne
   // doivent pas se reporter sur la prochaine ouverture de séance.
   try{ if(window.CoachAmrapRounds)CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
+  try{ if(window.CoachWodSkip)CoachWodSkip.resetAll(); }catch(e){ /* jamais bloquant */ }
   guidedResultsMode=false;
   document.body.classList.remove("guided-results-active");
   document.body.classList.remove("results-view-active");
@@ -101,6 +102,9 @@ function setupSessionSave(){
     // Capacite estimee (Kalman) : reconstruite depuis le journal brut qui vient
     // de recevoir la seance. Etat derive en memoire, aucune ecriture.
     try{ if(window.CoachKalman && typeof CoachKalman.rebuild==='function') CoachKalman.rebuild(); }catch(e){ /* jamais bloquant */ }
+    // « Non fait » : déjà écrit dans la ligne, la mémoire vive ne doit pas
+    // marquer la séance suivante (même nom de mouvement).
+    try{ if(window.CoachWodSkip)CoachWodSkip.resetAll(); }catch(e){ /* jamais bloquant */ }
     // Mouvements hors programme : la liste ne vit que le temps de l'écran Résultats.
     try{ if(window.CoachExtraMovements)CoachExtraMovements.clear(); }catch(e){ /* jamais bloquant */ }
     // Brain V2.1 — mémoire locale par mouvement + intention.

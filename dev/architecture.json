@@ -1555,6 +1555,16 @@
       "consumes": []
     },
     {
+      "path": "dev/movement_skip_checks.js",
+      "size": 17723,
+      "lines": 253,
+      "role": "Garde-fous du mouvement non fait (V5.4.0), sur le cas réel du 9 nov. : collecte sans load / reps / rpe même depuis le cache guidé, aucune classification, athlete_state identique, résumé « Non fait — motif », moyenne de RPE intacte, non-régression (une vraie tentative à 0 rep reste major_fail), correction d'une séance passée et reconstruction sans perte des références saisies à la main.",
+      "category": "ACTIF",
+      "exposes": [],
+      "consumedBy": [],
+      "consumes": []
+    },
+    {
       "path": "dev/wod_skip_checks.js",
       "size": 12604,
       "lines": 238,

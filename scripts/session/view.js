@@ -173,6 +173,13 @@ function guidedStepValue(v, step, min, max){
 }
 function setupGuidedResultControls(root){
   if(!root)return;
+  try{
+    if(window.CoachWodSkip){
+      Array.prototype.forEach.call(root.querySelectorAll('[data-skip-panel]'), function(panel){
+        CoachWodSkip.bind(panel.getAttribute('data-skip-panel'), panel);
+      });
+    }
+  }catch(e){ /* le panneau reste saisissable */ }
   Array.prototype.forEach.call(root.querySelectorAll('[data-guided-field]'), function(inp){
     var key=inp.getAttribute('data-key'), field=inp.getAttribute('data-guided-field');
     inp.addEventListener('input', function(){ setGuidedResult(key, field, inp.value); });
@@ -325,6 +332,8 @@ function openGuidedSession(){
   // Nouvelle séance = nouveaux rounds. Sans ça, le compteur d'un AMRAP
   // reviendrait tel quel à l'entraînement suivant (même titre de WOD).
   try{ if(window.CoachAmrapRounds) CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
+  // « Non fait » (wod_skip.js) : une annulation appartient à SA séance.
+  try{ if(window.CoachWodSkip) CoachWodSkip.resetAll(); }catch(e){ /* jamais bloquant */ }
   guidedSessionState.blocks = buildGuidedSessionBlocks();
   guidedSessionState.index = 0;
   // Rappel de retard : le repère est le départ réel de l'athlète, pas midi.
@@ -348,6 +357,8 @@ function closeGuidedSession(){
   }catch(e){ /* jamais bloquant */ }
   // Abandon de séance : les rounds tapés partent avec elle, comme les notes.
   try{ if(window.CoachAmrapRounds) CoachAmrapRounds.resetAll(); }catch(e){ /* jamais bloquant */ }
+  // « Non fait » (wod_skip.js) : une annulation appartient à SA séance.
+  try{ if(window.CoachWodSkip) CoachWodSkip.resetAll(); }catch(e){ /* jamais bloquant */ }
   // Le mini-chrono meurt avec la séance : sinon son intervalle continuerait de
   // tourner hors écran et la barre du haut resterait figée sur un compteur.
   try{ if(window.CoachMiniTimer) CoachMiniTimer.disarm(); }catch(e){ /* jamais bloquant */ }
@@ -437,7 +448,7 @@ function renderGuidedResultPanel(e){
   setGuidedResult(key,'reps',repsVal);
   setGuidedResult(key,'rpe',rpeVal);
 
-  var html="<div class='guided-result-panel'>";
+  var html="<div class='guided-result-panel' data-skip-panel='"+escHtml(key)+"'>";
   html+="<div class='guided-result-title'>Résultat</div>";
   html+="<div class='guided-load-row'>"+
         "<button type='button' class='guided-adj minus' data-key='"+escHtml(key)+"' data-exercise='"+escHtml(e.title)+"' data-guided-adjust='-5'>−</button>"+
@@ -455,7 +466,15 @@ function renderGuidedResultPanel(e){
         "<input class='guided-result-input guided-mini-input' data-key='"+escHtml(key)+"' data-guided-field='rpe' type='number' inputmode='decimal' min='1' max='10' step='0.5' value='"+escHtml(guidedNumberText(rpeVal))+"'/>"+
         "<button type='button' class='guided-step-btn plus' data-key='"+escHtml(key)+"' data-guided-step='rpe' data-step='0.5' data-min='1' data-max='10'>+</button>"+
         "</div></div>";
-  html+="</div></div>";
+  html+="</div>";
+  // V5.4.0 — « Non fait » (scripts/session/wod_skip.js) : même noyau que le
+  // metcon. Ici pas de champ caché (scope « _g », noFields) : l'annulation
+  // vit en mémoire et la collecte la reporte sur la ligne (applyStore), puis
+  // retire load / reps / rpe que ce panneau a écrits dans le cache.
+  try{
+    if(window.CoachWodSkip) html+=CoachWodSkip.controlHtml(key,{label:'✕ Non fait',scope:'_g',noFields:true});
+  }catch(err){ /* le panneau reste saisissable */ }
+  html+="</div>";
   return html;
 }
 
