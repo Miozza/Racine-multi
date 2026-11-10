@@ -629,8 +629,8 @@
     },
     {
       "path": "dev/brain_v116_checks.js",
-      "size": 10549,
-      "lines": 175,
+      "size": 14776,
+      "lines": 225,
       "role": "Garde-fou de la couche Brain V1.16 (coachSafeSuggestedLoad) : meme historique que le moteur principal (nature de contexte, jours de test, reps projetees), plafond de capacite, frein warning preserve, et une trace qui rapporte la charge affichee avec la decision du moteur a cote.",
       "category": "ACTIF",
       "exposes": [],
@@ -3549,8 +3549,8 @@
     },
     {
       "path": "scripts/charge/movement_tuning.js",
-      "size": 35970,
-      "lines": 644,
+      "size": 38315,
+      "lines": 687,
       "role": "Domaine charge : tous les seuils propres à un mouvement (regex de nom, saut max, multiplicateurs, graines de charge). Autorité unique, rien en dur dans suggestion.js/historique.js.",
       "category": "ACTIF",
       "exposes": [
@@ -3730,9 +3730,9 @@
     },
     {
       "path": "scripts/charge/suggestion.js",
-      "size": 30881,
-      "lines": 532,
-      "role": "Moteur de suggestion final : ordre des règles (guardedSuggestedLoadDecision), coachSafeSuggestedLoad / coachSuggestForExercise. Les couches vivent dans suggestion_*.js.",
+      "size": 30169,
+      "lines": 507,
+      "role": "Moteur de suggestion final : ordre des règles (guardedSuggestedLoadDecision), couche Brain V1.16 en étapes nommées (coachV116*, coachBrainV116Refine), coachSafeSuggestedLoad / coachSuggestForExercise. Les autres couches vivent dans suggestion_*.js.",
       "category": "ACTIF",
       "exposes": [
         "coachSafeSuggestedLoad",
