@@ -35,7 +35,7 @@ const ENGINE = [
   'scripts/charge/rpe.js', 'scripts/charge/historique.js', 'scripts/charge/scaling.js',
   'scripts/charge/brain_stats.js', 'scripts/charge/brain_memory.js', 'scripts/charge/brain_explain.js',
   'scripts/charge/brain_journal.js', 'scripts/charge/ceiling.js', 'scripts/charge/kalman.js',
-  'scripts/charge/suggestion.js', 'scripts/charge/index.js'
+  'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js', 'scripts/charge/index.js'
 ];
 function makeContext(opts){
   opts = opts || {};

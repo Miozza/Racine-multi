@@ -55,7 +55,7 @@ const loadOrder = [
   'scripts/charge/rpe.js',
   'scripts/charge/historique.js',
   'scripts/charge/scaling.js',
-  'scripts/charge/suggestion.js'
+  'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'
 ];
 loadOrder.forEach(f => vm.runInNewContext(read(f), ctx, {filename:f}));
 

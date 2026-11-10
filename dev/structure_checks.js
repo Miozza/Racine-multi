@@ -159,12 +159,12 @@ domains.forEach(([file, marker]) => {
   assert(exists(file), 'Module présent : ' + file);
   assert(read(file).includes(marker), file + ' doit exposer ' + marker + '.');
 });
-['scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/historique.js','scripts/charge/rpe.js','scripts/charge/suggestion.js','scripts/charge/scaling.js','scripts/charge/index.js'].forEach(f => assert(exists(f), 'Module charge présent : ' + f));
+['scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/historique.js','scripts/charge/rpe.js','scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js','scripts/charge/scaling.js','scripts/charge/index.js'].forEach(f => assert(exists(f), 'Module charge présent : ' + f));
 ['scripts/equipement.js','scripts/utilitaires_charges.js','scripts/mouvement.js','scripts/charge_gestion.js','scripts/progression_rpe.js','scripts/moteur_charges.js'].forEach(f => assert(!exists(f), 'Ancien emplacement charge supprimé : ' + f));
 ['scripts/session/view.js','scripts/session/timer.js','scripts/session/results.js','scripts/session/save.js','scripts/session/index.js'].forEach(f => assert(exists(f), 'Module session présent : ' + f));
 assert(!exists('scripts/view_session.js'), 'Ancien emplacement session supprimé : scripts/view_session.js');
 ['scripts/profiles/storage.js','scripts/profiles/reference.js','scripts/profiles/onboarding.js','scripts/profiles/ui.js'].forEach(f => assert(exists(f), 'Module profils présent : ' + f));
-assert(read('scripts/charge/suggestion.js').includes('coachApplyUserLoadScale'), 'Le scaling de charge par profil doit être branché dans le moteur de suggestion.');
+assert(['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n').includes('coachApplyUserLoadScale'), 'Le scaling de charge par profil doit être branché dans le moteur de suggestion.');
 assert(read('scripts/charge/historique.js').includes('coachAggressivenessFactor'), 'L’agressivité de progression par profil doit être branchée dans le signal historique.');
 assert(read('scripts/profiles/reference.js').includes('window.RACINE_REFERENCE_PROFILE'), 'Le référentiel de calibration profil doit exposer RACINE_REFERENCE_PROFILE.');
 assert(read('app.js').includes('profile: blankProfile()') && read('app.js').includes('movementRefs: {}'), 'Un profil neuf démarre sans références vivantes préchargées.');

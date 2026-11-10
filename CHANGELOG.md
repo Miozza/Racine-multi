@@ -1,3 +1,13 @@
+## V5.4.1 — Moteur de charges : `suggestion.js` découpé par couche
+
+**Pourquoi** : `scripts/charge/suggestion.js` faisait 2 468 lignes — le plus gros fichier du dépôt, dans le domaine prioritaire. Chaque retouche d'une règle obligeait à ouvrir tout le moteur. Le découpage réduit le risque ; il ne change aucune charge.
+
+- **Sept fichiers, même code** : `suggestion_deload.js`, `suggestion_rpe.js`, `suggestion_references.js`, `suggestion_context.js`, `suggestion_rules.js`, `suggestion_state.js`, et `suggestion.js` (ordre des règles `guardedSuggestedLoadDecision`, `coachSafeSuggestedLoad`, `coachSuggestForExercise`). Les fonctions sont déplacées telles quelles : aucune ligne modifiée, vérifié par comparaison du contenu avant/après.
+- **Chargement** : six balises `<script defer>` ajoutées dans `index.html`, juste avant `suggestion.js`. Les fonctions restent des globales ; la porte publique `window.CoachCharge` ne change pas.
+- **Garde-fous** : les bacs à sable `dev/` chargent les sept fichiers ; `movement_tuning_boundary_checks.js` les surveille tous (même allowlist, déplacée avec la fonction de deload) ; `tuning_override_checks.js` vérifie la lecture de la table sur le moteur entier et la non-capture fichier par fichier.
+- **Vérifié** : golden master des suggestions inchangé, 75 scripts de `RELEASE_CHECKLIST.md` verts avant et après.
+- **Données** : rien. Aucune clé, aucun schéma, aucune migration.
+
 ## V5.4.0 — « Non fait » pour les mouvements : un mouvement sauté n'est pas un échec
 
 **Pourquoi** : profil Bertin, Moteur + jambes S2 lundi (2026-11-09). Le temps a manqué, les deux accessoires de fin n'ont pas été faits. Le seul moyen de le dire était 0 rep, avec la charge suggérée (50 lb) et un RPE 8 pré-remplis. Le moteur y a lu une barre engagée qui ne monte pas : Bulgarian Split Squat en `recalibrating`, capacité 40 lb, confiance 0,30 (branche `failedAttempt` de `updateAthleteStateFromResults`), progression bloquée, et un RPE 8 fictif dans les moyennes de fatigue. Le programme dit lui-même que le temps qui manque coupe les accessoires de fin.

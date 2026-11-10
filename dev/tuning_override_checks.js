@@ -199,14 +199,24 @@ O.reset();
 // C'est la condition qui rend cette surcharge possible sans toucher aux
 // fichiers de decision : si un module capturait COACH_MOVEMENT_TUNING dans une
 // variable au chargement, sa copie ne verrait jamais la calibration.
-['scripts/charge/suggestion.js','scripts/charge/historique.js','scripts/charge/scaling.js',
+['scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js','scripts/charge/historique.js','scripts/charge/scaling.js',
  'scripts/charge/brain_stats.js','scripts/charge/mouvements.js'].forEach(file => {
   const src = read(file);
-  const reads = (src.match(/window\.COACH_MOVEMENT_TUNING/g) || []).length;
-  assert(reads > 0, file + ' : lit la table de tuning.');
+  // Depuis le decoupage de suggestion.js (V5.4.1), un fichier du moteur peut
+  // ne pas lire la table du tout (le contexte, p. ex.) : la lecture se
+  // verifie sur le moteur entier juste apres, la non-capture fichier par fichier.
+  if(!/suggestion(_[a-z]+)?\.js$/.test(file)){
+    const reads = (src.match(/window\.COACH_MOVEMENT_TUNING/g) || []).length;
+    assert(reads > 0, file + ' : lit la table de tuning.');
+  }
   assert(!/^\s*var\s+[A-Za-z_$][\w$]*\s*=\s*window\.COACH_MOVEMENT_TUNING\s*;?\s*$/m.test(src),
     file + ' : ne capture pas la table au chargement (lecture a l\'execution seulement).');
 });
+
+assert(/window\.COACH_MOVEMENT_TUNING/.test(
+  fs.readdirSync(path.join(root, 'scripts/charge')).filter(f => /^suggestion(_[a-z]+)?\.js$/.test(f))
+    .map(f => read('scripts/charge/' + f)).join('\n')),
+  'moteur de suggestion (suggestion*.js) : lit la table de tuning.');
 
 if(failed){
   console.error('\nÉCHEC tuning_override_checks.js — ' + failed + ' controle(s) sur ' + checks + '.');

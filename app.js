@@ -1,5 +1,5 @@
-// Racine V5.4.0 — « Non fait » pour les mouvements : un mouvement sauté n'est pas un échec
-var APP_VERSION = "V5.4.0";
+// Racine V5.4.1 — moteur de charges : suggestion.js découpé par couche, logique inchangée
+var APP_VERSION = "V5.4.1";
 
 // Architecture stable
 // programs/*.js = plan prévu

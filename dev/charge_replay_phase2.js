@@ -63,7 +63,7 @@ ctx.globalThis = ctx;
   'scripts/charge/scaling.js', 'scripts/charge/ceiling.js',
   'scripts/charge/brain_stats.js', 'scripts/charge/brain_memory.js',
   'scripts/charge/brain_journal.js', 'scripts/charge/movement_profiles.js',
-  'scripts/charge/suggestion.js', 'scripts/charge/trace.js',
+  'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js', 'scripts/charge/trace.js',
   'programs/wod_format.js', 'programs/phase2_fable5.js'
 ].forEach(f => {
   try { vm.runInNewContext(read(f), ctx, {filename:f}); }

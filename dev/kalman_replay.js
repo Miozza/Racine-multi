@@ -59,7 +59,7 @@ function makeContext(profileState){
   ['scripts/app_helpers.js', 'scripts/charge/equipement.js', 'scripts/charge/movement_tuning.js',
    'scripts/charge/utilitaires.js', 'scripts/charge/mouvements.js', 'scripts/charge/rpe.js',
    'scripts/charge/historique.js', 'scripts/charge/scaling.js', 'scripts/charge/brain_stats.js',
-   'scripts/charge/kalman.js', 'scripts/charge/suggestion.js']
+   'scripts/charge/kalman.js', 'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js']
     .forEach(f => vm.runInNewContext(read(f), ctx, {filename: f}));
   return ctx;
 }

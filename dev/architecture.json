@@ -3607,10 +3607,132 @@
       "consumes": []
     },
     {
+      "path": "scripts/charge/suggestion_deload.js",
+      "size": 6310,
+      "lines": 117,
+      "role": "Moteur de suggestion — détection de semaine/contexte de deload et plafond de deload.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachIsDeloadWeekOrContext",
+        "coachApplyDeloadCap"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 420
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_rpe.js",
+      "size": 8167,
+      "lines": 178,
+      "role": "Moteur de suggestion — échelle de progression RPE, pas de charge, plafond et frein RPE récent.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachRpeProgressionRung",
+        "coachNextLoadSteps",
+        "coachRecentUnresolvedHighRpeBrake"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 421
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_references.js",
+      "size": 9131,
+      "lines": 156,
+      "role": "Moteur de suggestion — format de la charge affichée, lignes implausibles, rampe et références de travail.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachFormatSuggestedLoad",
+        "coachReferenceSeedWorkingLoad",
+        "COACH_REF_RAMP"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 422
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_context.js",
+      "size": 11558,
+      "lines": 184,
+      "role": "Moteur de suggestion — construit le contexte de décision lu par toutes les règles.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachBuildSuggestionContext"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 423
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_rules.js",
+      "size": 60860,
+      "lines": 1087,
+      "role": "Moteur de suggestion — les règles (une fonction coachRule* chacune) et coachFinalizeSuggestionDecision.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachRule*",
+        "coachFinalizeSuggestionDecision"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 424
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_state.js",
+      "size": 13369,
+      "lines": 237,
+      "role": "Moteur de suggestion — classement des résultats d'une séance et mise à jour d'athlete_state.",
+      "category": "ACTIF",
+      "exposes": [
+        "classifyPerformance",
+        "enrichSessionResults",
+        "updateAthleteStateFromResults"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 425
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
       "path": "scripts/charge/suggestion.js",
-      "size": 99915,
-      "lines": 1793,
-      "role": "Moteur de suggestion final : coachSafeSuggestedLoad / coachSuggestForExercise, empile math + RPE + contexte + scaling + Brain.",
+      "size": 30881,
+      "lines": 532,
+      "role": "Moteur de suggestion final : ordre des règles (guardedSuggestedLoadDecision), coachSafeSuggestedLoad / coachSuggestForExercise. Les couches vivent dans suggestion_*.js.",
       "category": "ACTIF",
       "exposes": [
         "coachSafeSuggestedLoad",
@@ -3620,10 +3742,16 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 348
+          "line": 426
         }
       ],
       "consumes": [
+        "scripts/charge/suggestion_deload.js",
+        "scripts/charge/suggestion_rpe.js",
+        "scripts/charge/suggestion_references.js",
+        "scripts/charge/suggestion_context.js",
+        "scripts/charge/suggestion_rules.js",
+        "scripts/charge/suggestion_state.js",
         "scripts/charge/kalman.js"
       ]
     },

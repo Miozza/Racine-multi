@@ -26,7 +26,7 @@ const app = read('app.js');
 const html = read('index.html');
 const results = read('scripts/session/results.js');
 const save = read('scripts/session/save.js');
-const suggestion = read('scripts/charge/suggestion.js');
+const suggestion = ['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n');
 const chargeApi = read('scripts/charge/index.js');
 const css = read('styles.css');
 

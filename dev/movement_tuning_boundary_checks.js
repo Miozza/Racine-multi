@@ -16,6 +16,14 @@ const root = path.resolve(__dirname, '..');
 // le refactor de 2026-07-26 (voir le plan associe) ; toute regex de mouvement
 // ajoutee au-dela doit d'abord passer par movement_tuning.js.
 const watchedFiles = [
+  // suggestion.js a ete decoupe par couche (V5.4.1) : les sept fichiers
+  // restent surveilles, la regle n'a pas change.
+  'scripts/charge/suggestion_deload.js',
+  'scripts/charge/suggestion_rpe.js',
+  'scripts/charge/suggestion_references.js',
+  'scripts/charge/suggestion_context.js',
+  'scripts/charge/suggestion_rules.js',
+  'scripts/charge/suggestion_state.js',
   'scripts/charge/suggestion.js',
   'scripts/charge/historique.js'
 ];
@@ -26,7 +34,7 @@ const watchedFiles = [
 // existante), le check echoue. Ca ferme la faille "echanger un faux positif
 // contre une vraie regex de mouvement" du simple comptage precedent.
 const allowedPatterns = {
-  'scripts/charge/suggestion.js': [
+  'scripts/charge/suggestion_deload.js': [
     // coachIsDeloadWeekOrContext() teste du texte de contexte/intention libre
     // (primaryIntent/kind/blockTitle/note/text/format), pas un nom de
     // mouvement. Voir docs/STRUCTURE_CONTRACT.md — Regle de tuning par mouvement.

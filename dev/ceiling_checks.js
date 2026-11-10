@@ -70,7 +70,7 @@ ctx.globalThis = ctx;
   'scripts/charge/brain_memory.js',
   'scripts/charge/brain_journal.js',
   'scripts/charge/ceiling.js',
-  'scripts/charge/suggestion.js'
+  'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'
 ].forEach(file => vm.runInNewContext(read(file), ctx, { filename: file }));
 
 let checks = 0, failed = 0;
