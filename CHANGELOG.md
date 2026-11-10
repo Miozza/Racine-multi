@@ -7,6 +7,7 @@
 - **Garde-fous** : les bacs à sable `dev/` chargent les sept fichiers ; `movement_tuning_boundary_checks.js` les surveille tous (même allowlist, déplacée avec la fonction de deload) ; `tuning_override_checks.js` vérifie la lecture de la table sur le moteur entier et la non-capture fichier par fichier.
 - **Vérifié** : golden master des suggestions inchangé, 75 scripts de `RELEASE_CHECKLIST.md` verts avant et après.
 - **Données** : rien. Aucune clé, aucun schéma, aucune migration.
+- **Suite, même version** : `coachSafeSuggestedLoad` (400 lignes dans une seule fonction) est découpée en étapes nommées `coachV116*` — historique retenu, delta RPE, moyenne mobile, tendance, recalibrage, plafond de capacité — orchestrées par `coachBrainV116Refine`. Mêmes charges et mêmes indices du `(!)` : comparé à l'ancienne fonction sur 80 000 cas aléatoires, zéro écart. Chaque étape est maintenant épinglée seule dans `dev/brain_v116_checks.js` (18 contrôles ajoutés) ; avant, le golden master ne couvrait que la pile de règles, pas cette couche.
 
 ## V5.4.0 — « Non fait » pour les mouvements : un mouvement sauté n'est pas un échec
 

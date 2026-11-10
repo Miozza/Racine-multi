@@ -166,6 +166,40 @@ function single(C){
   assert(r.shown === r.motor.loadText, 'Frein : la couche V1.16 ne defait pas le frein (' + r.shown + ' vs ' + r.motor.loadText + ').');
 }
 
+// ─── Etapes de la couche, une a une ────────────────────────────────────────
+// coachSafeSuggestedLoad a ete decoupee en fonctions nommees sans effet de
+// bord. Ce bloc epingle le CONTRAT de chacune (pas de 5 lb, saut max 10 lb),
+// pour qu'une retouche d'une etape se voie ici avant de se voir sur une charge.
+{
+  const C = engine();
+  const row = (load, rpe, planned) => ({load: load, reps: 8, rpe: rpe, planned: planned ? {load: planned} : undefined});
+  const d = (rpe, reps, prevRpe) => C.coachV116RpeDelta(rpe, reps, 8, prevRpe || 0, 10, 5).delta;
+  assert(d(6, 8) === 20, 'Couche 1 : RPE 6 avec reps au max = hausse majeure (2x le saut).');
+  assert(d(6, 7) === 10 && d(7, 8) === 10, 'Couche 1 : RPE <= 7 = un saut.');
+  assert(d(8, 8) === 5 && d(8.5, 8) === 5, 'Couche 1 : RPE 8 et 8,5 = hausse reduite, jamais nulle.');
+  assert(d(8.7, 8) === 0 && d(9, 8, 8) === 0, 'Couche 1 : RPE 8,7 ou un RPE 9 isole = maintien.');
+  assert(d(9, 8, 9) === -5, 'Couche 1 : RPE >= 9 deux seances de suite = baisse controlee.');
+
+  assert(C.coachV116MovingAverageGap([row(200, 7)]) === 0, 'Couche 2 : une seule seance, pas de moyenne.');
+  const gap = C.coachV116MovingAverageGap([row(150, 7), row(170, 7), row(200, 7)]);
+  assert(Math.abs(gap - 19) < 1e-9, 'Couche 2 : ecart a la moyenne ponderee 50/30/20 (' + gap + ').');
+  const slowed = C.coachV116RapidProgressionPenalty({delta: 10, reason: 'r'}, 25, 200, 5);
+  assert(slowed.delta === 5 && /Tendance rapide/.test(slowed.reason), 'Couche 2 : progression rapide = delta reduit, et c\'est dit.');
+  const kept = {delta: 10, reason: 'r'};
+  assert(C.coachV116RapidProgressionPenalty(kept, 19, 200, 5) === kept, 'Couche 2 : sous 10 % d\'ecart, le delta ne bouge pas.');
+  assert(C.coachV116RapidProgressionPenalty({delta: -5, reason: 'r'}, 25, 200, 5).delta === -5, 'Couche 2 : ne touche jamais une baisse.');
+
+  assert(C.coachV116TrendDelta([row(190, 7), row(200, 7)], 10) === 0, 'Couche 3 : moins de 3 seances, pas de tendance.');
+  assert(C.coachV116TrendDelta([row(150, 7), row(170, 7), row(200, 7)], 10) === 3, 'Couche 3 : pente bornee au saut max, ponderee a 30 %.');
+  assert(C.coachV116TrendDelta([row(200, 7), row(190, 7), row(180, 7)], 10) === -3, 'Couche 3 : symetrique a la baisse.');
+
+  assert(C.coachV116ConsistencyBoost([row(200, 7, 180), row(200, 7, 180), row(200, 7, 195)], 10) === null, 'Couche 4 : deux depassements sur trois, pas de recalibrage.');
+  assert(C.coachV116ConsistencyBoost([row(200, 7, 180), row(200, 7, 180), row(200, 7, 180)], 10) === 10, 'Couche 4 : trois depassements = recalibrage, borne au saut max.');
+
+  assert(C.coachV116RawLoad(200, 0, -3, 0, 10) === 200, 'Somme : sans baisse decidee, jamais sous la derniere charge.');
+  assert(C.coachV116RawLoad(200, -5, -30, 0, 10) === 180, 'Somme : une baisse ne descend pas de plus de 2x le saut.');
+}
+
 notes.forEach(n => console.log('  ok  ' + n));
 if(errors.length){
   errors.forEach(e => console.error('  ECHEC  ' + e));

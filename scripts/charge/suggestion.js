@@ -94,398 +94,361 @@ function coachKalmanRule(name,ctx){
 function athleteSuggestedLoad(nameOrKey, currentLoad, targetReps, context){
   return guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context).loadText;
 }
-window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context){
-  var base = guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context);
+// ── Couche Brain V1.16 ──────────────────────────────────────────────────────
+// Raffine la decision de la pile de regles a partir des dernieres seances
+// normales. Chaque etape est une fonction nommee, sans effet de bord sauf
+// coachV116WriteHint() : c'est ce qui permet de les verifier une a une
+// (dev/brain_v116_checks.js). L'ordre vit dans coachBrainV116Refine().
+//  Couche 1 : regles RPE (delta de base — baisse controlee si RPE>=9 deux fois)
+//  Couche 2 : moyenne mobile — signal de prudence (la base reste lastLoad)
+//  Couche 3 : tendance recente de progression (>=3 seances — pas de la velocite VBT)
+//  Couche 4 : signal de coherence (recalibrage si depassement systematique)
+//  Deload   : -20% principal / -25% accessoire / -30% technique
+//  Contexte technique/wod/light = ignore
+function coachV116Tuning(){ return (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.brainV116) || {}; }
+function coachV116RowLoad(r){ return Number(r && (r.load || r.externalLoad)) || 0; }
+function coachV116RowRpe(r){  return Number(r && r.rpe) || 0; }
+function coachV116RowReps(r){ return Number(r && (r.reps || r.actualReps)) || 0; }
+function coachV116IsDeloadRow(r){ return (typeof coachBrainIsDeloadRow==='function') ? coachBrainIsDeloadRow(r) : !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
+// Repere de calibrage (source "manual_recalibration" = 1RM/5RM seme a
+// l'onboarding) : ce n'est pas une charge de travail. Le laisser piloter la
+// progression faisait suggerer ~1RM pour des sets de 8-12 reps.
+function coachV116IsCalibrationSeed(r){ return (typeof coachIsNonPerformanceSeed==='function')?coachIsNonPerformanceSeed(r):!!(r&&r.planned&&(r.planned.source==='manual_recalibration'||r.planned.source==='manual_charge_override')); }
+function coachV116IsTestRow(r){
+  var rc = (typeof coachHistoryContext==='function') ? coachHistoryContext(r) : null;
+  var fmt = {format: (rc && rc.format) || (r && r.planned && r.planned.format) || ''};
+  if(window.CoachKalman && typeof CoachKalman.isTestContext==='function') return CoachKalman.isTestContext(fmt);
+  var K = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.kalman) || {};
+  return typeof coachMatchesAnyTuningPattern==='function' && coachMatchesAnyTuningPattern(coachNormalizeMoveText(fmt.format), K.testFormatPatterns);
+}
+function coachV116RepsIncompatible(r,tMinDay,tMaxDay){
+  var reps = coachV116RowReps(r), ratio = Number(coachV116Tuning().repGapRatio);
+  if(!reps || !(ratio > 0)) return false;
+  var gap = reps < tMinDay ? tMinDay - reps : (reps > tMaxDay ? reps - tMaxDay : 0);
+  return gap > tMaxDay * ratio;
+}
+function coachV116ProjectToTarget(r,tMinDay,tMaxDay){
+  if(!coachV116RepsIncompatible(r,tMinDay,tMaxDay) || typeof epley1RM!=='function') return r;
+  var reps = coachV116RowReps(r), toward = reps < tMinDay ? tMinDay : tMaxDay;
+  var projected = epley1RM(coachV116RowLoad(r), reps) / (1 + toward / 30);
+  // Sans charge prescrite : une projection n'a jamais « depasse » une
+  // suggestion qu'elle n'a pas recue (couche 4).
+  return Object.assign({}, r, {load: projected, externalLoad: projected, reps: toward,
+    planned: Object.assign({}, r.planned || {}, {load: null}), __v116ProjectedFrom: coachV116RowLoad(r) + ' x ' + reps});
+}
 
-  // ── Moteur Brain V1.16 ────────────────────────────────────────────────────
-  // Couche 1 : Règles RPE (delta de base — baisse contrôlée autorisée si RPE≥9×2)
-  // Couche 2 : Moyenne mobile — signal de confiance/prudence (base = lastLoad)
-  // Couche 3 : Tendance récente de progression (≥3 séances — pas de la vélocité VBT)
-  // Couche 4 : Signal de cohérence (recalibrage si dépassement systématique)
-  // Deload   : -20% principal / -25% accessoire / -30% technique
-  // Contexte technique/wod/light = ignoré
+// Meme historique que le moteur principal. Cette couche relisait
+// l'historique BRUT : un test 300 x 1 @9,5 apres des doubles de vitesse
+// devenait la base d'un 5 x 3 a RPE 8 et sortait a 305 lb, quand le moteur
+// proposait 220. Filtres, aucun reecrit ici :
+//  1. nature de contexte — coachFilterHistoryForProgression(), le filtre
+//     du moteur principal (motif « Nature de contexte differente » de la
+//     trace). Une ligne admise a poids reduit (repli quand aucune ligne de
+//     meme nature n'existe) aide le moteur a ne pas etre aveugle ; ici elle
+//     deviendrait la charge de base brute, donc elle est ecartee ;
+//  2. deload, repere de calibrage, charge invraisemblable (typo de saisie,
+//     meme filtre que guardedSuggestedLoadDecision) ;
+//  3. jour de test — CoachKalman.isTestContext(), lu sur le format
+//     (« montee vers 1RM », « 3RM test »). Un test n'est pas une charge de
+//     travail ;
+//  4. reps compatibles — au-dela de repGapRatio, la charge brute d'une
+//     ligne ne dit rien de la charge du jour : elle est projetee par Epley
+//     vers la cible (sur une COPIE, la ligne stockee n'est jamais touchee).
+//     Projeter plutot qu'exclure : exclure renvoyait la couche a une ligne
+//     plus ancienne, donc plus legere que ce que le moteur venait de lire.
+function coachV116History(label,histAll,ctx,targetReps,tMinDay,tMaxDay){
+  var sameNature = (typeof coachFilterHistoryForProgression==='function') ? coachFilterHistoryForProgression(histAll, ctx) : histAll;
+  return sameNature.filter(function(r){
+    if(typeof coachHistoryWeight==='function' && coachHistoryWeight(r) < 1) return false;
+    var implausible = (typeof coachIsImplausibleLoadRow==='function') && coachIsImplausibleLoadRow(label,r,Number(targetReps)||8);
+    return !coachV116IsDeloadRow(r) && !coachV116IsCalibrationSeed(r) && !implausible && coachV116RowLoad(r) > 0 && coachV116RowRpe(r) > 0
+      && !coachV116IsTestRow(r);
+  }).map(function(r){ return coachV116ProjectToTarget(r,tMinDay,tMaxDay); });
+}
+
+// Plafond de capacite : la couche raffine une charge de travail, elle ne
+// depasse jamais ce que l'e1RM retenu permet pour les reps du jour au RPE
+// capacityRpe. e1RM retenu = la meilleure des deux lectures : l'ancre de
+// force du moteur (coachStrengthAnchorOneRm : athlete_state, references,
+// profil) et les lignes retenues, RIR compte (meme convention que
+// kalman.js : RIR = 10 - RPE, borne a maxRir). Sans e1RM, pas de plafond.
+function coachV116CapacityCap(label,mv,hist,targetReps,tMinDay){
+  var K = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.kalman) || {};
+  var maxRir = Number(K.maxRir) || 4;
+  var capRpe = Number(coachV116Tuning().capacityRpe);
+  if(!(capRpe > 0) || typeof epley1RM!=='function') return null;
+  function rirOf(rpe){ return Math.max(0, Math.min(maxRir, 10 - (Number(rpe) || 10))); }
+  var anchor = (typeof coachStrengthAnchorOneRm==='function') ? coachStrengthAnchorOneRm(label, mv) : null;
+  var e1 = (anchor && anchor.oneRm > 0) ? anchor.oneRm : 0;
+  hist.forEach(function(r){
+    var reps = coachV116RowReps(r);
+    if(reps > 0) e1 = Math.max(e1, epley1RM(coachV116RowLoad(r), reps + rirOf(coachV116RowRpe(r))));
+  });
+  if(!(e1 > 0)) return null;
+  var reps = Math.max(1, Number(targetReps) || tMinDay);
+  var raw = e1 / (1 + (reps + rirOf(capRpe)) / 30);
+  // Arrondi au cran SUPERIEUR du rack : un plafond qu'on ne peut pas
+  // charger gelerait les petites charges (un Goblet Squat a 10 lb n'a pas
+  // de 10,5), sans rien proteger de plus.
+  var up = (typeof roundLoadForExercise==='function') ? roundLoadForExercise(label, raw, 'up') : raw;
+  return {e1RM: e1, load: Math.max(raw, Number(up) || 0), reps: reps, rpe: capRpe};
+}
+
+// Part de la derniere charge normale gardee en deload.
+function coachV116DeloadPct(label,ctx){
+  if(typeof coachIsIsolationMovement==='function' && coachIsIsolationMovement(label)) return 0.75; // accessoire (-25%)
+  if(ctx && (ctx.primaryIntent === 'technique' || ctx.kind === 'technique')) return 0.70;          // technique (-30%)
+  return 0.80;                                                                                      // principal (-20%)
+}
+
+// Couche 1 : RPE de la derniere serie → delta de base.
+function coachV116RpeDelta(lastRpe,lastReps,tmax,prevRpe,maxJump,step){
+  if(lastRpe <= 6 && lastReps >= tmax) return {delta: Math.round((maxJump * 2) / step) * step,
+    reason: 'RPE ' + lastRpe + ' avec reps au max (' + lastReps + '/' + tmax + ') — hausse majeure.'};
+  if(lastRpe <= 7)   return {delta: maxJump, reason: 'RPE ' + lastRpe + ' — progression normale.'};
+  if(lastRpe <= 8)   return {delta: Math.round((maxJump * 0.5) / step) * step || step, reason: 'RPE ' + lastRpe + ' — progression prudente.'};
+  if(lastRpe <= 8.5) return {delta: Math.round((maxJump * 0.25) / step) * step || step, reason: 'RPE ' + lastRpe + ' — micro-progression.'};
+  if(lastRpe < 9)    return {delta: 0, reason: 'RPE ' + lastRpe + ' — maintien recommandé.'};
+  if(prevRpe >= 9)   return {delta: -(Math.round((maxJump * 0.5) / step) * step || step), reason: 'RPE ≥ 9 deux séances consécutives — réduction recommandée.'};
+  return {delta: 0, reason: 'RPE ' + lastRpe + ' — maintien, séance difficile isolée.'};
+}
+
+// Couche 2 : ecart entre la derniere charge et la moyenne mobile ponderee
+// des 2-3 dernieres. La base reste la derniere charge reelle ; l'ecart sert
+// uniquement a moderer le delta quand la progression a ete rapide.
+function coachV116MovingAverageGap(hist){
+  if(hist.length < 2) return 0;
+  var w1 = 0.50, w2 = 0.30, w3 = 0.20;
+  if(hist.length === 2){ w1 = 0.60; w2 = 0.40; w3 = 0; }
+  var prev2 = hist.length >= 3 ? hist[hist.length-3] : null;
+  var l1 = coachV116RowLoad(hist[hist.length-1]);
+  var l2 = coachV116RowLoad(hist[hist.length-2]) || l1;
+  var l3 = prev2 ? (coachV116RowLoad(prev2) || l2) : l2;
+  return l1 - ((l1*w1) + (l2*w2) + (l3*w3));
+}
+// Moyenne plus de 10% sous la derniere charge → progression rapide → delta reduit de 30%.
+function coachV116RapidProgressionPenalty(d,avgGap,lastLoad,step){
+  if(!(avgGap > lastLoad * 0.10 && d.delta > 0)) return d;
+  var penalty = Math.round((d.delta * 0.30) / step) * step;
+  return {delta: Math.max(0, d.delta - penalty),
+    reason: d.reason + ' [Tendance rapide : +' + Math.round(avgGap) + ' lb sur moy., delta réduit]'};
+}
+
+// Couche 3 : pente moyenne de la charge sur 3 seances, plafonnee a 1x
+// maxJump et ponderee a 30% — elle ne domine pas les regles RPE.
+function coachV116TrendDelta(hist,maxJump){
+  if(hist.length < 3) return 0;
+  var rawTrend = (coachV116RowLoad(hist[hist.length-1]) - coachV116RowLoad(hist[hist.length-3])) / 2;
+  return Math.max(-maxJump, Math.min(maxJump, rawTrend)) * 0.30;
+}
+
+// Couche 4 : la suggestion depassee de plus de 5% trois seances de suite →
+// recalibrage vers le haut (moyenne des depassements, bornee a maxJump).
+// Retourne null quand le signal n'existe pas.
+function coachV116ConsistencyBoost(hist,maxJump){
+  if(hist.length < 3) return null;
+  var overrides = [hist[hist.length-1], hist[hist.length-2], hist[hist.length-3]].filter(function(r){
+    if(!r) return false;
+    var suggested = Number(r.planned && r.planned.load) || 0;
+    return suggested > 0 && coachV116RowLoad(r) > suggested * 1.05;
+  });
+  if(overrides.length < 3) return null;
+  var avgOverride = overrides.reduce(function(sum,r){
+    return sum + (coachV116RowLoad(r) - (Number(r.planned&&r.planned.load)||coachV116RowLoad(r)));
+  }, 0) / overrides.length;
+  return Math.min(avgOverride, maxJump);
+}
+
+// Plancher conditionnel de la somme des couches :
+// - delta >= 0 (hausse ou maintien) : jamais sous la derniere charge reelle ;
+// - delta < 0 (baisse justifiee) : autorisee, mais pas plus de 2x maxJump
+//   sous la derniere charge, pour eviter un effondrement brutal.
+function coachV116RawLoad(lastLoad,delta,trendDelta,boost,maxJump){
+  var rawLoad = lastLoad + delta + trendDelta + boost;
+  return Math.max(rawLoad, delta >= 0 ? lastLoad : lastLoad - (maxJump * 2));
+}
+
+// Re-ecrit l'indice du (!) avec la decision de la couche. La capacite
+// estimee (Kalman) attachee par coachFinalizeSuggestionDecision est relue
+// une fois par l'appelant et reattachee ici, jamais recalculee : un payload
+// neuf la perdrait.
+function coachV116WriteHint(label,loadText,reason,brainStats,baseKalman){
   try{
-    var baseNum = base.loadNum;
-    if(!baseNum || baseNum <= 0) return base.loadText;
-
-    var label = base.label || nameOrKey;
-    // Capacite estimee : coachFinalizeSuggestionDecision vient de l'attacher a
-    // l'indice de CETTE decision (nulle en mode off). Les re-stockages plus bas
-    // (deload, couche Brain, portail stats) ecrivent un payload neuf : sans
-    // cette relecture, le (!) perdait sa section « Capacite estimee » des que
-    // la couche Brain repassait. Relue une fois, reattachee, jamais recalculee.
-    var hintKey = (typeof coachNormalizeMoveText==='function') ? coachNormalizeMoveText(label) : '';
-    var baseHint = (hintKey && window.__coachLoadHints) ? window.__coachLoadHints[hintKey] : null;
-    var baseKalman = (baseHint && baseHint.kalman) ? baseHint.kalman : null;
-    // Instantane des indices tels que le moteur principal les a laisses : le
-    // portail stats ci-dessous re-stocke un indice AVANT le plafond de
-    // capacite. Sans restauration, l'ecran gardait la charge du moteur et le
-    // (!) expliquait celle que le plafond venait de refuser.
-    var hintsBefore = window.__coachLoadHints ? Object.assign({}, window.__coachLoadHints) : null;
-    var mv = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(label) : null;
-    var histAll = (mv && Array.isArray(mv.history)) ? mv.history : [];
-    if(!histAll.length) return base.loadText;
-
-    var ctx = (context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
-    var isLimited = (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
-    if(isLimited) return base.loadText;
-
-    // Brain raffine une progression normale ; il ne doit jamais DEFAIRE un frein.
-    // Quand la pile de regles a deja pose un avertissement (cap
-    // recalibrating/watch, RPE haut repete, echec), sa decision fait foi.
-    // Sans ce garde-fou, un echec total cappe a 175 lb par
-    // guardedSuggestedLoadDecision() ressortait a 220 lb apres la couche Brain —
-    // exactement la charge qui venait d'echouer. Le frein doit survivre au
-    // raffinement.
-    if(base.severity==='warning'||base.severity==='critical') return base.loadText;
-
-    var isDeload = (typeof coachIsDeloadWeekOrContext==='function') ? coachIsDeloadWeekOrContext(ctx) : false;
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-    function rowLoad(r){ return Number(r && (r.load || r.externalLoad)) || 0; }
-    function rowRpe(r){  return Number(r && r.rpe) || 0; }
-    function rowReps(r){ return Number(r && (r.reps || r.actualReps)) || 0; }
-    function isDeloadRow(r){ return (typeof coachBrainIsDeloadRow==='function') ? coachBrainIsDeloadRow(r) : !!(r && (r.context === 'deload' || r.status === 'deload' || (r.planned && r.planned.deload))); }
-
-    // Filtrer l'historique : on exclut les séances deload ET les repères de
-    // calibrage (source "manual_recalibration" = 1RM/5RM semé à l'onboarding).
-    // Un repère de calibrage n'est pas une charge de travail : le laisser piloter
-    // la progression faisait suggérer ~1RM pour des sets de 8-12 reps.
-    function isCalibrationSeed(r){ return (typeof coachIsNonPerformanceSeed==='function')?coachIsNonPerformanceSeed(r):!!(r&&r.planned&&(r.planned.source==='manual_recalibration'||r.planned.source==='manual_charge_override')); }
-    // Même filtre de vraisemblance que guardedSuggestedLoadDecision : sans ça,
-    // une charge invraisemblable (typo de saisie) reste dans l'historique lu
-    // ici et corrompt la moyenne mobile / tendance du moteur Brain V1.16
-    // ci-dessous, même si `base` (guardedSuggestedLoadDecision) l'ignore.
-    function isImplausible(r){ return (typeof coachIsImplausibleLoadRow==='function') && coachIsImplausibleLoadRow(label,r,Number(targetReps)||8); }
-
-    // Meme historique que le moteur principal. Cette couche relisait
-    // l'historique BRUT : un test 300 x 1 @9,5 apres des doubles de vitesse
-    // devenait la base d'un 5 x 3 a RPE 8 et sortait a 305 lb, quand le moteur
-    // proposait 220. Trois filtres, aucun reecrit ici :
-    //  1. nature de contexte — coachFilterHistoryForProgression(), le filtre
-    //     du moteur principal (motif « Nature de contexte differente » de la
-    //     trace). Une ligne admise a poids reduit (repli quand aucune ligne de
-    //     meme nature n'existe) aide le moteur a ne pas etre aveugle ; ici elle
-    //     deviendrait la charge de base brute, donc elle est ecartee ;
-    //  2. jour de test — CoachKalman.isTestContext(), lu sur le format
-    //     (« montee vers 1RM », « 3RM test »). Un test n'est pas une charge de
-    //     travail ;
-    //  3. reps compatibles — au-dela de repGapRatio, la charge brute d'une
-    //     ligne ne dit rien de la charge du jour : elle est projetee par Epley
-    //     vers la cible (sur une COPIE, la ligne stockee n'est jamais touchee).
-    //     Projeter plutot qu'exclure : exclure renvoyait la couche a une ligne
-    //     plus ancienne, donc plus legere que ce que le moteur venait de lire.
-    var V116 = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.brainV116) || {};
-    var tMinDay = Number(ctx && ctx.targetMin) || Number(targetReps) || 8;
-    var tMaxDay = Number(ctx && ctx.targetMax) || Number(targetReps) || tMinDay;
-    function isTestRow(r){
-      var rc = (typeof coachHistoryContext==='function') ? coachHistoryContext(r) : null;
-      var fmt = {format: (rc && rc.format) || (r && r.planned && r.planned.format) || ''};
-      if(window.CoachKalman && typeof CoachKalman.isTestContext==='function') return CoachKalman.isTestContext(fmt);
-      var K = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.kalman) || {};
-      return typeof coachMatchesAnyTuningPattern==='function' && coachMatchesAnyTuningPattern(coachNormalizeMoveText(fmt.format), K.testFormatPatterns);
-    }
-    function repsIncompatible(r){
-      var reps = rowReps(r), ratio = Number(V116.repGapRatio);
-      if(!reps || !(ratio > 0)) return false;
-      var gap = reps < tMinDay ? tMinDay - reps : (reps > tMaxDay ? reps - tMaxDay : 0);
-      return gap > tMaxDay * ratio;
-    }
-    function projectToTarget(r){
-      if(!repsIncompatible(r) || typeof epley1RM!=='function') return r;
-      var reps = rowReps(r), toward = reps < tMinDay ? tMinDay : tMaxDay;
-      var projected = epley1RM(rowLoad(r), reps) / (1 + toward / 30);
-      // Sans charge prescrite : une projection n'a jamais « depasse » une
-      // suggestion qu'elle n'a pas recue (couche 4).
-      return Object.assign({}, r, {load: projected, externalLoad: projected, reps: toward,
-        planned: Object.assign({}, r.planned || {}, {load: null}), __v116ProjectedFrom: rowLoad(r) + ' x ' + reps});
-    }
-    var sameNature = (typeof coachFilterHistoryForProgression==='function') ? coachFilterHistoryForProgression(histAll, ctx) : histAll;
-    var hist = sameNature.filter(function(r){
-      if(typeof coachHistoryWeight==='function' && coachHistoryWeight(r) < 1) return false;
-      return !isDeloadRow(r) && !isCalibrationSeed(r) && !isImplausible(r) && rowLoad(r) > 0 && rowRpe(r) > 0
-        && !isTestRow(r);
-    }).map(projectToTarget);
-    if(!hist.length) return base.loadText;
-
-    // Plafond de capacite : la couche raffine une charge de travail, elle ne
-    // depasse jamais ce que l'e1RM retenu permet pour les reps du jour au RPE
-    // capacityRpe. e1RM retenu = la meilleure des deux lectures : l'ancre de
-    // force du moteur (coachStrengthAnchorOneRm : athlete_state, references,
-    // profil) et les lignes retenues ci-dessus, RIR compte (meme convention
-    // que kalman.js : RIR = 10 - RPE, borne a maxRir). Sans e1RM, pas de
-    // plafond : le comportement d'avant reste intact.
-    function capacityCap(){
-      var K = (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.kalman) || {};
-      var maxRir = Number(K.maxRir) || 4;
-      var capRpe = Number(V116.capacityRpe);
-      if(!(capRpe > 0) || typeof epley1RM!=='function') return null;
-      function rirOf(rpe){ return Math.max(0, Math.min(maxRir, 10 - (Number(rpe) || 10))); }
-      var anchor = (typeof coachStrengthAnchorOneRm==='function') ? coachStrengthAnchorOneRm(label, mv) : null;
-      var e1 = (anchor && anchor.oneRm > 0) ? anchor.oneRm : 0;
-      hist.forEach(function(r){
-        var reps = rowReps(r);
-        if(reps > 0) e1 = Math.max(e1, epley1RM(rowLoad(r), reps + rirOf(rowRpe(r))));
-      });
-      if(!(e1 > 0)) return null;
-      var reps = Math.max(1, Number(targetReps) || tMinDay);
-      var raw = e1 / (1 + (reps + rirOf(capRpe)) / 30);
-      // Arrondi au cran SUPERIEUR du rack : un plafond qu'on ne peut pas
-      // charger gelerait les petites charges (un Goblet Squat a 10 lb n'a pas
-      // de 10,5), sans rien proteger de plus.
-      var up = (typeof roundLoadForExercise==='function') ? roundLoadForExercise(label, raw, 'up') : raw;
-      return {e1RM: e1, load: Math.max(raw, Number(up) || 0), reps: reps, rpe: capRpe};
-    }
-
-    var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, rowLoad(hist[hist.length-1])) : 5;
-    var maxJump = (typeof coachMaxJumpForExercise==='function')  ? coachMaxJumpForExercise(label, rowLoad(hist[hist.length-1]))  : 5;
-
-    // ── Deload calculé en % ───────────────────────────────────────────────────
-    if(isDeload){
-      var lastNormal = hist[hist.length-1];
-      var lastNormalLoad = rowLoad(lastNormal);
-      if(!lastNormalLoad) return base.loadText;
-
-      // Détecter le type de mouvement
-      var deloadPct = 0.80; // principal par défaut (-20%)
-      if(typeof coachIsIsolationMovement==='function' && coachIsIsolationMovement(label)){
-        deloadPct = 0.75; // accessoire (-25%)
-      } else if(ctx && (ctx.primaryIntent === 'technique' || ctx.kind === 'technique')){
-        deloadPct = 0.70; // technique (-30%)
-      }
-      var deloadLoad = lastNormalLoad * deloadPct;
-      var deloadRounded = (typeof roundLoadForExercise==='function')
-        ? roundLoadForExercise(label, deloadLoad, 'nearest', String(lastNormalLoad))
-        : Math.round(deloadLoad / step) * step;
-
-      var deloadPctLabel = Math.round((1-deloadPct)*100) + '%';
-      var reason = 'Deload — réduction de ' + deloadPctLabel + ' vs dernière charge normale (' + lastNormalLoad + ' lb).';
-      if(typeof storeLoadDecisionHint==='function'){
-        storeLoadDecisionHint(label, coachFormatSuggestedLoad(label,deloadRounded,base.loadText,''), reason, 'ok', histAll, ctx, 'brain');
-      }
-      try{
-        if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
-          var dk = coachNormalizeMoveText(label);
-          if(dk && window.__coachLoadHints[dk]){
-            window.__coachLoadHints[dk].load=coachFormatSuggestedLoad(label,deloadRounded,base.loadText,'');
-            window.__coachLoadHints[dk].reason=reason;
-            window.__coachLoadHints[dk].source='brain';
-            if(baseKalman)window.__coachLoadHints[dk].kalman=baseKalman;
-          }
-        }
-      }catch(e){}
-      return coachFormatSuggestedLoad(label,deloadRounded,base.loadText,'');
-    }
-
-    // ── Données des dernières séances normales ────────────────────────────────
-    var last  = hist[hist.length-1];
-    var prev  = hist.length >= 2 ? hist[hist.length-2] : null;
-    var prev2 = hist.length >= 3 ? hist[hist.length-3] : null;
-
-    var lastLoad = rowLoad(last);
-    var lastRpe  = rowRpe(last);
-    var lastReps = rowReps(last);
-    if(!lastLoad || !lastRpe) return base.loadText;
-
-    var tmax = Number(
-      (ctx && ctx.targetMax) ||
-      (last && last.planned && last.planned.targetMax) ||
-      targetReps || 8
-    );
-
-    // ── Couche 1 : Règle RPE → delta de base ─────────────────────────────────
-    var delta = 0;
-    var reason = '';
-
-    if(lastRpe <= 6 && lastReps >= tmax){
-      delta  = Math.round((maxJump * 2) / step) * step;
-      reason = 'RPE ' + lastRpe + ' avec reps au max (' + lastReps + '/' + tmax + ') — hausse majeure.';
-    } else if(lastRpe <= 7){
-      delta  = maxJump;
-      reason = 'RPE ' + lastRpe + ' — progression normale.';
-    } else if(lastRpe <= 8){
-      delta  = Math.round((maxJump * 0.5) / step) * step || step;
-      reason = 'RPE ' + lastRpe + ' — progression prudente.';
-    } else if(lastRpe <= 8.5){
-      delta  = Math.round((maxJump * 0.25) / step) * step || step;
-      reason = 'RPE ' + lastRpe + ' — micro-progression.';
-    } else if(lastRpe < 9){
-      delta  = 0;
-      reason = 'RPE ' + lastRpe + ' — maintien recommandé.';
-    } else {
-      var prevRpe = prev ? rowRpe(prev) : 0;
-      if(prevRpe >= 9){
-        delta  = -(Math.round((maxJump * 0.5) / step) * step || step);
-        reason = 'RPE ≥ 9 deux séances consécutives — réduction recommandée.';
-      } else {
-        delta  = 0;
-        reason = 'RPE ' + lastRpe + ' — maintien, séance difficile isolée.';
+    if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
+      var key = coachNormalizeMoveText(label);
+      if(key && window.__coachLoadHints[key]){
+        window.__coachLoadHints[key].load   = loadText;
+        window.__coachLoadHints[key].reason = reason;
+        window.__coachLoadHints[key].source = 'brain';
+        if(brainStats)window.__coachLoadHints[key].brainStats=brainStats;
+        if(baseKalman)window.__coachLoadHints[key].kalman=baseKalman;
       }
     }
+  }catch(e){}
+}
 
-    // ── Couche 2 : Moyenne mobile — signal de confiance uniquement ───────────
-    // La base reste la dernière charge réelle (lastLoad).
-    // La moyenne sert uniquement à moduler l'agressivité du delta :
-    // si la moyenne est très en retard sur lastLoad → progression rapide → delta réduit.
-    var baseLoad = lastLoad;
-    if(hist.length >= 2){
-      var w1 = 0.50, w2 = 0.30, w3 = 0.20;
-      if(hist.length === 2){ w1 = 0.60; w2 = 0.40; w3 = 0; }
-      var l1 = lastLoad;
-      var l2 = rowLoad(prev) || l1;
-      var l3 = prev2 ? (rowLoad(prev2) || l2) : l2;
-      var movingAvg = (l1*w1) + (l2*w2) + (l3*w3);
-      // Si la moyenne est plus de 10% sous lastLoad → progression rapide → prudence sur le delta
-      var avgGap = lastLoad - movingAvg;
-      var rapidProgressionPenalty = 0;
-      if(avgGap > lastLoad * 0.10 && delta > 0){
-        rapidProgressionPenalty = Math.round((delta * 0.30) / step) * step;
-        delta = Math.max(0, delta - rapidProgressionPenalty);
-        reason += ' [Tendance rapide : +' + Math.round(avgGap) + ' lb sur moy., delta réduit]';
-      }
-    }
+// Retourne le texte de charge final. Rend base.loadText tel quel des que la
+// couche n'a pas a parler. Peut lever : l'appelant retombe sur le moteur.
+function coachBrainV116Refine(base,nameOrKey,targetReps,context){
+  var baseNum = base.loadNum;
+  if(!baseNum || baseNum <= 0) return base.loadText;
 
-    // ── Couche 3 : Tendance récente de progression (≥3 séances) ─────────────
-    // NOTE : ce n'est PAS de la vélocité VBT (vitesse de barre en m/s).
-    // C'est la vitesse de progression de la charge dans le temps.
-    var velocityDelta = 0;
-    if(hist.length >= 3){
-      var v1 = rowLoad(last);
-      var v2 = rowLoad(prev);
-      var v3 = rowLoad(prev2);
-      // Tendance = pente moyenne sur 3 points
-      var rawTrend = ((v1 - v3) / 2);
-      // Plafonner à 1× maxJump
-      velocityDelta = Math.max(-maxJump, Math.min(maxJump, rawTrend));
-      // Pondérer à 30% — ne domine pas les règles RPE
-      velocityDelta = velocityDelta * 0.30;
-    }
+  var label = base.label || nameOrKey;
+  var hintKey = (typeof coachNormalizeMoveText==='function') ? coachNormalizeMoveText(label) : '';
+  var baseHint = (hintKey && window.__coachLoadHints) ? window.__coachLoadHints[hintKey] : null;
+  var baseKalman = (baseHint && baseHint.kalman) ? baseHint.kalman : null;
+  // Instantane des indices tels que le moteur principal les a laisses : le
+  // portail stats ci-dessous re-stocke un indice AVANT le plafond de
+  // capacite. Sans restauration, l'ecran gardait la charge du moteur et le
+  // (!) expliquait celle que le plafond venait de refuser.
+  var hintsBefore = window.__coachLoadHints ? Object.assign({}, window.__coachLoadHints) : null;
+  var mv = (typeof athleteMovementRecord==='function') ? athleteMovementRecord(label) : null;
+  var histAll = (mv && Array.isArray(mv.history)) ? mv.history : [];
+  if(!histAll.length) return base.loadText;
 
-    // ── Couche 4 : Signal de cohérence ───────────────────────────────────────
-    // Si tu dépasses la suggestion 3 séances de suite → recalibrer la base
-    var consistencyBoost = 0;
-    if(hist.length >= 3){
-      var overrides = [last, prev, prev2].filter(function(r){
-        if(!r) return false;
-        var suggested = Number(r.planned && r.planned.load) || 0;
-        return suggested > 0 && rowLoad(r) > suggested * 1.05;
-      });
-      if(overrides.length >= 3){
-        // Recalibrer vers le haut — moyenne des dépassements
-        var avgOverride = overrides.reduce(function(sum,r){
-          return sum + (rowLoad(r) - (Number(r.planned&&r.planned.load)||rowLoad(r)));
-        }, 0) / overrides.length;
-        consistencyBoost = Math.min(avgOverride, maxJump);
-        reason += ' [Recalibrage +' + Math.round(consistencyBoost) + ' lb]';
-      }
-    }
+  var ctx = (context&&context.label)?context:((typeof coachBuildMovementContext==='function')?coachBuildMovementContext(nameOrKey,context||{}):null);
+  var isLimited = (typeof coachIsLimitedProgressionContext==='function') ? coachIsLimitedProgressionContext(ctx) : false;
+  if(isLimited) return base.loadText;
 
-    // ── Calcul final ──────────────────────────────────────────────────────────
-    var rawLoad = baseLoad + delta + velocityDelta + consistencyBoost;
-    // Plancher conditionnel :
-    // - Si delta > 0 (hausse) : jamais sous la dernière charge réelle (sécurité normale)
-    // - Si delta < 0 (baisse justifiée : RPE≥9×2, RPE≥9.5, échec) : la baisse est autorisée
-    //   mais plancher à (lastLoad - 2×maxJump) pour éviter un effondrement brutal
-    if(delta >= 0){
-      rawLoad = Math.max(rawLoad, lastLoad);
-    } else {
-      var minFloor = lastLoad - (maxJump * 2);
-      rawLoad = Math.max(rawLoad, minFloor);
-    }
+  // Brain raffine une progression normale ; il ne doit jamais DEFAIRE un frein.
+  // Quand la pile de regles a deja pose un avertissement (cap
+  // recalibrating/watch, RPE haut repete, echec), sa decision fait foi.
+  // Sans ce garde-fou, un echec total cappe a 175 lb par
+  // guardedSuggestedLoadDecision() ressortait a 220 lb apres la couche Brain —
+  // exactement la charge qui venait d'echouer. Le frein doit survivre au
+  // raffinement.
+  if(base.severity==='warning'||base.severity==='critical') return base.loadText;
 
-    // Arrondir aux poids disponibles
-    var roundedLoad = (typeof roundLoadForExercise==='function')
-      ? roundLoadForExercise(label, rawLoad, 'nearest', String(lastLoad))
-      : Math.round(rawLoad / step) * step;
-    if(!roundedLoad || roundedLoad <= 0) roundedLoad = lastLoad;
+  var isDeload = (typeof coachIsDeloadWeekOrContext==='function') ? coachIsDeloadWeekOrContext(ctx) : false;
+  var tMinDay = Number(ctx && ctx.targetMin) || Number(targetReps) || 8;
+  var tMaxDay = Number(ctx && ctx.targetMax) || Number(targetReps) || tMinDay;
+  var hist = coachV116History(label,histAll,ctx,targetReps,tMinDay,tMaxDay);
+  if(!hist.length) return base.loadText;
 
-    // Charge disponible immédiatement supérieure
-    var nextAvail = (typeof nextLoadForExercise==='function')
-      ? nextLoadForExercise(label, lastLoad, 1, String(lastLoad))
-      : lastLoad + step;
+  var last = hist[hist.length-1];
+  var lastLoad = coachV116RowLoad(last);
+  var step    = (typeof coachLoadStepForExercise==='function') ? coachLoadStepForExercise(label, lastLoad) : 5;
+  var maxJump = (typeof coachMaxJumpForExercise==='function')  ? coachMaxJumpForExercise(label, lastLoad)  : 5;
 
-    // ── Logique reps/poids ────────────────────────────────────────────────────
-    var newLoad = roundedLoad;
-    var newReps = null;
-    var repsSuggestion = '';
-
-    if(delta > 0 && roundedLoad > lastLoad && roundedLoad < nextAvail){
-      var repThreshold = tmax + 3;
-      var currentReps  = lastReps || tmax;
-      if(currentReps < repThreshold){
-        newLoad        = lastLoad;
-        newReps        = currentReps + 1;
-        repsSuggestion = ' × ' + newReps + ' reps';
-        reason         = 'RPE ' + lastRpe + ' — progression en reps (' + newReps + '/' + repThreshold + ' avant passage à ' + nextAvail + ' lb).';
-      } else {
-        newLoad = nextAvail;
-        reason  = 'RPE ' + lastRpe + ' — seuil reps atteint, passage à ' + nextAvail + ' lb.';
-      }
-    }
-
-    // Plafond : jamais plus de 2× maxJump au-dessus de la dernière charge réelle
-    newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
-
-    var safeDecision={label:label,loadNum:newLoad,loadText:coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion),severity:(delta<0?'watch':'ok'),reason:reason};
-    if(typeof coachBrainApplyStatsGate==='function' && newLoad>lastLoad && (safeDecision.severity==='ok') && !isDeload){
-      // Fix : on passait histAll (brut, deload + seeds de calibrage inclus) au
-      // gate de validations. `hist` (defini plus haut, ligne ~545) exclut deja
-      // ces lignes pour le reste du moteur ; le gate doit voir le meme historique,
-      // sinon un deload recent peut casser le compteur de validations et
-      // redemander 2-3 confirmations sur une charge deja maitrisee.
-      // Plancher : la decision du moteur profond, qui a deja applique tout
-      // l'echelon RPE. La couche V1.16 peut amortir son propre supplement
-      // d'ambition, pas defaire ce que l'evidence de l'athlete a etabli.
-      safeDecision=coachBrainApplyStatsGate(safeDecision,label,hist,ctx,targetReps,lastLoad,baseNum);
-      newLoad=safeDecision.loadNum;
-      reason=safeDecision.reason;
-      repsSuggestion='';
-      safeDecision.loadText=coachFormatSuggestedLoad(label,newLoad,base.loadText,'');
-    }
-
-    // Au-dessus du plafond de capacite, la decision du moteur principal fait
-    // foi — et le (!) le dit, sans rien recalculer d'autre.
-    var cap = (newLoad > baseNum) ? capacityCap() : null;
-    if(cap && newLoad > cap.load){
-      try{
-        if(hintsBefore){
-          window.__coachLoadHints = hintsBefore;
-          if(baseHint && baseHint.load === base.loadText){
-            var capHint = Object.assign({}, baseHint, {reason: String(baseHint.reason || base.reason || '')
-              + ' Couche Brain V1.16 ecartee : ' + newLoad + ' lb depasserait la capacite estimee (e1RM '
-              + Math.round(cap.e1RM) + ' lb → ' + cap.load + ' lb max pour ' + cap.reps
-              + ' reps @RPE ' + cap.rpe + ').'});
-            Object.keys(hintsBefore).forEach(function(k){ if(hintsBefore[k] === baseHint) hintsBefore[k] = capHint; });
-          }
-        }
-      }catch(e){}
-      return base.loadText;
-    }
-
-    if(newLoad === baseNum && !newReps && !(safeDecision&&safeDecision.brainStats)) return base.loadText;
-
-    var hintLoad = safeDecision.loadText || coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion);
-    var explicitSource = (safeDecision&&safeDecision.brainStats) || newLoad!==baseNum || newReps ? 'brain' : 'moteur';
+  // ── Deload calcule en % de la derniere charge normale ─────────────────────
+  if(isDeload){
+    if(!lastLoad) return base.loadText;
+    var deloadPct = coachV116DeloadPct(label,ctx);
+    var deloadRounded = (typeof roundLoadForExercise==='function')
+      ? roundLoadForExercise(label, lastLoad * deloadPct, 'nearest', String(lastLoad))
+      : Math.round((lastLoad * deloadPct) / step) * step;
+    var deloadText = coachFormatSuggestedLoad(label,deloadRounded,base.loadText,'');
+    var deloadReason = 'Deload — réduction de ' + Math.round((1-deloadPct)*100) + '% vs dernière charge normale (' + lastLoad + ' lb).';
     if(typeof storeLoadDecisionHint==='function'){
-      storeLoadDecisionHint(label, hintLoad, reason, safeDecision.severity || (delta < 0 ? 'watch' : 'ok'), histAll, ctx, explicitSource);
+      storeLoadDecisionHint(label, deloadText, deloadReason, 'ok', histAll, ctx, 'brain');
     }
+    coachV116WriteHint(label,deloadText,deloadReason,null,baseKalman);
+    return deloadText;
+  }
+
+  var prev = hist.length >= 2 ? hist[hist.length-2] : null;
+  var lastRpe  = coachV116RowRpe(last);
+  var lastReps = coachV116RowReps(last);
+  if(!lastLoad || !lastRpe) return base.loadText;
+
+  var tmax = Number(
+    (ctx && ctx.targetMax) ||
+    (last && last.planned && last.planned.targetMax) ||
+    targetReps || 8
+  );
+
+  // ── Couches 1 a 4 ─────────────────────────────────────────────────────────
+  var d = coachV116RpeDelta(lastRpe,lastReps,tmax,prev ? coachV116RowRpe(prev) : 0,maxJump,step);
+  d = coachV116RapidProgressionPenalty(d,coachV116MovingAverageGap(hist),lastLoad,step);
+  var delta = d.delta, reason = d.reason;
+  var trendDelta = coachV116TrendDelta(hist,maxJump);
+  var boost = coachV116ConsistencyBoost(hist,maxJump);
+  if(boost !== null) reason += ' [Recalibrage +' + Math.round(boost) + ' lb]';
+  var rawLoad = coachV116RawLoad(lastLoad,delta,trendDelta,boost || 0,maxJump);
+
+  // Arrondir aux poids disponibles
+  var roundedLoad = (typeof roundLoadForExercise==='function')
+    ? roundLoadForExercise(label, rawLoad, 'nearest', String(lastLoad))
+    : Math.round(rawLoad / step) * step;
+  if(!roundedLoad || roundedLoad <= 0) roundedLoad = lastLoad;
+
+  // Charge disponible immediatement superieure
+  var nextAvail = (typeof nextLoadForExercise==='function')
+    ? nextLoadForExercise(label, lastLoad, 1, String(lastLoad))
+    : lastLoad + step;
+
+  // ── Reps ou poids : une hausse plus petite que le prochain cran du rack
+  // se prend d'abord en reps, puis passe au cran une fois le seuil atteint.
+  var newLoad = roundedLoad;
+  var newReps = null;
+  var repsSuggestion = '';
+  if(delta > 0 && roundedLoad > lastLoad && roundedLoad < nextAvail){
+    var repThreshold = tmax + 3;
+    var currentReps  = lastReps || tmax;
+    if(currentReps < repThreshold){
+      newLoad        = lastLoad;
+      newReps        = currentReps + 1;
+      repsSuggestion = ' × ' + newReps + ' reps';
+      reason         = 'RPE ' + lastRpe + ' — progression en reps (' + newReps + '/' + repThreshold + ' avant passage à ' + nextAvail + ' lb).';
+    } else {
+      newLoad = nextAvail;
+      reason  = 'RPE ' + lastRpe + ' — seuil reps atteint, passage à ' + nextAvail + ' lb.';
+    }
+  }
+
+  // Plafond : jamais plus de 2x maxJump au-dessus de la derniere charge reelle
+  newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
+
+  var safeDecision={label:label,loadNum:newLoad,loadText:coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion),severity:(delta<0?'watch':'ok'),reason:reason};
+  if(typeof coachBrainApplyStatsGate==='function' && newLoad>lastLoad && (safeDecision.severity==='ok') && !isDeload){
+    // Le portail de validations voit `hist` (sans deload ni seeds de
+    // calibrage), comme le reste de la couche : sinon un deload recent casse
+    // le compteur et redemande 2-3 confirmations sur une charge maitrisee.
+    // Plancher : la decision du moteur profond, qui a deja applique tout
+    // l'echelon RPE. La couche V1.16 peut amortir son propre supplement
+    // d'ambition, pas defaire ce que l'evidence de l'athlete a etabli.
+    safeDecision=coachBrainApplyStatsGate(safeDecision,label,hist,ctx,targetReps,lastLoad,baseNum);
+    newLoad=safeDecision.loadNum;
+    reason=safeDecision.reason;
+    repsSuggestion='';
+    safeDecision.loadText=coachFormatSuggestedLoad(label,newLoad,base.loadText,'');
+  }
+
+  // Au-dessus du plafond de capacite, la decision du moteur principal fait
+  // foi — et le (!) le dit, sans rien recalculer d'autre.
+  var cap = (newLoad > baseNum) ? coachV116CapacityCap(label,mv,hist,targetReps,tMinDay) : null;
+  if(cap && newLoad > cap.load){
     try{
-      if(window.__coachLoadHints && typeof coachNormalizeMoveText==='function'){
-        var normKey = coachNormalizeMoveText(label);
-        if(normKey && window.__coachLoadHints[normKey]){
-          window.__coachLoadHints[normKey].load   = hintLoad;
-          window.__coachLoadHints[normKey].reason = reason;
-          window.__coachLoadHints[normKey].source = 'brain';
-          if(safeDecision.brainStats)window.__coachLoadHints[normKey].brainStats=safeDecision.brainStats;
-          if(baseKalman)window.__coachLoadHints[normKey].kalman=baseKalman;
+      if(hintsBefore){
+        window.__coachLoadHints = hintsBefore;
+        if(baseHint && baseHint.load === base.loadText){
+          var capHint = Object.assign({}, baseHint, {reason: String(baseHint.reason || base.reason || '')
+            + ' Couche Brain V1.16 ecartee : ' + newLoad + ' lb depasserait la capacite estimee (e1RM '
+            + Math.round(cap.e1RM) + ' lb → ' + cap.load + ' lb max pour ' + cap.reps
+            + ' reps @RPE ' + cap.rpe + ').'});
+          Object.keys(hintsBefore).forEach(function(k){ if(hintsBefore[k] === baseHint) hintsBefore[k] = capHint; });
         }
       }
     }catch(e){}
+    return base.loadText;
+  }
 
-    return safeDecision.loadText || coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion);
+  if(newLoad === baseNum && !newReps && !(safeDecision&&safeDecision.brainStats)) return base.loadText;
 
+  var hintLoad = safeDecision.loadText || coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion);
+  var explicitSource = (safeDecision&&safeDecision.brainStats) || newLoad!==baseNum || newReps ? 'brain' : 'moteur';
+  if(typeof storeLoadDecisionHint==='function'){
+    storeLoadDecisionHint(label, hintLoad, reason, safeDecision.severity || (delta < 0 ? 'watch' : 'ok'), histAll, ctx, explicitSource);
+  }
+  coachV116WriteHint(label,hintLoad,reason,safeDecision.brainStats,baseKalman);
+  return hintLoad;
+}
+
+window.coachSafeSuggestedLoad=function(nameOrKey,currentLoad,targetReps,context){
+  var base = guardedSuggestedLoadDecision(nameOrKey,currentLoad,targetReps,context);
+  try{
+    return coachBrainV116Refine(base,nameOrKey,targetReps,context);
   }catch(e){ /* silencieux — fallback moteur */ }
-
   return base.loadText;
 };
 
