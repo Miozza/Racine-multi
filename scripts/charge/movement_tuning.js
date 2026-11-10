@@ -379,7 +379,45 @@
       // atterrit pres de RPE 9. Un plafond au RPE cible gelerait toute
       // progression normale ; celui-ci arrete ce qui n'a rien d'une serie de
       // travail (5 x 3 a 98 % de l'e1RM).
-      capacityRpe: 9
+      capacityRpe: 9,
+      // ── Reglages des etapes de la couche (coachV116* dans suggestion.js) ──
+      // Deplaces ici tels quels depuis le code : memes valeurs, memes charges.
+      // Sans `rpeDelta`, la couche se tait et la decision du moteur fait foi.
+      //
+      // Couche 1 — RPE de la derniere serie → part du saut max du mouvement.
+      // Un palier s'applique jusqu'a son RPE inclus. Le palier « majeur »
+      // exige en plus les reps au max de la fourchette. Entre `microMaxRpe`
+      // et `holdBelowRpe` : maintien. A `repeatHighRpe` ou plus deux seances
+      // de suite : baisse de `repeatDropJumps`. Un RPE haut isole : maintien.
+      rpeDelta: {
+        majorMaxRpe: 6,     majorJumps: 2,
+        normalMaxRpe: 7,    normalJumps: 1,
+        prudentMaxRpe: 8,   prudentJumps: 0.5,
+        microMaxRpe: 8.5,   microJumps: 0.25,
+        holdBelowRpe: 9,
+        repeatHighRpe: 9,   repeatDropJumps: 0.5
+      },
+      // Couche 2 — moyenne mobile ponderee des 3 (ou 2) dernieres charges,
+      // la plus recente d'abord. Derniere charge au-dessus de la moyenne de
+      // plus de `rapidGapRatio` : la hausse est reduite de `rapidPenalty`.
+      movingAverageWeights3: [0.50, 0.30, 0.20],
+      movingAverageWeights2: [0.60, 0.40, 0],
+      rapidGapRatio: 0.10,
+      rapidPenalty: 0.30,
+      // Couche 3 — pente sur 3 seances, bornee a `trendMaxJumps` x saut max,
+      // puis ponderee : elle ne domine jamais l'echelon RPE.
+      trendMaxJumps: 1,
+      trendWeight: 0.30,
+      // Couche 4 — suggestion depassee de plus de 5 % trois fois de suite.
+      overrideRatio: 1.05,
+      // Bornes autour de la derniere charge reelle, en sauts max.
+      maxRiseJumps: 2,
+      maxDropJumps: 2,
+      // Hausse plus petite que le prochain cran du rack : elle se prend en
+      // reps, jusqu'a `repsBeforeNextLoad` au-dessus du haut de la fourchette.
+      repsBeforeNextLoad: 3,
+      // Part de la derniere charge normale gardee en semaine de deload.
+      deloadPct: { main: 0.80, isolation: 0.75, technique: 0.70 }
     },
     // scripts/charge/kalman.js — capacite estimee (e1RM) avec son incertitude.
     //

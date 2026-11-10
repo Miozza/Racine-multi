@@ -200,6 +200,22 @@ function single(C){
   assert(C.coachV116RawLoad(200, -5, -30, 0, 10) === 180, 'Somme : une baisse ne descend pas de plus de 2x le saut.');
 }
 
+// ─── Les seuils vivent dans la table, pas dans le code ─────────────────────
+{
+  const C = engine();
+  const R = C.COACH_MOVEMENT_TUNING.brainV116.rpeDelta;
+  assert(R && R.prudentMaxRpe === 8 && R.prudentJumps === 0.5, 'Table : brainV116.rpeDelta porte les paliers RPE de la couche.');
+  R.prudentJumps = 1;
+  assert(C.coachV116RpeDelta(8, 8, 8, 0, 10, 5).delta === 10, 'Table : changer un palier dans movement_tuning.js change le delta.');
+  R.prudentJumps = 0.5;
+  const src = read('scripts/charge/suggestion.js');
+  const body = src.slice(src.indexOf('function coachV116RpeDelta'), src.indexOf('function coachV116MovingAverageGap'));
+  assert(!/lastRpe\s*<=?\s*\d/.test(body), 'Code : aucun seuil RPE chiffre en dur dans coachV116RpeDelta.');
+  delete C.COACH_MOVEMENT_TUNING.brainV116.rpeDelta;
+  const base = {loadNum: 200, loadText: '200 lb', label: 'Back Squat', severity: 'ok'};
+  assert(C.coachBrainV116Refine(base, 'Back Squat', 8, {}) === '200 lb', 'Table absente : la couche se tait, le moteur fait foi.');
+}
+
 notes.forEach(n => console.log('  ok  ' + n));
 if(errors.length){
   errors.forEach(e => console.error('  ECHEC  ' + e));

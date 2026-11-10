@@ -103,7 +103,8 @@ function athleteSuggestedLoad(nameOrKey, currentLoad, targetReps, context){
 //  Couche 2 : moyenne mobile — signal de prudence (la base reste lastLoad)
 //  Couche 3 : tendance recente de progression (>=3 seances — pas de la velocite VBT)
 //  Couche 4 : signal de coherence (recalibrage si depassement systematique)
-//  Deload   : -20% principal / -25% accessoire / -30% technique
+//  Deload   : part de la derniere charge normale, selon le type de mouvement
+//  Tous les seuils : COACH_MOVEMENT_TUNING.brainV116 (movement_tuning.js).
 //  Contexte technique/wod/light = ignore
 function coachV116Tuning(){ return (window.COACH_MOVEMENT_TUNING && window.COACH_MOVEMENT_TUNING.brainV116) || {}; }
 function coachV116RowLoad(r){ return Number(r && (r.load || r.externalLoad)) || 0; }
@@ -196,20 +197,23 @@ function coachV116CapacityCap(label,mv,hist,targetReps,tMinDay){
 
 // Part de la derniere charge normale gardee en deload.
 function coachV116DeloadPct(label,ctx){
-  if(typeof coachIsIsolationMovement==='function' && coachIsIsolationMovement(label)) return 0.75; // accessoire (-25%)
-  if(ctx && (ctx.primaryIntent === 'technique' || ctx.kind === 'technique')) return 0.70;          // technique (-30%)
-  return 0.80;                                                                                      // principal (-20%)
+  var P = coachV116Tuning().deloadPct || {};
+  if(typeof coachIsIsolationMovement==='function' && coachIsIsolationMovement(label)) return P.isolation; // accessoire
+  if(ctx && (ctx.primaryIntent === 'technique' || ctx.kind === 'technique')) return P.technique;
+  return P.main;
 }
 
-// Couche 1 : RPE de la derniere serie → delta de base.
+// Couche 1 : RPE de la derniere serie → delta de base. Paliers et parts du
+// saut max : COACH_MOVEMENT_TUNING.brainV116.rpeDelta (movement_tuning.js).
 function coachV116RpeDelta(lastRpe,lastReps,tmax,prevRpe,maxJump,step){
-  if(lastRpe <= 6 && lastReps >= tmax) return {delta: Math.round((maxJump * 2) / step) * step,
+  var R = coachV116Tuning().rpeDelta || {};
+  if(lastRpe <= R.majorMaxRpe && lastReps >= tmax) return {delta: Math.round((maxJump * R.majorJumps) / step) * step,
     reason: 'RPE ' + lastRpe + ' avec reps au max (' + lastReps + '/' + tmax + ') — hausse majeure.'};
-  if(lastRpe <= 7)   return {delta: maxJump, reason: 'RPE ' + lastRpe + ' — progression normale.'};
-  if(lastRpe <= 8)   return {delta: Math.round((maxJump * 0.5) / step) * step || step, reason: 'RPE ' + lastRpe + ' — progression prudente.'};
-  if(lastRpe <= 8.5) return {delta: Math.round((maxJump * 0.25) / step) * step || step, reason: 'RPE ' + lastRpe + ' — micro-progression.'};
-  if(lastRpe < 9)    return {delta: 0, reason: 'RPE ' + lastRpe + ' — maintien recommandé.'};
-  if(prevRpe >= 9)   return {delta: -(Math.round((maxJump * 0.5) / step) * step || step), reason: 'RPE ≥ 9 deux séances consécutives — réduction recommandée.'};
+  if(lastRpe <= R.normalMaxRpe)  return {delta: maxJump * R.normalJumps, reason: 'RPE ' + lastRpe + ' — progression normale.'};
+  if(lastRpe <= R.prudentMaxRpe) return {delta: Math.round((maxJump * R.prudentJumps) / step) * step || step, reason: 'RPE ' + lastRpe + ' — progression prudente.'};
+  if(lastRpe <= R.microMaxRpe)   return {delta: Math.round((maxJump * R.microJumps) / step) * step || step, reason: 'RPE ' + lastRpe + ' — micro-progression.'};
+  if(lastRpe < R.holdBelowRpe)   return {delta: 0, reason: 'RPE ' + lastRpe + ' — maintien recommandé.'};
+  if(prevRpe >= R.repeatHighRpe) return {delta: -(Math.round((maxJump * R.repeatDropJumps) / step) * step || step), reason: 'RPE ≥ ' + R.repeatHighRpe + ' deux séances consécutives — réduction recommandée.'};
   return {delta: 0, reason: 'RPE ' + lastRpe + ' — maintien, séance difficile isolée.'};
 }
 
@@ -218,39 +222,44 @@ function coachV116RpeDelta(lastRpe,lastReps,tmax,prevRpe,maxJump,step){
 // uniquement a moderer le delta quand la progression a ete rapide.
 function coachV116MovingAverageGap(hist){
   if(hist.length < 2) return 0;
-  var w1 = 0.50, w2 = 0.30, w3 = 0.20;
-  if(hist.length === 2){ w1 = 0.60; w2 = 0.40; w3 = 0; }
+  var T = coachV116Tuning();
+  var w = (hist.length === 2 ? T.movingAverageWeights2 : T.movingAverageWeights3) || [];
+  var w1 = w[0], w2 = w[1], w3 = w[2];
   var prev2 = hist.length >= 3 ? hist[hist.length-3] : null;
   var l1 = coachV116RowLoad(hist[hist.length-1]);
   var l2 = coachV116RowLoad(hist[hist.length-2]) || l1;
   var l3 = prev2 ? (coachV116RowLoad(prev2) || l2) : l2;
   return l1 - ((l1*w1) + (l2*w2) + (l3*w3));
 }
-// Moyenne plus de 10% sous la derniere charge → progression rapide → delta reduit de 30%.
+// Moyenne trop loin sous la derniere charge (rapidGapRatio) → progression
+// rapide → hausse reduite (rapidPenalty).
 function coachV116RapidProgressionPenalty(d,avgGap,lastLoad,step){
-  if(!(avgGap > lastLoad * 0.10 && d.delta > 0)) return d;
-  var penalty = Math.round((d.delta * 0.30) / step) * step;
+  var T = coachV116Tuning();
+  if(!(avgGap > lastLoad * T.rapidGapRatio && d.delta > 0)) return d;
+  var penalty = Math.round((d.delta * T.rapidPenalty) / step) * step;
   return {delta: Math.max(0, d.delta - penalty),
     reason: d.reason + ' [Tendance rapide : +' + Math.round(avgGap) + ' lb sur moy., delta réduit]'};
 }
 
-// Couche 3 : pente moyenne de la charge sur 3 seances, plafonnee a 1x
-// maxJump et ponderee a 30% — elle ne domine pas les regles RPE.
+// Couche 3 : pente moyenne de la charge sur 3 seances, plafonnee
+// (trendMaxJumps) et ponderee (trendWeight) — elle ne domine pas les regles RPE.
 function coachV116TrendDelta(hist,maxJump){
   if(hist.length < 3) return 0;
   var rawTrend = (coachV116RowLoad(hist[hist.length-1]) - coachV116RowLoad(hist[hist.length-3])) / 2;
-  return Math.max(-maxJump, Math.min(maxJump, rawTrend)) * 0.30;
+  var T = coachV116Tuning(), bound = maxJump * T.trendMaxJumps;
+  return Math.max(-bound, Math.min(bound, rawTrend)) * T.trendWeight;
 }
 
-// Couche 4 : la suggestion depassee de plus de 5% trois seances de suite →
+// Couche 4 : la suggestion depassee (overrideRatio) trois seances de suite →
 // recalibrage vers le haut (moyenne des depassements, bornee a maxJump).
 // Retourne null quand le signal n'existe pas.
 function coachV116ConsistencyBoost(hist,maxJump){
   if(hist.length < 3) return null;
+  var ratio = coachV116Tuning().overrideRatio;
   var overrides = [hist[hist.length-1], hist[hist.length-2], hist[hist.length-3]].filter(function(r){
     if(!r) return false;
     var suggested = Number(r.planned && r.planned.load) || 0;
-    return suggested > 0 && coachV116RowLoad(r) > suggested * 1.05;
+    return suggested > 0 && coachV116RowLoad(r) > suggested * ratio;
   });
   if(overrides.length < 3) return null;
   var avgOverride = overrides.reduce(function(sum,r){
@@ -261,11 +270,11 @@ function coachV116ConsistencyBoost(hist,maxJump){
 
 // Plancher conditionnel de la somme des couches :
 // - delta >= 0 (hausse ou maintien) : jamais sous la derniere charge reelle ;
-// - delta < 0 (baisse justifiee) : autorisee, mais pas plus de 2x maxJump
-//   sous la derniere charge, pour eviter un effondrement brutal.
+// - delta < 0 (baisse justifiee) : autorisee, mais pas plus de maxDropJumps
+//   sauts sous la derniere charge, pour eviter un effondrement brutal.
 function coachV116RawLoad(lastLoad,delta,trendDelta,boost,maxJump){
   var rawLoad = lastLoad + delta + trendDelta + boost;
-  return Math.max(rawLoad, delta >= 0 ? lastLoad : lastLoad - (maxJump * 2));
+  return Math.max(rawLoad, delta >= 0 ? lastLoad : lastLoad - (maxJump * coachV116Tuning().maxDropJumps));
 }
 
 // Re-ecrit l'indice du (!) avec la decision de la couche. La capacite
@@ -292,6 +301,9 @@ function coachV116WriteHint(label,loadText,reason,brainStats,baseKalman){
 function coachBrainV116Refine(base,nameOrKey,targetReps,context){
   var baseNum = base.loadNum;
   if(!baseNum || baseNum <= 0) return base.loadText;
+  // Sans sa table de reglages, la couche se tait : le moteur fait foi.
+  var T = coachV116Tuning();
+  if(!T.rpeDelta) return base.loadText;
 
   var label = base.label || nameOrKey;
   var hintKey = (typeof coachNormalizeMoveText==='function') ? coachNormalizeMoveText(label) : '';
@@ -383,7 +395,7 @@ function coachBrainV116Refine(base,nameOrKey,targetReps,context){
   var newReps = null;
   var repsSuggestion = '';
   if(delta > 0 && roundedLoad > lastLoad && roundedLoad < nextAvail){
-    var repThreshold = tmax + 3;
+    var repThreshold = tmax + T.repsBeforeNextLoad;
     var currentReps  = lastReps || tmax;
     if(currentReps < repThreshold){
       newLoad        = lastLoad;
@@ -396,8 +408,8 @@ function coachBrainV116Refine(base,nameOrKey,targetReps,context){
     }
   }
 
-  // Plafond : jamais plus de 2x maxJump au-dessus de la derniere charge reelle
-  newLoad = Math.min(newLoad, lastLoad + maxJump * 2);
+  // Plafond : jamais plus de maxRiseJumps sauts au-dessus de la derniere charge reelle
+  newLoad = Math.min(newLoad, lastLoad + maxJump * T.maxRiseJumps);
 
   var safeDecision={label:label,loadNum:newLoad,loadText:coachFormatSuggestedLoad(label,newLoad,base.loadText,repsSuggestion),severity:(delta<0?'watch':'ok'),reason:reason};
   if(typeof coachBrainApplyStatsGate==='function' && newLoad>lastLoad && (safeDecision.severity==='ok') && !isDeload){
