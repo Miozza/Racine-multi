@@ -199,7 +199,7 @@ O.reset();
 // C'est la condition qui rend cette surcharge possible sans toucher aux
 // fichiers de decision : si un module capturait COACH_MOVEMENT_TUNING dans une
 // variable au chargement, sa copie ne verrait jamais la calibration.
-['scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js','scripts/charge/historique.js','scripts/charge/scaling.js',
+['scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js','scripts/charge/historique.js','scripts/charge/scaling.js',
  'scripts/charge/brain_stats.js','scripts/charge/mouvements.js'].forEach(file => {
   const src = read(file);
   // Depuis le decoupage de suggestion.js (V5.4.1), un fichier du moteur peut

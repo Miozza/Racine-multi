@@ -78,7 +78,7 @@ function loadChargeEngine(){
     'scripts/charge/brain_stats.js',
     'scripts/charge/brain_memory.js',
     'scripts/charge/brain_journal.js',
-    'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'
+    'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'
   ].forEach(file => vm.runInNewContext(read(file), context, {filename:file}));
   return context;
 }
@@ -401,7 +401,7 @@ try{
     assert(/× 11 reps/.test(engine.coachFormatSuggestedLoad('Incline DB Press',40,'35 lb / main',' × 11 reps')), 'Le formatteur conserve la suggestion de reps.');
     assert(/⚠/.test(engine.coachFormatSuggestedLoad('Incline DB Press',40,'35 lb / main ⚠','')), 'Le formatteur conserve les avertissements.');
   }
-  const suggestionSource = ['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n');
+  const suggestionSource = ['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n');
   assert(!/return String\((?:newLoad|deloadRounded)\)/.test(suggestionSource), 'Aucun chemin Brain ne retourne un nombre nu.');
   assert(!/loadText\s*:\s*String\(newLoad\)/.test(suggestionSource), 'Les décisions Brain utilisent le formatteur final.');
 }catch(error){

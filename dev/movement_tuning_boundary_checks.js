@@ -22,7 +22,7 @@ const watchedFiles = [
   'scripts/charge/suggestion_rpe.js',
   'scripts/charge/suggestion_references.js',
   'scripts/charge/suggestion_context.js',
-  'scripts/charge/suggestion_rules.js',
+  'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js',
   'scripts/charge/suggestion_state.js',
   'scripts/charge/suggestion.js',
   'scripts/charge/historique.js'

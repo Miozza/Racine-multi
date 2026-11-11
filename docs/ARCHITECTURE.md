@@ -87,12 +87,14 @@ Fichiers du domaine :
 - `historique.js` : historique et signaux du moteur de charges.
 - `rpe.js` : interprétation RPE et progression.
 - `scaling.js` : mise à l’échelle des charges par profil utilisateur (ratios, agressivité).
-- `suggestion.js` : moteur de suggestions de charges — ordre des règles (`guardedSuggestedLoadDecision`) et portes `coachSafeSuggestedLoad` / `coachSuggestForExercise`. Ses couches vivent à côté, chargées avant lui :
+- `suggestion.js` : moteur de suggestions de charges — ordre des règles (`guardedSuggestedLoadDecision`) et portes `coachSafeSuggestedLoad` / `coachSuggestForExercise`, et couche Brain V1.16 en étapes `coachV116*` (seuils dans `COACH_MOVEMENT_TUNING.brainV116`). Où ajouter quoi : `STRUCTURE_CONTRACT.md` § « Où va quoi dans le moteur ». Ses couches vivent à côté, chargées avant lui :
   - `suggestion_deload.js` : détection et plafond de deload.
   - `suggestion_rpe.js` : échelle de progression RPE, pas de charge, freins RPE.
   - `suggestion_references.js` : format de la charge, lignes implausibles, références de travail.
   - `suggestion_context.js` : `coachBuildSuggestionContext`.
-  - `suggestion_rules.js` : les règles `coachRule*` et la finalisation.
+  - `suggestion_rules.js` : les règles `coachRule*` de base et la finalisation.
+  - `suggestion_rules_reps.js` : signal et règles de l'écart de reps.
+  - `suggestion_rules_speed.js` : ancre de force et règle du bloc vitesse.
   - `suggestion_state.js` : classement des résultats et mise à jour d'`athlete_state`.
 - `ml_refinement.js` : CoachML, collecte silencieuse pour raffinement.
 - `movement_profiles.js` : profils de mouvements (famille, sensibilité, vocabulaire Brain Explain).

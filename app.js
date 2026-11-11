@@ -1,5 +1,5 @@
-// Racine V5.4.1 — moteur de charges : suggestion.js découpé par couche, logique inchangée
-var APP_VERSION = "V5.4.1";
+// Racine V5.4.2 — moteur de charges : règles en trois fichiers, plafonds de taille
+var APP_VERSION = "V5.4.2";
 
 // Architecture stable
 // programs/*.js = plan prévu
