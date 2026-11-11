@@ -132,7 +132,7 @@ function gh2Blocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.general_hypertrophy_2d.getBlocks = function(day, week){
-  return gh2Blocks(day, week);
+  return window.RacineWod.fillLegacy(gh2Blocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.general_hypertrophy_2d.getWodText = function(day, week){

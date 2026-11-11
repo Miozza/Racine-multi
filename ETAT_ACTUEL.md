@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.2
+# ETAT ACTUEL — V5.4.3
 
-Version actuelle : V5.4.2
+Version actuelle : V5.4.3
 
 ## État courant
+
+### Metcons — tous structurés, dans tous les programmes
+
+Coach IA peut maintenant modifier le metcon de n'importe quel programme. Les 32 programmes restés en phrases (catalogue client, CrossFit, Épaules 3D, Hypertrophie, Force, Posture, Strict Muscle-Up personnel…) sont lus par `RacineWod.parse()` : la phrase reste écrite telle quelle dans le programme, sa structure en est tirée, et le texte affiché lui est identique au caractère près. Sur 287 phrases distinctes, 277 donnent des mouvements modifiables ; les 10 autres (consignes sans mouvement net) gardent leur texte et, quand elle est écrite, leur durée réglable. Aucune charge n'est devinée : seule une charge déjà écrite est lue.
 
 ### Moteur de charges — découpage terminé, plafonds de taille
 
@@ -41,8 +45,8 @@ changent pas.
 - **Convertis** : Moteur + jambes, Pont Peak, Phase 2 — Fable 5, Épaules 3D v2,
   Retour au travail, Réhabilitation (Stéphanie), Compétition Peak, semaines de
   transition (Deload, Tests). Jambes du coureur (Maxence) n'a pas de metcon.
-  Les autres programmes restent en texte (`TEXT_LEGACY`, qui ne fait que
-  rétrécir) ; tout nouveau programme est structuré. Programme de Christian : à
+  Les autres programmes, écrits en phrases, sont lus par `RacineWod.parse()`
+  (voir plus haut) ; tout nouveau programme est structuré. Programme de Christian : à
   convertir quand il sera nommé.
 - **Coach IA** : `proposer_metcon` change format, durée, reps/calories,
   consigne, remplace / ajoute / retire un mouvement — jamais une charge (charge

@@ -243,7 +243,7 @@ function forcePerformanceBlocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.force_performance.getBlocks = function(day, week){
-  return forcePerformanceBlocks(day, week);
+  return window.RacineWod.fillLegacy(forcePerformanceBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.force_performance.getWodText = function(day, week){

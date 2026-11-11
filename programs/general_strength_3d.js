@@ -140,7 +140,7 @@ function gsBlocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.general_strength_3d.getBlocks = function(day, week){
-  return gsBlocks(day, week);
+  return window.RacineWod.fillLegacy(gsBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.general_strength_3d.getWodText = function(day, week){

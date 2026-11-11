@@ -155,7 +155,7 @@ function gfBlocks(day, week){
 }
 
 window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse.getBlocks = function(day, week){
-  return gfBlocks(day, week);
+  return window.RacineWod.fillLegacy(gfBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse.getWodText = function(day, week){

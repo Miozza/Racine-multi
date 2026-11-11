@@ -201,7 +201,7 @@ function postureBlocks(day, week){
 }
 
 window.COACH_BERTIN_PROGRAMS.posture.getBlocks = function(day, week){
-  return postureBlocks(day, week);
+  return window.RacineWod.fillLegacy(postureBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.posture.getWodText = function(day, week){

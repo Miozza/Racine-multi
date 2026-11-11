@@ -205,7 +205,7 @@ function hypertrophyBlocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.hypertrophy_base.getBlocks = function(day, week){
-  return hypertrophyBlocks(day, week);
+  return window.RacineWod.fillLegacy(hypertrophyBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.hypertrophy_base.getWodText = function(day, week){

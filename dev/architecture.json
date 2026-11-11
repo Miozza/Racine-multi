@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 337632,
-      "lines": 2298,
+      "size": 355924,
+      "lines": 2410,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 54277,
-      "lines": 735,
+      "size": 59635,
+      "lines": 791,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -108,7 +108,7 @@
     },
     {
       "path": "README.md",
-      "size": 9041,
+      "size": 9040,
       "lines": 134,
       "role": "Présentation + version courante (contrôlée par structure_checks).",
       "category": "ACTIF",
@@ -140,8 +140,8 @@
     },
     {
       "path": "app.js",
-      "size": 171619,
-      "lines": 3331,
+      "size": 174527,
+      "lines": 3384,
       "role": "Orchestrateur applicatif (~2525 lignes). Détient l'état runtime (state), choisit la vue active, calcule cycle/semaine/jour, et appelle les API publiques window.Coach*. Contient les trois fonctions gelées de scoping par semaine et APP_VERSION. Enregistre le service worker.",
       "category": "ACTIF",
       "exposes": [
@@ -649,8 +649,8 @@
     },
     {
       "path": "dev/client_charge_safety_checks.js",
-      "size": 16971,
-      "lines": 292,
+      "size": 28050,
+      "lines": 450,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -710,7 +710,7 @@
     },
     {
       "path": "dev/crossfit_quality_checks.js",
-      "size": 3835,
+      "size": 3930,
       "lines": 76,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
@@ -969,8 +969,8 @@
     },
     {
       "path": "dev/mini_timer_checks.js",
-      "size": 18689,
-      "lines": 350,
+      "size": 36094,
+      "lines": 654,
       "role": "Garde-fous du mini-chrono de la barre du haut : détection d'un EMOM programmé hors bloc WOD (le nombre du « EMOM n », jamais le créneau du bloc), refus des séries « AMRAP propre », cycle de minute et paliers d'alerte, priorité de l'EMOM sur le minuteur de repos, et coût nul en hauteur pour les cartes d'exercice.",
       "category": "ACTIF",
       "exposes": [],
@@ -1159,8 +1159,8 @@
     },
     {
       "path": "dev/program_catalog_checks.js",
-      "size": 8828,
-      "lines": 129,
+      "size": 9090,
+      "lines": 132,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -1311,8 +1311,8 @@
     },
     {
       "path": "dev/simulate_multi_users.js",
-      "size": 41602,
-      "lines": 839,
+      "size": 41953,
+      "lines": 840,
       "role": "Suite de validation Node (require/assert), exécutée manuellement via RELEASE_CHECKLIST.md. Lit des fichiers du dépôt et vérifie un contrat.",
       "category": "ACTIF",
       "exposes": [],
@@ -1536,8 +1536,8 @@
     },
     {
       "path": "dev/wod_format_checks.js",
-      "size": 13866,
-      "lines": 190,
+      "size": 18468,
+      "lines": 237,
       "role": "Garde-fous des metcons structurés (programs/wod_format.js) : rendu, opérations sans champ de charge, standards de charge, programmes convertis et TEXT_LEGACY qui ne fait que rétrécir, plan Coach IA schéma 2 (migration, portée séance/cycle, retrait), refus d'un ajustement d'exercice visant un metcon.",
       "category": "ACTIF",
       "exposes": [],
@@ -2224,8 +2224,8 @@
     },
     {
       "path": "index.html",
-      "size": 26956,
-      "lines": 509,
+      "size": 27500,
+      "lines": 518,
       "role": "Coquille HTML unique de la PWA. Déclare toutes les vues (WOD, PC, Résultats, Cycle, Historique, Réglages, Profil) et charge, dans un ordre manuel figé, chaque script runtime via des balises <script defer> avec cache-bust ?v=. Enregistre indirectement le service worker (via app.js).",
       "category": "POINT_ENTREE",
       "exposes": [],
@@ -2316,7 +2316,7 @@
     },
     {
       "path": "programs/archive/hypertrophie_fesse_stephanie.js",
-      "size": 20085,
+      "size": 20114,
       "lines": 213,
       "role": "Programme autonome ARCHIVÉ (V5.1.3), remplacé par programs/rehab_stephanie.js. Toujours chargé et toujours indexé : un cycle en pause ou un historique qui le référence doit continuer de se résoudre.",
       "category": "ACTIF",
@@ -2501,8 +2501,8 @@
     },
     {
       "path": "programs/epaules_3d.js",
-      "size": 18971,
-      "lines": 228,
+      "size": 19000,
+      "lines": 227,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2527,8 +2527,8 @@
     },
     {
       "path": "programs/epaules_3d_press225_phase2.js",
-      "size": 19040,
-      "lines": 186,
+      "size": 19069,
+      "lines": 185,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2605,8 +2605,8 @@
     },
     {
       "path": "programs/force_performance.js",
-      "size": 16146,
-      "lines": 279,
+      "size": 16175,
+      "lines": 278,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2631,8 +2631,8 @@
     },
     {
       "path": "programs/general_hypertrophy_2d.js",
-      "size": 9380,
-      "lines": 159,
+      "size": 9409,
+      "lines": 158,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2657,8 +2657,8 @@
     },
     {
       "path": "programs/general_hypertrophy_3d.js",
-      "size": 10763,
-      "lines": 179,
+      "size": 10792,
+      "lines": 178,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2683,8 +2683,8 @@
     },
     {
       "path": "programs/general_strength_3d.js",
-      "size": 10018,
-      "lines": 169,
+      "size": 10047,
+      "lines": 168,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2709,7 +2709,7 @@
     },
     {
       "path": "programs/heritage_225.js",
-      "size": 18263,
+      "size": 18348,
       "lines": 264,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
@@ -2735,8 +2735,8 @@
     },
     {
       "path": "programs/hypertrophie_fesse.js",
-      "size": 12299,
-      "lines": 187,
+      "size": 12328,
+      "lines": 186,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2761,8 +2761,8 @@
     },
     {
       "path": "programs/hypertrophy_base.js",
-      "size": 16304,
-      "lines": 242,
+      "size": 16333,
+      "lines": 241,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "programs/posture_cyphose.js",
-      "size": 13462,
-      "lines": 234,
+      "size": 13491,
+      "lines": 233,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
       "exposes": [
@@ -2917,7 +2917,7 @@
     },
     {
       "path": "programs/racine_client_programs.js",
-      "size": 31644,
+      "size": 31677,
       "lines": 352,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
@@ -2943,7 +2943,7 @@
     },
     {
       "path": "programs/racine_crossfit_programs.js",
-      "size": 37219,
+      "size": 37252,
       "lines": 504,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
@@ -3053,7 +3053,7 @@
     },
     {
       "path": "programs/strict_muscle_up_personnel.js",
-      "size": 28738,
+      "size": 28826,
       "lines": 373,
       "role": "Programme autonome (getBlocks/getWodText/dayMeta/cycleRules). Enregistré dans window.COACH_BERTIN_PROGRAMS et indexé par programs/index.js.",
       "category": "ACTIF",
@@ -3105,8 +3105,8 @@
     },
     {
       "path": "programs/wod_format.js",
-      "size": 17519,
-      "lines": 356,
+      "size": 24946,
+      "lines": 483,
       "role": "Metcons structurés (window.RacineWod) : format, durée, mouvements d'un bloc kind:\"wod\" ; render() fabrique le texte que lisent pastilles, chrono et résultats ; applyOps() applique les opérations de Coach IA (aucun champ de charge) ; charges standards fixes des metcons.",
       "category": "ACTIF",
       "exposes": [

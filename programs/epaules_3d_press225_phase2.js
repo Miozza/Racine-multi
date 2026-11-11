@@ -158,7 +158,7 @@ function press225Phase2Blocks(day, week){
   ];
 }
 
-window.COACH_BERTIN_PROGRAMS.shoulders3d_press225_phase2.getBlocks = function(day, week){ return press225Phase2Blocks(day, week); };
+window.COACH_BERTIN_PROGRAMS.shoulders3d_press225_phase2.getBlocks = function(day, week){ return window.RacineWod.fillLegacy(press225Phase2Blocks(day, week)); };
 window.COACH_BERTIN_PROGRAMS.shoulders3d_press225_phase2.getWodText = function(day, week){
   var b = press225Phase2Blocks(day, week).filter(function(x){ return x.kind === "wod"; })[0];
   return b ? b.text : "";

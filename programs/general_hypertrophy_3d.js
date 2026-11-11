@@ -150,7 +150,7 @@ function gh3Blocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.general_hypertrophy_3d.getBlocks = function(day, week){
-  return gh3Blocks(day, week);
+  return window.RacineWod.fillLegacy(gh3Blocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.general_hypertrophy_3d.getWodText = function(day, week){

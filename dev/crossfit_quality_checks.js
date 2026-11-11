@@ -29,6 +29,7 @@ const context = { window:{}, console };
 context.window.COACH_BERTIN_PROGRAMS = {};
 vm.createContext(context);
 vm.runInContext(read('programs/index.js'), context, {filename:'programs/index.js'});
+vm.runInContext(read('programs/wod_format.js'), context, {filename:'programs/wod_format.js'});
 vm.runInContext(read('programs/racine_client_programs.js'), context, {filename:'programs/racine_client_programs.js'});
 vm.runInContext(read('programs/racine_crossfit_programs.js'), context, {filename:'programs/racine_crossfit_programs.js'});
 

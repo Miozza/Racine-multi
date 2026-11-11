@@ -205,7 +205,7 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
     return even ? (dayLabelsS2[day] || null) : null;
   };
 
-  window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getBlocks = function(day, week){ return stephBlocks(day, week); };
+  window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getBlocks = function(day, week){ return window.RacineWod.fillLegacy(stephBlocks(day, week)); };
   window.COACH_BERTIN_PROGRAMS.hypertrophie_fesse_stephanie.getWodText = function(day, week){
     var b = stephBlocks(day, week).filter(function(x){ return x.kind==="wod"; })[0];
     return b ? b.text : "Aucun WOD — bloc hypertrophie.";

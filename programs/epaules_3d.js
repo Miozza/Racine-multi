@@ -193,7 +193,7 @@ function shouldersBlocks(day,week){
 }
 
 window.COACH_BERTIN_PROGRAMS.shoulders3d.getBlocks = function(day, week){
-  return shouldersBlocks(day, week);
+  return window.RacineWod.fillLegacy(shouldersBlocks(day, week));
 };
 
 window.COACH_BERTIN_PROGRAMS.shoulders3d.getWodText = function(day, week){

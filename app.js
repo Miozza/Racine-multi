@@ -1,5 +1,5 @@
-// Racine V5.4.2 — moteur de charges : règles en trois fichiers, plafonds de taille
-var APP_VERSION = "V5.4.2";
+// Racine V5.4.3 — tous les metcons sont structurés : Coach IA peut les modifier dans chaque programme
+var APP_VERSION = "V5.4.3";
 
 // Architecture stable
 // programs/*.js = plan prévu

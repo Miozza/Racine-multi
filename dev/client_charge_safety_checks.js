@@ -27,6 +27,7 @@ function loadMovementProfiles(){
 function loadClientCatalog(){
   const context = {window:{}};
   context.window.window = context.window;
+  vm.runInNewContext(read('programs/wod_format.js'), context, {filename:'wod_format.js'});
   vm.runInNewContext(read('programs/racine_client_programs.js'), context, {filename:'racine_client_programs.js'});
   return context.window.COACH_BERTIN_PROGRAMS;
 }
