@@ -43,7 +43,7 @@ function engine(tuning){
    'scripts/charge/rpe.js', 'scripts/charge/historique.js', 'scripts/charge/scaling.js',
    'scripts/charge/ceiling.js', 'scripts/charge/brain_stats.js', 'scripts/charge/brain_memory.js',
    'scripts/charge/brain_journal.js', 'scripts/charge/movement_profiles.js', 'scripts/charge/kalman.js',
-   'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js', 'scripts/charge/trace.js', 'scripts/charge/index.js'
+   'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js', 'scripts/charge/trace.js', 'scripts/charge/index.js'
   ].forEach(f => vm.runInNewContext(read(f), C, {filename:f}));
   if(tuning && C.COACH_MOVEMENT_TUNING.brainV116) Object.assign(C.COACH_MOVEMENT_TUNING.brainV116, tuning);
   return C;

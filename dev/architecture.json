@@ -3689,9 +3689,9 @@
     },
     {
       "path": "scripts/charge/suggestion_rules.js",
-      "size": 60860,
-      "lines": 1087,
-      "role": "Moteur de suggestion — les règles (une fonction coachRule* chacune) et coachFinalizeSuggestionDecision.",
+      "size": 36014,
+      "lines": 594,
+      "role": "Moteur de suggestion — les règles de base (une fonction coachRule* chacune) et coachFinalizeSuggestionDecision. Écart de reps et bloc vitesse : suggestion_rules_reps.js, suggestion_rules_speed.js.",
       "category": "ACTIF",
       "exposes": [
         "coachRule*",
@@ -3702,6 +3702,47 @@
           "path": "index.html",
           "vector": "script-tag",
           "line": 424
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_rules_reps.js",
+      "size": 13591,
+      "lines": 271,
+      "role": "Moteur de suggestion — écart de reps : fourchette prescrite, signal de reps au-dessus/sous la cible, règles coachRuleRepSurplusLift / coachRuleRepSurplusHold.",
+      "category": "ACTIF",
+      "exposes": [
+        "coachRepGapSignal",
+        "coachRuleRepSurplusLift",
+        "coachRuleRepSurplusHold"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 425
+        },
+        "scripts/charge/suggestion.js"
+      ],
+      "consumes": []
+    },
+    {
+      "path": "scripts/charge/suggestion_rules_speed.js",
+      "size": 11802,
+      "lines": 230,
+      "role": "Moteur de suggestion — ancre de force (coachStrengthAnchorOneRm) et règle du bloc vitesse (coachRuleSpeedStimulusBand).",
+      "category": "ACTIF",
+      "exposes": [
+        "coachStrengthAnchorOneRm",
+        "coachRuleSpeedStimulusBand"
+      ],
+      "consumedBy": [
+        {
+          "path": "index.html",
+          "vector": "script-tag",
+          "line": 426
         },
         "scripts/charge/suggestion.js"
       ],
@@ -3722,7 +3763,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 425
+          "line": 427
         },
         "scripts/charge/suggestion.js"
       ],
@@ -3742,7 +3783,7 @@
         {
           "path": "index.html",
           "vector": "script-tag",
-          "line": 426
+          "line": 428
         }
       ],
       "consumes": [

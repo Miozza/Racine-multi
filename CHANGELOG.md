@@ -1,3 +1,13 @@
+## V5.4.2 — Moteur de charges : règles en trois fichiers, plafonds de taille
+
+**Pourquoi** : finir le découpage commencé en V5.4.1 et empêcher qu'un fichier du moteur redevienne ingérable. Aucune charge ne change.
+
+- **Règles en trois fichiers** : `suggestion_rules.js` (1 087 lignes) garde les règles de base et la finalisation ; l'écart de reps part dans `suggestion_rules_reps.js`, l'ancre de force et le bloc vitesse dans `suggestion_rules_speed.js`. Fonctions déplacées telles quelles, vérifié par comparaison du contenu.
+- **Plafonds de taille** (`dev/structure_checks.js`) : 650 lignes par fichier de `scripts/charge/` (sauf `movement_tuning.js`, une table), 120 lignes par fonction dans `suggestion*.js`. Trois fonctions gardent un plafond d'exception qui ne fait que rétrécir : `coachBuildSuggestionContext`, `coachBrainV116Refine`, `updateAthleteStateFromResults`.
+- **Où va quoi** : nouvelle section de `docs/STRUCTURE_CONTRACT.md` — la place d'un seuil, d'une règle, d'une étape Brain — et l'obligation de prouver toute réécriture d'une fonction de décision par comparaison avec l'ancienne.
+- **Chargement** : deux balises `<script defer>` ajoutées, d'où la montée de version (cache-bust cohérent).
+- **Données** : rien.
+
 ## V5.4.1 — Moteur de charges : `suggestion.js` découpé par couche
 
 **Pourquoi** : `scripts/charge/suggestion.js` faisait 2 468 lignes — le plus gros fichier du dépôt, dans le domaine prioritaire. Chaque retouche d'une règle obligeait à ouvrir tout le moteur. Le découpage réduit le risque ; il ne change aucune charge.

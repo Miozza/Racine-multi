@@ -123,7 +123,7 @@ function loadBrowserSandbox() {
     'scripts/charge/movement_profiles.js',
     'scripts/charge/brain_explain.js',
     'scripts/charge/brain_journal.js',
-    'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js',
+    'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js',
     'scripts/charge/ml_refinement.js',
     'scripts/history/index.js',
     'scripts/charge/index.js'

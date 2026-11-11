@@ -317,6 +317,40 @@ vérifier si une table existante dans `movement_tuning.js` peut l'accueillir
 inline. `dev/movement_tuning_boundary_checks.js` fait respecter cette règle
 mécaniquement et doit passer avant toute livraison touchant ces fichiers.
 
+### Où va quoi dans le moteur
+
+`suggestion.js` a atteint 2 468 lignes avant d'être découpé (V5.4.1, V5.4.2).
+Pour que ça ne recommence pas, chaque ajout a une place :
+
+```txt
+un seuil, un multiplicateur, un cas propre a un mouvement  -> movement_tuning.js
+une nouvelle regle de la pile (coachRule*)                 -> suggestion_rules.js,
+    ou suggestion_rules_reps.js / suggestion_rules_speed.js selon son sujet ;
+    son rang se declare dans guardedSuggestedLoadDecision (suggestion.js)
+une lecture du contexte de decision                        -> suggestion_context.js
+deload, echelle RPE, references de travail                 -> suggestion_deload.js,
+    suggestion_rpe.js, suggestion_references.js
+classement d'un resultat, ecriture d'athlete_state         -> suggestion_state.js
+une etape de la couche Brain V1.16                         -> une fonction coachV116*
+    sans effet de bord dans suggestion.js, appelee par coachBrainV116Refine ;
+    ses seuils dans COACH_MOVEMENT_TUNING.brainV116
+```
+
+`suggestion.js` ne garde que l'ordre : l'ordre des règles, l'ordre des étapes
+Brain, et les portes `coachSafeSuggestedLoad` / `coachSuggestForExercise`.
+
+**Plafonds de taille**, tenus par `dev/structure_checks.js` : 650 lignes par
+fichier de `scripts/charge/` (`movement_tuning.js` excepté, c'est une table) et
+120 lignes par fonction dans `suggestion*.js`. Trois fonctions ont un plafond
+d'exception (`CHARGE_FUNCTION_LEGACY`), qui ne fait que rétrécir. Quand le
+contrôle tombe, on extrait une étape ou une couche ; on ne remonte pas le
+plafond pour faire passer un ajout.
+
+Toute réécriture d'une fonction de décision se prouve par comparaison avec
+l'ancienne sur des cas générés (charge affichée, indice du `(!)`, état de
+l'athlète), en plus du golden master : celui-ci ne couvre que
+`guardedSuggestedLoadDecision`, pas la couche Brain.
+
 ### Plafond de progression et calibration par profil
 
 Deux modules encadrent la **fin** d'une progression, là où le reste du moteur

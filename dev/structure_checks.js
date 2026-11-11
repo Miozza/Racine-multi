@@ -159,12 +159,50 @@ domains.forEach(([file, marker]) => {
   assert(exists(file), 'Module présent : ' + file);
   assert(read(file).includes(marker), file + ' doit exposer ' + marker + '.');
 });
-['scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/historique.js','scripts/charge/rpe.js','scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js','scripts/charge/scaling.js','scripts/charge/index.js'].forEach(f => assert(exists(f), 'Module charge présent : ' + f));
+['scripts/charge/equipement.js','scripts/charge/utilitaires.js','scripts/charge/mouvements.js','scripts/charge/historique.js','scripts/charge/rpe.js','scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js','scripts/charge/scaling.js','scripts/charge/index.js'].forEach(f => assert(exists(f), 'Module charge présent : ' + f));
 ['scripts/equipement.js','scripts/utilitaires_charges.js','scripts/mouvement.js','scripts/charge_gestion.js','scripts/progression_rpe.js','scripts/moteur_charges.js'].forEach(f => assert(!exists(f), 'Ancien emplacement charge supprimé : ' + f));
+
+// ─── Plafonds de taille du moteur de charges ───────────────────────────────
+// suggestion.js a atteint 2 468 lignes, dont une fonction de 400, avant d'etre
+// decoupe (V5.4.1 / V5.4.2). Ce bloc est le tripwire qui empeche la rechute :
+// il ne juge pas le code, il force a DECIDER ou va ce qu'on ajoute (voir
+// docs/STRUCTURE_CONTRACT.md — « Ou va quoi dans le moteur »).
+// Un plafond d'exception ne fait que retrecir ; on ne le remonte pas pour
+// faire passer un ajout, on extrait.
+const CHARGE_FILE_MAX = 650;
+const CHARGE_FILE_EXEMPT = {
+  // Table de donnees : elle grossit par nature, c'est la que vont les seuils.
+  'movement_tuning.js': true
+};
+const CHARGE_FUNCTION_MAX = 120;
+const CHARGE_FUNCTION_LEGACY = {
+  coachBuildSuggestionContext: 185,
+  coachBrainV116Refine: 160,
+  updateAthleteStateFromResults: 135
+};
+fs.readdirSync(rel('scripts/charge')).filter(f => f.endsWith('.js')).forEach(f => {
+  const src = read('scripts/charge/' + f).split('\n');
+  if(!CHARGE_FILE_EXEMPT[f]){
+    assert(src.length - 1 <= CHARGE_FILE_MAX, 'scripts/charge/' + f + ' : ' + (src.length - 1) + ' lignes, plafond ' + CHARGE_FILE_MAX
+      + '. Extraire une couche dans un fichier voisin plutot que de remonter le plafond.');
+  }
+  // Fonctions de decision : les fichiers suggestion*.js sont des scripts
+  // globaux, une fonction va de « function nom( » en colonne 0 a « } » en colonne 0.
+  if(!/^suggestion(_[a-z_]+)?\.js$/.test(f)) return;
+  for(let i = 0; i < src.length; i++){
+    const m = src[i].match(/^function (\w+)\(/);
+    if(!m) continue;
+    let j = i; while(j < src.length && !/^}/.test(src[j])) j++;
+    const max = CHARGE_FUNCTION_LEGACY[m[1]] || CHARGE_FUNCTION_MAX;
+    assert(j - i + 1 <= max, f + ' : ' + m[1] + '() fait ' + (j - i + 1) + ' lignes, plafond ' + max
+      + '. Extraire une etape nommee plutot que d\'allonger la fonction.');
+  }
+});
+
 ['scripts/session/view.js','scripts/session/timer.js','scripts/session/results.js','scripts/session/save.js','scripts/session/index.js'].forEach(f => assert(exists(f), 'Module session présent : ' + f));
 assert(!exists('scripts/view_session.js'), 'Ancien emplacement session supprimé : scripts/view_session.js');
 ['scripts/profiles/storage.js','scripts/profiles/reference.js','scripts/profiles/onboarding.js','scripts/profiles/ui.js'].forEach(f => assert(exists(f), 'Module profils présent : ' + f));
-assert(['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n').includes('coachApplyUserLoadScale'), 'Le scaling de charge par profil doit être branché dans le moteur de suggestion.');
+assert(['scripts/charge/suggestion_deload.js','scripts/charge/suggestion_rpe.js','scripts/charge/suggestion_references.js','scripts/charge/suggestion_context.js','scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js','scripts/charge/suggestion_state.js','scripts/charge/suggestion.js'].map(function(f){return read(f);}).join('\n').includes('coachApplyUserLoadScale'), 'Le scaling de charge par profil doit être branché dans le moteur de suggestion.');
 assert(read('scripts/charge/historique.js').includes('coachAggressivenessFactor'), 'L’agressivité de progression par profil doit être branchée dans le signal historique.');
 assert(read('scripts/profiles/reference.js').includes('window.RACINE_REFERENCE_PROFILE'), 'Le référentiel de calibration profil doit exposer RACINE_REFERENCE_PROFILE.');
 assert(read('app.js').includes('profile: blankProfile()') && read('app.js').includes('movementRefs: {}'), 'Un profil neuf démarre sans références vivantes préchargées.');

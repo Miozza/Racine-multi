@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.1
+# ETAT ACTUEL — V5.4.2
 
-Version actuelle : V5.4.1
+Version actuelle : V5.4.2
 
 ## État courant
+
+### Moteur de charges — découpage terminé, plafonds de taille
+
+Toujours aucun changement de charge. Les règles sont en trois fichiers (`suggestion_rules.js`, `suggestion_rules_reps.js`, `suggestion_rules_speed.js`), la couche Brain de raffinement est en étapes nommées `coachV116*` et ses seuils vivent dans `movement_tuning.js`. Un garde-fou empêche la rechute : 650 lignes par fichier de `scripts/charge/`, 120 lignes par fonction de décision, et `STRUCTURE_CONTRACT.md` dit où va chaque ajout.
 
 ### Moteur de charges — `suggestion.js` découpé par couche
 

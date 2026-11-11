@@ -50,7 +50,7 @@ function buildContext(){
     'scripts/charge/brain_stats.js',
     'scripts/charge/brain_memory.js',
     'scripts/charge/brain_journal.js',
-    'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'
+    'scripts/charge/suggestion_deload.js', 'scripts/charge/suggestion_rpe.js', 'scripts/charge/suggestion_references.js', 'scripts/charge/suggestion_context.js', 'scripts/charge/suggestion_rules.js', 'scripts/charge/suggestion_rules_reps.js', 'scripts/charge/suggestion_rules_speed.js', 'scripts/charge/suggestion_state.js', 'scripts/charge/suggestion.js'
   ].forEach(f => vm.runInNewContext(read(f), context, {filename:f}));
   // PR_FIELD_MAP (app.js:1720-1733) + normalizePrCompareName/prCfgMatchesResult
   // — extraits verbatim du fichier réel. Extraction par ANCRE (nom de bloc),
