@@ -2625,18 +2625,45 @@ label {
 }
 /* Metcon sans pastille : son texte, à la place des pastilles. Hauteur bornée
    pour que le chrono garde sa place (docs/UI_CONSTRAINTS.md). */
-.guided-wod-plain {
+.guided-wod-plain,
+.guided-wod-note {
   font-family: var(--font-main);
-  font-size: 16px;
-  line-height: 1.35;
+  /* La séance se lit SANS LUNETTES, téléphone posé : pas de petit texte ici. */
+  font-size: clamp(19px, 5.4vw, 24px);
+  font-weight: 500;
+  line-height: 1.28;
   color: var(--text);
-  padding: 9px 11px;
+  padding: 8px 11px;
   margin: 5px 0 7px;
   border: 1px solid var(--border2);
   border-radius: 8px;
-  max-height: 26vh;
+  max-height: 30vh;
   overflow-y: auto;
   flex: 0 0 auto;
+}
+/* Consigne sous les pastilles : le nombre de lignes est fixé par
+   fitGuidedWodNote() selon la place libre ; coupée, elle s'ouvre en grand. */
+.guided-wod-note {
+  max-height: calc(3 * 1.28em + 18px);
+  margin-top: 0;
+  overflow: hidden;
+}
+.guided-wod-note.clipped {
+  border-color: var(--blue);
+}
+/* Metcon en très gros, plein écran : un toucher ouvre, un toucher referme. */
+.guided-wod-zoom {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  padding: max(34px, env(safe-area-inset-top, 0px)) 22px 26px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-main);
+  font-size: clamp(28px, 8.4vw, 40px);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-y: auto;
 }
 .guided-wod-fulltext {
   font-size: 15px;

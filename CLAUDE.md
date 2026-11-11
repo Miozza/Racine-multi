@@ -505,6 +505,9 @@ polices ni la nature « dark HUD » de l'app.
 
 - Livrer un **jet complet** plutôt que valider élément par élément. Les corrections
   se font sur la version terminée.
+- La séance guidée se lit **sans lunettes**, téléphone posé : jamais de petit
+  texte dans une carte de bloc. Règle et tailles : `docs/UI_CONSTRAINTS.md`
+  § « La séance se lit sans lunettes ».
 - Développement fréquent **depuis un iPhone** : privilégier les changements
   compacts et copiables, éviter les diffs éparpillés sur douze fichiers quand
   trois suffisent.

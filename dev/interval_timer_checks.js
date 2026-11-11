@@ -161,10 +161,19 @@ assert(/phase-work|phase-rest/.test(read('styles.css')),
 
   // Une carte de metcon n'est jamais réduite à son titre.
   const view = read('scripts/session/view.js'), css = read('styles.css');
-  assert(/renderGuidedWodMoves\(st\.moves[^)]*\)\s*\|\|\s*\(text \? "<div class='guided-wod-plain'>/.test(view),
+  assert(/if\(wodMovesHtml\)\{[\s\S]{0,700}?\}else if\(text\)\{\s*html\+="<div class='guided-wod-plain'/.test(view),
     'sans pastille, la carte affiche le texte du metcon (docs/UI_CONSTRAINTS.md).');
   const hidden = (css.match(/[^{}]*\{[^{}]*display:\s*none[^{}]*\}/g) || []).filter(r => /\.guided-wod-plain\b/.test(r.split('{')[0]));
-  assert(/\.guided-wod-plain\s*\{/.test(css) && hidden.length === 0, 'ce texte a son style et aucune règle ne le masque.');
+  assert(/\.guided-wod-plain\s*[,{]/.test(css) && hidden.length === 0, 'ce texte a son style et aucune règle ne le masque.');
+  // La séance se lit sans lunettes (docs/UI_CONSTRAINTS.md).
+  const rule = (css.match(/\.guided-wod-plain,\s*\.guided-wod-note\s*\{[^}]*\}/) || [''])[0];
+  const minPx = Number((rule.match(/font-size:\s*clamp\((\d+)px/) || [])[1]);
+  assert(minPx >= 19, 'consigne et texte du metcon : jamais sous 19px (' + minPx + 'px).');
+  const zoom = (css.match(/\.guided-wod-zoom\s*\{[^}]*\}/) || [''])[0];
+  assert(Number((zoom.match(/font-size:\s*clamp\((\d+)px/) || [])[1]) >= 28 && /openGuidedWodZoom/.test(view),
+    'le metcon s\'ouvre en très gros, plein écran, d\'un toucher.');
+  assert(/note\.parentNode\.removeChild\(note\)/.test(view) && !/note\.style\.display\s*=\s*"none"/.test(view),
+    'une consigne qui ne tient pas est retirée du DOM, jamais masquée (le chrono mesure sur l\'élément précédent).');
 }
 
 console.log(failures ? ('\n' + failures + ' échec(s).') : '\nTous les contrôles passent.');

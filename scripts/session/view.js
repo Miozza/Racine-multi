@@ -295,6 +295,7 @@ function buildGuidedSessionBlocks(){
     if(b.kind==="wod"){
       obj.timer = wodTimerConfig(b);
       obj.moves = parseWodStructure(b.text || "");
+      obj.wodNote = guidedWodNote(b);
       // V51.16: pas de pastilles de charge sous le timer en mode séance.
       // Elles prennent l’espace du timer et du bas cliquable; la charge reste dans le texte/programme ailleurs.
       obj.loadHints = "";
@@ -414,6 +415,56 @@ function guidedPrev(){
 // `compact` replie les mouvements sur une ligne : c'est leur hauteur (185 px
 // sur iPhone) qui finance la grille des splits. Une fois le WOD lancé, les
 // mouvements sont connus ; avant le premier round, ils gardent leur taille.
+// La consigne sous les pastilles ne prend que la place libre : 3 lignes, puis
+// 2, puis 1, et elle se retire si même une ligne pousserait les boutons du
+// chrono sous la barre du bas (docs/UI_CONSTRAINTS.md). Le texte entier reste
+// à un toucher : la consigne, le texte ou le titre l'ouvrent en grand.
+function fitGuidedWodNote(el, fullText){
+  var card=el.querySelector(".guided-card.kind-wod");
+  if(!card) return;
+  var note=card.querySelector(".guided-wod-note");
+  var box=card.querySelector(".guided-wod-timer"), actions=el.querySelector(".guided-actions");
+  if(note && box && actions && note.getBoundingClientRect){
+    var lh=parseFloat(window.getComputedStyle(note).lineHeight)||26, fits=false;
+    var limit=actions.getBoundingClientRect().top;
+    for(var lines=3; lines>=1 && !fits; lines--){
+      note.style.maxHeight=Math.ceil(lines*lh+18)+"px";
+      fits=box.getBoundingClientRect().bottom<=limit;
+    }
+    // Retirée du DOM, pas masquée : le chrono mesure la place au-dessus de lui
+    // sur l'élément qui le précède, et un élément masqué fausse cette mesure.
+    if(!fits) note.parentNode.removeChild(note);
+    else if(note.scrollHeight>note.clientHeight+2){
+      // Coupée : sans marge basse, sinon un bout de la ligne suivante y dépasse.
+      note.classList.add("clipped");
+      note.style.paddingBottom="0";
+      note.style.maxHeight=Math.ceil((lines+1)*lh+10)+"px";
+    }
+  }
+  var open=function(){ openGuidedWodZoom(el, fullText); };
+  var title=card.querySelector(".guided-wod-title");
+  if(title && fullText) title.onclick=open;
+  Array.prototype.forEach.call(card.querySelectorAll("[data-wod-zoom]"), function(n){ n.onclick=open; });
+}
+// Le metcon en très gros, plein écran, pour le lire sans lunettes. Un toucher
+// n'importe où referme. Aucun état gardé : rien à nettoyer en changeant de bloc.
+function openGuidedWodZoom(el, fullText){
+  if(!fullText || el.querySelector(".guided-wod-zoom")) return;
+  var z=document.createElement("div");
+  z.className="guided-wod-zoom";
+  z.setAttribute("role","dialog");
+  z.textContent=fullText;
+  z.onclick=function(){ if(z.parentNode) z.parentNode.removeChild(z); };
+  el.appendChild(z);
+}
+// Consigne d'un metcon, sans la phrase du format : la note de sa structure
+// (programs/wod_format.js), sinon ce qui suit la première phrase du texte.
+function guidedWodNote(b){
+  if(!b) return "";
+  if(b.wod && typeof b.wod.note==="string") return b.wod.note;
+  var t=String(b.text||""), i=t.search(/\.\s/);
+  return i<0 ? "" : t.slice(i+1).trim();
+}
 function renderGuidedWodMoves(moves, compact){
   var html="";
   if(moves&&moves.length){
@@ -661,8 +712,16 @@ function renderGuidedSession(){
     // Sans pastille (cardio continu, intervalles, consigne libre), le bloc
     // affiche son texte : c'est la règle de docs/UI_CONSTRAINTS.md, et sans
     // elle la carte ne montrait que son titre (séance du 2026-11-10).
-    html+=renderGuidedWodMoves(st.moves, amrapCount>0)
-      || (text ? "<div class='guided-wod-plain'>"+escHtml(text)+"</div>" : "");
+    var wodMovesHtml=renderGuidedWodMoves(st.moves, amrapCount>0);
+    if(wodMovesHtml){
+      // La consigne du metcon (« Même cadence sur les cinq… ») suit les
+      // pastilles. Elle se retire dès le premier round tapé, comme les
+      // pastilles se replient : la place va aux splits.
+      var wodNote=cleanLine(displayChargeText(st.wodNote||""));
+      html+=wodMovesHtml+((wodNote && !(amrapCount>0)) ? "<div class='guided-wod-note' data-wod-zoom='1'>"+escHtml(wodNote)+"</div>" : "");
+    }else if(text){
+      html+="<div class='guided-wod-plain' data-wod-zoom='1'>"+escHtml(text)+"</div>";
+    }
     if(amrapKey){
       html+="<div class='guided-amrap-panel"+(amrapCount?" has-rounds":"")+"' id='"+CoachAmrapRounds.panelId+"'>"
           + CoachAmrapRounds.panelHtml(amrapKey)
@@ -718,6 +777,7 @@ function renderGuidedSession(){
   // Le bouton X en haut à gauche remplit déjà ce rôle et libère de l'espace vertical iPhone.
 
   el.innerHTML=html;
+  fitGuidedWodNote(el, text);
   try{ if(window.CoachScheduleReminder) CoachScheduleReminder.enter(i); }catch(e){ /* jamais bloquant */ }
   el.classList.remove("hidden");
   updateGlobalClock();

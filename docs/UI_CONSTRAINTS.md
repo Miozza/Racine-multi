@@ -91,6 +91,29 @@ Ces règles sont obligatoires à partir de V51.24.
   (`line-height` < 1) et capturent le tap. Tout contrôle placé dans cette zone doit
   être positionné au-dessus de ce débordement.
 
+### La séance se lit sans lunettes
+
+L'athlète s'entraîne **sans ses lunettes**, téléphone posé. Tout ce que la
+séance guidée lui demande de lire doit l'être à bout de bras :
+
+- aucun texte de consigne sous `19px` dans la carte d'un bloc ; les valeurs
+  (charges, reps, chrono) restent en Orbitron et en grand ;
+- une consigne qui ne tient pas ne se réduit **pas** en petits caractères : elle
+  se coupe à un nombre entier de lignes et s'ouvre **en très gros, plein écran**
+  d'un toucher (`.guided-wod-zoom`, ouvert par le titre, le texte ou la
+  consigne du metcon) ;
+- avant d'ajouter une ligne d'information à une carte, se demander si elle se
+  lit sans lunettes. Sinon elle n'a pas sa place là.
+
+### Consigne du metcon (`guided-wod-note`)
+
+Sous les pastilles, la consigne du metcon prend la place libre et rien de plus :
+`fitGuidedWodNote()` essaie 3 lignes, puis 2, puis 1, et la **retire du DOM** si
+même une ligne pousserait la carte du chrono sous la barre du bas. Retirée, pas
+masquée : `fitGuidedWodTimer()` mesure la place sur l'élément qui précède le
+chrono, et un élément masqué fausse cette mesure. Elle disparaît aussi dès le
+premier round tapé, quand les pastilles se replient.
+
 ### Pastilles de mouvements du WOD (`guided-wod-moves`)
 
 - **Une pastille = UN mouvement**, jamais une phrase. Le texte du WOD se découpe

@@ -60,8 +60,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "size": 357696,
-      "lines": 2421,
+      "size": 358398,
+      "lines": 2422,
       "role": "Journal des versions livrées.",
       "category": "ACTIF",
       "exposes": [],
@@ -76,8 +76,8 @@
     },
     {
       "path": "CLAUDE.md",
-      "size": 30490,
-      "lines": 571,
+      "size": 31852,
+      "lines": 591,
       "role": "Instructions permanentes pour agents IA (seul fichier lu automatiquement).",
       "category": "ACTIF",
       "exposes": [],
@@ -92,8 +92,8 @@
     },
     {
       "path": "ETAT_ACTUEL.md",
-      "size": 60072,
-      "lines": 795,
+      "size": 60307,
+      "lines": 797,
       "role": "État courant du projet + index de docs.",
       "category": "ACTIF",
       "exposes": [],
@@ -909,8 +909,8 @@
       "exposes": [],
       "consumedBy": [],
       "consumes": [],
-      "size": 11183,
-      "lines": 171
+      "size": 12006,
+      "lines": 180
     },
     {
       "path": "dev/json_export_ios_checks.js",
@@ -1917,8 +1917,8 @@
     },
     {
       "path": "docs/UI_CONSTRAINTS.md",
-      "size": 19883,
-      "lines": 317,
+      "size": 21109,
+      "lines": 340,
       "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
       "category": "ACTIF",
       "exposes": [],
@@ -4595,8 +4595,8 @@
     },
     {
       "path": "scripts/session/view.js",
-      "size": 40678,
-      "lines": 830,
+      "size": 43770,
+      "lines": 890,
       "role": "Rendu de la séance guidée plein écran (blocs guidés).",
       "category": "ACTIF",
       "exposes": [
@@ -4907,8 +4907,8 @@
     },
     {
       "path": "styles.css",
-      "size": 324486,
-      "lines": 9548,
+      "size": 325325,
+      "lines": 9575,
       "role": "Feuille de style unique (~6600 lignes). Design system dark HUD : @font-face Orbitron/Inter, scanlines CRT, couleurs --bg/--blue/--cyan, layout de toutes les vues.",
       "category": "ACTIF",
       "exposes": [],
