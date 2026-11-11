@@ -1,3 +1,14 @@
+## V5.4.4 — Metcon en séance : la consigne s'affiche toujours, chrono d'intervalles en minutes:secondes
+
+**Pourquoi** : profil Bertin, Moteur + jambes S2 mardi (2026-11-10). La carte « Intervalles au seuil » ne montrait que son titre, et le chrono comptait 22 min d'un bloc au lieu de 5 × 3 min de travail / 1:30 de repos.
+
+- **Chrono** (`scripts/session/interval_timer.js`) : une durée écrite en minutes:secondes (« 1:30 repos », « 1:00 Shuttle Runs ») n'était pas lue ; seul « N min » ou « N s » l'était. Le format tombait alors sur le rebours du créneau, sans phases. Lu aussi : un repos annoncé après une consigne (« 3×4 min : Bike ou row, effort soutenu, 2 min repos »), seulement si le mot « repos » suit la durée.
+- **Affichage** (`scripts/session/view.js`, `styles.css`) : un metcon sans pastille affiche son texte à la place des pastilles. `docs/UI_CONSTRAINTS.md` le demandait déjà, mais le texte complet est masqué en séance : la carte restait vide. Hauteur bornée à 26 % de l'écran pour que le chrono garde sa place.
+- **Portée** : 79 textes de metcon sur 452 n'avaient aucune pastille (cardio continu, intervalles, benchmarks en liste) ; 6 formats d'intervalles n'avaient pas leur chrono (Moteur + jambes S2-S4, Pont Peak, Strict Muscle-Up personnel).
+- **Garde-fous** (`dev/interval_timer_checks.js`) : tout metcon structuré en intervalles, dans tous les programmes, doit recevoir le chrono travail/repos avec les nombres de sa structure ; la carte sans pastille affiche son texte et aucune règle CSS ne le masque.
+- **Vérifié** sur l'export réel, écran d'iPhone : avant, « Timer » 22:00 et aucun texte ; après, « Intervalles 5 × 3:00 / 1:30 », consigne visible, boutons dans l'écran.
+- **Données** : rien.
+
 ## V5.4.3 — Tous les metcons sont structurés : Coach IA peut les modifier dans chaque programme
 
 **Pourquoi** : `proposer_metcon` ne fonctionnait que sur les 9 programmes convertis le 2026-11-05. Dans les 32 autres, Coach IA répondait « metcon écrit en texte, non modifiable ».

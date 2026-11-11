@@ -40,7 +40,19 @@
   // programmes et aucune des deux formes n'est plus juste que l'autre.
   // Tolère la parenthèse ouvrante, les qualificatifs après chaque nombre
   // (« fort », « à ~80 % ») et l'unité écrite en long.
-  var RX = /(\d{1,3})\s*[x×]\s*\(?\s*(\d{1,3})\s*(s|sec|secs|seconde|secondes|min|mins|minute|minutes)\b[^/,)]*[\/,]\s*(\d{1,3})\s*(s|sec|secs|seconde|secondes|min|mins|minute|minutes)\b/i;
+  // Une durée s'écrit aussi en minutes:secondes : « 5 × (3 min Bike à effort 7
+  // sur 10 / 1:30 repos) ». Ce format n'était pas lu : le chrono retombait sur
+  // un rebours du créneau, sans phases (séance du 2026-11-10).
+  var DUR = '(?:(\\d{1,2}):(\\d{2})|(\\d{1,3})\\s*(s|sec|secs|seconde|secondes|min|mins|minute|minutes)\\b)';
+  var HEAD = '(\\d{1,3})\\s*[x×]\\s*\\(?\\s*' + DUR;
+  var RX = new RegExp(HEAD + '[^/,)]*[\\/,]\\s*' + DUR, 'i');
+  // « 3×4 min : Bike ou row, effort soutenu mais conversationnel, 2 min repos » :
+  // d'autres virgules avant le repos, admises seulement si la durée est suivie
+  // du mot « repos », dans la même phrase.
+  var RX_REST = new RegExp(HEAD + '[^.]*?[\\/,]\\s*' + DUR + '\\s*(?:de\\s+)?repos\\b', 'i');
+  function durSec(mm, ss, n, unit){
+    return mm != null ? num(mm) * 60 + num(ss) : toSeconds(n, unit);
+  }
 
   var MIN_ROUNDS = 2;
   var MAX_ROUNDS = 60;
@@ -72,12 +84,12 @@
     // Un AMRAP ou un EMOM ont déjà leur chrono : « AMRAP 12 : 12 cal vélo,
     // 10 air squats » contient bien « 12 × … , … » à l'œil d'une regex.
     if(/\bAMRAP\b|\bEMOM\b/i.test(src)) return null;
-    var m = RX.exec(src);
+    var m = RX.exec(src) || RX_REST.exec(src);
     if(!m) return null;
 
     var rounds = Math.round(num(m[1]));
-    var workSec = Math.round(toSeconds(m[2], m[3]));
-    var restSec = Math.round(toSeconds(m[4], m[5]));
+    var workSec = Math.round(durSec(m[2], m[3], m[4], m[5]));
+    var restSec = Math.round(durSec(m[6], m[7], m[8], m[9]));
     if(rounds < MIN_ROUNDS || rounds > MAX_ROUNDS) return null;
     if(workSec < MIN_PHASE_SEC || workSec > MAX_PHASE_SEC) return null;
     if(restSec < MIN_PHASE_SEC || restSec > MAX_PHASE_SEC) return null;

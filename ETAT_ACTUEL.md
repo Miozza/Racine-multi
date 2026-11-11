@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.3
+# ETAT ACTUEL — V5.4.4
 
-Version actuelle : V5.4.3
+Version actuelle : V5.4.4
 
 ## État courant
+
+### Metcon en séance — la consigne s'affiche toujours, le chrono lit « 1:30 »
+
+Un metcon sans pastille (intervalles, cardio continu, consigne libre) montre maintenant son texte à la place des pastilles, au lieu de son seul titre. Et le chrono d'intervalles lit une durée écrite en minutes:secondes : « 5 × (3 min Bike … / 1:30 repos) » donne 5 × 3:00 / 1:30, avec ses phases travail/repos, au lieu d'un rebours de 22 min.
 
 ### Metcons — tous structurés, dans tous les programmes
 

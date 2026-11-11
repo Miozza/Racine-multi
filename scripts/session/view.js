@@ -658,7 +658,11 @@ function renderGuidedSession(){
     var amrapKey=(window.CoachAmrapRounds && CoachAmrapRounds.isAmrapBlock(st))
       ? CoachAmrapRounds.keyFor(st.title) : null;
     var amrapCount=amrapKey ? CoachAmrapRounds.count(amrapKey) : 0;
-    html+=renderGuidedWodMoves(st.moves, amrapCount>0);
+    // Sans pastille (cardio continu, intervalles, consigne libre), le bloc
+    // affiche son texte : c'est la règle de docs/UI_CONSTRAINTS.md, et sans
+    // elle la carte ne montrait que son titre (séance du 2026-11-10).
+    html+=renderGuidedWodMoves(st.moves, amrapCount>0)
+      || (text ? "<div class='guided-wod-plain'>"+escHtml(text)+"</div>" : "");
     if(amrapKey){
       html+="<div class='guided-amrap-panel"+(amrapCount?" has-rounds":"")+"' id='"+CoachAmrapRounds.panelId+"'>"
           + CoachAmrapRounds.panelHtml(amrapKey)

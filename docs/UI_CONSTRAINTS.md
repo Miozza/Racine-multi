@@ -100,7 +100,9 @@ Ces règles sont obligatoires à partir de V51.24.
 - **Un nombre suivi d'une unité de temps est une durée, pas des répétitions.**
   Quand le temps mesure l'effort entier (« 10 à 15 min **de** marche inclinée »),
   le segment ne produit **aucune** pastille : le bloc affiche son texte complet,
-  c'est le rendu juste. Quand le temps est la dose d'un vrai mouvement
+  c'est le rendu juste. Ce texte vit dans `.guided-wod-plain`, à la place des
+  pastilles et à hauteur bornée ; `.guided-wod-fulltext`, lui, reste masqué en
+  séance. Une carte de metcon n'est jamais réduite à son titre. Quand le temps est la dose d'un vrai mouvement
   (« 20 sec side plank/côté »), la pastille reste et l'unité quitte le nom.
 - **Le nom est borné** : il s'arrête au premier connecteur de consigne
   (`,` `.` `—` « puis » « si ») et ne dépasse jamais `WOD_NAME_MAX` caractères.

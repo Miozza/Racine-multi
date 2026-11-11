@@ -2623,6 +2623,21 @@ label {
   font-size: 12px;
   margin-top: 6px;
 }
+/* Metcon sans pastille : son texte, à la place des pastilles. Hauteur bornée
+   pour que le chrono garde sa place (docs/UI_CONSTRAINTS.md). */
+.guided-wod-plain {
+  font-family: var(--font-main);
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--text);
+  padding: 9px 11px;
+  margin: 5px 0 7px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  max-height: 26vh;
+  overflow-y: auto;
+  flex: 0 0 auto;
+}
 .guided-wod-fulltext {
   font-size: 15px;
   line-height: 1.35;
