@@ -1917,8 +1917,8 @@
     },
     {
       "path": "docs/UI_CONSTRAINTS.md",
-      "size": 21809,
-      "lines": 351,
+      "size": 22121,
+      "lines": 355,
       "role": "Document (contrat durable ou rapport daté). Référencé par un doc index.",
       "category": "ACTIF",
       "exposes": [],

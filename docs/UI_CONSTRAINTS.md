@@ -13,6 +13,10 @@ Racine est utilisé en entraînement réel. La priorité est :
 
 - WOD+ et Séance restent mobile-first.
 - Les vues doivent rester lisibles autour de 402 px CSS de largeur.
+- **Écran de référence : iPhone 17 Pro** (402 px de large ; environ 790 px de
+  haut une fois l'app installée). C'est sur lui qu'une carte doit tenir en
+  entier et se régler. Un écran plus petit (iPhone SE) reste utilisable, mais
+  on n'y sacrifie rien de ce qui se voit bien sur l'écran de référence.
 - Les actions critiques doivent être faciles à toucher avec le pouce.
 - Ne pas dépendre d’une hauteur fixe.
 - Respecter les safe areas iOS.
