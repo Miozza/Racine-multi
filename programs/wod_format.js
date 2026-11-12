@@ -350,18 +350,133 @@
     return s;
   }
 
+  // ── Lecture d'une phrase (programmes écrits avant les metcons structurés) ──
+  // `parse(text)` rend la STRUCTURE d'un metcon écrit en phrase, avec une
+  // garantie : render(parse(text)) === text, au caractère près. Ce qu'elle ne
+  // sait pas découper proprement reste une structure « opaque » (la phrase
+  // entière en consigne, aucun mouvement) : rien ne casse, Coach IA peut
+  // seulement moins y toucher. Elle ne devine jamais une charge.
+  var QUALIFIER = /\s((?:très )?(?:contrôlés?|légers?|stricts|lourds-propres|modérés?|alternés|tempo|techniques?|faciles?))$/;
+  var SIDE = /(\/(?:côté|jambe|main|bras))$/;
+  var LOAD_END = /\s(\d+(?:\/\d+)?\s?(?:lb|kg|po)(?:\/main)?)$/;
+  function opaque(text){ return {format:"free", moves:[], template:"{moves}", note:str(text)}; }
+  function parseMove(token){
+    var m = {name:""}, rest = str(token), x;
+    if((x = rest.match(/^(\d+(?:[-–]\d+)?)\s+(.+)$/))){
+      m.reps = x[1]; rest = x[2];
+      if((x = rest.match(/^(cal|m|ft|sec|min)\s+(.+)$/))){ m.unit = x[1]; rest = x[2]; }
+    }
+    var detail = "", after = "";
+    // « 15 Air Squats, RPE 7 » : la consigne après la virgule n'est pas le nom.
+    if((x = rest.match(/^(.+?)(, .+)$/))){ rest = x[1]; after = x[2]; }
+    if((x = rest.match(SIDE))){ detail = x[1]; rest = rest.slice(0, rest.length - x[1].length); }
+    if((x = rest.match(LOAD_END))){ m.load = x[1]; rest = rest.slice(0, rest.length - x[0].length); }
+    else if((x = rest.match(QUALIFIER))){ detail = x[1] + detail; rest = rest.slice(0, rest.length - x[0].length); }
+    m.name = rest;
+    if(detail || after) m.detail = detail + after;
+    return m;
+  }
+  // Pose un champ numérique à la place du premier nombre qui correspond.
+  function lift(o, re, key, asText){
+    if(o.spec[key] != null) return;
+    var x = o.head.match(re);
+    if(!x) return;
+    var n = asText ? x[2] : Number(x[2]);
+    if(!asText && !(n >= 1 && n <= 90)) return;
+    o.spec[key] = n;
+    o.head = o.head.slice(0, x.index) + x[1] + "{" + key + "}" + x[3] + o.head.slice(x.index + x[0].length);
+  }
+  function parse(text){
+    var t = str(text);
+    if(!t || /[{}]/.test(t)) return opaque(t);
+    var end = t.search(/\.(?= |$)/);
+    var first = end < 0 ? t : t.slice(0, end), dot = end < 0 ? "" : ".";
+    var note = end < 0 ? "" : t.slice(end + 1);
+    if(note && (note.charAt(0) !== " " || str(note) !== note.slice(1))) return opaque(t);
+    var cut = Math.max(first.lastIndexOf(" : "), first.lastIndexOf(" | "));
+    var o = {head: cut < 0 ? first : first.slice(0, cut + 3), spec:{format:"free", moves:[]}};
+    var seg = cut < 0 ? "" : first.slice(cut + 3), x;
+    // « 3 rounds 12 wall balls + … » et « 21-15-9 Thrusters + … » : le
+    // compte passe dans la phrase, pas dans le premier mouvement.
+    if((x = seg.match(/^(\d+ (?:rounds|tours|rondes) |\d+(?:-\d+){2,} )/))){ o.head += x[1]; seg = seg.slice(x[1].length); }
+    var spec = o.spec;
+    if(cut < 0){
+      // Cardio continu : « Bike 6 min zone 2 facile ».
+      if((x = o.head.match(/^(Air Bike|Bike|Row|SkiErg|Ski Erg)(?= )/))){
+        spec.format = "steady"; spec.moves = [{name:x[1]}];
+        o.head = "{moves}" + o.head.slice(x[1].length);
+      }
+    }else if((x = seg.match(/^min 1 = /)) && /\bEMOM \d+/.test(o.head)){
+      var parts = seg.split(" ; "), ok = true;
+      parts.forEach(function(part, i){
+        var y = part.match(/^min (\d+) = (.+)$/);
+        if(!y || Number(y[1]) !== i + 1){ ok = false; return; }
+        y[2].split(" + ").forEach(function(tok){ var mv = parseMove(tok); mv.minute = i + 1; spec.moves.push(mv); });
+      });
+      if(!ok) return opaque(t);
+      spec.format = "emom"; spec.style = "sequence";
+    }else if((x = seg.match(/^min impair = (.+) ; min pair = (.+)$/))){
+      // Ancienne écriture de l'alternance : gardée telle quelle dans la phrase.
+      var even = parseMove(x[2]); even.join = " ; min pair = ";
+      spec.moves = [parseMove(x[1]), even];
+      o.head += "min impair = ";
+    }else{
+      if(/, /.test(seg) && seg.indexOf(" + ") < 0) spec.sep = ", ";
+      spec.moves = seg.split(spec.sep || " + ").map(function(tok){
+        var mv = parseMove(tok);
+        // En liste à virgules, la virgule sépare : pas de consigne à extraire.
+        return spec.sep ? {name:tok} : mv;
+      });
+      // Une consigne prise pour un mouvement (« effort soutenu mais
+      // conversationnel », « min2 wall ball ») : le segment reste dans la
+      // phrase, sans mouvement, plutôt que d'inventer des noms.
+      if(spec.moves.some(function(m){ return !m.reps && (m.name.split(" ").length > 3 || /,|^min ?\d/.test(m.name)); })){
+        spec.moves = []; delete spec.sep; o.tail = seg;
+      }
+      if(/\bAMRAP \d+/.test(o.head) && spec.moves.length) spec.format = "amrap";
+    }
+    lift(o, /(\()(\d+)( min cap\))/, "cap");
+    lift(o, /(\bcap )(\d+)(?![\d:])()/i, "cap");
+    lift(o, /(\b(?:AMRAP|EMOM) )(\d+)(?![\d:])()/, "minutes");
+    lift(o, /(^|[^×\d:])(\d+)( min\b)/, "minutes");
+    lift(o, /(^|[^\d:])(\d+)( (?:rounds|tours|rondes)\b)/, "rounds");
+    lift(o, /(^|[^\d-])(\d+(?:-\d+){2,})(?![\d-])()/, "ladder", true);
+    if(spec.format === "free" && (spec.ladder || /\bfor time\b/i.test(o.head)) && spec.moves.length) spec.format = "fortime";
+    spec.template = o.head + (o.tail || "") + (spec.moves.length && spec.format !== "steady" ? "{moves}" : "") + dot;
+    if(note) spec.note = note.slice(1);
+    if(spec.moves.some(function(m){ return !m.name; })) return opaque(t);
+    return (render(spec) === t && !validate(spec).length) ? spec : opaque(t);
+  }
+
   function block(b){
     if(b && b.wod){ b.text = render(b.wod); }
     return b;
+  }
+  // Programme écrit en phrases : chaque metcon reçoit sa structure par
+  // parse(), puis son texte par render() — identique à la phrase d'origine.
+  function fillLegacy(blocks){
+    (blocks || []).forEach(function(b){
+      if(b && b.kind === "wod" && !b.wod && str(b.text)) b.wod = parse(b.text);
+    });
+    return fill(blocks);
   }
   function fill(blocks){
     (blocks || []).forEach(block);
     return blocks;
   }
 
+  // Branche fillLegacy sur le getBlocks d'un programme déjà défini.
+  function adopt(program){
+    if(!program || typeof program.getBlocks !== "function") return program;
+    var raw = program.getBlocks;
+    program.getBlocks = function(){ return fillLegacy(raw.apply(this, arguments)); };
+    return program;
+  }
+
   root.RacineWod = {
     FORMATS: FORMATS.slice(), EMOM_STYLES: EMOM_STYLES.slice(),
     render: render, validate: validate, fill: fill, block: block, withNote: withNote,
+    parse: parse, fillLegacy: fillLegacy, adopt: adopt,
     applyOps: applyOps, summary: summary, clone: clone,
     isLoaded: isLoaded, standardLoad: standardLoad, findMove: findMove, norm: norm
   };

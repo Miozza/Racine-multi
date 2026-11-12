@@ -32,15 +32,24 @@ function assert(cond, msg){ if(!cond){ console.error('FAIL:', msg); failures++; 
 // Programmes encore écrits en texte. Liste qui ne fait que RÉTRÉCIR : un
 // nouveau programme écrit ses metcons en structure.
 const TEXT_LEGACY = [
-  "shoulders3d", "hypertrophy_base", "force_performance", "hypertrophie_fesse", "strength",
-  "heritage225", "arnold_split_beurt", "general_strength_3d", "general_hypertrophy_2d", "general_hypertrophy_3d",
-  "client_beginner_foundation_2d", "client_beginner_foundation_3d", "client_hypertrophy_4d", "client_hypertrophy_5d",
-  "client_strength_2d", "client_strength_4d", "client_recomposition_2d", "client_recomposition_3d", "client_recomposition_4d",
+  // Aucun metcon dans ces programmes ; ai_custom (archive) relit des semaines
+  // écrites par l'IA dans le state, pas un texte du dépôt.
+  "strength", "arnold_split_beurt", "strict_muscle_up_10w", "ai_custom", "arnold_split_2026_adapte",
+  "arnold_split_strict"
+];
+// Programmes écrits en PHRASES, lus par RacineWod.parse() (fillLegacy / adopt)
+// le 2026-11-11 : la phrase reste la source, la structure en est tirée, et le
+// texte rendu lui est identique au caractère près. Même exigence que STRUCTURED.
+const PARSED = [
+  "shoulders3d", "hypertrophy_base", "force_performance", "hypertrophie_fesse", "heritage225",
+  "general_strength_3d", "general_hypertrophy_2d", "general_hypertrophy_3d", "client_beginner_foundation_2d",
+  "client_beginner_foundation_3d", "client_hypertrophy_4d", "client_hypertrophy_5d", "client_strength_2d",
+  "client_strength_4d", "client_recomposition_2d", "client_recomposition_3d", "client_recomposition_4d",
   "client_hybrid_performance_3d", "client_hybrid_performance_4d", "client_hybrid_performance_5d",
   "client_haltero_crossfit_3d", "client_haltero_crossfit_4d", "client_haltero_crossfit_5d",
-  "client_rx_crossfit_4d", "client_rx_crossfit_5d", "client_metcon_prep_2d", "client_metcon_prep_3d", "client_metcon_prep_4d",
-  "strict_muscle_up_10w", "ai_custom", "shoulders3d_press225_phase2", "posture", "strict_muscle_up_personnel",
-  "arnold_split_2026_adapte", "arnold_split_strict", "hypertrophie_fesse_stephanie"
+  "client_rx_crossfit_4d", "client_rx_crossfit_5d", "client_metcon_prep_2d", "client_metcon_prep_3d",
+  "client_metcon_prep_4d", "shoulders3d_press225_phase2", "posture", "strict_muscle_up_personnel",
+  "hypertrophie_fesse_stephanie"
 ];
 // Route de l'athlète et programmes de ses athlètes : convertis le 2026-11-05.
 const STRUCTURED = ["moteur_jambes", "pont_peak", "phase2_fable5", "shoulders3d_v2", "retour_au_travail",
@@ -113,12 +122,36 @@ function metcons(id){
   });
   return out;
 }
-STRUCTURED.forEach(id => {
+STRUCTURED.concat(PARSED).forEach(id => {
   const list = metcons(id);
   const bad = list.filter(x => !x.b.wod || W.validate(x.b.wod).length || x.b.text !== W.render(x.b.wod));
   assert(list.length > 0 && bad.length === 0, id + ' : ' + list.length + ' metcons, tous structurés, valides et rendus'
     + (bad.length ? ' — ' + bad.slice(0, 3).map(x => 'S' + x.w + ' ' + x.d + ' ' + (x.b.title || '') + ' ' + (x.b.wod ? W.validate(x.b.wod).join(';') : 'texte')).join(' | ') : ''));
 });
+// ── 2b. Lecture des phrases (RacineWod.parse) ───────────────────────────────
+{
+  const sentences = [];
+  PARSED.forEach(id => metcons(id).forEach(x => { if(sentences.indexOf(x.b.text) < 0) sentences.push(x.b.text); }));
+  const specs = sentences.map(t => W.parse(t));
+  assert(sentences.length > 200 && sentences.every((t, i) => W.render(specs[i]) === t && W.validate(specs[i]).length === 0),
+    sentences.length + ' phrases distinctes : parse() puis render() rend la phrase au caractère près, structure valide');
+  const withMoves = specs.filter(sp => sp.moves.length).length;
+  assert(withMoves >= sentences.length * 0.95, 'Au moins 95 % des phrases donnent des mouvements modifiables (' + withMoves + '/' + sentences.length + ')');
+  const src = read('programs/wod_format.js');
+  const body = src.slice(src.indexOf('function parseMove'), src.indexOf('function fillLegacy'));
+  assert(!/standardLoad|STANDARD_LOADS/.test(body), 'parse() ne devine jamais une charge : il ne lit que celle qui est écrite');
+  let sp = W.parse('AMRAP 8 : 5 power cleans légers + 8 wall balls 14 lb + 10 cal row. court. Modéré, pas redline.');
+  assert(sp.format === 'amrap' && sp.minutes === 8 && sp.moves.length === 3 && sp.moves[1].load === '14 lb' && !sp.moves[0].load
+    && sp.moves[0].detail === 'légers' && sp.note === 'court. Modéré, pas redline.', 'AMRAP en phrase : durée, mouvements, charge écrite, qualificatif, consigne');
+  sp = W.parse('EMOM 8 : min 1 = 12 cal bike ; min 2 = 12 KB swings. modéré.');
+  assert(sp.format === 'emom' && sp.style === 'sequence' && sp.moves[1].minute === 2, 'EMOM « min 1 = … ; min 2 = … » : chaque mouvement dans sa minute');
+  let r2 = W.applyOps(sp, [{op:'modifier', mouvement:'bike', reps:'10'}, {op:'regler', minutes:10}]);
+  assert(r2.ok && W.render(r2.spec) === 'EMOM 10 : min 1 = 10 cal bike ; min 2 = 12 KB swings. modéré.', 'Une phrase lue se modifie comme un metcon structuré');
+  sp = W.parse('Intervalles 3×4 min : Bike ou row, effort soutenu mais conversationnel, 2 min repos. Aucun mouvement d\'épaule.');
+  assert(sp.moves.length === 0 && sp.minutes == null, 'Une consigne n\'est pas prise pour un mouvement, ni « 2 min repos » pour la durée');
+  sp = W.parse('Texte {bizarre} sans forme connue');
+  assert(W.render(sp) === 'Texte {bizarre} sans forme connue' && W.validate(sp).length === 0, 'Phrase illisible : structure opaque, texte intact, rien ne casse');
+}
 Object.keys(P).forEach(id => {
   if(TEXT_LEGACY.indexOf(id) >= 0) return;
   const text = metcons(id).filter(x => !x.b.wod);

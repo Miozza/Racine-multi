@@ -1,5 +1,5 @@
-// Racine V5.4.2 — moteur de charges : règles en trois fichiers, plafonds de taille
-var APP_VERSION = "V5.4.2";
+// Racine V5.4.4 — metcon : la consigne s'affiche toujours, chrono d'intervalles en minutes:secondes
+var APP_VERSION = "V5.4.4";
 
 // Architecture stable
 // programs/*.js = plan prévu

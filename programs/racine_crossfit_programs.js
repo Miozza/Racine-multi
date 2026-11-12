@@ -455,6 +455,7 @@
       var blocks = obj.getBlocks(day, week || 1).filter(function(b){ return b.kind === "wod"; });
       return blocks[0] ? blocks[0].text : "";
     };
+    window.RacineWod.adopt(obj);
     window.COACH_BERTIN_PROGRAMS[cfg.id] = obj;
   }
 

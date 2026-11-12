@@ -185,7 +185,9 @@ name, load, minute}], template?, note?}}` — jamais `text`. `programs/wod_forma
 modifier un metcon (`proposer_metcon`). Le texte rendu est ce que lisent
 pastilles, chrono et résultats : ne pas changer son contrat. Tout nouveau
 programme est structuré ; `TEXT_LEGACY` de `dev/wod_format_checks.js` ne fait
-que rétrécir. Un bac à sable `dev/` qui charge un programme charge
+que rétrécir. Les programmes d'avant cette règle gardent leurs phrases : `RacineWod.parse()`
+en tire la structure (`fillLegacy` / `adopt`, liste `PARSED`), texte rendu identique
+au caractère près. Ce n'est pas un modèle pour un nouveau programme. Un bac à sable `dev/` qui charge un programme charge
 `programs/wod_format.js` avant lui.
 
 **Metcon** (`kind:"wod"`) : tout mouvement chargé porte sa charge **écrite**
@@ -503,6 +505,9 @@ polices ni la nature « dark HUD » de l'app.
 
 - Livrer un **jet complet** plutôt que valider élément par élément. Les corrections
   se font sur la version terminée.
+- La séance guidée se lit **sans lunettes**, téléphone posé : jamais de petit
+  texte dans une carte de bloc. Règle et tailles : `docs/UI_CONSTRAINTS.md`
+  § « La séance se lit sans lunettes ».
 - Développement fréquent **depuis un iPhone** : privilégier les changements
   compacts et copiables, éviter les diffs éparpillés sur douze fichiers quand
   trois suffisent.

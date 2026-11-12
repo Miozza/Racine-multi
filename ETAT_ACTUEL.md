@@ -1,8 +1,20 @@
-# ETAT ACTUEL — V5.4.2
+# ETAT ACTUEL — V5.4.4
 
-Version actuelle : V5.4.2
+Version actuelle : V5.4.4
 
 ## État courant
+
+### Metcon en séance — la consigne s'affiche toujours, le chrono lit « 1:30 »
+
+Un metcon sans pastille (intervalles, cardio continu, consigne libre) montre maintenant son texte à la place des pastilles, au lieu de son seul titre. Et le chrono d'intervalles lit une durée écrite en minutes:secondes : « 5 × (3 min Bike … / 1:30 repos) » donne 5 × 3:00 / 1:30, avec ses phases travail/repos, au lieu d'un rebours de 22 min.
+
+La séance se lit sans lunettes : texte et consigne d'un metcon en gros caractères, consigne affichée sous les pastilles quand la place le permet, et le metcon entier s'ouvre en très gros, plein écran, d'un toucher sur son titre.
+
+Tous les mouvements d'un metcon sont à l'écran, sans défiler : les pastilles ne s'arrêtent plus au quatrième et se resserrent quand il y en a cinq ou six. La consigne prend la place qui reste.
+
+### Metcons — tous structurés, dans tous les programmes
+
+Coach IA peut maintenant modifier le metcon de n'importe quel programme. Les 32 programmes restés en phrases (catalogue client, CrossFit, Épaules 3D, Hypertrophie, Force, Posture, Strict Muscle-Up personnel…) sont lus par `RacineWod.parse()` : la phrase reste écrite telle quelle dans le programme, sa structure en est tirée, et le texte affiché lui est identique au caractère près. Sur 287 phrases distinctes, 277 donnent des mouvements modifiables ; les 10 autres (consignes sans mouvement net) gardent leur texte et, quand elle est écrite, leur durée réglable. Aucune charge n'est devinée : seule une charge déjà écrite est lue.
 
 ### Moteur de charges — découpage terminé, plafonds de taille
 
@@ -41,8 +53,8 @@ changent pas.
 - **Convertis** : Moteur + jambes, Pont Peak, Phase 2 — Fable 5, Épaules 3D v2,
   Retour au travail, Réhabilitation (Stéphanie), Compétition Peak, semaines de
   transition (Deload, Tests). Jambes du coureur (Maxence) n'a pas de metcon.
-  Les autres programmes restent en texte (`TEXT_LEGACY`, qui ne fait que
-  rétrécir) ; tout nouveau programme est structuré. Programme de Christian : à
+  Les autres programmes, écrits en phrases, sont lus par `RacineWod.parse()`
+  (voir plus haut) ; tout nouveau programme est structuré. Programme de Christian : à
   convertir quand il sera nommé.
 - **Coach IA** : `proposer_metcon` change format, durée, reps/calories,
   consigne, remplace / ajoute / retire un mouvement — jamais une charge (charge

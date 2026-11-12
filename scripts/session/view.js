@@ -295,6 +295,7 @@ function buildGuidedSessionBlocks(){
     if(b.kind==="wod"){
       obj.timer = wodTimerConfig(b);
       obj.moves = parseWodStructure(b.text || "");
+      obj.wodNote = guidedWodNote(b);
       // V51.16: pas de pastilles de charge sous le timer en mode séance.
       // Elles prennent l’espace du timer et du bas cliquable; la charge reste dans le texte/programme ailleurs.
       obj.loadHints = "";
@@ -414,11 +415,99 @@ function guidedPrev(){
 // `compact` replie les mouvements sur une ligne : c'est leur hauteur (185 px
 // sur iPhone) qui finance la grille des splits. Une fois le WOD lancé, les
 // mouvements sont connus ; avant le premier round, ils gardent leur taille.
+// Mise en place de la carte d'un metcon, dans l'ordre des priorités :
+//  1. TOUS les mouvements à l'écran, sans défiler. Si la carte déborde, les
+//     pastilles se resserrent d'un cran (« dense »), puis de deux (« tight »).
+//  2. La consigne ensuite, dans la place qui reste : 3 lignes, puis 2, puis 1.
+//     Pour lui faire une place, les pastilles acceptent de passer en « dense »,
+//     jamais en « tight ». Si rien ne tient, elle est RETIRÉE du DOM — pas
+//     masquée : le chrono mesure la place sur l'élément qui le précède, et un
+//     élément masqué fausse cette mesure. Elle peut défiler ; les mouvements, non.
+//  3. Le chrono garde sa carte au-dessus de la barre du bas (UI_CONSTRAINTS).
+// Le texte entier reste à un toucher : titre, texte ou consigne l'ouvrent en grand.
+function fitGuidedWodCard(el, fullText){
+  var card=el.querySelector(".guided-card.kind-wod");
+  if(!card) return;
+  var box=card.querySelector(".guided-wod-timer"), actions=el.querySelector(".guided-actions");
+  var moves=card.querySelector(".guided-wod-moves");
+  var note=card.querySelector(".guided-wod-note");
+  var plain=card.querySelector(".guided-wod-plain");
+  if(box && actions && box.getBoundingClientRect){
+    var over=function(){ return box.getBoundingClientRect().bottom-actions.getBoundingClientRect().top; };
+    var setLevel=function(level){
+      if(!moves) return;
+      moves.classList.remove("dense"); moves.classList.remove("tight");
+      if(level) moves.classList.add(level);
+    };
+    var own="";
+    if(moves){
+      if(note) note.style.display="none";
+      if(over()>0){ own="dense"; setLevel(own); }
+      if(over()>0){ own="tight"; setLevel(own); }
+      if(note) note.style.display="";
+    }
+    if(note){
+      var lh=parseFloat(window.getComputedStyle(note).lineHeight)||26, kept=0;
+      var tryLines=function(){
+        for(var lines=3; lines>=1; lines--){
+          note.style.maxHeight=Math.ceil(lines*lh+18)+"px";
+          if(over()<=0) return lines;
+        }
+        return 0;
+      };
+      kept=tryLines();
+      if(!kept && !own){ setLevel("dense"); kept=tryLines(); if(!kept) setLevel(own); }
+      if(!kept) note.parentNode.removeChild(note);
+      else if(note.scrollHeight>note.clientHeight+2){
+        // Coupée : sans marge basse, sinon un bout de la ligne suivante y dépasse.
+        note.classList.add("clipped");
+        note.style.paddingBottom="0";
+        note.style.maxHeight=Math.ceil(kept*lh+10)+"px";
+      }
+    }
+    if(plain){
+      // Sans pastille, le texte porte les mouvements : il prend la place libre.
+      plain.style.maxHeight="none";
+      var extra=over();
+      if(extra>0){
+        var floor=Math.round((window.innerHeight||600)*0.30);
+        plain.style.maxHeight=Math.max(floor, Math.floor(plain.getBoundingClientRect().height-extra))+"px";
+      }
+    }
+  }
+  var open=function(){ openGuidedWodZoom(el, fullText); };
+  var title=card.querySelector(".guided-wod-title");
+  if(title && fullText) title.onclick=open;
+  Array.prototype.forEach.call(card.querySelectorAll("[data-wod-zoom]"), function(n){ n.onclick=open; });
+}
+// Le metcon en très gros, plein écran, pour le lire sans lunettes. Un toucher
+// n'importe où referme. Aucun état gardé : rien à nettoyer en changeant de bloc.
+function openGuidedWodZoom(el, fullText){
+  if(!fullText || el.querySelector(".guided-wod-zoom")) return;
+  var z=document.createElement("div");
+  z.className="guided-wod-zoom";
+  z.setAttribute("role","dialog");
+  z.textContent=fullText;
+  z.onclick=function(){ if(z.parentNode) z.parentNode.removeChild(z); };
+  el.appendChild(z);
+}
+// Consigne d'un metcon, sans la phrase du format : la note de sa structure
+// (programs/wod_format.js), sinon ce qui suit la première phrase du texte.
+function guidedWodNote(b){
+  if(!b) return "";
+  if(b.wod && typeof b.wod.note==="string") return b.wod.note;
+  var t=String(b.text||""), i=t.search(/\.\s/);
+  return i<0 ? "" : t.slice(i+1).trim();
+}
 function renderGuidedWodMoves(moves, compact){
   var html="";
   if(moves&&moves.length){
     html+="<div class='guided-wod-moves"+(compact?" compact":"")+"'>";
-    moves.slice(0,4).forEach(function(mv){
+    // TOUS les mouvements, jamais les quatre premiers seulement : en plein
+    // effort l'athlète ne retient rien, il relit la liste à chaque tour. Un
+    // mouvement absent de l'écran est un mouvement oublié. La place se gagne
+    // en resserrant les pastilles (fitGuidedWodMoves), pas en en retirant.
+    moves.forEach(function(mv){
       html+="<div class='guided-wod-move "+escHtml(mv.color)+"'>"+
             "<div class='guided-wod-reps'>"+escHtml(mv.reps)+"</div>"+
             "<div class='guided-wod-name'>"+escHtml(typeof displayMovementName==='function'?displayMovementName(mv.name):mv.name)+
@@ -658,7 +747,19 @@ function renderGuidedSession(){
     var amrapKey=(window.CoachAmrapRounds && CoachAmrapRounds.isAmrapBlock(st))
       ? CoachAmrapRounds.keyFor(st.title) : null;
     var amrapCount=amrapKey ? CoachAmrapRounds.count(amrapKey) : 0;
-    html+=renderGuidedWodMoves(st.moves, amrapCount>0);
+    // Sans pastille (cardio continu, intervalles, consigne libre), le bloc
+    // affiche son texte : c'est la règle de docs/UI_CONSTRAINTS.md, et sans
+    // elle la carte ne montrait que son titre (séance du 2026-11-10).
+    var wodMovesHtml=renderGuidedWodMoves(st.moves, amrapCount>0);
+    if(wodMovesHtml){
+      // La consigne du metcon (« Même cadence sur les cinq… ») suit les
+      // pastilles. Elle se retire dès le premier round tapé, comme les
+      // pastilles se replient : la place va aux splits.
+      var wodNote=cleanLine(displayChargeText(st.wodNote||""));
+      html+=wodMovesHtml+((wodNote && !(amrapCount>0)) ? "<div class='guided-wod-note' data-wod-zoom='1'>"+escHtml(wodNote)+"</div>" : "");
+    }else if(text){
+      html+="<div class='guided-wod-plain' data-wod-zoom='1'>"+escHtml(text)+"</div>";
+    }
     if(amrapKey){
       html+="<div class='guided-amrap-panel"+(amrapCount?" has-rounds":"")+"' id='"+CoachAmrapRounds.panelId+"'>"
           + CoachAmrapRounds.panelHtml(amrapKey)
@@ -714,6 +815,7 @@ function renderGuidedSession(){
   // Le bouton X en haut à gauche remplit déjà ce rôle et libère de l'espace vertical iPhone.
 
   el.innerHTML=html;
+  fitGuidedWodCard(el, text);
   try{ if(window.CoachScheduleReminder) CoachScheduleReminder.enter(i); }catch(e){ /* jamais bloquant */ }
   el.classList.remove("hidden");
   updateGlobalClock();

@@ -1,3 +1,27 @@
+## V5.4.4 — Metcon en séance : la consigne s'affiche toujours, chrono d'intervalles en minutes:secondes
+
+**Pourquoi** : profil Bertin, Moteur + jambes S2 mardi (2026-11-10). La carte « Intervalles au seuil » ne montrait que son titre, et le chrono comptait 22 min d'un bloc au lieu de 5 × 3 min de travail / 1:30 de repos.
+
+- **Chrono** (`scripts/session/interval_timer.js`) : une durée écrite en minutes:secondes (« 1:30 repos », « 1:00 Shuttle Runs ») n'était pas lue ; seul « N min » ou « N s » l'était. Le format tombait alors sur le rebours du créneau, sans phases. Lu aussi : un repos annoncé après une consigne (« 3×4 min : Bike ou row, effort soutenu, 2 min repos »), seulement si le mot « repos » suit la durée.
+- **Affichage** (`scripts/session/view.js`, `styles.css`) : un metcon sans pastille affiche son texte à la place des pastilles. `docs/UI_CONSTRAINTS.md` le demandait déjà, mais le texte complet est masqué en séance : la carte restait vide. Hauteur bornée à 26 % de l'écran pour que le chrono garde sa place.
+- **Sans lunettes** : la séance se lit téléphone posé, sans lunettes. Le texte d'un metcon et sa consigne sont en 19 à 24 px, jamais plus petit. Quand un metcon a des pastilles, sa consigne (« Aucune poussée au-dessus de la tête ») s'affiche maintenant dessous, sur 3, 2 ou 1 ligne selon la place libre ; elle se retire si même une ligne pousserait les boutons du chrono hors de l'écran, et dès le premier round tapé. Un toucher sur le titre, le texte ou la consigne ouvre le metcon entier en très gros, plein écran ; un toucher referme. La taille du chrono est inchangée, mesurée sur trois tailles d'iPhone. Règle écrite dans `docs/UI_CONSTRAINTS.md` et rappelée dans `CLAUDE.md`.
+- **Tous les mouvements à l'écran** : les pastilles s'arrêtaient au quatrième mouvement ; le cinquième du chipper de Moteur + jambes S4 (« 30 Burpees ») n'apparaissait nulle part. Elles affichent maintenant tous les mouvements et se resserrent (`dense`, puis `tight`, nom jamais sous 20 px) quand la carte déborde. Ordre des priorités, tenu par `fitGuidedWodCard()` : les mouvements d'abord, la consigne dans la place qui reste (elle peut défiler), le chrono au-dessus de la barre du bas. Quatre metcons du catalogue ont 5 ou 6 mouvements.
+- **Portée** : 79 textes de metcon sur 452 n'avaient aucune pastille (cardio continu, intervalles, benchmarks en liste) ; 6 formats d'intervalles n'avaient pas leur chrono (Moteur + jambes S2-S4, Pont Peak, Strict Muscle-Up personnel).
+- **Garde-fous** (`dev/interval_timer_checks.js`) : tout metcon structuré en intervalles, dans tous les programmes, doit recevoir le chrono travail/repos avec les nombres de sa structure ; la carte sans pastille affiche son texte et aucune règle CSS ne le masque.
+- **Vérifié** sur l'export réel, écran d'iPhone : avant, « Timer » 22:00 et aucun texte ; après, « Intervalles 5 × 3:00 / 1:30 », consigne visible, boutons dans l'écran.
+- **Données** : rien.
+
+## V5.4.3 — Tous les metcons sont structurés : Coach IA peut les modifier dans chaque programme
+
+**Pourquoi** : `proposer_metcon` ne fonctionnait que sur les 9 programmes convertis le 2026-11-05. Dans les 32 autres, Coach IA répondait « metcon écrit en texte, non modifiable ».
+
+- **Lecteur de phrases** (`programs/wod_format.js`, `RacineWod.parse`) : il tire d'une phrase existante sa structure — format, durée, cap, tours, échelle 21-15-9, mouvements, charge écrite, qualificatif, consigne — avec une garantie : `render(parse(phrase))` rend la phrase au caractère près. Ce qu'il ne sait pas découper reste une structure opaque (texte intact, aucun mouvement) : rien ne casse.
+- **Programmes branchés** : 14 fichiers, une ligne chacun (`RacineWod.fillLegacy` ou `RacineWod.adopt`). Les phrases restent écrites dans le programme ; aucune n'est retouchée.
+- **Résultat** : 5 610 blocs metcon sur 47 programmes, tous structurés (1 260 avant). Tous les blocs de tous les programmes comparés à la version précédente, semaine par semaine : identiques. 287 phrases distinctes, 277 avec mouvements modifiables.
+- **Aucune charge devinée** : le lecteur ne lit qu'une charge déjà écrite (« wall balls 14 lb »). Un mouvement chargé que Coach IA ajoute reçoit toujours le standard de Racine. La liste `LEGACY` de `dev/wod_loads_checks.js` (charges non écrites dans d'anciens metcons) n'est pas touchée.
+- **Garde-fous** : `dev/wod_format_checks.js` — liste `PARSED` soumise aux mêmes exigences que `STRUCTURED`, plus dix contrôles sur le lecteur. `TEXT_LEGACY` ne garde que des programmes sans metcon et `ai_custom`. Cinq bacs à sable `dev/` chargent maintenant `wod_format.js` avant les programmes.
+- **Données** : rien. Aucune clé, aucun schéma, aucune migration.
+
 ## V5.4.2 — Moteur de charges : règles en trois fichiers, plafonds de taille
 
 **Pourquoi** : finir le découpage commencé en V5.4.1 et empêcher qu'un fichier du moteur redevienne ingérable. Aucune charge ne change.

@@ -13,6 +13,10 @@ Racine est utilisé en entraînement réel. La priorité est :
 
 - WOD+ et Séance restent mobile-first.
 - Les vues doivent rester lisibles autour de 402 px CSS de largeur.
+- **Écran de référence : iPhone 17 Pro** (402 px de large ; environ 790 px de
+  haut une fois l'app installée). C'est sur lui qu'une carte doit tenir en
+  entier et se régler. Un écran plus petit (iPhone SE) reste utilisable, mais
+  on n'y sacrifie rien de ce qui se voit bien sur l'écran de référence.
 - Les actions critiques doivent être faciles à toucher avec le pouce.
 - Ne pas dépendre d’une hauteur fixe.
 - Respecter les safe areas iOS.
@@ -91,6 +95,40 @@ Ces règles sont obligatoires à partir de V51.24.
   (`line-height` < 1) et capturent le tap. Tout contrôle placé dans cette zone doit
   être positionné au-dessus de ce débordement.
 
+### La séance se lit sans lunettes
+
+L'athlète s'entraîne **sans ses lunettes**, téléphone posé. Tout ce que la
+séance guidée lui demande de lire doit l'être à bout de bras :
+
+- aucun texte de consigne sous `19px` dans la carte d'un bloc ; les valeurs
+  (charges, reps, chrono) restent en Orbitron et en grand ;
+- une consigne qui ne tient pas ne se réduit **pas** en petits caractères : elle
+  se coupe à un nombre entier de lignes et s'ouvre **en très gros, plein écran**
+  d'un toucher (`.guided-wod-zoom`, ouvert par le titre, le texte ou la
+  consigne du metcon) ;
+- avant d'ajouter une ligne d'information à une carte, se demander si elle se
+  lit sans lunettes. Sinon elle n'a pas sa place là.
+
+### Carte du metcon : tous les mouvements à l'écran, la consigne ensuite
+
+En plein effort, l'athlète **ne retient rien** : il relit la liste à chaque tour.
+Un mouvement absent de l'écran est un mouvement oublié. `fitGuidedWodCard()`
+place donc la carte dans cet ordre de priorité :
+
+1. **Tous les mouvements visibles d'un coup d'œil, sans défiler ni toucher.**
+   Les pastilles ne sont jamais tronquées à un nombre fixe. Si la carte déborde,
+   elles se resserrent : `dense`, puis `tight` (nom jamais sous `20px`).
+2. **La consigne (`guided-wod-note`) dans la place qui reste** : 3 lignes, puis
+   2, puis 1. Pour lui faire une place, les pastilles acceptent `dense`, jamais
+   `tight`. Elle peut **défiler** ; les mouvements, non. Si même une ligne ne
+   tient pas, elle est **retirée du DOM** — pas masquée : `fitGuidedWodTimer()`
+   mesure la place sur l'élément qui précède le chrono, et un élément masqué
+   fausse cette mesure. Elle disparaît aussi dès le premier round tapé.
+3. **Le chrono garde sa carte au-dessus de la barre du bas.**
+
+Un metcon sans pastille porte ses mouvements dans son texte
+(`guided-wod-plain`) : il prend la place libre et ne défile qu'au-delà.
+
 ### Pastilles de mouvements du WOD (`guided-wod-moves`)
 
 - **Une pastille = UN mouvement**, jamais une phrase. Le texte du WOD se découpe
@@ -100,7 +138,9 @@ Ces règles sont obligatoires à partir de V51.24.
 - **Un nombre suivi d'une unité de temps est une durée, pas des répétitions.**
   Quand le temps mesure l'effort entier (« 10 à 15 min **de** marche inclinée »),
   le segment ne produit **aucune** pastille : le bloc affiche son texte complet,
-  c'est le rendu juste. Quand le temps est la dose d'un vrai mouvement
+  c'est le rendu juste. Ce texte vit dans `.guided-wod-plain`, à la place des
+  pastilles et à hauteur bornée ; `.guided-wod-fulltext`, lui, reste masqué en
+  séance. Une carte de metcon n'est jamais réduite à son titre. Quand le temps est la dose d'un vrai mouvement
   (« 20 sec side plank/côté »), la pastille reste et l'unité quitte le nom.
 - **Le nom est borné** : il s'arrête au premier connecteur de consigne
   (`,` `.` `—` « puis » « si ») et ne dépasse jamais `WOD_NAME_MAX` caractères.

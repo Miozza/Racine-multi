@@ -260,4 +260,5 @@ window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
       return b ? b.text : "";
     }
   };
+  window.RacineWod.adopt(window.COACH_BERTIN_PROGRAMS.heritage225);
 })();

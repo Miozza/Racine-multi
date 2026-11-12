@@ -84,6 +84,7 @@ scenario('détection sur les programmes réels', () => {
                displayChargeText:x=>x, movements:{}, state:{} };
   ps.window = ps;
   vm.createContext(ps);
+  vm.runInContext(read('programs/wod_format.js'), ps); // avant tout programme (CLAUDE.md § 3.1)
   for(const f of fs.readdirSync(path.join(root, 'programs'))){
     if(!f.endsWith('.js')) continue;
     try{ vm.runInContext(read('programs/' + f), ps); }catch(e){ /* programme non autonome : ignoré */ }
@@ -397,6 +398,7 @@ scenario('toutes les consignes réelles du catalogue', () => {
                displayChargeText:x=>x, movements:{}, state:{} };
   ps.window = ps;
   vm.createContext(ps);
+  vm.runInContext(read('programs/wod_format.js'), ps); // avant tout programme (CLAUDE.md § 3.1)
   for(const f of fs.readdirSync(path.join(root, 'programs'))){
     if(!f.endsWith('.js')) continue;
     try{ vm.runInContext(read('programs/' + f), ps); }catch(e){}

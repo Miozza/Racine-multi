@@ -104,6 +104,7 @@ function loadBrowserSandbox() {
     'scripts/profiles/reference.js',
     'scripts/profiles/onboarding.js',
     'programs/index.js',
+    'programs/wod_format.js',
     'programs/racine_client_programs.js',
     'programs/racine_crossfit_programs.js',
     'programs/strict_muscle_up_cycle.js',

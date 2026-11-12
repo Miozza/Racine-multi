@@ -123,5 +123,66 @@ assert(/guidedIntervalTransitionTick\(\)/.test(timer),
 assert(/phase-work|phase-rest/.test(read('styles.css')),
   'les phases ont un état visuel (lisible en sombre, à distance).');
 
+// ── Séance du 2026-11-10 : « 5 × (3 min Bike … / 1:30 repos) » ─────────────
+// Le chrono n'avait pas lu le format (durée en minutes:secondes) et la carte
+// ne montrait que son titre (aucune pastille, texte masqué).
+{
+  let r = I.parse('5 × (3 min Bike à effort 7 sur 10 / 1:30 repos). Même cadence sur les cinq.');
+  assert(r && r.rounds === 5 && r.workSec === 180 && r.restSec === 90 && r.totalSec === 5 * 270 - 90,
+    'durée en minutes:secondes lue : 5 × 3:00 / 1:30, dernier repos non compté.');
+  r = I.parse('4 × (1:00 Shuttle Runs de 10 m / 1:00 repos)');
+  assert(r && r.workSec === 60 && r.restSec === 60, 'travail ET repos en minutes:secondes.');
+  r = I.parse('Intervalles 3×4 min : Bike ou row, effort soutenu mais conversationnel, 2 min repos.');
+  assert(r && r.rounds === 3 && r.workSec === 240 && r.restSec === 120, 'repos annoncé après une consigne : lu parce que le mot « repos » le suit.');
+  assert(I.parse('Every 2:00 × 5 : 5 Power Cleans + 7 burpees.') === null && I.parse('3 × 10 min facile, pause libre. 2 min repos entre blocs.') === null,
+    'une heure d\'horloge ou une phrase voisine ne fabriquent pas un format.');
+
+  // Tout metcon structuré en intervalles, dans TOUS les programmes, reçoit le
+  // chrono d'intervalles, avec les nombres de sa structure.
+  const cp = {console, charge:(n, l) => l}; cp.window = cp; vm.createContext(cp);
+  (read('index.html').match(/src="programs\/[^"?]+/g) || []).map(x => x.slice(5))
+    .forEach(f => { try{ vm.runInContext(read(f), cp, {filename:f}); }catch(e){} });
+  const toSec = v => { const m = String(v).match(/^(\d+):(\d{2})$/); if(m) return m[1] * 60 + Number(m[2]);
+    const n = String(v).match(/^(\d+)\s*(min|s|sec)?/); return n ? Number(n[1]) * (n[2] === 'min' ? 60 : 1) : NaN; };
+  const bad = []; let seen = 0;
+  Object.keys(cp.COACH_BERTIN_PROGRAMS).forEach(id => {
+    for(let w = 1; w <= 12; w++) ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'].forEach(d => {
+      let bl; try{ bl = cp.COACH_BERTIN_PROGRAMS[id].getBlocks(d, w) || []; }catch(e){ return; }
+      bl.forEach(b => {
+        if(!b || b.kind !== 'wod' || !b.wod || b.wod.format !== 'intervals') return;
+        seen++;
+        const t = I.parse(b.text);
+        if(!t || t.rounds !== Number(b.wod.sets) || t.workSec !== toSec(b.wod.work) || t.restSec !== toSec(b.wod.rest)) bad.push(id + ' S' + w + ' ' + d + ' : ' + b.text.slice(0, 60));
+      });
+    });
+  });
+  assert(seen > 0 && bad.length === 0, seen + ' metcons en intervalles dans les programmes : tous ont le chrono travail/repos'
+    + (bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''));
+
+  // Une carte de metcon n'est jamais réduite à son titre.
+  const view = read('scripts/session/view.js'), css = read('styles.css');
+  assert(/if\(wodMovesHtml\)\{[\s\S]{0,700}?\}else if\(text\)\{\s*html\+="<div class='guided-wod-plain'/.test(view),
+    'sans pastille, la carte affiche le texte du metcon (docs/UI_CONSTRAINTS.md).');
+  const hidden = (css.match(/[^{}]*\{[^{}]*display:\s*none[^{}]*\}/g) || []).filter(r => /\.guided-wod-plain\b/.test(r.split('{')[0]));
+  assert(/\.guided-wod-plain\s*[,{]/.test(css) && hidden.length === 0, 'ce texte a son style et aucune règle ne le masque.');
+  // La séance se lit sans lunettes (docs/UI_CONSTRAINTS.md).
+  const rule = (css.match(/\.guided-wod-plain,\s*\.guided-wod-note\s*\{[^}]*\}/) || [''])[0];
+  const minPx = Number((rule.match(/font-size:\s*clamp\((\d+)px/) || [])[1]);
+  assert(minPx >= 19, 'consigne et texte du metcon : jamais sous 19px (' + minPx + 'px).');
+  const zoom = (css.match(/\.guided-wod-zoom\s*\{[^}]*\}/) || [''])[0];
+  assert(Number((zoom.match(/font-size:\s*clamp\((\d+)px/) || [])[1]) >= 28 && /openGuidedWodZoom/.test(view),
+    'le metcon s\'ouvre en très gros, plein écran, d\'un toucher.');
+  assert(/if\(!kept\) note\.parentNode\.removeChild\(note\)/.test(view),
+    'une consigne qui ne tient pas est retirée du DOM, pas laissée masquée (le chrono mesure sur l\'élément précédent).');
+  // Tous les mouvements à l'écran : l'athlète relit la liste à chaque tour.
+  const moves = view.slice(view.indexOf('function renderGuidedWodMoves'), view.indexOf('function renderGuidedResultPanel'));
+  assert(/moves\.forEach\(/.test(moves) && !/\.slice\(\s*0\s*,/.test(moves),
+    'les pastilles affichent TOUS les mouvements (plus de coupe aux quatre premiers).');
+  const sizes = ['dense', 'tight'].map(l => Number((css.match(new RegExp('\\.guided-wod-moves\\.' + l + ' \\.guided-wod-name\\{\\s*font-size:(\\d+)px')) || [])[1]));
+  assert(sizes.every(n => n >= 20), 'pastilles resserrées : le nom ne descend pas sous 20px (' + sizes.join(', ') + ').');
+  assert(/own="tight"/.test(view) && /if\(!kept && !own\)\{ setLevel\("dense"\)/.test(view),
+    'priorités : les mouvements d\'abord (jusqu\'à « tight »), la consigne ensuite (au plus « dense »).');
+}
+
 console.log(failures ? ('\n' + failures + ' échec(s).') : '\nTous les contrôles passent.');
 process.exit(failures ? 1 : 0);
