@@ -10,6 +10,8 @@ Un metcon sans pastille (intervalles, cardio continu, consigne libre) montre mai
 
 La séance se lit sans lunettes : texte et consigne d'un metcon en gros caractères, consigne affichée sous les pastilles quand la place le permet, et le metcon entier s'ouvre en très gros, plein écran, d'un toucher sur son titre.
 
+Tous les mouvements d'un metcon sont à l'écran, sans défiler : les pastilles ne s'arrêtent plus au quatrième et se resserrent quand il y en a cinq ou six. La consigne prend la place qui reste.
+
 ### Metcons — tous structurés, dans tous les programmes
 
 Coach IA peut maintenant modifier le metcon de n'importe quel programme. Les 32 programmes restés en phrases (catalogue client, CrossFit, Épaules 3D, Hypertrophie, Force, Posture, Strict Muscle-Up personnel…) sont lus par `RacineWod.parse()` : la phrase reste écrite telle quelle dans le programme, sa structure en est tirée, et le texte affiché lui est identique au caractère près. Sur 287 phrases distinctes, 277 donnent des mouvements modifiables ; les 10 autres (consignes sans mouvement net) gardent leur texte et, quand elle est écrite, leur durée réglable. Aucune charge n'est devinée : seule une charge déjà écrite est lue.

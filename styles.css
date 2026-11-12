@@ -2646,7 +2646,8 @@ label {
 .guided-wod-note {
   max-height: calc(3 * 1.28em + 18px);
   margin-top: 0;
-  overflow: hidden;
+  /* Les consignes peuvent défiler ; les mouvements, jamais. */
+  overflow-y: auto;
 }
 .guided-wod-note.clipped {
   border-color: var(--blue);
@@ -9573,3 +9574,16 @@ ol.cai-list { padding-left: 20px; }
 .wcd-ref{ margin-top:4px; color:var(--muted); }
 .wcd-hint{ margin-top:10px; font-size:12px; color:var(--muted); }
 .wcd-modal .wcd > .sf-label:first-child{ margin-top:4px !important; }
+
+/* ── Pastilles resserrées : tous les mouvements à l'écran ───────────────────
+   Posées par fitGuidedWodMoves() seulement quand la carte déborde (5 ou 6
+   mouvements, petit écran). On resserre, on ne retire jamais un mouvement, et
+   le nom ne descend pas sous 20px : la séance se lit sans lunettes. */
+.guided-card.kind-wod .guided-wod-moves.dense{ gap:4px !important; margin:3px 0 5px !important; }
+.guided-card.kind-wod .guided-wod-moves.dense .guided-wod-move{ min-height:58px !important; padding:4px 8px !important; }
+.guided-card.kind-wod .guided-wod-moves.dense .guided-wod-reps{ font-size:32px !important; }
+.guided-card.kind-wod .guided-wod-moves.dense .guided-wod-name{ font-size:23px !important; }
+.guided-card.kind-wod .guided-wod-moves.tight{ gap:3px !important; margin:2px 0 4px !important; }
+.guided-card.kind-wod .guided-wod-moves.tight .guided-wod-move{ min-height:44px !important; padding:2px 8px !important; }
+.guided-card.kind-wod .guided-wod-moves.tight .guided-wod-reps{ font-size:26px !important; }
+.guided-card.kind-wod .guided-wod-moves.tight .guided-wod-name{ font-size:20px !important; line-height:1.05 !important; }

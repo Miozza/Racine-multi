@@ -415,30 +415,64 @@ function guidedPrev(){
 // `compact` replie les mouvements sur une ligne : c'est leur hauteur (185 px
 // sur iPhone) qui finance la grille des splits. Une fois le WOD lancé, les
 // mouvements sont connus ; avant le premier round, ils gardent leur taille.
-// La consigne sous les pastilles ne prend que la place libre : 3 lignes, puis
-// 2, puis 1, et elle se retire si même une ligne pousserait les boutons du
-// chrono sous la barre du bas (docs/UI_CONSTRAINTS.md). Le texte entier reste
-// à un toucher : la consigne, le texte ou le titre l'ouvrent en grand.
-function fitGuidedWodNote(el, fullText){
+// Mise en place de la carte d'un metcon, dans l'ordre des priorités :
+//  1. TOUS les mouvements à l'écran, sans défiler. Si la carte déborde, les
+//     pastilles se resserrent d'un cran (« dense »), puis de deux (« tight »).
+//  2. La consigne ensuite, dans la place qui reste : 3 lignes, puis 2, puis 1.
+//     Pour lui faire une place, les pastilles acceptent de passer en « dense »,
+//     jamais en « tight ». Si rien ne tient, elle est RETIRÉE du DOM — pas
+//     masquée : le chrono mesure la place sur l'élément qui le précède, et un
+//     élément masqué fausse cette mesure. Elle peut défiler ; les mouvements, non.
+//  3. Le chrono garde sa carte au-dessus de la barre du bas (UI_CONSTRAINTS).
+// Le texte entier reste à un toucher : titre, texte ou consigne l'ouvrent en grand.
+function fitGuidedWodCard(el, fullText){
   var card=el.querySelector(".guided-card.kind-wod");
   if(!card) return;
-  var note=card.querySelector(".guided-wod-note");
   var box=card.querySelector(".guided-wod-timer"), actions=el.querySelector(".guided-actions");
-  if(note && box && actions && note.getBoundingClientRect){
-    var lh=parseFloat(window.getComputedStyle(note).lineHeight)||26, fits=false;
-    var limit=actions.getBoundingClientRect().top;
-    for(var lines=3; lines>=1 && !fits; lines--){
-      note.style.maxHeight=Math.ceil(lines*lh+18)+"px";
-      fits=box.getBoundingClientRect().bottom<=limit;
+  var moves=card.querySelector(".guided-wod-moves");
+  var note=card.querySelector(".guided-wod-note");
+  var plain=card.querySelector(".guided-wod-plain");
+  if(box && actions && box.getBoundingClientRect){
+    var over=function(){ return box.getBoundingClientRect().bottom-actions.getBoundingClientRect().top; };
+    var setLevel=function(level){
+      if(!moves) return;
+      moves.classList.remove("dense"); moves.classList.remove("tight");
+      if(level) moves.classList.add(level);
+    };
+    var own="";
+    if(moves){
+      if(note) note.style.display="none";
+      if(over()>0){ own="dense"; setLevel(own); }
+      if(over()>0){ own="tight"; setLevel(own); }
+      if(note) note.style.display="";
     }
-    // Retirée du DOM, pas masquée : le chrono mesure la place au-dessus de lui
-    // sur l'élément qui le précède, et un élément masqué fausse cette mesure.
-    if(!fits) note.parentNode.removeChild(note);
-    else if(note.scrollHeight>note.clientHeight+2){
-      // Coupée : sans marge basse, sinon un bout de la ligne suivante y dépasse.
-      note.classList.add("clipped");
-      note.style.paddingBottom="0";
-      note.style.maxHeight=Math.ceil((lines+1)*lh+10)+"px";
+    if(note){
+      var lh=parseFloat(window.getComputedStyle(note).lineHeight)||26, kept=0;
+      var tryLines=function(){
+        for(var lines=3; lines>=1; lines--){
+          note.style.maxHeight=Math.ceil(lines*lh+18)+"px";
+          if(over()<=0) return lines;
+        }
+        return 0;
+      };
+      kept=tryLines();
+      if(!kept && !own){ setLevel("dense"); kept=tryLines(); if(!kept) setLevel(own); }
+      if(!kept) note.parentNode.removeChild(note);
+      else if(note.scrollHeight>note.clientHeight+2){
+        // Coupée : sans marge basse, sinon un bout de la ligne suivante y dépasse.
+        note.classList.add("clipped");
+        note.style.paddingBottom="0";
+        note.style.maxHeight=Math.ceil(kept*lh+10)+"px";
+      }
+    }
+    if(plain){
+      // Sans pastille, le texte porte les mouvements : il prend la place libre.
+      plain.style.maxHeight="none";
+      var extra=over();
+      if(extra>0){
+        var floor=Math.round((window.innerHeight||600)*0.30);
+        plain.style.maxHeight=Math.max(floor, Math.floor(plain.getBoundingClientRect().height-extra))+"px";
+      }
     }
   }
   var open=function(){ openGuidedWodZoom(el, fullText); };
@@ -469,7 +503,11 @@ function renderGuidedWodMoves(moves, compact){
   var html="";
   if(moves&&moves.length){
     html+="<div class='guided-wod-moves"+(compact?" compact":"")+"'>";
-    moves.slice(0,4).forEach(function(mv){
+    // TOUS les mouvements, jamais les quatre premiers seulement : en plein
+    // effort l'athlète ne retient rien, il relit la liste à chaque tour. Un
+    // mouvement absent de l'écran est un mouvement oublié. La place se gagne
+    // en resserrant les pastilles (fitGuidedWodMoves), pas en en retirant.
+    moves.forEach(function(mv){
       html+="<div class='guided-wod-move "+escHtml(mv.color)+"'>"+
             "<div class='guided-wod-reps'>"+escHtml(mv.reps)+"</div>"+
             "<div class='guided-wod-name'>"+escHtml(typeof displayMovementName==='function'?displayMovementName(mv.name):mv.name)+
@@ -777,7 +815,7 @@ function renderGuidedSession(){
   // Le bouton X en haut à gauche remplit déjà ce rôle et libère de l'espace vertical iPhone.
 
   el.innerHTML=html;
-  fitGuidedWodNote(el, text);
+  fitGuidedWodCard(el, text);
   try{ if(window.CoachScheduleReminder) CoachScheduleReminder.enter(i); }catch(e){ /* jamais bloquant */ }
   el.classList.remove("hidden");
   updateGlobalClock();

@@ -105,14 +105,25 @@ séance guidée lui demande de lire doit l'être à bout de bras :
 - avant d'ajouter une ligne d'information à une carte, se demander si elle se
   lit sans lunettes. Sinon elle n'a pas sa place là.
 
-### Consigne du metcon (`guided-wod-note`)
+### Carte du metcon : tous les mouvements à l'écran, la consigne ensuite
 
-Sous les pastilles, la consigne du metcon prend la place libre et rien de plus :
-`fitGuidedWodNote()` essaie 3 lignes, puis 2, puis 1, et la **retire du DOM** si
-même une ligne pousserait la carte du chrono sous la barre du bas. Retirée, pas
-masquée : `fitGuidedWodTimer()` mesure la place sur l'élément qui précède le
-chrono, et un élément masqué fausse cette mesure. Elle disparaît aussi dès le
-premier round tapé, quand les pastilles se replient.
+En plein effort, l'athlète **ne retient rien** : il relit la liste à chaque tour.
+Un mouvement absent de l'écran est un mouvement oublié. `fitGuidedWodCard()`
+place donc la carte dans cet ordre de priorité :
+
+1. **Tous les mouvements visibles d'un coup d'œil, sans défiler ni toucher.**
+   Les pastilles ne sont jamais tronquées à un nombre fixe. Si la carte déborde,
+   elles se resserrent : `dense`, puis `tight` (nom jamais sous `20px`).
+2. **La consigne (`guided-wod-note`) dans la place qui reste** : 3 lignes, puis
+   2, puis 1. Pour lui faire une place, les pastilles acceptent `dense`, jamais
+   `tight`. Elle peut **défiler** ; les mouvements, non. Si même une ligne ne
+   tient pas, elle est **retirée du DOM** — pas masquée : `fitGuidedWodTimer()`
+   mesure la place sur l'élément qui précède le chrono, et un élément masqué
+   fausse cette mesure. Elle disparaît aussi dès le premier round tapé.
+3. **Le chrono garde sa carte au-dessus de la barre du bas.**
+
+Un metcon sans pastille porte ses mouvements dans son texte
+(`guided-wod-plain`) : il prend la place libre et ne défile qu'au-delà.
 
 ### Pastilles de mouvements du WOD (`guided-wod-moves`)
 

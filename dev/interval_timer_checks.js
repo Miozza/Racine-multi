@@ -172,8 +172,16 @@ assert(/phase-work|phase-rest/.test(read('styles.css')),
   const zoom = (css.match(/\.guided-wod-zoom\s*\{[^}]*\}/) || [''])[0];
   assert(Number((zoom.match(/font-size:\s*clamp\((\d+)px/) || [])[1]) >= 28 && /openGuidedWodZoom/.test(view),
     'le metcon s\'ouvre en très gros, plein écran, d\'un toucher.');
-  assert(/note\.parentNode\.removeChild\(note\)/.test(view) && !/note\.style\.display\s*=\s*"none"/.test(view),
-    'une consigne qui ne tient pas est retirée du DOM, jamais masquée (le chrono mesure sur l\'élément précédent).');
+  assert(/if\(!kept\) note\.parentNode\.removeChild\(note\)/.test(view),
+    'une consigne qui ne tient pas est retirée du DOM, pas laissée masquée (le chrono mesure sur l\'élément précédent).');
+  // Tous les mouvements à l'écran : l'athlète relit la liste à chaque tour.
+  const moves = view.slice(view.indexOf('function renderGuidedWodMoves'), view.indexOf('function renderGuidedResultPanel'));
+  assert(/moves\.forEach\(/.test(moves) && !/\.slice\(\s*0\s*,/.test(moves),
+    'les pastilles affichent TOUS les mouvements (plus de coupe aux quatre premiers).');
+  const sizes = ['dense', 'tight'].map(l => Number((css.match(new RegExp('\\.guided-wod-moves\\.' + l + ' \\.guided-wod-name\\{\\s*font-size:(\\d+)px')) || [])[1]));
+  assert(sizes.every(n => n >= 20), 'pastilles resserrées : le nom ne descend pas sous 20px (' + sizes.join(', ') + ').');
+  assert(/own="tight"/.test(view) && /if\(!kept && !own\)\{ setLevel\("dense"\)/.test(view),
+    'priorités : les mouvements d\'abord (jusqu\'à « tight »), la consigne ensuite (au plus « dense »).');
 }
 
 console.log(failures ? ('\n' + failures + ' échec(s).') : '\nTous les contrôles passent.');
