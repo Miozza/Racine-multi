@@ -22,6 +22,27 @@ Racine est utilisé en entraînement réel. La priorité est :
 - Respecter les safe areas iOS.
 - Garder le zoom natif accessible; ne pas bloquer l’accessibilité pour masquer un problème UI.
 
+## Vue WOD — la séance du jour à l'ouverture
+
+- « Démarrer séance » est visible **sans défiler** sur l'écran de référence.
+- La navigation tient sur **une ligne par niveau** (semaines, puis jours) : les
+  pastilles défilent à l'horizontale dans leur rangée, et la pastille active
+  est amenée en vue (`scrollActivePillIntoView()`, par `scrollLeft` — jamais
+  `scrollIntoView()`, qui ferait défiler la page). Ne pas revenir à une grille
+  qui empile les semaines : 8 semaines coûtaient 690 px.
+
+## Carte de saisie — elle dit ce que le programme demande
+
+`coachExerciseDose()` (`scripts/app_helpers.js`) est le seul endroit qui décide,
+pour la séance guidée comme pour Résultats :
+
+- une durée (« 6×40 sec ») s'affiche en secondes, jamais « reps » ;
+- un cardio (Bike, Row, Ski, Course, Marche) n'a ni champ poids ni champ reps,
+  et montre son allure écrite au lieu de « 0 lb » ;
+- « poids du corps » garde son champ sous le nom « lest » : il reste possible.
+
+C'est de l'affichage : le moteur et les champs enregistrés ne changent pas.
+
 ## Séance guidée
 
 - Timer visible.

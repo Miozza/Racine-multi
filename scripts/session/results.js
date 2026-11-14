@@ -18,7 +18,10 @@ function collectSessionExercises(opts){
       b.exercises.forEach(function(e){
         var parsed = parseTargetReps(e.format, 10);
         items.push({key:e.name.replace(/^[A-Z][0-9]?\.\s*/,"").trim(),name:e.name,
-          suggested:CoachCharge.suggestForExercise(e,b),format:e.format,targetMin:parsed.min,targetMax:parsed.max,kind:b.kind,blockTitle:b.title,note:e.note||"",text:b.text||"",isWod:false});
+          suggested:CoachCharge.suggestForExercise(e,b),format:e.format,targetMin:parsed.min,targetMax:parsed.max,kind:b.kind,blockTitle:b.title,note:e.note||"",text:b.text||"",isWod:false,
+          // Affichage seulement : durée vs reps, cardio sans charge (V5.4.5).
+          dose:(typeof coachExerciseDose==="function")?coachExerciseDose(e.name,e.format,e.load):null,
+          programLoad:e.load||""});
       });
     } else if(b.progress&&b.progress.length){
       b.progress.forEach(function(mvKey,j){
@@ -65,13 +68,32 @@ function appendSessionEntryCard(item, container){
   card.className="sf-card"+(item.isExtra?" is-extra":"");
   if(item.isExtra)card.setAttribute("data-extra-key",item.key);
 
-  var suggestedNum = parseLoad(item.suggested)||0;
+  // V5.4.5 — la carte dit ce que le programme demande vraiment :
+  //   « 6×40 sec » : la cible est une durée, pas 40 répétitions ;
+  //   « Bike 6 min » : ni poids ni reps — la durée est toute la prescription ;
+  //   « poids du corps » : le champ reste (un lest est possible), sous son vrai nom.
+  // Rien ne change dans ce qui est enregistré : mêmes champs, mêmes clés.
+  var dose = item.dose||{};
+  var isCardio = !!dose.cardio;
+  var suggestedNum = isCardio ? 0 : (parseLoad(item.suggested)||0);
   var suggestedDisplay = suggestedNum?suggestedNum:"";
 
   // Label cible reps pour affichage
+  var repUnit = dose.unit==="sec" ? "sec" : "reps";
   var repLabel = item.targetMin===item.targetMax
-    ? item.targetMin+" reps"
-    : item.targetMin+"–"+item.targetMax+" reps";
+    ? item.targetMin+" "+repUnit
+    : item.targetMin+"–"+item.targetMax+" "+repUnit;
+  // « 10 min accumulation » : on compte bien des reps, mais le programme n'en
+  // fixe aucune cible — l'ancienne « cible 10 reps » venait d'un repli.
+  var repsControlLabel = dose.unit==="sec" ? "SEC — cible "+repLabel
+    : dose.unit==="min" ? "REPS — en "+dose.value
+    : "REPS — cible "+repLabel;
+  var loadControlLabel = dose.bodyweight ? "LEST — optionnel" : "POIDS";
+  var cardioBadge = "";
+  if(isCardio){
+    var written = String(item.programLoad||"").trim();
+    cardioBadge = [dose.value||item.format||"", (written&&written!=="—")?written:""].filter(Boolean).join(" · ");
+  }
 
   var safeKey = escHtml(item.key);
   var loadValue = escHtml(getGuidedResult(item.key,'load',suggestedDisplay));
@@ -85,10 +107,12 @@ function appendSessionEntryCard(item, container){
         (item.isExtra?'<span class="sf-extra-tag">hors programme</span>':'')+
       '</div>'+
       (suggestedNum?'<div class="sf-badge">'+suggestedNum+' lb · '+repLabel+'</div>':'')+
+      (cardioBadge?'<div class="sf-badge">'+escHtml(cardioBadge)+'</div>':'')+
       (item.isExtra?'<button type="button" class="sf-extra-remove" data-extra-remove="'+safeKey+'" aria-label="Retirer ce mouvement">✕</button>':'')+
     '</div>'+
+    (isCardio?'':
     '<div class="results-step-control results-load-step">'+
-      '<span class="sf-label">POIDS</span>'+
+      '<span class="sf-label">'+loadControlLabel+'</span>'+
       '<div class="results-step-row results-load-row">'+
         '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-exercise="'+escHtml(item.name||item.key)+'" data-results-step="load" data-step="-5">−</button>'+
         '<div class="sf-weight-wrap">'+
@@ -101,16 +125,17 @@ function appendSessionEntryCard(item, container){
         '</div>'+
         '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-exercise="'+escHtml(item.name||item.key)+'" data-results-step="load" data-step="5">+</button>'+
       '</div>'+
-    '</div>'+
-    '<div class="results-step-grid">'+
+    '</div>')+
+    '<div class="results-step-grid'+(isCardio?' is-cardio':'')+'">'+
+      (isCardio?'':
       '<div class="results-step-control reps-step">'+
-        '<span class="sf-label">REPS — cible '+repLabel+'</span>'+
+        '<span class="sf-label">'+repsControlLabel+'</span>'+
         '<div class="results-step-row">'+
           '<button type="button" class="results-step-btn minus" data-key="'+safeKey+'" data-results-step="reps" data-step="-1" data-min="0">−</button>'+
           '<input class="sf-input sf-reps-input results-mini-input" data-key="'+safeKey+'" data-field="reps" type="number" inputmode="numeric" min="0" step="1" value="'+escHtml(guidedNumberText(currentReps))+'"/>'+
           '<button type="button" class="results-step-btn plus" data-key="'+safeKey+'" data-results-step="reps" data-step="1" data-min="0">+</button>'+
         '</div>'+
-      '</div>'+
+      '</div>')+
       '<div class="results-step-control rpe-step">'+
         '<span class="sf-label">RPE</span>'+
         '<div class="results-step-row">'+

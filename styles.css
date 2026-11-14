@@ -4664,37 +4664,57 @@ body:has(#resultsView.view-active) .app{
 #trainingView .week-day-nav{
   padding:16px 12px 14px;
 }
+/* V5.4.5 — une ligne par niveau : ‹ pastilles › . La grille V50.46 empilait
+   les flèches sur leur propre ligne et les semaines sur 4 rangées : 690 px de
+   navigation sur un écran de 790, la séance du jour et « Démarrer séance »
+   sous l'écran. Les pastilles défilent maintenant à l'horizontale DANS leur
+   rangée, et renderWeeks()/renderDays() amènent la pastille active en vue :
+   on voit toujours où l'on est, sans rien chercher. Les jours remplissent la
+   largeur quand ils tiennent (flex:1) et défilent sinon. */
 #trainingView .week-day-nav .nav-row{
-  display:block;
+  display:flex;
+  align-items:center;
+  gap:8px;
   overflow:visible;
   padding:0;
   margin:0 0 10px;
 }
+#trainingView .week-day-nav .arrow-btn{flex:0 0 auto;}
 #trainingView .pill-row{
-  width:100%;
-  display:grid;
-  gap:10px;
-  justify-content:stretch;
-  overflow:visible;
-  padding:0;
+  flex:1 1 auto;
+  width:auto;
+  min-width:0;
+  display:flex;
+  flex-wrap:nowrap;
+  gap:8px;
+  justify-content:flex-start;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  scroll-snap-type:x proximity;
+  padding:2px;
 }
-#trainingView #weekButtons{
-  grid-template-columns:repeat(3,minmax(0,1fr));
-}
-#trainingView #dayButtons{
-  grid-template-columns:repeat(4,minmax(0,1fr));
-}
+#trainingView .pill-row::-webkit-scrollbar{display:none;}
 #trainingView #weekButtons .tab,
 #trainingView #dayButtons .tab{
+  flex:0 0 auto;
   min-width:0;
-  width:100%;
-  white-space:normal;
+  width:auto;
+  white-space:nowrap;
   text-align:center;
-  min-height:54px;
-  padding:10px 10px;
+  min-height:46px;
+  padding:10px 16px;
   border-radius:18px;
   line-height:1.05;
+  scroll-snap-align:center;
 }
+#trainingView #dayButtons .tab{flex:1 0 auto;}
+/* Les jours se touchent directement : leurs flèches ‹ › prenaient 100 px et
+   coupaient le quatrième jour (« Ve… »). Elles restent dans le DOM (clavier,
+   code existant), seule la rangée de la vue WOD les masque. */
+#trainingView #dayPrev,
+#trainingView #dayNext{display:none;}
 #trainingView #weekButtons .tab{
   font-size:15px;
 }
@@ -4721,10 +4741,8 @@ body:has(#resultsView.view-active) .app{
 }
 @media (max-width:700px){
   #trainingView .week-day-nav{padding:14px 10px 12px;}
-  #trainingView #weekButtons{grid-template-columns:repeat(2,minmax(0,1fr));}
-  #trainingView #dayButtons{grid-template-columns:repeat(2,minmax(0,1fr));}
   #trainingView #weekButtons .tab,
-  #trainingView #dayButtons .tab{min-height:50px;padding:10px 8px;}
+  #trainingView #dayButtons .tab{min-height:46px;padding:10px 14px;}
   #trainingView .week-progress-meta{display:block;}
   #trainingView .day-pips{margin-top:10px;justify-content:flex-start;}
 }
@@ -5919,6 +5937,9 @@ body.guided-session-active{
   width:100%;
   margin-top:10px;
 }
+/* V5.4.5 — cardio (Bike, Row…) : ni poids ni reps, le RPE prend la largeur. */
+#resultsView .results-step-grid.is-cardio,
+.guided-result-panel.is-cardio .guided-step-grid{grid-template-columns:minmax(0,1fr);}
 #resultsView .results-step-btn{
   min-height:52px;
   border-radius:12px;

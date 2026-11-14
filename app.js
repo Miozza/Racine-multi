@@ -1,5 +1,5 @@
-// Racine V5.4.4 — metcon : la consigne s'affiche toujours, chrono d'intervalles en minutes:secondes
-var APP_VERSION = "V5.4.4";
+// Racine V5.4.5 — vue WOD : navigation sur une ligne ; saisie : durée, cardio et lest affichés pour ce qu'ils sont
+var APP_VERSION = "V5.4.5";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -1112,7 +1112,9 @@ function parseWodStructure(text){
     // En vue séance/résultats WOD, le nom du mouvement reste propre.
     // La charge appartient aux consignes, pas au titre: "Wall Balls 14 lb" => "Wall Balls".
     n = n
-      .replace(/\b(?:\d+(?:\.\d+)?\s*)?(?:lb|lbs|kg)\s*(?:\/\s*(?:main|hand|côté|side))?\b/ig,'')
+      // « 20/14 lb » (homme/femme) part en entier : sans le « 20/ », il restait
+      // collé au nom — « WALL BALLS 20/ » (V5.4.5).
+      .replace(/\b(?:\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?\s*)?(?:lb|lbs|kg)\s*(?:\/\s*(?:main|hand|côté|side))?\b/ig,'')
       // Hauteur de boîte (« Box Jumps 24 po ») et « poids du corps » : dans la
       // pastille, pas dans le nom (V5.2.21).
       .replace(/\b\d+(?:\s*\/\s*\d+)?\s*(?:po|pouces)(?![A-Za-zÀ-ÿ])/ig,'')
@@ -1709,6 +1711,16 @@ function roadmapSummary(){
   return {rows:rows,totalWeeks:totalWeeks,weeksToComp:weeksToComp,margin:margin,status:status};
 }
 
+// V5.4.5 — la rangée de pastilles défile à l'horizontale : la pastille active
+// doit être en vue sans que l'athlète la cherche. On règle scrollLeft de la
+// rangée elle-même — jamais scrollIntoView(), qui ferait aussi défiler la page.
+function scrollActivePillIntoView(row){
+  if(!row) return;
+  var act=row.querySelector(".tab.active");
+  if(!act) return;
+  var target=act.offsetLeft-(row.clientWidth-act.offsetWidth)/2;
+  row.scrollLeft=Math.max(0,target);
+}
 function renderWeeks(){
   var weekInfo=buildWeekInfo();
   var w=$("weekButtons");if(!w)return;w.innerHTML="";
@@ -1733,6 +1745,7 @@ function renderWeeks(){
   if(wg)wg.innerHTML=wi.goal+
     (phaseInfo?"<br><small style='color:var(--accent2)'>"+phaseInfo+"</small>":"")+
     (HAS_COMPETITION_GOAL?"<br><small style='color:var(--muted)'>⏱ "+daysLeft+" jours avant la compétition</small>":"");
+  scrollActivePillIntoView(w);
   renderWeekProgress();
 }
 function renderDays(){
@@ -1742,6 +1755,7 @@ function renderDays(){
     b.textContent=(d&&d.label)||k;b.className="tab"+(k===state.day?" active":" secondary");
     b.onclick=function(){state.day=k;save();render();};w.appendChild(b);
   });
+  scrollActivePillIntoView(w);
 }
 // ─── Rendu WOD+ ───────────────────────────────────────────────────────────────
 // V50.57: le rendu WOD+ et ses helpers HTML sont maintenant dans scripts/view_wodplus.js.

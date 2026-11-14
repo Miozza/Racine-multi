@@ -83,7 +83,13 @@ function wodPlusExerciseHtml(e, block, isPrimary){
   html+='<div class="wodplus-line"><span>Format</span><strong>'+e.format+'</strong></div>';
   // Une phrase du moteur (profil non calibré) ne passe pas dans la fente de la
   // charge, réglée à 31 px pour « 185 lb » : elle se lit en texte courant.
-  if(typeof coachLoadIsMessage==='function' && coachLoadIsMessage(shown)){
+  // V5.4.5 — un cardio (Bike, Row…) n'a pas de charge : « 0 lb » et son `!`
+  // ne disaient rien. La consigne écrite (« zone 2 ») s'affiche sous son nom.
+  var dose=(typeof coachExerciseDose==='function')?coachExerciseDose(e.name,e.format,e.load):null;
+  if(dose && dose.cardio){
+    var pace=String(e.load||'').trim();
+    if(pace && pace!=='—') html+='<div class="wodplus-line"><span>Allure</span><strong>'+pace+'</strong></div>';
+  }else if(typeof coachLoadIsMessage==='function' && coachLoadIsMessage(shown)){
     html+='<div class="wodplus-note load-message"><span>Charge suggérée</span>'+shown+'</div>';
   }else if(isPrimary){
     html+='<div class="wodplus-loadbox"><span>Charge suggérée</span><strong>'+shown+'</strong>'+loadInfoButtonHtml(e,shown)+'</div>';

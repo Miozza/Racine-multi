@@ -1,3 +1,16 @@
+## V5.4.5 — Interface : séance du jour visible à l'ouverture, saisie fidèle à la prescription
+
+**Pourquoi** : passage en revue des écrans en format iPhone 17 Pro (402 × 790), profil neuf sur Peak Phase 4 (2026-11-14). La séance du jour n'était pas à l'écran à l'ouverture, et trois cartes affichaient autre chose que ce que le programme demande.
+
+- **Vue WOD** (`styles.css`, `app.js`) : la navigation semaines/jours faisait 690 px de haut — flèches sur leur propre ligne, 8 semaines sur 4 rangées — et « Démarrer séance » tombait à 1030 px. Une ligne par niveau maintenant (283 px, bouton à 622 px) : les pastilles défilent dans leur rangée et la pastille active est amenée en vue. Les flèches des jours sont masquées dans cette vue (les jours se touchent directement) ; celles des semaines restent. Ceci remplace la grille de V50.46.
+- **Metcon** (`app.js`, `parseWodStructure`) : « 12 wall balls 20/14 lb » donnait la pastille « WALL BALLS 20/ ». La charge homme/femme part maintenant en entier du nom ; elle reste affichée sous le nom, comme avant. Même correction dans la saisie des résultats, qui lit la même analyse.
+- **Durée lue comme des reps** (`scripts/session/results.js`, `view.js`) : « 6×40 sec » affichait « cible 40 reps ». La carte dit « Sec — cible 40 sec » ; « 10 min accumulation » dit « Reps — en 10 min » au lieu d'une fausse cible de 10 reps.
+- **Charge demandée sans raison** : un cardio (Bike, Row, Ski, Course, Marche — nom entier, « Barbell Row » n'en est pas un) n'a plus ni champ poids, ni champ reps, ni « 0 lb » avec son `!` : la carte montre la durée et l'allure écrite (« zone 2 ») et garde le RPE et « Non fait ». Un mouvement écrit « poids du corps » garde son champ, renommé « lest — optionnel » : un Pull-up ou un Dip se leste, le retirer aurait perdu de la donnée.
+- **Moteur de charges** : inchangé. Le nouveau helper `coachExerciseDose()` (`scripts/app_helpers.js`) ne sert qu'à l'affichage ; `parseTargetReps()` n'est pas touché et une durée reste enregistrée dans le champ `reps`, comme avant. Seule différence dans ce qui s'enregistre : un cardio n'écrit plus un « 10 reps » de repli.
+- **Garde-fous** (`dev/wod_moves_checks.js`) : nom sans reste de charge, durée / cardio / lest reconnus, « Row » ancré, navigation sur une ligne.
+- **Vérifié** dans Chromium en 402 × 790 et 320 px de large : aucun débordement, S8 actif visible sans défiler, aucune erreur console.
+- **Données** : rien. Aucune clé, aucun schéma, aucune migration.
+
 ## V5.4.4 — Metcon en séance : la consigne s'affiche toujours, chrono d'intervalles en minutes:secondes
 
 **Pourquoi** : profil Bertin, Moteur + jambes S2 mardi (2026-11-10). La carte « Intervalles au seuil » ne montrait que son titre, et le chrono comptait 22 min d'un bloc au lieu de 5 × 3 min de travail / 1:30 de repos.
