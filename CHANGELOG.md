@@ -1,3 +1,16 @@
+## V5.4.6 — Vue PC : en-tête compact, cardio sans fausse alerte, débordements corrigés
+
+**Pourquoi** : passage en revue de la vue PC en 1366 × 768, en iPhone paysage (874 × 402) et en portrait (402 × 790), sur les six onglets (2026-11-14). Le contenu commençait à 480 px, un Bike en zone 2 comptait comme une alerte, et deux onglets débordaient.
+
+- **En-tête** (`scripts/view_pc.js`, `styles.css`) : bandeau, sélecteurs et onglets passent de 480 à 330 px de haut ; le premier contenu commence à 342 px au lieu de 496. Le « ← WOD » occupait seul une barre collante de 60 px : il est dans le bandeau, et la barre est masquée dans cette vue (ses boutons restent dans le HTML, que `dev/pc_cycle_view_checks.js` exige). En iPhone paysage, les sélecteurs restent sur une ligne au lieu de s'empiler sur trois.
+- **Cardio** (`scripts/charge_diagnostic_ui.js`, `scripts/view_pc.js`) : un Bike, Row, Ski, une Course ou une Marche n'a pas de charge à suggérer. Le diagnostic le traite maintenant comme un mouvement sans charge utile (plus d'alerte « données faibles »), et les onglets Séance et Semaine affichent son allure (« zone 2 ») au lieu de « 0 lb » et de son `!`. Même helper que la saisie depuis V5.4.5 (`coachExerciseDose`). Profil neuf sur Peak S1 lundi : 1 alerte → 0.
+- **Grille Cycle** : chaque bloc dit sa nature — « Échauff. », « WOD », « Mobilité » — au lieu de tout appeler « WOD ». Seul le metcon garde l'or. L'échauffement et la mobilité, identiques d'une semaine à l'autre, ne montrent que leur titre et leur durée (texte complet en un clic, onglet Séance) : 3 368 → 2 669 px sur Peak. En colonne unique (écran étroit), chaque cellule porte son jour, qui n'apparaissait plus nulle part.
+- **Débordements** : Route — un nom de variable en `code` ne se coupait pas et poussait le panneau de droite hors de l'écran ; Export — les boutons des cartes Avis IA étaient forcés sur une ligne et sortaient de la carte. Le tableau Séance, en dessous de 1 100 px de large, passe en fiche (nom sur toute la largeur, puis Format / Charge / Repos / Réalisé étiquetés) au lieu de déborder à droite.
+- **Libellés** : sélecteur de semaine au libellé court (« S1 Pacing » au lieu de « S1 Construire le pacing. WOI… ») ; « 1 alerte », « 1 bloc » au singulier ; l'étiquette « WOD » tient dans sa pastille ; les textes du diagnostic de charges sont accentués (« Données faibles », « À surveiller », « Pas nécessairement une erreur »…). Ces textes sont aussi ceux de Réglages → Analyse des charges et de l'export JSON de l'analyse ; aucun code ne les lit.
+- **Garde-fous** (`dev/pc_cycle_view_checks.js`) : retour WOD dans l'en-tête, cardio sans charge ni alerte, libellé court de semaine, singulier, étiquettes de la grille, jour porté par chaque cellule, textes accentués.
+- **Vérifié** dans Chromium aux trois formats : aucun débordement sur les six onglets, aucune erreur console, « ← WOD » ramène à la vue WOD.
+- **Données** : rien. Vue en lecture seule, comme avant.
+
 ## V5.4.5 — Interface : séance du jour visible à l'ouverture, saisie fidèle à la prescription
 
 **Pourquoi** : passage en revue des écrans en format iPhone 17 Pro (402 × 790), profil neuf sur Peak Phase 4 (2026-11-14). La séance du jour n'était pas à l'écran à l'ouverture, et trois cartes affichaient autre chose que ce que le programme demande.

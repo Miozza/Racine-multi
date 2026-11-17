@@ -9608,3 +9608,92 @@ ol.cai-list { padding-left: 20px; }
 .guided-card.kind-wod .guided-wod-moves.tight .guided-wod-move{ min-height:44px !important; padding:2px 8px !important; }
 .guided-card.kind-wod .guided-wod-moves.tight .guided-wod-reps{ font-size:26px !important; }
 .guided-card.kind-wod .guided-wod-moves.tight .guided-wod-name{ font-size:20px !important; line-height:1.05 !important; }
+
+/* ═══════════════════════════════════════════
+   V5.4.6 — Vue PC : en-tête compact, débordements, écran étroit
+   Lecture seule, comme avant : seule la mise en page change.
+   ═══════════════════════════════════════════ */
+/* La barre d'outils ne portait plus que « ← WOD » (copier et plein écran sont
+   masqués depuis V50.69) : 60 px de barre collante pour un bouton. Le retour
+   vit maintenant dans l'en-tête (#pcBackWodBtn). Les boutons restent dans le
+   HTML : dev/pc_cycle_view_checks.js les y exige. */
+#phoneView.view-active .phone-toolbar.pc-toolbar{display:none;}
+#phoneView.view-active .phone-wod{padding-top:14px!important;}
+
+/* En-tête : une ligne [← WOD][jour + objectif][alerte]. 480 px → ~250 px avec
+   sélecteurs et onglets, sur un écran de 768. */
+#phoneView.view-active .pcx-hero{
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:16px;
+  align-items:center;
+  padding:12px 18px;
+  margin-bottom:12px;
+  border-radius:20px;
+}
+.pcx-back-wod{min-height:44px;white-space:nowrap;}
+.pcx-hero-text{min-width:0;}
+#phoneView.view-active .pcx-kicker{font-size:11px;margin-bottom:2px;}
+#phoneView.view-active .pcx-hero h1{font-size:clamp(26px,2.4vw,40px);line-height:1.05;margin:0 0 2px;}
+#phoneView.view-active .pcx-hero p{
+  font-size:16px;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+#phoneView.view-active .pcx-alert-badge{min-width:0;max-width:none;padding:8px 14px;border-radius:14px;}
+#phoneView.view-active .pcx-alert-badge strong{font-size:26px;}
+#phoneView.view-active .pcx-alert-badge span{font-size:11px;margin-top:2px;}
+#phoneView.view-active .pcx-selectors{gap:10px;margin-bottom:8px;}
+#phoneView.view-active .pcx-selectors label{gap:4px;font-size:11px;}
+#phoneView.view-active .pcx-select{padding:10px 14px;font-size:16px;border-radius:12px;}
+#phoneView.view-active .pcx-tabs{margin:6px 0 14px;gap:8px;}
+#phoneView.view-active .pcx-tab{padding:9px 18px;font-size:16px;min-height:44px;}
+
+/* Étiquette de bloc : « WOD » ne tient pas dans un carré de 34 px. */
+.pcx-rank{width:auto;min-width:34px;padding:0 7px;white-space:nowrap;}
+
+/* Route : un nom de variable en <code> ne se coupait pas et poussait le
+   panneau de droite hors de l'écran. */
+#phoneView.view-active .pcx-side>*{min-width:0;}
+.pcx-panel code{overflow-wrap:anywhere;}
+
+/* Export : les boutons étaient forcés sur une ligne et sortaient de la carte. */
+.pcx-export-card header>div:first-child{min-width:0;}
+.pcx-export-card .pc-ai-actions{min-width:0;flex:0 1 250px;}
+.pcx-export-card .pcx-action,
+.pc-ai-actions .pcx-action{white-space:normal;}
+
+/* Cycle : seul le metcon garde l'or ; échauffement et mobilité sont des
+   repères discrets (titre seul, texte complet dans l'onglet Séance). */
+.pcx-cycle-day li.pcx-cycle-wod:not(.is-metcon) b{color:var(--text2)!important;font-family:var(--font-hud);font-size:11px;letter-spacing:.04em;}
+.pcx-cycle-day li.pcx-cycle-wod.is-brief span{color:var(--text2)!important;font-style:italic;}
+
+/* Écran moyen (iPhone paysage, tablette) : les sélecteurs restent sur une
+   ligne au lieu de s'empiler sur trois, et le tableau Séance passe en fiche
+   (nom sur toute la largeur, puis Format / Charge / Repos / Réalisé étiquetés)
+   au lieu de déborder à droite. */
+@media (max-width:1100px){
+  #phoneView.view-active .pcx-selectors{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.8fr);}
+  #phoneView.view-active .pcx-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;padding:14px 16px;}
+  #phoneView.view-active .pcx-row>span:first-child{grid-column:1/-1;}
+  #phoneView.view-active .pcx-row.pcx-head{display:none;}
+  #phoneView.view-active .pcx-row>span[data-label]::before{
+    content:attr(data-label);display:block;
+    font-family:var(--font-hud);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:2px;
+  }
+}
+/* Portrait : en-tête sur deux lignes, sélecteurs empilés. */
+@media (max-width:700px){
+  #phoneView.view-active .pcx-hero{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:12px 14px;}
+  #phoneView.view-active .pcx-back-wod{grid-column:1;grid-row:1;justify-self:start;}
+  #phoneView.view-active .pcx-alert-badge{grid-column:2;grid-row:1;}
+  #phoneView.view-active .pcx-hero-text{grid-column:1/-1;}
+  #phoneView.view-active .pcx-selectors{grid-template-columns:1fr 1fr;}
+  #phoneView.view-active .pcx-selectors label:first-child{grid-column:1/-1;}
+}
+/* Cycle en colonne unique : les en-têtes de jour sont masqués, chaque cellule
+   porte son jour (data-day-label) — sinon on ne savait plus lequel on lisait. */
+@media (max-width:900px){
+  .pcx-cycle-day::before{
+    content:attr(data-day-label);display:block;margin-bottom:6px;
+    font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
+  }
+}

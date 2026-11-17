@@ -56,6 +56,31 @@ function pcWeekPlanLabel(week){
   });
 }
 function pcDisplayDayName(day){ var m=pcDayMeta(day); return m.label||day; }
+// V5.4.6 — libellé court d'une semaine (« S1 Pacing »), celui des pastilles de
+// la vue WOD. Le sélecteur affichait l'objectif entier, coupé à mi-mot
+// (« S1 Construire le pacing. WOI… »). L'objectif reste lisible dans l'en-tête.
+function pcWeekShortLabel(week){
+  return pcWithSelection(function(){
+    var wk=week||state.week;
+    if(state.cycle.goal==="shoulders3d" && typeof shouldersWeekPlan==="function"){
+      var p=shouldersWeekPlan(wk); if(p&&p.label) return /^S\d/.test(p.label)?p.label:("S"+wk+" "+p.label);
+    }
+    if(typeof buildWeekInfo==="function"){
+      var info=buildWeekInfo(); if(info&&info[wk]&&info[wk].label) return info[wk].label;
+    }
+    return "S"+wk;
+  });
+}
+function pcPlural(n, word){ return n+" "+word+(Number(n)>1?"s":""); }
+// V5.4.6 — un cardio (Bike, Row…) n'a pas de charge : la vue PC affichait
+// « 0 lb » et son `!`, comme la séance avant V5.4.5. Même helper, même rendu :
+// l'allure écrite du programme (« zone 2 ») à la place de la charge.
+function pcCardioPace(e){
+  var dose=(typeof coachExerciseDose==="function")?coachExerciseDose(e&&e.name,e&&e.format,e&&e.load):null;
+  if(!dose||!dose.cardio) return null;
+  var pace=String((e&&e.load)||"").trim();
+  return (pace&&pace!=="—")?pace:"—";
+}
 function pcBlockRank(block, mainSeen){
   if(typeof displayRankForBlock==="function") return displayRankForBlock(block, mainSeen||0);
   return {rank:"",cls:"",tag:(block&&block.kind)||""};
@@ -260,7 +285,7 @@ function pcRenderSelectors(){
   var ids=Object.keys(window.focusConfigs||{});
   var cycleOpts=ids.map(function(id){var cfg=focusConfigs[id]||{};return '<option value="'+pcEsc(id)+'" '+(id===pcCurrentCycleId()?"selected":"")+'>'+pcEsc(cfg.label||id)+'</option>';}).join('');
   var tw=pcTotalWeeks(), wkOpts='';
-  for(var i=1;i<=tw;i++){wkOpts+='<option value="'+i+'" '+(i===pcCurrentWeek()?"selected":"")+'>S'+i+' '+pcEsc(pcWeekPlanLabel(i)).replace(/^S\d+\s*/,'')+'</option>';}
+  for(var i=1;i<=tw;i++){wkOpts+='<option value="'+i+'" '+(i===pcCurrentWeek()?"selected":"")+'>'+pcEsc(pcWeekShortLabel(i))+'</option>';}
   var dayOpts=pcDayOrder().map(function(d){return '<option value="'+pcEsc(d)+'" '+(d===pcCurrentDay()?"selected":"")+'>'+pcEsc(pcDisplayDayName(d))+'</option>';}).join('');
   return '<div class="pcx-selectors">'+
     '<label>Cycle<select id="pcCycleSelect" class="pcx-select">'+cycleOpts+'</select></label>'+ 
@@ -280,11 +305,16 @@ function pcRenderTopHeader(){
   var w=pcWorkout();
   var alerts=pcAlerts();
   var plan=pcWeekPlanLabel();
+  // V5.4.6 — en-tête compact : bandeau, sélecteurs et onglets prenaient 480 px
+  // sur un écran de 768 avant le premier contenu (en iPhone paysage, tout le
+  // premier écran). Le retour à la vue WOD vit ici ; la barre d'outils qu'il
+  // occupait seul est masquée dans cette vue (styles.css).
   return '<section class="pcx-hero">'+
-    '<div><div class="pcx-kicker">PC · inspection logistique · lecture seule</div>'+ 
-    '<h1>'+pcEsc(w.day.label)+'</h1>'+ 
-    '<p>'+pcEsc(w.day.base||'')+(plan?' · '+pcEsc(plan):'')+'</p></div>'+ 
-    '<div class="pcx-alert-badge"><strong>'+alerts.length+'</strong><span>alertes</span></div>'+ 
+    '<button type="button" class="pcx-action slim pcx-back-wod" id="pcBackWodBtn">← WOD</button>'+
+    '<div class="pcx-hero-text"><div class="pcx-kicker">PC · inspection · lecture seule</div>'+
+    '<h1>'+pcEsc(w.day.label)+'</h1>'+
+    '<p>'+pcEsc(w.day.base||'')+(plan?' · '+pcEsc(plan):'')+'</p></div>'+
+    '<div class="pcx-alert-badge"><strong>'+alerts.length+'</strong><span>'+(alerts.length>1?'alertes':'alerte')+'</span></div>'+
     '</section>'+pcRenderSelectors()+pcRenderTabs();
 }
 function pcRenderMiniAlerts(alerts){
@@ -301,10 +331,12 @@ function pcRenderBlock(block, session, mainSeen){
   }else if(block.exercises&&block.exercises.length){
     html+='<div class="pcx-table"><div class="pcx-row pcx-head"><span>Mouvement</span><span>Format</span><span>Charge</span><span>Repos</span><span>Réalisé</span></div>';
     block.exercises.forEach(function(e){
-      var shown=CoachCharge.suggestForExercise(e, block);
+      var pace=pcCardioPace(e);
+      var shown=pace===null?CoachCharge.suggestForExercise(e, block):'';
       var res=pcResultForExercise(session,e.name);
       var done=res?((res.load?res.load+' lb':'')+(res.reps?' × '+res.reps:'')+(res.rpe?' @RPE '+res.rpe:'')):'—';
-      html+='<div class="pcx-row"><span><strong>'+pcEsc(e.name)+'</strong>'+(e.note?'<small>'+pcEsc(e.note)+'</small>':'')+'</span><span>'+pcEsc(e.format||'')+'</span><span class="pcx-load">'+pcEsc(shown)+loadInfoButtonHtml(e,shown)+'</span><span>'+pcEsc(e.rest||'')+'</span><span>'+pcEsc(done)+'</span></div>';
+      var loadCell=pace!==null?'<span class="pcx-load pcx-pace" data-label="Allure">'+pcEsc(pace)+'</span>':'<span class="pcx-load" data-label="Charge">'+pcEsc(shown)+loadInfoButtonHtml(e,shown)+'</span>';
+      html+='<div class="pcx-row"><span><strong>'+pcEsc(e.name)+'</strong>'+(e.note?'<small>'+pcEsc(e.note)+'</small>':'')+'</span><span data-label="Format">'+pcEsc(e.format||'')+'</span>'+loadCell+'<span data-label="Repos">'+pcEsc(e.rest||'')+'</span><span data-label="Réalisé">'+pcEsc(done)+'</span></div>';
     });
     html+='</div>';
   }else if(block.progress&&block.progress.length){
@@ -312,7 +344,7 @@ function pcRenderBlock(block, session, mainSeen){
     block.progress.forEach(function(mvKey,j){
       var reps=targetReps(j,block.kind),fmt=setScheme(block.kind,j),base=suggestLoad(mvKey,progressionPct(j),reps),adj=getRpeAdjustment(mvKey,reps);
       var mv=movements[mvKey]||{name:mvKey};var finalLoad=roundLoadForExercise(mv.name, base+(adj.adj||0), "nearest");var shown=lbForExercise(mv.name, finalLoad)+(adj.arrow?' '+adj.arrow:'');
-      html+='<div class="pcx-row"><span><strong>'+pcEsc(mv.name)+'</strong></span><span>'+pcEsc(fmt)+'</span><span class="pcx-load">'+pcEsc(shown)+'</span><span>'+pcEsc(restFor(block.kind))+'</span><span>—</span></div>';
+      html+='<div class="pcx-row"><span><strong>'+pcEsc(mv.name)+'</strong></span><span data-label="Format">'+pcEsc(fmt)+'</span><span class="pcx-load" data-label="Charge">'+pcEsc(shown)+'</span><span data-label="Repos">'+pcEsc(restFor(block.kind))+'</span><span data-label="Réalisé">—</span></div>';
     });
     html+='</div>';
   }else if(!block.text){
@@ -343,10 +375,12 @@ function pcRenderWeekBlock(block, session, mainSeen){
   var items=[];
   if(block.exercises&&block.exercises.length){
     block.exercises.forEach(function(e){
-      var shown=CoachCharge.suggestForExercise(e, block);
+      var pace=pcCardioPace(e);
+      var shown=pace===null?CoachCharge.suggestForExercise(e, block):'';
       var res=pcResultForExercise(session,e.name);
       var done=res?((res.load?res.load+' lb':'')+(res.reps?' × '+res.reps:'')+(res.rpe?' @RPE '+res.rpe:'')):'—';
-      items.push('<li><strong>'+pcEsc(e.name)+'</strong><span>Format '+pcEsc(e.format||'—')+' · Charge <b class="pcx-week-load">'+pcEsc(shown)+loadInfoButtonHtml(e,shown)+'</b> · Repos '+pcEsc(e.rest||'—')+'</span>'+(e.note?'<small>'+pcEsc(e.note)+'</small>':'')+(done!=='—'?'<small>Réalisé : '+pcEsc(done)+'</small>':'')+'</li>');
+      var loadBit=pace!==null?'Allure <b class="pcx-week-load">'+pcEsc(pace)+'</b>':'Charge <b class="pcx-week-load">'+pcEsc(shown)+loadInfoButtonHtml(e,shown)+'</b>';
+      items.push('<li><strong>'+pcEsc(e.name)+'</strong><span>Format '+pcEsc(e.format||'—')+' · '+loadBit+' · Repos '+pcEsc(e.rest||'—')+'</span>'+(e.note?'<small>'+pcEsc(e.note)+'</small>':'')+(done!=='—'?'<small>Réalisé : '+pcEsc(done)+'</small>':'')+'</li>');
     });
   }else if(block.progress&&block.progress.length){
     block.progress.forEach(function(mvKey,j){
@@ -366,7 +400,7 @@ function pcRenderWeekDayFull(day){
   var mainSeen=0;
   var blocks=(w.blocks||[]).map(function(b){if(b.kind==='main')mainSeen++;return pcRenderWeekBlock(b,session,mainSeen);}).join('');
   return '<section class="pcx-week-day '+(day===pcCurrentDay()?'selected':'')+'">'+
-    '<header class="pcx-week-day-head"><div><h2>'+pcEsc(w.day.label)+'</h2><p>'+pcEsc(w.day.base||'')+'</p></div><div class="pcx-week-day-meta"><span>'+(w.blocks||[]).length+' blocs</span><span>'+alerts.length+' alertes</span></div></header>'+ 
+    '<header class="pcx-week-day-head"><div><h2>'+pcEsc(w.day.label)+'</h2><p>'+pcEsc(w.day.base||'')+'</p></div><div class="pcx-week-day-meta"><span>'+pcPlural((w.blocks||[]).length,'bloc')+'</span><span>'+pcPlural(alerts.length,'alerte')+'</span></div></header>'+ 
     '<div class="pcx-week-intention">'+pcEsc(pcWeekDayIntention(day))+'</div>'+ 
     '<div class="pcx-week-blocks">'+blocks+'</div>'+ 
     '</section>';
@@ -391,6 +425,12 @@ function pcRenderWeekAlertsPanel(alertsAll){
 // ── Vue « Cycle » : grille complète, mouvements + séries×reps seulement ────
 // Extrait pour une journée la liste condensée { name, scheme } (sans charge).
 // Les blocs WOD/texte libre deviennent une ligne courte « WOD : … ».
+// V5.4.6 — l'étiquette dit la nature du bloc (Échauff., WOD, Mobilité…) :
+// tout s'appelait « WOD » et le vrai metcon ne ressortait pas. Échauffement et
+// mobilité, souvent identiques d'une semaine à l'autre, ne montrent que leur
+// titre : leur texte complet faisait l'essentiel de la hauteur de la grille, et
+// il reste lisible en un clic (onglet Séance).
+var PC_CYCLE_KIND_LABEL = {warmup:'Échauff.', wod:'WOD', mobility:'Mobilité', bonus:'Bonus', technique:'Technique', core:'Gainage'};
 function pcCycleDayItems(day, week){
   var w = pcWorkout(day, week);
   var out = [];
@@ -403,8 +443,12 @@ function pcCycleDayItems(day, week){
         out.push({ name: mv.name, scheme: (typeof setScheme==="function"?setScheme(block.kind,j):'')||'' });
       });
     } else if(block.kind==='wod' || block.text){
-      var txt = cleanLine(displayChargeText(block.text||'')).replace(/\s+/g,' ').trim();
-      out.push({ wod:true, name:'WOD', scheme: txt });
+      var kind = block.kind || '';
+      var brief = (kind==='warmup' || kind==='mobility');
+      var txt = brief
+        ? String(block.title||'').replace(/^[A-Z]\.\s*/,'').trim()+(block.time?' · '+block.time:'')
+        : cleanLine(displayChargeText(block.text||'')).replace(/\s+/g,' ').trim();
+      out.push({ wod:true, kind:kind, brief:brief, name:PC_CYCLE_KIND_LABEL[kind]||'Bloc', scheme: txt });
     }
   });
   return out;
@@ -426,12 +470,14 @@ function pcRenderCycleTab(){
       } else {
         inner = '<ul>'+items.map(function(it){
           return it.wod
-            ? '<li class="pcx-cycle-wod"><b>WOD</b> <span>'+pcEsc(it.scheme)+'</span></li>'
+            ? '<li class="pcx-cycle-wod'+(it.kind==='wod'?' is-metcon':'')+(it.brief?' is-brief':'')+'"><b>'+pcEsc(it.name)+'</b> <span>'+pcEsc(it.scheme)+'</span></li>'
             : '<li><b>'+pcEsc(it.name)+'</b> <span>'+pcEsc(it.scheme)+'</span></li>';
         }).join('')+'</ul>';
       }
       var sel = (wk===pcCurrentWeek() && d===pcCurrentDay()) ? ' selected' : '';
-      body += '<button type="button" class="pcx-cycle-cell pcx-cycle-day'+sel+'" '+
+      // data-day-label : en colonne unique (portrait), les en-têtes de jour
+      // sont masqués ; la cellule porte alors son jour (styles.css).
+      body += '<button type="button" class="pcx-cycle-cell pcx-cycle-day'+sel+'" data-day-label="'+pcEsc(pcDisplayDayName(d))+'" '+
         'data-pc-cycle-week="'+wk+'" data-pc-cycle-day="'+pcEsc(d)+'" '+
         'title="Inspecter '+pcEsc(pcDisplayDayName(d))+' · S'+wk+'">'+inner+'</button>';
     });
@@ -450,7 +496,7 @@ function pcRenderWeekTab(){
     totalBlocks+=(w.blocks||[]).length;
     alertsAll=alertsAll.concat(pcAlerts(d,pcCurrentWeek()).map(function(x){x.day=d;return x;}));
   });
-  var html='<section class="pcx-panel pcx-week-summary"><h2>Résumé de semaine</h2><p>S'+pcCurrentWeek()+' · '+pcEsc((pcFocusCfg().label)||pcCurrentCycleId())+'</p><div class="pcx-week-stats"><span>'+days.length+' jours</span><span>'+totalBlocks+' blocs visibles</span><button type="button" class="pcx-week-stat-btn" data-pc-toggle-week-alerts="1">'+alertsAll.length+' alertes / points à surveiller</button></div><p class="pcx-muted">Vue paysage : les journées sont de gauche à droite, avec les blocs visibles au complet. Clique sur les alertes pour voir le détail.</p></section>';
+  var html='<section class="pcx-panel pcx-week-summary"><h2>Résumé de semaine</h2><p>S'+pcCurrentWeek()+' · '+pcEsc((pcFocusCfg().label)||pcCurrentCycleId())+'</p><div class="pcx-week-stats"><span>'+pcPlural(days.length,'jour')+'</span><span>'+pcPlural(totalBlocks,'bloc')+' visible'+(totalBlocks>1?'s':'')+'</span><button type="button" class="pcx-week-stat-btn" data-pc-toggle-week-alerts="1">'+pcPlural(alertsAll.length,'alerte')+' / point'+(alertsAll.length>1?'s':'')+' à surveiller</button></div><p class="pcx-muted">Vue paysage : les journées sont de gauche à droite, avec les blocs visibles au complet. Clique sur les alertes pour voir le détail.</p></section>';
   if(pcWeekAlertsOpen) html+=pcRenderWeekAlertsPanel(alertsAll);
   html+='<div class="pcx-week-full">'+days.map(function(d){return pcRenderWeekDayFull(d);}).join('')+'</div>';
   return html;
@@ -1378,6 +1424,7 @@ function pcBind(){
   if(backCycle)backCycle.onclick=function(){pcCycleReturn=false;pcActiveTab='cycle';renderPhoneWod();};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-toggle-week-alerts]'),function(btn){btn.onclick=function(){pcWeekAlertsOpen=!pcWeekAlertsOpen;renderPhoneWod();};});
   var start=$('pcStartSessionBtn');if(start)start.onclick=function(){CoachSession.openFrom('phone');};
+  var backWod=$('pcBackWodBtn');if(backWod)backWod.onclick=function(){switchView("training");};
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-ai]'),function(btn){btn.onclick=function(){pcCopyText(pcAIPrompt(btn.getAttribute('data-pc-ai')||'day'));};});
   Array.prototype.forEach.call(document.querySelectorAll('[data-pc-ai-import]'),function(btn){btn.onclick=function(){
     var scope=btn.getAttribute('data-pc-ai-import')||'cycle';

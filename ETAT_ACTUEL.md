@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.5
+# ETAT ACTUEL — V5.4.6
 
-Version actuelle : V5.4.5
+Version actuelle : V5.4.6
 
 ## État courant
+
+### Vue PC — le contenu dès le premier écran, plus de fausse alerte cardio
+
+L'en-tête de la vue PC (jour, sélecteurs, onglets) tient en 330 px au lieu de 480 sur un écran de 768, et le retour « ← WOD » y est intégré. Un cardio (Bike, Row…) n'affiche plus « 0 lb » ni d'alerte « données faibles » : il montre son allure. La grille Cycle distingue échauffement, metcon et mobilité ; l'échauffement et la mobilité n'y montrent que leur titre. Plus aucun débordement en Route ni en Export, et le tableau Séance se lit en iPhone paysage comme en portrait.
 
 ### Interface — la séance du jour visible à l'ouverture, la saisie dit ce qu'elle demande
 

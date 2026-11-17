@@ -1,5 +1,5 @@
-// Racine V5.4.5 — vue WOD : navigation sur une ligne ; saisie : durée, cardio et lest affichés pour ce qu'ils sont
-var APP_VERSION = "V5.4.5";
+// Racine V5.4.6 — vue PC : en-tête compact, cardio sans fausse alerte, débordements corrigés
+var APP_VERSION = "V5.4.6";
 
 // Architecture stable
 // programs/*.js = plan prévu

@@ -61,6 +61,16 @@ C'est de l'affichage : le moteur et les champs enregistrés ne changent pas.
 
 PC sert à inspecter, comprendre et exporter. Il ne doit pas devenir un Builder et ne doit pas modifier directement les programmes.
 
+- **Le contenu dès le premier écran** : l'en-tête (jour, sélecteurs, onglets)
+  reste sous ~350 px sur un écran de 768. Le retour « ← WOD » vit dans le
+  bandeau ; ne pas rétablir une barre collante pour un seul bouton.
+- **Un cardio n'a pas de charge** : ni « 0 lb », ni `!`, ni alerte « données
+  faibles ». Même lecture que la saisie (`coachExerciseDose`).
+- **Grille Cycle** : chaque bloc porte sa nature ; seul le metcon s'appelle
+  « WOD ». Échauffement et mobilité : titre seul.
+- **Aucun débordement** à 874 px (iPhone paysage) : le tableau Séance passe en
+  fiche étiquetée sous 1 100 px.
+
 ## Vue séance — règles verrouillées
 
 Ces règles sont obligatoires à partir de V51.24.
