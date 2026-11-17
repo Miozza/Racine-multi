@@ -1,3 +1,29 @@
+## V5.4.6 — Vue PC : en-tête compact, cardio sans fausse alerte, débordements corrigés
+
+**Pourquoi** : passage en revue de la vue PC en 1366 × 768, en iPhone paysage (874 × 402) et en portrait (402 × 790), sur les six onglets (2026-11-14). Le contenu commençait à 480 px, un Bike en zone 2 comptait comme une alerte, et deux onglets débordaient.
+
+- **En-tête** (`scripts/view_pc.js`, `styles.css`) : bandeau, sélecteurs et onglets passent de 480 à 330 px de haut ; le premier contenu commence à 342 px au lieu de 496. Le « ← WOD » occupait seul une barre collante de 60 px : il est dans le bandeau, et la barre est masquée dans cette vue (ses boutons restent dans le HTML, que `dev/pc_cycle_view_checks.js` exige). En iPhone paysage, les sélecteurs restent sur une ligne au lieu de s'empiler sur trois.
+- **Cardio** (`scripts/charge_diagnostic_ui.js`, `scripts/view_pc.js`) : un Bike, Row, Ski, une Course ou une Marche n'a pas de charge à suggérer. Le diagnostic le traite maintenant comme un mouvement sans charge utile (plus d'alerte « données faibles »), et les onglets Séance et Semaine affichent son allure (« zone 2 ») au lieu de « 0 lb » et de son `!`. Même helper que la saisie depuis V5.4.5 (`coachExerciseDose`). Profil neuf sur Peak S1 lundi : 1 alerte → 0.
+- **Grille Cycle** : chaque bloc dit sa nature — « Échauff. », « WOD », « Mobilité » — au lieu de tout appeler « WOD ». Seul le metcon garde l'or. L'échauffement et la mobilité, identiques d'une semaine à l'autre, ne montrent que leur titre et leur durée (texte complet en un clic, onglet Séance) : 3 368 → 2 669 px sur Peak. En colonne unique (écran étroit), chaque cellule porte son jour, qui n'apparaissait plus nulle part.
+- **Débordements** : Route — un nom de variable en `code` ne se coupait pas et poussait le panneau de droite hors de l'écran ; Export — les boutons des cartes Avis IA étaient forcés sur une ligne et sortaient de la carte. Le tableau Séance, en dessous de 1 100 px de large, passe en fiche (nom sur toute la largeur, puis Format / Charge / Repos / Réalisé étiquetés) au lieu de déborder à droite.
+- **Libellés** : sélecteur de semaine au libellé court (« S1 Pacing » au lieu de « S1 Construire le pacing. WOI… ») ; « 1 alerte », « 1 bloc » au singulier ; l'étiquette « WOD » tient dans sa pastille ; les textes du diagnostic de charges sont accentués (« Données faibles », « À surveiller », « Pas nécessairement une erreur »…). Ces textes sont aussi ceux de Réglages → Analyse des charges et de l'export JSON de l'analyse ; aucun code ne les lit.
+- **Garde-fous** (`dev/pc_cycle_view_checks.js`) : retour WOD dans l'en-tête, cardio sans charge ni alerte, libellé court de semaine, singulier, étiquettes de la grille, jour porté par chaque cellule, textes accentués.
+- **Vérifié** dans Chromium aux trois formats : aucun débordement sur les six onglets, aucune erreur console, « ← WOD » ramène à la vue WOD.
+- **Données** : rien. Vue en lecture seule, comme avant.
+
+## V5.4.5 — Interface : séance du jour visible à l'ouverture, saisie fidèle à la prescription
+
+**Pourquoi** : passage en revue des écrans en format iPhone 17 Pro (402 × 790), profil neuf sur Peak Phase 4 (2026-11-14). La séance du jour n'était pas à l'écran à l'ouverture, et trois cartes affichaient autre chose que ce que le programme demande.
+
+- **Vue WOD** (`styles.css`, `app.js`) : la navigation semaines/jours faisait 690 px de haut — flèches sur leur propre ligne, 8 semaines sur 4 rangées — et « Démarrer séance » tombait à 1030 px. Une ligne par niveau maintenant (283 px, bouton à 622 px) : les pastilles défilent dans leur rangée et la pastille active est amenée en vue. Les flèches des jours sont masquées dans cette vue (les jours se touchent directement) ; celles des semaines restent. Ceci remplace la grille de V50.46.
+- **Metcon** (`app.js`, `parseWodStructure`) : « 12 wall balls 20/14 lb » donnait la pastille « WALL BALLS 20/ ». La charge homme/femme part maintenant en entier du nom ; elle reste affichée sous le nom, comme avant. Même correction dans la saisie des résultats, qui lit la même analyse.
+- **Durée lue comme des reps** (`scripts/session/results.js`, `view.js`) : « 6×40 sec » affichait « cible 40 reps ». La carte dit « Sec — cible 40 sec » ; « 10 min accumulation » dit « Reps — en 10 min » au lieu d'une fausse cible de 10 reps.
+- **Charge demandée sans raison** : un cardio (Bike, Row, Ski, Course, Marche — nom entier, « Barbell Row » n'en est pas un) n'a plus ni champ poids, ni champ reps, ni « 0 lb » avec son `!` : la carte montre la durée et l'allure écrite (« zone 2 ») et garde le RPE et « Non fait ». Un mouvement écrit « poids du corps » garde son champ, renommé « lest — optionnel » : un Pull-up ou un Dip se leste, le retirer aurait perdu de la donnée.
+- **Moteur de charges** : inchangé. Le nouveau helper `coachExerciseDose()` (`scripts/app_helpers.js`) ne sert qu'à l'affichage ; `parseTargetReps()` n'est pas touché et une durée reste enregistrée dans le champ `reps`, comme avant. Seule différence dans ce qui s'enregistre : un cardio n'écrit plus un « 10 reps » de repli.
+- **Garde-fous** (`dev/wod_moves_checks.js`) : nom sans reste de charge, durée / cardio / lest reconnus, « Row » ancré, navigation sur une ligne.
+- **Vérifié** dans Chromium en 402 × 790 et 320 px de large : aucun débordement, S8 actif visible sans défiler, aucune erreur console.
+- **Données** : rien. Aucune clé, aucun schéma, aucune migration.
+
 ## V5.4.4 — Metcon en séance : la consigne s'affiche toujours, chrono d'intervalles en minutes:secondes
 
 **Pourquoi** : profil Bertin, Moteur + jambes S2 mardi (2026-11-10). La carte « Intervalles au seuil » ne montrait que son titre, et le chrono comptait 22 min d'un bloc au lieu de 5 × 3 min de travail / 1:30 de repos.

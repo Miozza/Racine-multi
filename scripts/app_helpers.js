@@ -104,6 +104,43 @@ function coachLoadIsMessage(load){
   return s.length > 40;
 }
 
+// Nature de la dose d'un exercice, pour les ÉCRANS seulement (V5.4.5).
+//
+// Deux erreurs d'affichage venaient de ce que les cartes de saisie traitaient
+// tout exercice comme « poids × reps » :
+//   - « 6×40 sec » s'affichait « cible 40 reps » — une durée lue comme des reps ;
+//   - « Bike 6 min, zone 2 » demandait un poids en lb et affichait « 0 lb ».
+//
+// Ce helper ne change RIEN à ce que le moteur calcule ni à ce qui est
+// enregistré : parseTargetReps() et le champ `reps` gardent leur contrat. Il
+// dit seulement aux vues quel libellé poser et quels champs n'ont pas de sens.
+//   unit   : "sec" | "min" | "" — la dose écrite est une durée ;
+//   value  : le texte de cette durée (« 40 sec », « 15-20 sec », « 6 min ») ;
+//   cardio : machine ou locomotion (Bike, Row, Ski, Course, Marche) — aucune
+//            charge externe possible, la durée est toute la prescription ;
+//   bodyweight : la charge écrite est « poids du corps » — un lest reste
+//            possible (Pull-up, Dip), donc le champ reste, sous un autre nom.
+// Le nom est ancré : « Row » est une machine, « Barbell Row » ne l'est pas.
+function coachExerciseDose(name, format, load){
+  var f = String(format == null ? "" : format);
+  var n = String(name == null ? "" : name).toLowerCase().replace(/[^a-zà-ÿ0-9]+/g, " ").trim();
+  var out = {unit:"", value:"", cardio:false, bodyweight:false};
+  // La durée est la dose quand elle suit directement le compte de séries (ou
+  // ouvre le format) : « 6×40 sec », « 3×15-20 sec », « 6 min », « Validation :
+  // 25 sec stable ». Un EMOM/AMRAP porte une durée de BLOC, pas une dose.
+  if(!/^\s*(?:e\d*mom|amrap|tabata)\b/i.test(f)){
+    var m = f.match(/^\s*(?:validation\s*:\s*)?(?:\d+\s*[x×]\s*)?(\d+(?:\s*[-–]\s*\d+)?)\s*(sec|secondes?|s|min|minutes?)(?![a-zà-ÿ])/i);
+    if(m){
+      out.unit = /^m/i.test(m[2]) ? "min" : "sec";
+      out.value = m[1].replace(/\s+/g, "") + " " + out.unit;
+    }
+  }
+  out.cardio = /^(?:(?:assault|echo|air) )?bike$|^v[ée]lo(?: stationnaire)?$|^row(?:er|ing)?$|^rameur$|^ski(?: ?erg)?$|^run$|^course$|^jog(?:ging)?$|^marche(?: inclin[ée]e)?$/.test(n);
+  var l = String(load == null ? "" : load);
+  out.bodyweight = !out.cardio && /poids du corps|bodyweight/i.test(l) && !/\d/.test(l);
+  return out;
+}
+
 // Affichage seulement : nettoie les suffixes internes/contextuels sans modifier les programmes sources.
 function displayMovementName(name){
   var raw=String(name||'').trim();

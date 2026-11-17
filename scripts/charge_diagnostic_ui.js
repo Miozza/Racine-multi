@@ -44,6 +44,11 @@ function chargeDiagRangeCap(label,targetReps){
   return mv.ranges[range]||null;
 }
 function chargeDiagNoLoadUseful(label,exercise){
+  // V5.4.6 — un cardio (Bike, Row, Ski, Course, Marche) n'a pas de charge à
+  // suggérer : il déclenchait « données faibles » à chaque séance, et la vue
+  // PC comptait une alerte sur un Bike en zone 2. Même lecture que les écrans
+  // de saisie (coachExerciseDose, scripts/app_helpers.js).
+  if(typeof coachExerciseDose==='function' && exercise && coachExerciseDose(exercise.name||label,exercise.format,exercise.load).cardio) return true;
   var raw=[label,exercise&&exercise.name,exercise&&exercise.format,exercise&&exercise.note].filter(Boolean).join(' ');
   var n=chargeDiagNormalize(raw);
   return /dead bug|sit up|situp|scap push up|scapular push up|band external rotation|external rotation band|mobilite|mobility|wall slide|stretch|respiration|breathing/.test(n);
@@ -109,34 +114,34 @@ function buildChargeDiagnosticForExercise(exercise, shownLoad, context){
   }
 
   if(!noLoadUseful&&validRows.length<2){
-    add('data_low','watch','Donnees faibles','Historique exploitable insuffisant pour ce mouvement dans ce contexte. La charge vient surtout du programme ou des references de base.');
+    add('data_low','watch','Données faibles','Historique exploitable insuffisant pour ce mouvement dans ce contexte. La charge vient surtout du programme ou des références de base.');
   }
   if(shown.indexOf('⚠')>=0){
-    add('active_warning','warning','Avertissement actif','Le moteur affiche deja un triangle. La charge est probablement cappee ou sous surveillance.');
+    add('active_warning','warning','Avertissement actif','Le moteur affiche déjà un triangle. La charge est probablement plafonnée ou sous surveillance.');
   }
   if(recentBest&&shownNum){
     var gap=recentBest.load-shownNum;
     if(gap>=25 && recentBest.rpe && recentBest.rpe<=8.5){
-      add('suspect_too_low','critical','Charge probablement trop basse','Historique recent : '+recentBest.load+' lb x '+recentBest.reps+' @ RPE '+recentBest.rpe+'. Charge affichee : '+shown+'. Ecart : '+gap+' lb.');
+      add('suspect_too_low','critical','Charge probablement trop basse','Historique récent : '+recentBest.load+' lb × '+recentBest.reps+' @ RPE '+recentBest.rpe+'. Charge affichée : '+shown+'. Écart : '+gap+' lb.');
     }else if(gap>=15 && recentBest.rpe && recentBest.rpe<=8){
-      add('maybe_too_low','watch','Charge possiblement basse','Historique recent au-dessus de la suggestion avec RPE controle. A surveiller, pas necessairement une erreur si la baisse est volontaire.');
+      add('maybe_too_low','watch','Charge possiblement basse','Historique récent au-dessus de la suggestion avec RPE contrôlé. À surveiller, pas nécessairement une erreur si la baisse est volontaire.');
     }
   }
   if(recent&&shownNum){
     var lastLoad=chargeDiagRawLoad(recent);
     var lastRpe=Number(recent.rpe||0)||0;
     if(lastRpe>=9 && shownNum>lastLoad){
-      add('suspect_too_high','critical','Progression bloquee attendue','Derniere donnee RPE '+lastRpe+' a '+lastLoad+' lb. Regle V51 : la prochaine suggestion ne doit jamais augmenter.');
+      add('suspect_too_high','critical','Progression bloquée attendue','Dernière donnée RPE '+lastRpe+' à '+lastLoad+' lb. Règle V51 : la prochaine suggestion ne doit jamais augmenter.');
     }
     if(typeof isIsolationMovement==='function'&&isIsolationMovement(label)&&lastRpe>=8.5&&shownNum>lastLoad){
-      add('isolation_too_high','warning','Isolation trop agressive','Mouvement d isolation avec RPE '+lastRpe+'. La suggestion devrait maintenir ou reduire legerement.');
+      add('isolation_too_high','warning','Isolation trop agressive','Mouvement d’isolation avec RPE '+lastRpe+'. La suggestion devrait maintenir ou réduire légèrement.');
     }
     if(label==='Overhead Rope Extension'&&lastLoad){
       var fridayCtx=(state&&String(state.day||'').toLowerCase()==='vendredi');
       var maxAllowed=(lastRpe<=8)?lastLoad+5:lastLoad;
       if(fridayCtx&&recentBest&&recentBest.load>=60&&recentBest.rpe<=8)maxAllowed=Math.max(maxAllowed,recentBest.load);
       if(shownNum>maxAllowed){
-        add('overhead_rope_jump','critical','Saut Overhead Rope Extension bloque','Derniere reference '+lastLoad+' lb @ RPE '+lastRpe+'. Progression max +5 lb seulement si RPE <= 8.');
+        add('overhead_rope_jump','critical','Saut Overhead Rope Extension bloqué','Dernière référence '+lastLoad+' lb @ RPE '+lastRpe+'. Progression max +5 lb seulement si RPE ≤ 8.');
       }
     }
   }
@@ -145,18 +150,18 @@ function buildChargeDiagnosticForExercise(exercise, shownLoad, context){
   }
   if(cap&&cap.status){
     if(cap.status==='recalibrating'||cap.status==='watch'){
-      add('recalibration','watch','Mouvement sous surveillance','athlete_state indique '+cap.status+'. Le moteur devrait rester prudent jusqu a confirmation.');
+      add('recalibration','watch','Mouvement sous surveillance','athlete_state indique '+cap.status+'. Le moteur devrait rester prudent jusqu’à confirmation.');
     }
     if(cap.status==='upgrade_ready'){
-      add('upgrade_ready','watch','Progression possible','Derniere reference facile ou reussie avec marge. Une petite progression peut etre logique.');
+      add('upgrade_ready','watch','Progression possible','Dernière référence facile ou réussie avec marge. Une petite progression peut être logique.');
     }
     if(cap.status==='hard'){
       var capRecent=recent&&Number(recent.rpe||0)>=8.5;
-      if(capRecent)add('hard_recent','watch','RPE haut recent','Derniere reference difficile dans ce contexte. Maintien ou legere baisse peut etre logique.');
+      if(capRecent)add('hard_recent','watch','RPE haut récent','Dernière référence difficile dans ce contexte. Maintien ou légère baisse peut être logique.');
     }
   }
   if(!noLoadUseful&&programNum&&shownNum&&Math.abs(shownNum-programNum)>=20 && !alerts.some(function(a){return a.code==='suspect_too_low'||a.code==='suspect_too_high';})){
-    add('far_from_program','watch','Ecart important avec le programme','La charge affichee est loin de la charge prevue. Ce n est pas forcement une erreur, mais ca merite verification.');
+    add('far_from_program','watch','Écart important avec le programme','La charge affichée est loin de la charge prévue. Ce n’est pas forcément une erreur, mais ça mérite vérification.');
   }
 
   var brainStats=null;
@@ -183,10 +188,10 @@ function buildChargeDiagnosticForExercise(exercise, shownLoad, context){
     cycleComment='S'+wk+' '+day+' — '+((cfg&&cfg.label)||'cycle actif')+(wg?' · '+wg:'');
   }catch(e){ cycleComment='Cycle actif non disponible.'; }
 
-  var summary='Charge coherente avec les donnees disponibles.';
-  if(severity==='critical')summary='Alerte forte : la charge affichee semble incoherente avec l historique recent.';
-  else if(severity==='warning')summary='Avertissement : la charge merite une verification avant execution.';
-  else if(severity==='watch')summary='A surveiller : donnees faibles, contexte different ou ajustement prudent. Pas necessairement une erreur.';
+  var summary='Charge cohérente avec les données disponibles.';
+  if(severity==='critical')summary='Alerte forte : la charge affichée semble incohérente avec l’historique récent.';
+  else if(severity==='warning')summary='Avertissement : la charge mérite une vérification avant exécution.';
+  else if(severity==='watch')summary='À surveiller : données faibles, contexte différent ou ajustement prudent. Pas nécessairement une erreur.';
 
   return {
     name:name,
@@ -264,10 +269,10 @@ function chargeDiagnosticCycleComment(rows){
   var crit=rows.filter(function(r){return r.severity==='critical';}).length;
   var warn=rows.filter(function(r){return r.severity==='warning';}).length;
   var watch=rows.filter(function(r){return r.severity==='watch';}).length;
-  if(crit)return 'Alerte : au moins une charge semble aberrante par rapport a l historique. Ne pas corriger automatiquement sans verifier le mouvement.';
-  if(warn)return 'Seance globalement utilisable, mais certaines charges meritent une verification avant execution.';
-  if(watch)return 'Seance coherente, avec quelques mouvements a surveiller a cause du RPE ou du manque de donnees.';
-  return 'Aucune aberration evidente detectee dans les charges de cette selection.';
+  if(crit)return 'Alerte : au moins une charge semble aberrante par rapport à l’historique. Ne pas corriger automatiquement sans vérifier le mouvement.';
+  if(warn)return 'Séance globalement utilisable, mais certaines charges méritent une vérification avant exécution.';
+  if(watch)return 'Séance cohérente, avec quelques mouvements à surveiller à cause du RPE ou du manque de données.';
+  return 'Aucune aberration évidente détectée dans les charges de cette sélection.';
 }
 function renderChargeDiagnosticPanel(){
   var box=$('chargeDiagnosticOutput'); if(!box)return;
@@ -276,7 +281,7 @@ function renderChargeDiagnosticPanel(){
   var flags=rows.filter(function(r){return r.severity!=='ok';});
   var html='<div class="system-tag" style="margin-bottom:10px">Lecture seule · aucune correction automatique</div>'+
     '<p class="muted">'+escapeHtml(report.cycleComment)+'</p>'+
-    '<p><strong>'+rows.length+'</strong> mouvements analyses · <strong>'+report.summary.critical+'</strong> critiques · <strong>'+report.summary.warning+'</strong> avertissements · <strong>'+report.summary.watch+'</strong> a surveiller.</p>';
+    '<p><strong>'+rows.length+'</strong> mouvements analysés · <strong>'+report.summary.critical+'</strong> critiques · <strong>'+report.summary.warning+'</strong> avertissements · <strong>'+report.summary.watch+'</strong> à surveiller.</p>';
   if(flags.length){
     html+='<div class="history-list">'+flags.map(function(r){
       var icon=r.severity==='critical'?'⚠️':(r.severity==='warning'?'⚠':'•');
@@ -285,7 +290,7 @@ function renderChargeDiagnosticPanel(){
       return '<div class="history-item"><strong>'+icon+' '+escapeHtml(r.name)+'</strong><br><small>'+escapeHtml(r.blockTitle||'')+' · '+escapeHtml(r.shownLoad||'—')+' · '+escapeHtml(r.summary)+'</small>'+(first?'<p class="muted">'+escapeHtml(first.detail)+'</p>':'')+brain+'</div>';
     }).join('')+'</div>';
   }else{
-    html+='<p class="muted">Aucune alerte pour la seance affichee.</p>';
+    html+='<p class="muted">Aucune alerte pour la séance affichée.</p>';
   }
   box.innerHTML=html;
 }

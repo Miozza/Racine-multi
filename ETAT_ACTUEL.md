@@ -1,8 +1,18 @@
-# ETAT ACTUEL — V5.4.4
+# ETAT ACTUEL — V5.4.6
 
-Version actuelle : V5.4.4
+Version actuelle : V5.4.6
 
 ## État courant
+
+### Vue PC — le contenu dès le premier écran, plus de fausse alerte cardio
+
+L'en-tête de la vue PC (jour, sélecteurs, onglets) tient en 330 px au lieu de 480 sur un écran de 768, et le retour « ← WOD » y est intégré. Un cardio (Bike, Row…) n'affiche plus « 0 lb » ni d'alerte « données faibles » : il montre son allure. La grille Cycle distingue échauffement, metcon et mobilité ; l'échauffement et la mobilité n'y montrent que leur titre. Plus aucun débordement en Route ni en Export, et le tableau Séance se lit en iPhone paysage comme en portrait.
+
+### Interface — la séance du jour visible à l'ouverture, la saisie dit ce qu'elle demande
+
+La navigation de la vue WOD tient sur une ligne par niveau (semaines, puis jours) : les pastilles défilent dans leur rangée et la pastille active est toujours en vue. « Démarrer séance » est à l'écran dès l'ouverture sur un iPhone, au lieu d'être une page plus bas.
+
+Les cartes de saisie (séance guidée et Résultats) distinguent trois cas qu'elles traitaient tous comme « poids × reps » : une durée (« 6×40 sec ») s'affiche en secondes, un cardio (« Bike 6 min, zone 2 ») n'a ni poids ni reps et montre son allure, et un mouvement au poids du corps garde un champ « lest » optionnel. Une charge homme/femme (« 20/14 lb ») ne laisse plus de morceau dans le nom du mouvement d'un metcon. Le moteur de charges et les données enregistrées ne changent pas.
 
 ### Metcon en séance — la consigne s'affiche toujours, le chrono lit « 1:30 »
 

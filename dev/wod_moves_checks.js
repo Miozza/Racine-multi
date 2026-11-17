@@ -227,6 +227,33 @@ files.forEach(function(f){
 assert(!/wall balls 14 lb/.test(read('programs/competition_peak.js')), 'Competition Peak : wall balls en 20/14 lb (homme/femme)');
 const h = parse("AMRAP 18 : 15 wall balls 20/14 lb + 12 box step-ups 24/20 po + 10 burpees.");
 assert(h && h[1].load === '24/20 po' && /^box step-ups$/i.test(h[1].name), 'Hauteur homme/femme lue telle quelle, hors du nom (obtenu ' + JSON.stringify(h && h[1]) + ')');
+assert(h && /^wall balls$/i.test(h[0].name) && h[0].load === '20/14 lb', 'Charge homme/femme : rien ne reste collé au nom (« wall balls 20/ ») (obtenu ' + JSON.stringify(h && h[0]) + ')');
+}
+
+// ── V5.4.5 — la carte de saisie dit ce que le programme demande ─────────────
+// coachExerciseDose() (scripts/app_helpers.js) ne sert qu'aux écrans : une
+// durée ne s'affiche pas « reps », un cardio n'a ni poids ni reps, et « Row »
+// (machine) n'est pas « Barbell Row ». Le moteur et le champ `reps` enregistré
+// ne changent pas : c'est pourquoi parseTargetReps() n'est pas touché.
+{
+  const helpers = read('scripts/app_helpers.js');
+  const src = extractFunction(helpers, 'coachExerciseDose');
+  assert(!!src, 'app_helpers.js : coachExerciseDose() existe');
+  const box = {}; vm.createContext(box);
+  if(src) vm.runInContext(src, box, {filename:'app_helpers.js'});
+  const dose = box.coachExerciseDose || (() => ({}));
+  const d = (n, f, l) => dose(n, f, l);
+  assert(d('Wall Ball','6×40 sec','14 lb').unit === 'sec' && d('Hollow Hold','3×15-20 sec','poids du corps').value === '15-20 sec', 'Durée en secondes reconnue, plage comprise');
+  assert(d('Bike','6 min','zone 2').cardio && d('Row','5 min','—').cardio && d('Marche inclinée','10 min','').cardio, 'Bike / Row / Marche : cardio, sans charge');
+  assert(!d('Barbell Row','3×10','155 lb').cardio && !d('Ring Row','3×8','poids du corps').cardio && !d('Chest Supported Row','3×10','').cardio, '« Row » dans un nom de mouvement chargé n\'est pas une machine');
+  assert(d('Power Clean','EMOM 8 : 2 Power Clean','150 lb').unit === '' && d('Back Squat','5×5 @ tempo 3 sec','225 lb').unit === '' && d('Back Squat','5×5','225 lb').unit === '', 'EMOM, tempo et séries×reps ne sont pas des durées');
+  assert(d('Ring Row','3×8','poids du corps').bodyweight && !d('Weighted Pull-up','3×5','poids du corps à +10 lb').bodyweight && !d('Back Squat','5×5','225 lb').bodyweight, '« poids du corps » : le champ devient un lest optionnel, jamais quand une charge est écrite');
+  const results = read('scripts/session/results.js'), view = read('scripts/session/view.js');
+  assert(/isCardio\?'':/.test(results) && /if\(!isCardio\) html\+="<div class='guided-load-row'>/.test(view), 'Cardio : ni champ poids ni champ reps, dans les deux écrans de saisie');
+  assert(/data-field="reps"/.test(results) && /data-guided-field='reps'/.test(view), 'Une durée reste enregistrée dans le champ `reps` : aucun changement de schéma');
+  const css = read('styles.css');
+  assert(/#trainingView \.week-day-nav \.nav-row\{\s*display:flex;/.test(css) && !/#trainingView #weekButtons\{\s*grid-template-columns/.test(css), 'Vue WOD : une ligne par niveau de navigation, plus de grille empilée');
+  assert(/function scrollActivePillIntoView/.test(app) && !/scrollIntoView\(/.test(extractFunction(app,'scrollActivePillIntoView')||'x.scrollIntoView('), 'La pastille active est amenée en vue sans faire défiler la page');
 }
 
 console.log(failures ? '\n' + failures + ' échec(s).' : '\nTous les garde-fous passent.');

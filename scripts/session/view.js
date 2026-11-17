@@ -265,6 +265,9 @@ function buildGuidedSessionBlocks(){
           targetMin:parsedTarget.min,
           targetMax:parsedTarget.max,
           load:CoachCharge.suggestForExercise(e,b) || "",
+          // Affichage seulement (V5.4.5) : durée vs reps, cardio sans charge.
+          dose:(typeof coachExerciseDose==="function")?coachExerciseDose(e.name,e.format,e.load):null,
+          programLoad:e.load || "",
           rest:e.rest || "",
           note:e.note || "",
           exerciseIndex:ei
@@ -533,19 +536,26 @@ function renderGuidedResultPanel(e){
   var loadVal=getGuidedResult(key,'load',suggestedLoad?suggestedLoad:'');
   var repsVal=guidedNumberOr(getGuidedResult(key,'reps',defaultReps),defaultReps);
   var rpeVal=Number(getGuidedResult(key,'rpe',8))||8;
-  if(loadVal!=='' && loadVal!==undefined) setGuidedResult(key,'load',loadVal);
-  setGuidedResult(key,'reps',repsVal);
+  // V5.4.5 — même lecture que la carte de résultats (appendSessionEntryCard) :
+  // une durée s'appelle « Sec », un cardio n'a ni poids ni reps, et un
+  // mouvement au poids du corps garde son champ sous le nom « lest ».
+  var dose=e.dose||{};
+  var isCardio=!!dose.cardio;
+  if(!isCardio){
+    if(loadVal!=='' && loadVal!==undefined) setGuidedResult(key,'load',loadVal);
+    setGuidedResult(key,'reps',repsVal);
+  }
   setGuidedResult(key,'rpe',rpeVal);
 
-  var html="<div class='guided-result-panel' data-skip-panel='"+escHtml(key)+"'>";
+  var html="<div class='guided-result-panel"+(isCardio?" is-cardio":"")+"' data-skip-panel='"+escHtml(key)+"'>";
   html+="<div class='guided-result-title'>Résultat</div>";
-  html+="<div class='guided-load-row'>"+
+  if(!isCardio) html+="<div class='guided-load-row'>"+
         "<button type='button' class='guided-adj minus' data-key='"+escHtml(key)+"' data-exercise='"+escHtml(e.title)+"' data-guided-adjust='-5'>−</button>"+
-        "<input class='guided-result-input guided-load-input' data-key='"+escHtml(key)+"' data-exercise='"+escHtml(e.title)+"' data-guided-field='load' type='number' inputmode='decimal' value='"+escHtml(loadVal)+"' placeholder='lb'/>"+
+        "<input class='guided-result-input guided-load-input' data-key='"+escHtml(key)+"' data-exercise='"+escHtml(e.title)+"' data-guided-field='load' type='number' inputmode='decimal' value='"+escHtml(loadVal)+"' placeholder='"+(dose.bodyweight?"lest":"lb")+"'/>"+
         "<button type='button' class='guided-adj plus' data-key='"+escHtml(key)+"' data-exercise='"+escHtml(e.title)+"' data-guided-adjust='5'>+</button>"+
         "</div>";
   html+="<div class='guided-step-grid'>";
-  html+="<div class='guided-step-control reps-step'><span>Reps</span><div class='guided-step-row'>"+
+  if(!isCardio) html+="<div class='guided-step-control reps-step'><span>"+(dose.unit==="sec"?"Sec":"Reps")+"</span><div class='guided-step-row'>"+
         "<button type='button' class='guided-step-btn minus' data-key='"+escHtml(key)+"' data-guided-step='reps' data-step='-1' data-min='0'>−</button>"+
         "<input class='guided-result-input guided-mini-input' data-key='"+escHtml(key)+"' data-guided-field='reps' type='number' inputmode='numeric' min='0' step='1' value='"+escHtml(guidedNumberText(repsVal))+"'/>"+
         "<button type='button' class='guided-step-btn plus' data-key='"+escHtml(key)+"' data-guided-step='reps' data-step='1' data-min='0'>+</button>"+
@@ -592,7 +602,13 @@ function renderGuidedExerciseList(exercises){
             "<div class='guided-ex-title'><span>"+escHtml(typeof displayMovementName==='function'?displayMovementName(e.title):e.title)+"</span>"+tutorialButtonHtml(e.title)+guidedNoteButtonHtml(e)+"</div>"+
             "<div class='guided-ex-grid'>";
     if(e.format)html+="<div><span>Format</span><strong>"+escHtml(e.format)+"</strong></div>";
-    if(e.load){
+    // Un cardio n'a pas de charge : « 0 lb » et son `!` ne disaient rien. La
+    // consigne écrite du programme (« zone 2 ») prend la ligne, sous son vrai nom.
+    var doseCardio=!!(e.dose&&e.dose.cardio);
+    if(doseCardio){
+      var pace=String(e.programLoad||"").trim();
+      if(pace&&pace!=="—")html+="<div class='guided-load-info-line'><span>Allure</span><strong class='accent guided-load-value'>"+escHtml(pace)+"</strong></div>";
+    }else if(e.load){
       html+= coachLoadIsMessage(e.load)
         ? "<div class='guided-load-message'><span>Poids</span><em>"+escHtml(e.load)+"</em></div>"
         : "<div class='guided-load-info-line'><span>Poids</span><strong class='accent guided-load-value'>"+escHtml(e.load)+loadInfoButtonHtml(e,e.load)+"</strong></div>";
