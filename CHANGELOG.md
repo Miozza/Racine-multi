@@ -1,3 +1,15 @@
+## V5.4.8 — Vue PC : ajustée à sa cible, l'écran 16/9 en 1920 × 1080
+
+**Pourquoi** : la vue PC vise un écran d'ordinateur 16/9 (« paysage 1080p »). Les retouches de V5.4.6 avaient été vérifiées en 1366 × 768 et sur iPhone, pas en 1920 × 1080. Revue faite cette fois en 1920 × 1080 d'abord.
+
+- **En-tête** (`scripts/view_pc.js`, `styles.css`) : sur un écran d'au moins 1 400 px de large, sélecteurs et onglets passent sur une ligne. Le contenu commence à 298 px au lieu de 350 sur 1 080.
+- **Grille Cycle** : le contenu d'une journée part du haut de sa cellule. Un `<button>` le centrait verticalement et laissait un vide au-dessus.
+- **Onglet Séance** : la colonne Mouvement cède de la place à la colonne Charge ; « poids du corps » et son `!` restent sur une ligne.
+- **Badge d'alertes** : zéro alerte s'écrit « Aucune alerte ». Le « 0 » d'Orbitron est barré et se lisait « Ø ALERTE ».
+- **Vérifié** en 1920 × 1080 sur les six onglets, puis en 1366 × 768 et 874 × 402 : aucun débordement, aucune erreur console.
+- **Garde-fous** (`dev/pc_cycle_view_checks.js`) : en-tête sur une ligne en écran large, zéro alerte en toutes lettres, journée de la grille alignée en haut.
+- **Données** : rien.
+
 ## V5.4.7 — Durée réelle des séances, Moteur + jambes rééquilibré, finitions d'interface
 
 **Pourquoi** : « le programme ne laisse pas le temps de transition entre les exercices, je n'ai pas le temps de finir » (athlète, 2026-11-19). La sauvegarde le confirme : Moteur + jambes S3, lundi et mardi, les blocs de fin sont notés « non fait — manque de temps » ; mardi S2, le Side Plank aussi. Les créneaux écrits (`block.time`) comptent le travail, pas le temps humain qui l'entoure.

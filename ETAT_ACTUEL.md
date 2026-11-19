@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.7
+# ETAT ACTUEL — V5.4.8
 
-Version actuelle : V5.4.7
+Version actuelle : V5.4.8
 
 ## État courant
+
+### Vue PC — ajustée à sa cible, l'écran 16/9 en 1920 × 1080
+
+Sélecteurs et onglets tiennent sur une ligne : le contenu commence à 298 px au lieu de 350. La grille Cycle part du haut de chaque journée, la charge et son « ! » restent sur une ligne dans l'onglet Séance, et zéro alerte s'écrit « Aucune alerte ».
 
 ### Durée réelle des séances — le temps humain est compté
 

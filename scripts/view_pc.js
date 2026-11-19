@@ -323,8 +323,14 @@ function pcRenderTopHeader(){
     '<div class="pcx-hero-text"><div class="pcx-kicker">PC · inspection · lecture seule</div>'+
     '<h1>'+pcEsc(w.day.label)+'</h1>'+
     '<p>'+pcEsc(w.day.base||'')+(plan?' · '+pcEsc(plan):'')+'</p></div>'+
-    '<div class="pcx-alert-badge"><strong>'+alerts.length+'</strong><span>'+(alerts.length>1?'alertes':'alerte')+'</span></div>'+
-    '</section>'+pcRenderSelectors()+pcRenderTabs();
+    // V5.4.8 — zéro alerte s'écrit en toutes lettres : le « 0 » d'Orbitron
+    // est barré et se lisait « Ø ALERTE ».
+    (alerts.length
+      ? '<div class="pcx-alert-badge"><strong>'+alerts.length+'</strong><span>'+(alerts.length>1?'alertes':'alerte')+'</span></div>'
+      : '<div class="pcx-alert-badge is-zero"><span>Aucune alerte</span></div>')+
+    // V5.4.8 — sélecteurs et onglets dans un même conteneur : sur un écran
+    // 16/9 (1920 × 1080, la cible de cette vue), ils tiennent sur une ligne.
+    '</section><div class="pcx-controls">'+pcRenderSelectors()+pcRenderTabs()+'</div>';
 }
 function pcRenderMiniAlerts(alerts){
   if(!alerts.length)return '<div class="pcx-panel"><h3>Alertes séance</h3><p class="pcx-muted">Aucune alerte majeure détectée pour cette séance.</p></div>';

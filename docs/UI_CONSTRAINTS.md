@@ -70,6 +70,10 @@ C'est de l'affichage : le moteur et les champs enregistrés ne changent pas.
 
 PC sert à inspecter, comprendre et exporter. Il ne doit pas devenir un Builder et ne doit pas modifier directement les programmes.
 
+- **Cible : un écran d'ordinateur 16/9, 1920 × 1080.** C'est là qu'on vérifie
+  d'abord une retouche de la vue PC ; 1366 × 768 ensuite. L'iPhone n'est pas sa
+  cible : il doit seulement rester sans débordement.
+
 - **Le contenu dès le premier écran** : l'en-tête (jour, sélecteurs, onglets)
   reste sous ~350 px sur un écran de 768. Le retour « ← WOD » vit dans le
   bandeau ; ne pas rétablir une barre collante pour un seul bouton.

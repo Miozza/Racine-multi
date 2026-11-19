@@ -9734,3 +9734,26 @@ ol.cai-list { padding-left: 20px; }
 .pcx-cycle-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:24px;}
 .pcx-cycle-scroll .pcx-cycle-grid{margin-bottom:0;}
 #resultsView .sf-label{white-space:normal;overflow-wrap:anywhere;}
+
+/* ═══════════════════════════════════════════
+   V5.4.8 — Vue PC sur sa cible : écran 16/9, 1920 × 1080
+   ═══════════════════════════════════════════ */
+/* Sélecteurs et onglets sur une seule ligne quand la largeur le permet :
+   le contenu commence plus haut (350 → ~270 px sur 1 080). */
+@media (min-width:1400px){
+  #phoneView.view-active .pcx-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:14px;}
+  #phoneView.view-active .pcx-controls .pcx-selectors{margin-bottom:0;}
+  #phoneView.view-active .pcx-controls .pcx-tabs{margin:0;flex-wrap:nowrap;}
+}
+/* Grille Cycle : le contenu d'une cellule part du haut. Un <button> centre son
+   contenu verticalement, ce qui laissait un vide au-dessus de chaque journée. */
+.pcx-cycle-day{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;}
+/* Séance : la colonne Mouvement cède de la place à Charge, qui garde la
+   charge et son « ! » sur une ligne. */
+@media (min-width:1400px){
+  #phoneView.view-active .pcx-row{grid-template-columns:minmax(300px,1.3fr) minmax(110px,.45fr) minmax(210px,.75fr) minmax(110px,.4fr) minmax(180px,.6fr);}
+}
+#phoneView.view-active .pcx-row .pcx-load{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+/* Zéro alerte : le libellé seul, en toutes lettres. */
+#phoneView.view-active .pcx-alert-badge.is-zero{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04);}
+#phoneView.view-active .pcx-alert-badge.is-zero span{margin:0;font-size:12px;color:var(--text2);}

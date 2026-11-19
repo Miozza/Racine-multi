@@ -1,5 +1,5 @@
-// Racine V5.4.7 — durée réelle des séances (transitions comprises), Moteur + jambes rééquilibré, finitions d'interface
-var APP_VERSION = "V5.4.7";
+// Racine V5.4.8 — vue PC ajustée à sa cible : écran 16/9, 1920 × 1080
+var APP_VERSION = "V5.4.8";
 
 // Architecture stable
 // programs/*.js = plan prévu
