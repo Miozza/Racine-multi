@@ -109,12 +109,21 @@ function pcResultForExercise(session, exerciseName){
   }
   return null;
 }
+// V5.4.7 — la charge d'un metcon est celle ÉCRITE dans son texte (décision du
+// 2026-10-15 : « 15 Wall Balls 20 lb », « 53/35 lb »). L'ancienne version
+// allait chercher une valeur de data/charges.js par mot-clé et affichait
+// « Wall balls : 14 lb » sous un texte qui disait « 20/14 lb ». Elle lit
+// maintenant les pastilles (parseWodStructure), même source que la séance.
 function pcPhoneWodLoadHints(text){
-  var t=(text||"").toLowerCase(),hints=[];
-  if(t.indexOf("db push press")>=0)hints.push({label:"Light DB push press",val:charge("Light DB Push Press","35 lb / main")});
-  if(t.indexOf("hang power clean")>=0)hints.push({label:"Hang power cleans",val:charge("Hang Power Clean","115-135 lb")});
-  if(t.indexOf("wall balls")>=0)hints.push({label:"Wall balls",val:charge("Wall Ball","14 lb")});
-  if(t.indexOf("kb swings")>=0)hints.push({label:"KB swings",val:charge("KB Swings","24 kg")});
+  var moves=[];
+  try{ if(typeof parseWodStructure==="function") moves=parseWodStructure(text||"")||[]; }catch(e){ moves=[]; }
+  var seen={}, hints=[];
+  moves.forEach(function(mv){
+    if(!mv||!mv.load) return;
+    var k=String(mv.name).toLowerCase()+"|"+mv.load;
+    if(seen[k]) return; seen[k]=1;
+    hints.push({label:mv.name.charAt(0).toUpperCase()+mv.name.slice(1), val:mv.load});
+  });
   if(!hints.length)return"";
   return '<div class="pcx-load-hints">'+hints.map(function(item){return '<span>'+pcEsc(item.label)+' : <strong>'+pcEsc(item.val)+'</strong></span>';}).join('')+'</div>';
 }
@@ -314,8 +323,14 @@ function pcRenderTopHeader(){
     '<div class="pcx-hero-text"><div class="pcx-kicker">PC · inspection · lecture seule</div>'+
     '<h1>'+pcEsc(w.day.label)+'</h1>'+
     '<p>'+pcEsc(w.day.base||'')+(plan?' · '+pcEsc(plan):'')+'</p></div>'+
-    '<div class="pcx-alert-badge"><strong>'+alerts.length+'</strong><span>'+(alerts.length>1?'alertes':'alerte')+'</span></div>'+
-    '</section>'+pcRenderSelectors()+pcRenderTabs();
+    // V5.4.8 — zéro alerte s'écrit en toutes lettres : le « 0 » d'Orbitron
+    // est barré et se lisait « Ø ALERTE ».
+    (alerts.length
+      ? '<div class="pcx-alert-badge"><strong>'+alerts.length+'</strong><span>'+(alerts.length>1?'alertes':'alerte')+'</span></div>'
+      : '<div class="pcx-alert-badge is-zero"><span>Aucune alerte</span></div>')+
+    // V5.4.8 — sélecteurs et onglets dans un même conteneur : sur un écran
+    // 16/9 (1920 × 1080, la cible de cette vue), ils tiennent sur une ligne.
+    '</section><div class="pcx-controls">'+pcRenderSelectors()+pcRenderTabs()+'</div>';
 }
 function pcRenderMiniAlerts(alerts){
   if(!alerts.length)return '<div class="pcx-panel"><h3>Alertes séance</h3><p class="pcx-muted">Aucune alerte majeure détectée pour cette séance.</p></div>';
@@ -484,7 +499,10 @@ function pcRenderCycleTab(){
   }
   return '<section class="pcx-panel pcx-cycle-intro"><h2>Cycle complet — '+pcEsc((pcFocusCfg().label)||pcCurrentCycleId())+'</h2>'+
     '<p class="pcx-muted">Vue d\'ensemble : mouvements et séries×reps seulement (sans charge), pour évaluer et construire. Clique une journée pour l\'inspecter en détail. Optimisé pour écran large (paysage 1080p).</p></section>'+
-    '<div class="pcx-cycle-grid" style="grid-template-columns:72px repeat('+cols+',minmax(230px,1fr))">'+head+body+'</div>';
+    // V5.4.7 — colonnes de 170 px au lieu de 230 : quatre jours tiennent en
+    // iPhone paysage (874 px), qui passait en colonne unique (7 300 px de
+    // haut). Au-delà, la grille défile DANS son cadre, jamais la page.
+    '<div class="pcx-cycle-scroll"><div class="pcx-cycle-grid" style="grid-template-columns:64px repeat('+cols+',minmax(170px,1fr))">'+head+body+'</div></div>';
 }
 
 function pcRenderWeekTab(){

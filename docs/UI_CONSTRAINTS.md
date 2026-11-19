@@ -31,6 +31,15 @@ Racine est utilisé en entraînement réel. La priorité est :
   `scrollIntoView()`, qui ferait défiler la page). Ne pas revenir à une grille
   qui empile les semaines : 8 semaines coûtaient 690 px.
 
+## Durée annoncée — le temps humain compte
+
+- La vue WOD annonce la **durée réelle**, transitions comprises
+  (`CoachTimeBudget.session()`), jamais la seule somme des `block.time`.
+- Le rappel de retard compte le même temps : son créneau d'un bloc =
+  estimation + transition qui le précède.
+- Les constantes du modèle vivent dans `scripts/session/time_budget.js` (table
+  `T`) et nulle part ailleurs.
+
 ## Carte de saisie — elle dit ce que le programme demande
 
 `coachExerciseDose()` (`scripts/app_helpers.js`) est le seul endroit qui décide,
@@ -60,6 +69,10 @@ C'est de l'affichage : le moteur et les champs enregistrés ne changent pas.
 ## PC
 
 PC sert à inspecter, comprendre et exporter. Il ne doit pas devenir un Builder et ne doit pas modifier directement les programmes.
+
+- **Cible : un écran d'ordinateur 16/9, 1920 × 1080.** C'est là qu'on vérifie
+  d'abord une retouche de la vue PC ; 1366 × 768 ensuite. L'iPhone n'est pas sa
+  cible : il doit seulement rester sans débordement.
 
 - **Le contenu dès le premier écran** : l'en-tête (jour, sélecteurs, onglets)
   reste sous ~350 px sur un écran de 768. Le retour « ← WOD » vit dans le

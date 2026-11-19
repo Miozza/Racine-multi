@@ -7031,8 +7031,9 @@ body.is-client [data-ai-clear]{display:none!important}
 .pcx-cycle-day li.pcx-cycle-wod span{color:var(--text2)!important;white-space:normal;font-family:var(--font-main);flex:1 1 auto;min-width:0;overflow-wrap:anywhere;text-align:left;}
 .pcx-cycle-rest{color:var(--text2);font-style:italic;font-size:12px;}
 .pcx-cycle-back-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-/* Portrait / petit écran : la grille reste lisible en colonne unique. */
-@media (max-width:900px){
+/* Portrait / petit écran : la grille reste lisible en colonne unique.
+   V5.4.7 : 700 px au lieu de 900 — en iPhone paysage, les jours restent côte à côte. */
+@media (max-width:700px){
   .pcx-cycle-grid{grid-template-columns:1fr!important;}
   .pcx-cycle-colhead{display:none;}
   .pcx-cycle-rowhead{justify-content:flex-start;margin-top:8px;}
@@ -9691,9 +9692,68 @@ ol.cai-list { padding-left: 20px; }
 }
 /* Cycle en colonne unique : les en-têtes de jour sont masqués, chaque cellule
    porte son jour (data-day-label) — sinon on ne savait plus lequel on lisait. */
-@media (max-width:900px){
+@media (max-width:700px){
   .pcx-cycle-day::before{
     content:attr(data-day-label);display:block;margin-bottom:6px;
     font-family:var(--font-hud);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
   }
 }
+
+/* V5.4.7 — durée réelle : la mention sous le chiffre dit ce qu'il compte. */
+.wodplus-stat-sub{display:block;margin-top:4px;font-family:var(--font-main);font-size:12px;line-height:1.25;color:var(--text2);font-weight:600;}
+
+/* V5.4.7 — boutons lisibles et faciles à toucher hors séance (Réglages, Cycle,
+   Historique, Charge) : 34 px de haut en 11 px, c'était le plus petit texte
+   de l'app. Les polices ne changent pas (Orbitron reste la police HUD). */
+#settingsView .btn-ghost, #settingsView .btn-accent, #settingsView .btn-danger,
+#cycleView .btn-ghost, #cycleView .btn-accent, #cycleView .btn-danger,
+#historyView .btn-ghost, #historyView .btn-danger,
+#profileView .btn-ghost, #profileView .btn-accent{
+  min-height:44px;padding:11px 16px;font-size:13px;
+}
+/* Une action irréversible vit seule, sous un trait, loin des actions courantes. */
+.btn-row.danger-zone{margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,34,68,.22);}
+
+/* Accueil d'un nouveau profil : le bouton d'étape est l'action de l'écran. */
+.racine-wizard-next{display:block;width:100%;min-height:52px;font-size:14px;margin-top:6px;}
+
+/* Vue Charge : le titre tient sur une ligne, la mention de référence sur
+   deux lignes voulues (« × 1 · RPE 8 », puis la date). */
+#profileView .ctab-head h2{font-size:clamp(18px,5vw,23px);}
+.wref-meta{font-size:12px;white-space:pre-line;line-height:1.25;}
+
+/* Résultats : pastilles de rounds, de reps et de RPE faciles à toucher juste
+   après le metcon. Elles passent sur deux lignes plutôt que de rester à 24 px. */
+#resultsView .sf-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;overflow:visible;}
+#resultsView .sf-chip{min-height:44px;min-width:0;padding:0;font-size:16px;}
+#resultsView .sf-label{font-size:12px;}
+#resultsView .wod-mv-hint{font-size:13px;}
+#resultsView .wod-mv-max{font-size:12px;}
+
+/* V5.4.7 — la grille Cycle défile dans son cadre quand les jours ne tiennent pas. */
+.pcx-cycle-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:24px;}
+.pcx-cycle-scroll .pcx-cycle-grid{margin-bottom:0;}
+#resultsView .sf-label{white-space:normal;overflow-wrap:anywhere;}
+
+/* ═══════════════════════════════════════════
+   V5.4.8 — Vue PC sur sa cible : écran 16/9, 1920 × 1080
+   ═══════════════════════════════════════════ */
+/* Sélecteurs et onglets sur une seule ligne quand la largeur le permet :
+   le contenu commence plus haut (350 → ~270 px sur 1 080). */
+@media (min-width:1400px){
+  #phoneView.view-active .pcx-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:14px;}
+  #phoneView.view-active .pcx-controls .pcx-selectors{margin-bottom:0;}
+  #phoneView.view-active .pcx-controls .pcx-tabs{margin:0;flex-wrap:nowrap;}
+}
+/* Grille Cycle : le contenu d'une cellule part du haut. Un <button> centre son
+   contenu verticalement, ce qui laissait un vide au-dessus de chaque journée. */
+.pcx-cycle-day{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;}
+/* Séance : la colonne Mouvement cède de la place à Charge, qui garde la
+   charge et son « ! » sur une ligne. */
+@media (min-width:1400px){
+  #phoneView.view-active .pcx-row{grid-template-columns:minmax(300px,1.3fr) minmax(110px,.45fr) minmax(210px,.75fr) minmax(110px,.4fr) minmax(180px,.6fr);}
+}
+#phoneView.view-active .pcx-row .pcx-load{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+/* Zéro alerte : le libellé seul, en toutes lettres. */
+#phoneView.view-active .pcx-alert-badge.is-zero{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04);}
+#phoneView.view-active .pcx-alert-badge.is-zero span{margin:0;font-size:12px;color:var(--text2);}

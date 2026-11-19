@@ -221,6 +221,14 @@ sens et tombera.
 de l'exercice (`technique`, `léger`, `facile`). Les deux coupent
 l'auto-progression et empêchent le résultat de remplacer une capacité principale.
 
+**Durée réelle** (décision du 2026-11-19) : un programme se dimensionne sur la
+durée réelle, transitions comprises (`CoachTimeBudget.session()`,
+`scripts/session/time_budget.js`), pas sur la somme des `block.time`. Une séance
+de 63 min écrites en durait ≈ 80 : la fin sautait chaque fois. Pour l'athlète
+admin, ≈ 70 min réelles est le plafond mesuré (midi). Ce qui ne tient pas se
+déplace vers un jour qui a de la place plutôt que d'être retiré : il préfère
+trop que pas assez.
+
 **Avant de livrer** : `RELEASE_CHECKLIST.md`. Désinstaller `node_modules` avant
 `structure_checks.js` — il parcourt tout l'arbre et ne l'exclut pas.
 

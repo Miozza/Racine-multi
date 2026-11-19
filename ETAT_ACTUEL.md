@@ -1,8 +1,18 @@
-# ETAT ACTUEL — V5.4.6
+# ETAT ACTUEL — V5.4.8
 
-Version actuelle : V5.4.6
+Version actuelle : V5.4.8
 
 ## État courant
+
+### Vue PC — ajustée à sa cible, l'écran 16/9 en 1920 × 1080
+
+Sélecteurs et onglets tiennent sur une ligne : le contenu commence à 298 px au lieu de 350. La grille Cycle part du haut de chaque journée, la charge et son « ! » restent sur une ligne dans l'onglet Séance, et zéro alerte s'écrit « Aucune alerte ».
+
+### Durée réelle des séances — le temps humain est compté
+
+La vue WOD annonce la durée réelle d'une séance, transitions comprises : barre à charger et montée en charge, haltères à chercher, Bike → Row au milieu d'un aérobie, passage d'un poste à l'autre (`scripts/session/time_budget.js`). Le rappel de retard de la séance guidée compte le même temps : il ne crie plus « en retard » à chaque changement de poste.
+
+Moteur + jambes est rééquilibré : lundi et mardi dépassaient de 10 à 15 min (≈ 80 et ≈ 73 min réelles en S3), et leurs blocs de fin sautaient. Le Bulgarian Split Squat passe au jeudi, en superset avec le Pallof Press, et le Side Plank au vendredi, pendant la pause de la Back Extension. Rien n'est retiré. Aucune séance restante ne dépasse ≈ 70 min réelles.
 
 ### Vue PC — le contenu dès le premier écran, plus de fausse alerte cardio
 

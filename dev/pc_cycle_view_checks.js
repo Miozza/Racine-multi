@@ -51,6 +51,11 @@ assert(/'alertes':'alerte'/.test(pc) && /pcPlural\(alerts\.length,'alerte'\)/.te
   assert(!/Donnees faibles|necessairement|coherente avec|Seance coherente/.test(diag), 'diagnostic : textes affichés accentués');
 }
 
+// ── V5.4.8 — cible 16/9 (1920 × 1080) ─────────────────────────────────────
+assert(/class="pcx-controls">'\+pcRenderSelectors\(\)\+pcRenderTabs\(\)/.test(pc) && /@media \(min-width:1400px\)\{\s*#phoneView\.view-active \.pcx-controls\{display:grid/.test(css), 'vue PC : sélecteurs et onglets sur une ligne en écran large');
+assert(/pcx-alert-badge is-zero"><span>Aucune alerte/.test(pc), 'vue PC : zéro alerte en toutes lettres (le 0 d\'Orbitron se lit « Ø »)');
+assert(/\.pcx-cycle-day\{display:flex;flex-direction:column;justify-content:flex-start/.test(css), 'vue PC : une journée de la grille Cycle part du haut');
+
 // ── Smoke runtime : la grille se construit sans charge, cliquable ──────────
 try{
   const ctx = { console: console };

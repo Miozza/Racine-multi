@@ -247,7 +247,7 @@
         st.week = 1;
         var prog = window.COACH_BERTIN_PROGRAMS && window.COACH_BERTIN_PROGRAMS[mig.to];
         st.day = (prog && prog.days && prog.days[0]) || st.day || "lundi";
-        st.activeCycleStartDate = new Date().toISOString();
+        st.activeCycleStartDate = (typeof todayIsoDate === "function") ? todayIsoDate() : (function(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})(new Date()); // date locale AAAA-MM-JJ (V5.4.7)
         try{ localStorage.setItem(keys.state, JSON.stringify(st)); }catch(e){ /* stockage plein : le drapeau reste, on ne boucle pas */ }
         try{
           if(window.CoachLog && CoachLog.info){
@@ -294,7 +294,7 @@
     st.missingCycle = null;
     st.week = 1;
     st.day = (window.COACH_BERTIN_PROGRAMS && COACH_BERTIN_PROGRAMS[programId] && COACH_BERTIN_PROGRAMS[programId].days && COACH_BERTIN_PROGRAMS[programId].days[0]) || "lundi";
-    st.activeCycleStartDate = new Date().toISOString();
+    st.activeCycleStartDate = (typeof todayIsoDate === "function") ? todayIsoDate() : (function(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})(new Date()); // date locale AAAA-MM-JJ (V5.4.7)
     // Préservés tels quels (jamais réinitialisés) : st.history, st.athleteState,
     // st.results et les charges du profil.
     try{ localStorage.setItem(keys.state, JSON.stringify(st)); }catch(e){ return { ok:false, error:"Écriture du state impossible." }; }

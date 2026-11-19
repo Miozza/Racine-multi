@@ -750,7 +750,10 @@ function renderGuidedSession(){
     try{ if(window.CoachWodCardio) wodCardioBtn = CoachWodCardio.buttonHtml("wod_"+st.title, st.text||"")||""; }catch(e){}
     html+="<div class='guided-wod-head'>"+
           "<div class='guided-wod-kicker-row'>"+
-            "<div class='guided-wod-kicker'>"+escHtml((cfg&&cfg.label)||"WOD")+"</div>"+
+            // V5.4.7 — le format (« AMRAP 15 min ») est déjà écrit sur le
+            // chrono, en grand. À côté des boutons, il ne restait que « AMRAP … » :
+            // le libellé ne s'affiche plus que si la ligne n'a aucun bouton.
+            "<div class='guided-wod-kicker'>"+((wodCardioBtn||wodHistoBtn||wodNoteBtn)?"":escHtml((cfg&&cfg.label)||"WOD"))+"</div>"+
             "<div class='guided-wod-kicker-actions'>"+wodCardioBtn+wodHistoBtn+wodNoteBtn+"</div>"+
           "</div>"+
           "<div class='guided-wod-title'>"+escHtml(st.title)+"</div>"+
