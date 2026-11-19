@@ -1,3 +1,23 @@
+## V5.4.7 — Durée réelle des séances, Moteur + jambes rééquilibré, finitions d'interface
+
+**Pourquoi** : « le programme ne laisse pas le temps de transition entre les exercices, je n'ai pas le temps de finir » (athlète, 2026-11-19). La sauvegarde le confirme : Moteur + jambes S3, lundi et mardi, les blocs de fin sont notés « non fait — manque de temps » ; mardi S2, le Side Plank aussi. Les créneaux écrits (`block.time`) comptent le travail, pas le temps humain qui l'entoure.
+
+- **Durée réelle** (`scripts/session/time_budget.js`, `window.CoachTimeBudget`, nouveau) : temps écrit des blocs + temps humain — 2 min entre deux blocs, 2 min pour charger une barre, 1 min pour des haltères ou une machine, 4 min de montée en charge sur un mouvement principal à la barre, 1,5 min pour installer un metcon et 1 min par changement de machine dans un aérobie continu. Le temps écrit reste un plancher. Volontairement prudent : mieux vaut annoncer 5 min de trop que 5 de moins. Validé sur l'historique réel : toutes les séances sous ≈ 62 min réelles ont été finies, toutes celles au-dessus de ≈ 71 ont perdu leur fin.
+- **Vue WOD** (`scripts/view_wodplus.js`) : « Durée 63 min » devient « Durée réelle ≈ 80 min, transitions comprises ».
+- **Rappel de retard** (`scripts/session/schedule_reminder.js`) : le créneau d'un bloc compte la même transition et la même installation. Calé sur le seul temps écrit, il annonçait un retard à chaque changement de poste. Repli sur le temps écrit si le module manque.
+- **Moteur + jambes** (`programs/moteur_jambes.js`) : rien n'est retiré, ce qui tombait est déplacé vers les jours qui ont de la place. Le Bulgarian Split Squat passe au jeudi, en superset avec le Pallof Press ; le Side Plank passe au vendredi, pendant la pause de la Back Extension. Dès S3 pour jeudi et vendredi (rattrapage de lundi et mardi S3), dès S4 pour lundi et mardi, qui les perdent. Lundi et mardi S3, déjà faits, gardent leur forme : l'historique s'y rapporte. Durées réelles, de S3 jeudi à S5 : 55 à 69 min (avant : jusqu'à 82).
+- **Interface** :
+  - séance guidée : l'étiquette « AMRAP … » coupée au-dessus du titre du metcon disparaît quand la ligne porte des boutons — le chrono dit déjà le format, en grand ;
+  - Cycle : la date de départ s'affiche en français (« samedi 14 novembre 2026 ») au lieu de « 2026-11-14T15:30:41.825Z », et le champ date la reprend. Un profil neuf l'enregistrait en heure UTC : après 19 h (Toronto), c'était déjà le lendemain. Écrite maintenant en date locale ; les valeurs déjà stockées sont lues correctement, sans être réécrites ;
+  - Résultats : pastilles de rounds, de reps et de RPE à 44 px (24 avant), sur deux lignes au besoin ; libellés à 12-13 px ;
+  - Charge : le titre tient sur une ligne ; la mention sous chaque charge passe sur deux lignes voulues (« × 1 · RPE 8 », puis la date) au lieu de se casser n'importe où ;
+  - accueil d'un nouveau profil : bouton d'étape sur toute la largeur ; l'explication de la vitesse de progression n'est plus répétée après chaque mouvement ;
+  - Réglages, Cycle, Historique, Charge : boutons à 44 px de haut et 13 px (34 px et 11 px avant). « Supprimer ce profil » et « Effacer tout l'historique » sont seuls, sous un trait, loin des actions courantes : « Effacer » était collé à « Exporter » ;
+  - vue PC : la grille Cycle garde les jours côte à côte en iPhone paysage (7 300 → 3 570 px de haut) et défile dans son cadre si besoin ; l'indication de charge du metcon lit la charge écrite (« Wall balls : 20/14 lb ») au lieu d'une valeur par défaut (« 14 lb »).
+- **Garde-fous** : `dev/time_budget_checks.js` (nouveau) ; `dev/moteur_jambes_checks.js` — aucune séance restante au-dessus de 70 min réelles, chaque mouvement toujours dans la semaine, S3 lundi et mardi inchangés.
+- **Vérifié** dans Chromium (iPhone portrait et paysage) : aucun débordement, aucune erreur console.
+- **Données** : rien. Aucune clé, aucun schéma, aucune migration. La date de départ est lue de façon tolérante, sans réécriture.
+
 ## V5.4.6 — Vue PC : en-tête compact, cardio sans fausse alerte, débordements corrigés
 
 **Pourquoi** : passage en revue de la vue PC en 1366 × 768, en iPhone paysage (874 × 402) et en portrait (402 × 790), sur les six onglets (2026-11-14). Le contenu commençait à 480 px, un Bike en zone 2 comptait comme une alerte, et deux onglets débordaient.

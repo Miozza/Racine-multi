@@ -12,6 +12,10 @@
     5. Les mouvements principaux progressent : aucun mot qui coupe
        l'auto-progression dans leur note ni dans l'objectif de semaine, et
        aucune charge au-dessus du 1RM de l'athlète de référence.
+    6. Durée réelle (2026-11-19) : transitions comprises
+       (scripts/session/time_budget.js), aucune séance restante ne dépasse
+       70 min. Rien n'est perdu : le Bulgarian Split Squat et le Side Plank
+       quittent lundi et mardi pour jeudi et vendredi, ils ne disparaissent pas.
 
   Usage : node dev/moteur_jambes_checks.js
 */
@@ -66,6 +70,26 @@ const tech = d => P.getBlocks(d, 5).filter(b => b.kind === 'technique').map(b =>
 assert(/Wall Ball/.test(tech('mardi')) && /Pull-Up/.test(tech('mardi')) && /Strict Press/.test(tech('mardi')), 'S5 mardi : test de retour haut du corps');
 assert(/Power Clean/.test(tech('jeudi')), 'S5 jeudi : test de retour Power Clean');
 assert(P.getBlocks('mardi', 4).every(b => b.kind !== 'technique'), 'S1-S4 : pas de test de retour');
+
+// ── 6. Durée réelle, transitions comprises ────────────────────────────────
+vm.runInContext(fs.readFileSync(path.join(root, 'scripts/session/time_budget.js'), 'utf8'), ctx, {filename:'time_budget.js'});
+const B = ctx.CoachTimeBudget;
+const CAP = 70;
+[[3, 'jeudi'], [3, 'vendredi']].concat([4, 5].flatMap(w => P.days.map(d => [w, d]))).forEach(([w, d]) => {
+  const s = B.session(P.getBlocks(d, w));
+  assert(s.full <= CAP, 'S' + w + ' ' + d + ' : ≈ ' + s.full + ' min réelles, transitions comprises (≤ ' + CAP + ')');
+});
+const namesOf = (d, w) => P.getBlocks(d, w).flatMap(b => (b.exercises || []).map(e => e.name));
+[4, 5].forEach(w => {
+  const week = P.days.flatMap(d => namesOf(d, w));
+  ['Bulgarian Split Squat', 'Dead Bug', 'Side Plank', 'Chest Supported Row', 'Pallof Press'].forEach(n =>
+    assert(week.includes(n), 'S' + w + ' : ' + n + ' toujours dans la semaine (déplacé, pas retiré)'));
+  assert(!namesOf('lundi', w).includes('Bulgarian Split Squat') && namesOf('jeudi', w).includes('Bulgarian Split Squat'), 'S' + w + ' : Bulgarian Split Squat le jeudi, plus le lundi');
+  assert(!namesOf('mardi', w).includes('Side Plank') && namesOf('vendredi', w).includes('Side Plank'), 'S' + w + ' : Side Plank le vendredi, plus le mardi');
+});
+// Les séances déjà faites de S3 (lundi, mardi) gardent leur forme : l'historique
+// s'y rapporte.
+assert(namesOf('lundi', 3).includes('Bulgarian Split Squat') && namesOf('mardi', 3).includes('Side Plank'), 'S3 lundi et mardi inchangés (déjà faits)');
 
 if(failures){ console.error('\n' + failures + ' échec(s).'); process.exit(1); }
 console.log('\nPont — Moteur + jambes : contrat respecté.');

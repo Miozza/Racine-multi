@@ -23,14 +23,26 @@
     return m ? Number(m[1].replace(",", ".")) : 0;
   }
 
+  // Créneau d'un bloc. V5.4.7 : quand l'estimateur de durée réelle est chargé
+  // (scripts/session/time_budget.js), le créneau compte aussi le temps humain
+  // — barre à charger, montée en charge, poste à changer. Calé sur le seul
+  // temps écrit, le rappel criait « en retard » à chaque changement de poste,
+  // et sa suggestion de couper arrivait trop tôt.
+  function blockSlot(block, i){
+    if(window.CoachTimeBudget && typeof CoachTimeBudget.slotMinutes === "function"){
+      try{ return CoachTimeBudget.slotMinutes(block || {}, i); }catch(e){ /* repli : temps écrit */ }
+    }
+    return slotMinutes((block || {}).time);
+  }
+
   // Retard en minutes à l'instant `now` (ms), sur le bloc le plus avancé
   // atteint. Attendu = début prévu de ce bloc + temps passé dedans, plafonné à
   // son créneau : entrer en retard compte, s'y attarder aussi.
   function lateMinutes(blocks, furthest, startedAt, enteredAt, now){
     if(!startedAt || !blocks || !blocks.length) return 0;
     var debut = 0;
-    for(var i = 0; i < furthest && i < blocks.length; i++) debut += slotMinutes(blocks[i].time);
-    var creneau = slotMinutes((blocks[furthest] || {}).time);
+    for(var i = 0; i < furthest && i < blocks.length; i++) debut += blockSlot(blocks[i], i);
+    var creneau = blockSlot(blocks[furthest], furthest);
     var dedans = Math.max(0, (now - enteredAt) / 60000);
     var attendu = debut + Math.min(dedans, creneau);
     return (now - startedAt) / 60000 - attendu;

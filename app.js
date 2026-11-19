@@ -1,5 +1,5 @@
-// Racine V5.4.6 — vue PC : en-tête compact, cardio sans fausse alerte, débordements corrigés
-var APP_VERSION = "V5.4.6";
+// Racine V5.4.7 — durée réelle des séances (transitions comprises), Moteur + jambes rééquilibré, finitions d'interface
+var APP_VERSION = "V5.4.7";
 
 // Architecture stable
 // programs/*.js = plan prévu
@@ -239,8 +239,23 @@ function mondayOfCurrentWeekIso(){
   d.setDate(d.getDate()-offset);
   return localIsoDate(d);
 }
+// V5.4.7 — la date de départ est une date LOCALE AAAA-MM-JJ. Des profils créés
+// avant V5.4.7 portent un horodatage UTC complet (« 2026-11-14T15:30:41.825Z ») :
+// il s'affichait tel quel dans Cycle, le champ date restait vide, et après 19 h
+// (Toronto) la date UTC était déjà celle du lendemain. Lecture tolérante : la
+// valeur stockée n'est pas réécrite.
+function normalizeCycleStartIso(v){
+  var s=String(v||"");
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s)){ var d=new Date(s); if(!isNaN(d.getTime())) return localIsoDate(d); return s.slice(0,10); }
+  return s||null;
+}
+function cycleDateLabel(iso){
+  var d=parseLocalIsoDate(iso);
+  if(!d) return String(iso||"");
+  try{ return d.toLocaleDateString("fr-CA",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); }catch(e){ return iso; }
+}
 function cycleStartDateForActive(){
-  return state.activeCycleStartDate ||
+  return normalizeCycleStartIso(state.activeCycleStartDate) ||
     (state.cycleState&&state.cycleState.activeCycleStartDate) ||
     (state.cycleState&&state.cycleState.cycleStartedAt?String(state.cycleState.cycleStartedAt).slice(0,10):null) ||
     todayIsoDate();
@@ -282,7 +297,7 @@ function cycleDateSummaryHtml(){
   var day=dayFromDateIfProgramDay(todayIsoDate());
   var dayTxt=day?dayLabel(day):"jour manuel";
   return '<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,.04);border-radius:10px">'+
-    '<strong>Date de départ confirmée :</strong> '+CoachUI.escapeHtml(start)+'<br>'+ 
+    '<strong>Date de départ confirmée :</strong> '+CoachUI.escapeHtml(cycleDateLabel(start))+'<br>'+ 
     '<small style="color:var(--muted)">Aujourd’hui = S'+wk+' · '+CoachUI.escapeHtml(dayTxt)+'. Cette date ne modifie pas les charges ni l’historique.</small></div>';
 }
 
@@ -2747,11 +2762,15 @@ function workingRefMeta(mvKey,range){
   if(!ref||ref.implausible||!(ref.load||ref.load===0))return "";
   // Les reps d'abord : une plage couvre plusieurs nombres de reps, et
   // « 300 » sous Force ne dit pas si c'est un single ou un 5RM.
+  // V5.4.7 — deux lignes voulues : « × 1 · RPE 8 », puis la date. En une
+  // seule ligne de 10 px, la cellule de 83 px la cassait n'importe où
+  // (« × 1 · 14 nov. · RPE / 8 »). Le saut de ligne est rendu par
+  // .wref-meta { white-space: pre-line }.
   var parts=[];
   if(Number(ref.reps)>0)parts.push("× "+Number(ref.reps));
-  var d=trophyDateText(ref.date);if(d)parts.push(d.replace(/ \d{4}$/,""));
   if(ref.rpe||ref.rpe===0)parts.push("RPE "+ref.rpe);
-  return parts.join(" · ");
+  var d=trophyDateText(ref.date);
+  return [parts.join(" · "), d?d.replace(/ \d{4}$/,""):""].filter(Boolean).join("\n");
 }
 function renderWorkingRefs(){
   var host=$("workingRefsGrid");if(!host)return;host.innerHTML="";

@@ -37,6 +37,16 @@ function rpeArrowHtml(mvKey, reps){
 
 
 
+// V5.4.7 — la durée annoncée compte le temps humain (transitions, montée en
+// charge, changement de machine) : scripts/session/time_budget.js. L'ancienne
+// somme des créneaux écrits annonçait 63 min pour une séance de ≈ 80, et la
+// fin de séance sautait sans qu'on l'ait vue venir. Repli : temps écrit.
+function wodPlusRealMinutes(blocks){
+  try{
+    if(window.CoachTimeBudget && typeof CoachTimeBudget.session==="function") return CoachTimeBudget.session(blocks).full||0;
+  }catch(e){ /* repli : somme écrite */ }
+  return 0;
+}
 function wodPlusTotalMinutes(blocks){
   var total=0;
   (blocks||[]).forEach(function(b){
@@ -144,6 +154,7 @@ function renderWorkout(){
   var wi=buildWeekInfo();
   var weekLabel=(wi[state.week]?wi[state.week].label:"S"+state.week);
   var totalMin=wodPlusTotalMinutes(w.blocks);
+  var realMin=wodPlusRealMinutes(w.blocks);
   var fatigue=wodPlusFatigueLabel(w.blocks);
   var priority=wodPlusPriority(w.blocks);
   var dayState=isDayCompleted(state.day)?"complétée":(isDayMissed(state.day)?"manquée":"prévue");
@@ -175,7 +186,9 @@ function renderWorkout(){
       (plan?"<div class='wodplus-plan'>"+plan.label+" — "+plan.note+"</div>":"")+
       deloadWarning+
       "<div class='wodplus-stats'>"+
-        "<div><span>Durée</span><strong>"+(totalMin?totalMin+" min":"—")+"</strong></div>"+
+        (realMin
+          ? "<div><span>Durée réelle</span><strong>≈ "+realMin+" min</strong><small class='wodplus-stat-sub'>transitions comprises</small></div>"
+          : "<div><span>Durée</span><strong>"+(totalMin?totalMin+" min":"—")+"</strong></div>")+
         "<div><span>Fatigue</span><strong>"+fatigue+"</strong></div>"+
         "<div><span>Priorité</span><strong>"+priority+"</strong></div>"+
         "<div><span>État</span><strong>"+dayState+"</strong></div>"+

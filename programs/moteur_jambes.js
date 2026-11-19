@@ -21,6 +21,17 @@
 //   Bench Press S1 ×0,70 · S2 ×0,72 · S3 ×0,74 · S4 ×0,76 · S5 ×0,72 (RPE 7)
 // Les metcons ne contiennent aucun mouvement au-dessus de la tête, ni traction,
 // ni ski. Garde-fou : dev/moteur_jambes_checks.js.
+//
+// DURÉE RÉELLE (2026-11-19) : les créneaux écrits ne comptaient pas le temps
+// humain — barre à charger, montée en charge, haltères à chercher, Bike → Row,
+// passage d'un poste à l'autre. Mesuré avec scripts/session/time_budget.js :
+// lundi S3 63 min écrites = ≈ 80 min réelles, mardi 57 = ≈ 73, alors que jeudi
+// et vendredi plafonnaient à ≈ 60. Lundi et mardi S3, les blocs de fin ont
+// sauté (« manque de temps »). Rien n'est retiré : ce qui tombait est déplacé
+// vers les jours qui ont de la place. Bulgarian Split Squat → jeudi, en
+// superset avec le Pallof Press ; Side Plank → vendredi, pendant la pause de la
+// Back Extension. Dès S3 pour les jours qui restent (rattrapage), dès S4 pour
+// les jours qui le perdent. Plafond : ≈ 70 min réelles par séance.
 
 (function(){
   window.COACH_BERTIN_PROGRAMS = window.COACH_BERTIN_PROGRAMS || {};
@@ -111,6 +122,9 @@
   var CLEAN_TEST = "Test de retour du Power Clean : barre vide 2×3, puis 95 lb 3×2 si zéro douleur au cou ou au trapèze. " +
     "Le haussement d'épaules du clean sollicite le trapèze : s'il réagit, arrêt, et le jeudi du Peak se fera sans clean jusqu'à nouvel ordre.";
 
+  var SPLIT_NOTE = "Torse droit, genou avant qui suit les orteils. Épaules basses : si tenir les haltères tire sur le trapèze, garde-les près du corps.";
+  var PLANK_NOTE = "Coude sous l'épaule, bassin haut. Côté droit : sur l'avant-bras, jamais sur la main.";
+
   function ex(name, format, load, rest, note){
     return {name:name, format:format, load:load || "—", rest:rest || "—", note:note || ""};
   }
@@ -121,6 +135,12 @@
     var w = Number(week) || 1;
     var p = plan(w);
     var back = w === 5;
+    // Temps réel (2026-11-19) — voir l'en-tête « DURÉE RÉELLE ». Le Bulgarian
+    // Split Squat passe du lundi au jeudi dès S3 (rattrapage du lundi S3, où il
+    // a sauté), et quitte le lundi dès S4. Le Side Plank passe du mardi au
+    // vendredi, pendant la pause de la Back Extension, selon la même règle.
+    var lightMonday = w >= 4, lightTuesday = w >= 4;
+    var splitThursday = w >= 3, plankFriday = w >= 3;
 
     if(day === "lundi") return [
       {time:"8 min", title:"Échauffement squat", tag:"Préparation", kind:"warmup", text:"Bike 3 min + rotations du cou dans l'amplitude sans douleur + ankle rocks 10/côté + glute bridge 15 + goblet squat 10. Montée progressive longue sur le Back Squat."},
@@ -128,13 +148,15 @@
         ex("Back Squat", p.squat, p.squatLoad, "1:00 avant A2", "RPE " + (w >= 3 ? "8" : "7") + ", jamais au-delà : le moteur passe ensuite. Barre posée bas sur le trapèze ; si elle appuie sur la zone blessée, garde la prise plus large."),
         ex("Tibialis Raise", "3×15", "poids du corps", "1:00 après A2", "Pendant la pause du squat. Dos au mur, lent, sans élan.")
       ]},
-      {time:p.aeroTime, title:"B. Moteur aérobie", tag:"Aérobie", kind:"wod", wod:withNote(p.aero, "Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10." + ROW_RULE)},
+      {time:p.aeroTime, title:"B. Moteur aérobie", tag:"Aérobie", kind:"wod", wod:withNote(p.aero, "Rythme conversation : tu peux dire une phrase complète. Respiration par le nez si possible. Effort 4-5 sur 10." + ROW_RULE)}
+    ].concat(lightMonday ? [] : [
       {time:"8 min", title:"C. Unilatéral + gainage", tag:"Jambes", kind:"accessory", exercises:[
-        ex("Bulgarian Split Squat", "3×8/jambe", p.split, "0:30 avant C2", "Torse droit, genou avant qui suit les orteils. Épaules basses : si tenir les haltères tire sur le trapèze, garde-les près du corps."),
+        ex("Bulgarian Split Squat", "3×8/jambe", p.split, "0:30 avant C2", SPLIT_NOTE),
         ex("Dead Bug", "3×8/côté", "poids du corps", "1:00 après C2", "Côtes basses, bas du dos collé au sol.")
-      ]},
-      {time:"3 min", title:"D. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + 90/90 hanches 1 min + respiration lente 1 min."}
-    ];
+      ]}
+    ]).concat([
+      {time:"3 min", title:(lightMonday ? "C" : "D") + ". Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + 90/90 hanches 1 min + respiration lente 1 min."}
+    ]);
 
     if(day === "mardi"){
       var mardi = [
@@ -151,10 +173,11 @@
           ex("Chest Supported Row", "3×10", "95 lb", "1:00", "Léger, poitrine collée, cou long, aucun haussement d'épaules. Si le cou ou le trapèze réagit, saute le bloc : il revient la semaine suivante.")
         ]},
         {time:"4 min", title:"Gainage", tag:"Tronc", kind:"core", exercises:[
-          ex("Side Plank", "3×30 s/côté", "poids du corps", "0:30", "Coude sous l'épaule, bassin haut. Côté droit : sur l'avant-bras, jamais sur la main.")
+          ex("Side Plank", "3×30 s/côté", "poids du corps", "0:30", PLANK_NOTE)
         ]},
         {time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Pec stretch doux, bras sous la hauteur de l'épaule, 45 sec/côté + respiration lente 1 min."}
       );
+      if(lightTuesday) mardi = mardi.filter(function(b){ return b.kind !== "core"; });
       return letter(mardi);
     }
 
@@ -169,9 +192,14 @@
           ex("Single-Leg Calf Raise", "3×12/jambe", "poids du corps", "0:45 après @2", "Pendant la pause du front squat. Sur une marche, amplitude complète.")
         ]},
         {time:p.emomTime, title:"EMOM moteur", tag:"WOD", kind:"wod", wod:withNote(p.emom, "Aucune poussée au-dessus de la tête.")},
-        {time:"6 min", title:"Anti-rotation", tag:"Tronc", kind:"core", exercises:[
-          ex("Pallof Press", "3×10/côté", "léger à modéré", "0:30", "Bras devant la poitrine, jamais au-dessus. Bassin stable.")
-        ]},
+        splitThursday
+          ? {time:"10 min", title:"Unilatéral + anti-rotation", tag:"Jambes", kind:"accessory", exercises:[
+              ex("Bulgarian Split Squat", "3×8/jambe", p.split, "0:30 avant @2", SPLIT_NOTE + " Après le front squat et l'EMOM : RPE 7, pas plus."),
+              ex("Pallof Press", "3×10/côté", "léger à modéré", "0:45 après @2", "Bras devant la poitrine, jamais au-dessus. Bassin stable.")
+            ]}
+          : {time:"6 min", title:"Anti-rotation", tag:"Tronc", kind:"core", exercises:[
+              ex("Pallof Press", "3×10/côté", "léger à modéré", "0:30", "Bras devant la poitrine, jamais au-dessus. Bassin stable.")
+            ]},
         {time:"3 min", title:"Retour au calme", tag:"Mobilité", kind:"mobility", text:"Couch stretch 45 sec/côté + respiration lente 1 min."}
       );
       return letter(jeudi);
@@ -180,10 +208,12 @@
     // vendredi
     return [
       {time:"8 min", title:"Échauffement", tag:"Préparation", kind:"warmup", text:"Row 3 min (ou Bike si le trapèze réagit) + glute bridge 2×15 + 2 tours lents : 5 Air Squats, 5 Box Step-Ups, 3 Burpees."},
-      {time:"10 min", title:"A. Back Extension", tag:"Chaîne postérieure", kind:"main", exercises:[
+      {time:plankFriday ? "15 min" : "10 min", title:"A. Back Extension", tag:"Chaîne postérieure", kind:"main", exercises:[
         ex("Back Extension", p.ext, p.extLoad, "0:45 avant A2", "Banc à 45°, coussin sous les hanches, pieds tournés vers l'extérieur. Plaque serrée contre la poitrine, menton rentré : rien ne pend des bras. Descends en arrondissant le haut du dos, remonte en serrant les fessiers, pause 1 s en haut, sans cambrer. Remplace le RDL et le Hip Thrust."),
-        ex("Dead Bug", "3×8/côté", "poids du corps", "0:45 après A2", "Pendant la pause de la back extension. Bas du dos collé au sol.")
-      ]},
+        ex("Dead Bug", "3×8/côté", "poids du corps", plankFriday ? "0:30 avant A3" : "0:45 après A2", "Pendant la pause de la back extension. Bas du dos collé au sol.")
+      ].concat(plankFriday ? [
+        ex("Side Plank", "3×30 s/côté", "poids du corps", "0:45 après A3", "Pendant la pause de la back extension. " + PLANK_NOTE)
+      ] : [])},
       {time:p.longTime, title:"B. Metcon long", tag:"WOD", kind:"wod", wod:withNote(p.long, ROW_RULE.trim())},
       {time:"4 min", title:"C. Retour au calme", tag:"Mobilité", kind:"mobility", text:"Marche lente 2 min + couch stretch 1 min/côté. Note tes tours ou ton temps."}
     ];
@@ -218,20 +248,21 @@
     "Row permis tant que le cou ne réagit pas ; sinon Bike, mêmes calories.",
     "Bench Press à RPE 7 seulement s'il reste indolore. Tirage sur banc incliné léger, sauté au moindre signal du cou.",
     "Le metcon suit le travail principal : si le temps manque, ce sont les accessoires de fin qui sautent.",
+    "Durée réelle ≈ 70 min au plus, transitions comprises (barre, haltères, changement de machine, passage d'un poste à l'autre). Dès S4, le Bulgarian Split Squat est le jeudi et le Side Plank le vendredi : lundi et mardi n'ont plus de place pour eux.",
     "S5 : test de retour (Strict Press barre vide, Wall Balls, Pull-Up, Power Clean). Passé à 0-2 sur 10 : le Peak commence lundi. Sinon, une semaine de plus dans ce bloc.",
     "Re-tests S5 : 50 cal Bike (mardi) et AMRAP 20 du vendredi, comparés à S1.",
     "Charges écrites à l'échelle de l'athlète de référence : le moteur les ramène au niveau réel. Exception : le lest de la Back Extension se prend tel quel."
   ];
   P.dayIntentions = {
-    lundi: "Jambes + aérobie : Back Squat lourd avec Tibialis Raise pendant les pauses, aérobie long au rythme conversation, Bulgarian Split Squat et Dead Bug.",
-    mardi: "Bench prudent + seuil : Bench Press à RPE 7 s'il reste indolore, benchmark ou intervalles au Bike, tirage sur banc incliné, Side Plank.",
-    jeudi: "Front Squat + EMOM : front squat lourd, EMOM burpees/Bike/box, Pallof Press. Aucune poussée au-dessus de la tête.",
-    vendredi: "Chaîne postérieure + metcon long : Back Extension à la place du RDL et du Hip Thrust, puis le metcon long au format du Peak, sans Wall Balls."
+    lundi: "Jambes + aérobie : Back Squat lourd avec Tibialis Raise pendant les pauses, aérobie long au rythme conversation. Bulgarian Split Squat et Dead Bug jusqu'en S3 ; dès S4, ils vivent le jeudi et le vendredi.",
+    mardi: "Bench prudent + seuil : Bench Press à RPE 7 s'il reste indolore, benchmark ou intervalles au Bike, tirage sur banc incliné. Side Plank jusqu'en S3 ; dès S4, le vendredi.",
+    jeudi: "Front Squat + EMOM : front squat lourd, EMOM burpees/Bike/box, puis Bulgarian Split Squat en superset avec le Pallof Press (dès S3). Aucune poussée au-dessus de la tête.",
+    vendredi: "Chaîne postérieure + metcon long : Back Extension à la place du RDL et du Hip Thrust, Dead Bug et Side Plank (dès S3) pendant ses pauses, puis le metcon long au format du Peak, sans Wall Balls."
   };
   P.dayMeta = {
-    lundi:   {label:"Lundi",   base:"Squat + aérobie",     focus:"Back Squat, moteur aérobie long, Bulgarian Split Squat, Dead Bug."},
-    mardi:   {label:"Mardi",   base:"Bench + seuil",       focus:"Bench Press RPE 7, intervalles Bike, Chest Supported Row, Side Plank."},
-    jeudi:   {label:"Jeudi",   base:"Front squat + EMOM",  focus:"Front Squat, EMOM moteur, Pallof Press."},
-    vendredi:{label:"Vendredi",base:"Back extension + metcon", focus:"Back Extension, metcon long 20-30 min."}
+    lundi:   {label:"Lundi",   base:"Squat + aérobie",     focus:"Back Squat, moteur aérobie long."},
+    mardi:   {label:"Mardi",   base:"Bench + seuil",       focus:"Bench Press RPE 7, intervalles Bike, Chest Supported Row."},
+    jeudi:   {label:"Jeudi",   base:"Front squat + EMOM",  focus:"Front Squat, EMOM moteur, Bulgarian Split Squat, Pallof Press."},
+    vendredi:{label:"Vendredi",base:"Back extension + metcon", focus:"Back Extension, Dead Bug, Side Plank, metcon long 20-30 min."}
   };
 })();

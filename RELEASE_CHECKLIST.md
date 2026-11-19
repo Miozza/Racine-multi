@@ -73,6 +73,7 @@ node dev/wod_cardio_checks.js
 node dev/for_time_checks.js
 node dev/mini_timer_checks.js
 node dev/schedule_reminder_checks.js
+node dev/time_budget_checks.js
 node dev/interval_timer_checks.js
 node dev/sound_checks.js
 node dev/wod_moves_checks.js

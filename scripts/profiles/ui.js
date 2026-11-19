@@ -310,7 +310,7 @@
         '</div>'+
         '<p class="field-hint" id="rwLevelHint">&nbsp;</p>'+
         '<div class="btn-row">'+
-          '<button class="btn-accent" id="rwNext">Suivant</button>'+
+          '<button class="btn-accent racine-wizard-next" id="rwNext">Suivant</button>'+
         '</div>'+
         '<p id="rwError" class="status-msg err"></p>'+
       '</div>'
@@ -376,7 +376,7 @@
         '<div class="racine-gate-sub">Pour chaque mouvement que tu connais : une série de travail propre de <strong>8 répétitions</strong> (pas un essai maximal). Le RPE ressenti affine l\'estimation — sois honnête. Laisse un mouvement vide si tu ne peux pas le tester : on estime pour toi à partir de ton niveau.</div>'+
         rows+
         '<div class="btn-row">'+
-          '<button class="btn-accent" id="rkNext">Voir mon estimation</button>'+
+          '<button class="btn-accent racine-wizard-next" id="rkNext">Voir mon estimation</button>'+
         '</div>'+
       '</div>'
     );
@@ -458,11 +458,13 @@
       {key:"frontSquat", label:"Front squat"}
     ].filter(function(c){ return vals[c.key] || vals[c.key]===0; });
     if(!candidates.length) candidates = [{key:null, label:"Mouvement principal", start:200}];
+    // V5.4.7 — la phrase d'explication était répétée après chaque mouvement :
+    // les lignes de chiffres d'abord, l'explication une seule fois ensuite.
     return candidates.map(function(c){
       var start = c.start!==undefined ? c.start : vals[c.key];
       var weeks = projectWeeks(start, jump, 3);
-      return esc(c.label)+" : "+start+" lb → "+weeks.join(" → ")+" lb sur 3 semaines de séances faciles (RPE ≤ 7). Point de départ seulement — le moteur ajustera cette vitesse d'après tes résultats réels.";
-    }).join("<br>");
+      return esc(c.label)+" : "+start+" → "+weeks.join(" → ")+" lb";
+    }).join("<br>")+"<br>Sur 3 semaines de séances faciles (RPE ≤ 7). Point de départ seulement : le moteur ajuste cette vitesse d'après tes résultats réels.";
   }
 
   function renderCalculated(){
@@ -492,7 +494,7 @@
         '<div class="racine-review-grid">'+rows+'</div>'+
         '<p class="status-msg" id="rcScaleWarn"></p>'+
         '<div class="btn-row">'+
-          '<button class="btn-accent" id="rcNext">Suivant</button>'+
+          '<button class="btn-accent racine-wizard-next" id="rcNext">Suivant</button>'+
         '</div>'+
       '</div>'
     );
@@ -589,7 +591,7 @@
           '<input id="rrCompDate" type="date" class="input-field"/>'+
         '</div>'+
         '<div class="btn-row">'+
-          '<button class="btn-accent" id="rrConfirm">Confirmer et commencer</button>'+
+          '<button class="btn-accent racine-wizard-next" id="rrConfirm">Confirmer et commencer</button>'+
         '</div>'+
       '</div>'
     );
@@ -759,7 +761,8 @@
       '<div class="btn-row">'+
         '<button id="coachRxBtn" class="btn-ghost">J\'ai reçu un lien du coach</button>'+
       '</div>'+
-      '<div class="btn-row">'+
+      // V5.4.7 — action irréversible : séparée des actions courantes.
+      '<div class="btn-row danger-zone">'+
         '<button id="deleteProfileBtn" class="btn-danger" type="button">Supprimer ce profil</button>'+
       '</div>'+
 

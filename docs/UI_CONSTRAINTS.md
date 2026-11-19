@@ -31,6 +31,15 @@ Racine est utilisé en entraînement réel. La priorité est :
   `scrollIntoView()`, qui ferait défiler la page). Ne pas revenir à une grille
   qui empile les semaines : 8 semaines coûtaient 690 px.
 
+## Durée annoncée — le temps humain compte
+
+- La vue WOD annonce la **durée réelle**, transitions comprises
+  (`CoachTimeBudget.session()`), jamais la seule somme des `block.time`.
+- Le rappel de retard compte le même temps : son créneau d'un bloc =
+  estimation + transition qui le précède.
+- Les constantes du modèle vivent dans `scripts/session/time_budget.js` (table
+  `T`) et nulle part ailleurs.
+
 ## Carte de saisie — elle dit ce que le programme demande
 
 `coachExerciseDose()` (`scripts/app_helpers.js`) est le seul endroit qui décide,

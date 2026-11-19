@@ -715,7 +715,9 @@ window.CoachOnboarding = window.CoachOnboarding || {};
       state.week = 1;
       var prog = (window.focusConfigs && window.focusConfigs[chosenProgram]) || null;
       state.day = (prog && Array.isArray(prog.days) && prog.days[0]) || "lundi";
-      state.activeCycleStartDate = (typeof nowIso === "function") ? nowIso() : new Date().toISOString();
+      // Date LOCALE (AAAA-MM-JJ), le format du champ : un horodatage UTC
+      // s'affichait tel quel dans Cycle et décalait le jour après 19 h (V5.4.7).
+      state.activeCycleStartDate = (typeof todayIsoDate === "function") ? todayIsoDate() : (function(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})(new Date());
     }
     state.profile.referenceVersion = (window.RacineProfileReference && RacineProfileReference.REFERENCE_VERSION) || 2;
 
