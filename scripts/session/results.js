@@ -41,7 +41,9 @@ function collectSessionExercises(opts){
         kind:"wod", isWod:true,
         wodText:wodText, wodMoves:moves, wodRounds:rounds,
         isAmrap:/amrap/i.test(wodText), isEmom:/emom/i.test(wodText),
-        isForTime:(typeof wodIsForTime==="function"?wodIsForTime(wodText):/for time|cap/i.test(wodText)), durationMin:durMin
+        isForTime:(typeof wodIsForTime==="function"?wodIsForTime(wodText):/for time|cap/i.test(wodText)), durationMin:durMin,
+        // V5.4.9 — tours prévus d'un « pour le temps » (0 si un seul tour).
+        forTimeRounds:(window.CoachAmrapRounds && CoachAmrapRounds.forTimeRounds) ? CoachAmrapRounds.forTimeRounds(wodText) : 0
       });
     }
   });
@@ -247,7 +249,8 @@ function renderSessionEntry(){
       // Rounds tapés sur le chrono pendant la séance (scripts/session/amrap_rounds.js).
       // Ils ne remplacent pas la saisie : ils la pré-remplissent, et l'athlète
       // garde le dernier mot sur la pastille sélectionnée.
-      var amrapLog = (item.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.stats(item.key) : null;
+      var countsRounds = item.isAmrap || (item.isForTime && item.forTimeRounds > 0);
+      var amrapLog = (countsRounds && window.CoachAmrapRounds) ? CoachAmrapRounds.stats(item.key) : null;
 
       if(item.isEmom){
         wodInner += '<div class="wod-expected">EMOM — <strong>RPE seulement</strong></div>';
@@ -270,7 +273,40 @@ function renderSessionEntry(){
           wodInner += '<option value="'+formatClock(sec)+'"'+(sec===expectedSec?' selected':'')+'>'+formatClock(sec)+'</option>';
         });
         wodInner += '</select>';
-        wodInner += '<input class="sf-input" id="wod_note_'+item.key+'" data-key="'+item.key+'" data-field="note" type="text" inputmode="text" placeholder="si cap : reps complétées ou note" value="'+escHtml(getGuidedResult(item.key,'note',''))+'"/>';
+        // V5.4.9 — au cap, le score n'est pas un temps : ce sont les tours
+        // complétés et les reps du tour en cours. Mêmes pastilles que l'AMRAP.
+        if(item.forTimeRounds > 0){
+          wodInner += '<span class="sf-label">FINI AVANT LE CAP ?</span>';
+          wodInner += '<div class="sf-chips wod-cap-mode" id="wod_capmode_'+item.key+'">'+
+            '<button type="button" class="sf-chip" data-capmode="done">Fini</button>'+
+            '<button type="button" class="sf-chip" data-capmode="cap">Cap atteint</button></div>';
+          wodInner += '<div class="wod-cap-detail" id="wod_cap_'+item.key+'" hidden>';
+          var capChipMax = Math.max(item.forTimeRounds - 1, amrapLog ? amrapLog.count : 0);
+          wodInner += '<span class="sf-label">TOURS COMPLÉTÉS SUR '+item.forTimeRounds+(amrapLog?' — repris du chrono':'')+'</span>';
+          wodInner += '<div class="sf-chips" id="wod_rounds_'+item.key+'">';
+          for(var fr=0; fr<=capChipMax; fr++) wodInner += '<button type="button" class="sf-chip" data-round="'+fr+'">'+fr+'</button>';
+          wodInner += '</div>';
+          if(item.wodMoves && item.wodMoves.length){
+            wodInner += '<span class="sf-label">TOUR EN COURS — REPS FAITES</span>';
+            item.wodMoves.forEach(function(mv, mi){
+              var maxR = wodMoveMaxReps(mv.reps) - (mi === item.wodMoves.length-1 ? 1 : 0);
+              wodInner += '<div class="wod-mv-label '+mv.color+'">'+mv.name+' <span class="wod-mv-max">(0–'+maxR+')</span></div>';
+              wodInner += '<div class="sf-chips" id="wod_mv_'+item.key+'_'+mi+'">';
+              for(var rr=0; rr<=maxR; rr++) wodInner += '<button type="button" class="sf-chip '+mv.color+(rr===0?' zero':'')+'" data-mv="'+mi+'" data-rep="'+rr+'">'+rr+'</button>';
+              wodInner += '</div>';
+            });
+          }
+          wodInner += '</div>';
+          // Score au cap : il passe avant le temps dans la collecte (champ
+          // suivant dans le DOM) et s'efface (vide) quand le WOD est fini.
+          wodInner += '<input class="sf-input" id="wod_cap_result_'+item.key+'" data-key="'+item.key+'" data-field="result" type="hidden" value=""/>';
+          wodInner += '<input class="sf-input" id="wod_capped_'+item.key+'" data-key="'+item.key+'" data-field="capped" type="hidden" value=""/>';
+          wodInner += '<input class="sf-input" id="wod_rounds_value_'+item.key+'" data-key="'+item.key+'" data-field="rounds" type="hidden" value=""/>';
+          if(amrapLog){
+            wodInner += '<input class="sf-input" id="wod_splits_'+item.key+'" data-key="'+item.key+'" data-field="roundSplits" type="hidden" value="'+escHtml(CoachAmrapRounds.splitsText(item.key))+'"/>';
+          }
+        }
+        wodInner += '<input class="sf-input" id="wod_note_'+item.key+'" data-key="'+item.key+'" data-field="note" type="text" inputmode="text" placeholder="'+(item.forTimeRounds>0?'note (optionnel)':'si cap : reps complétées ou note')+'" value="'+escHtml(getGuidedResult(item.key,'note',''))+'"/>';
       }
 
       if(item.isAmrap && item.wodRounds.max > 1){
@@ -363,7 +399,7 @@ function renderSessionEntry(){
       (function(it){
         // Rounds tapés au chrono > estimation du programme : si l'athlète a
         // compté pendant le WOD, c'est son compte qui arrive pré-sélectionné.
-        var tappedRounds = (it.isAmrap && window.CoachAmrapRounds) ? CoachAmrapRounds.count(it.key) : 0;
+        var tappedRounds = ((it.isAmrap || it.forTimeRounds > 0) && window.CoachAmrapRounds) ? CoachAmrapRounds.count(it.key) : 0;
         // Recalculé à chaque aperçu : corriger un tap manqué peut changer le
         // journal du chrono après le rendu de la carte.
         function amrapSuffixNow(){
@@ -372,6 +408,17 @@ function renderSessionEntry(){
         var selectedRounds = tappedRounds > 0
           ? tappedRounds
           : (it.isAmrap && it.wodRounds ? it.wodRounds.def : 0);
+        // V5.4.9 — pour le temps en plusieurs tours : « Cap atteint » arrive
+        // présélectionné quand le temps noté touche le cap, ou quand le chrono a
+        // compté moins de tours que prévu. Sinon « Fini ».
+        var capMode = false, forTimeClock = '';
+        if(it.isForTime && it.forTimeRounds > 0){
+          var capSecRef = parseCapSeconds(it.wodText, it.durationMin) || 0;
+          var noted = String(getGuidedResult(it.key,'result','')||'').match(/^(\d{1,2}):(\d{2})$/);
+          var notedS = noted ? Number(noted[1])*60+Number(noted[2]) : 0;
+          capMode = (tappedRounds > 0 && tappedRounds < it.forTimeRounds) || (capSecRef > 0 && notedS >= capSecRef);
+          if(tappedRounds >= it.forTimeRounds) selectedRounds = it.forTimeRounds;
+        }
         var selectedMvReps = {};
         if(it.wodMoves) it.wodMoves.forEach(function(_,i){ selectedMvReps[i]=0; });
         var selectedRpe = 8;
@@ -390,7 +437,42 @@ function renderSessionEntry(){
 
           if(it.isForTime){
             var sel = document.getElementById('wod_time_'+it.key);
+            // Le temps choisi est gardé de côté : setGuidedResult() recopie une
+            // valeur dans TOUS les champs « result » de la carte, sélecteur de
+            // temps compris. Sans ça, le score au cap effaçait le temps, qui ne
+            // revenait pas au retour sur « Fini ».
+            if(sel && !capMode && /^\d{1,2}:\d{2}$/.test(sel.value)) forTimeClock = sel.value;
+            if(sel && !capMode && forTimeClock && sel.value !== forTimeClock) sel.value = forTimeClock;
             var val = sel ? sel.value : '';
+            if(it.forTimeRounds > 0){
+              var capRes = document.getElementById('wod_cap_result_'+it.key);
+              var cappedInp = document.getElementById('wod_capped_'+it.key);
+              var roundsHid = document.getElementById('wod_rounds_value_'+it.key);
+              if(capMode){
+                var capParts = [selectedRounds+' tour'+(selectedRounds>1?'s':'')];
+                if(it.wodMoves) it.wodMoves.forEach(function(mv,i){ if(selectedMvReps[i]>0) capParts.push(selectedMvReps[i]+' '+mv.name); });
+                var capSecTxt = parseCapSeconds(it.wodText, it.durationMin);
+                var capStr = 'Cap'+(capSecTxt?' '+formatClock(capSecTxt):'')+' — '+capParts.join(' + ');
+                if(capRes) capRes.value = capStr;
+                if(cappedInp) cappedInp.value = '1';
+                if(roundsHid) roundsHid.value = String(selectedRounds);
+                // Le cache passe avant le DOM à la collecte : il suit le choix.
+                // Écrit directement, sans setGuidedResult : le score ne doit pas
+                // être recopié dans le sélecteur de temps.
+                if(!guidedResultCache[it.key]) guidedResultCache[it.key] = {};
+                guidedResultCache[it.key].result = capStr;
+                setGuidedResult(it.key,'capped','1');
+                setGuidedResult(it.key,'rounds',String(selectedRounds));
+                preview.innerHTML = '<strong style="color:var(--cyan)">'+escHtml(capStr)+'</strong> · RPE '+selectedRpe;
+                return;
+              }
+              if(capRes) capRes.value = '';
+              if(cappedInp) cappedInp.value = '';
+              if(roundsHid) roundsHid.value = String(it.forTimeRounds);
+              setGuidedResult(it.key,'result',val);
+              setGuidedResult(it.key,'capped','');
+              setGuidedResult(it.key,'rounds',String(it.forTimeRounds));
+            }
             preview.innerHTML = '<strong style="color:var(--cyan)">'+(val||'—')+'</strong> · RPE '+selectedRpe;
             return;
           }
@@ -427,7 +509,7 @@ function renderSessionEntry(){
           if(it.wodMoves){
             it.wodMoves.forEach(function(mv,i){
               if(selectedMvReps[i]>0){
-                for(var pi=0; pi<i; pi++) partialTotal += it.wodMoves[pi].reps;
+                for(var pi=0; pi<i; pi++) partialTotal += wodMoveMaxReps(it.wodMoves[pi].reps);
                 partialTotal += selectedMvReps[i];
               }
             });
@@ -522,6 +604,25 @@ function renderSessionEntry(){
         if(noteInp){
           noteInp.addEventListener('input',function(){ setGuidedResult(it.key,'note',noteInp.value); });
           noteInp.addEventListener('change',function(){ setGuidedResult(it.key,'note',noteInp.value); });
+        }
+
+        var capModeEl = document.getElementById('wod_capmode_'+it.key);
+        if(capModeEl){
+          var capDetail = document.getElementById('wod_cap_'+it.key);
+          var paintCapMode = function(){
+            capModeEl.querySelectorAll('[data-capmode]').forEach(function(b){
+              b.classList.toggle('active', (b.getAttribute('data-capmode')==='cap') === capMode);
+            });
+            if(capDetail) capDetail.hidden = !capMode;
+          };
+          capModeEl.querySelectorAll('[data-capmode]').forEach(function(btn){
+            btn.addEventListener('click',function(){
+              capMode = btn.getAttribute('data-capmode')==='cap';
+              if(capMode && selectedRounds >= it.forTimeRounds) selectRoundChip(Math.max(0, it.forTimeRounds-1));
+              paintCapMode(); updatePreview();
+            });
+          });
+          paintCapMode();
         }
 
         var timeSel = document.getElementById('wod_time_'+it.key);

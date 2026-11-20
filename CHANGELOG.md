@@ -1,3 +1,18 @@
+## V5.4.9 — Pour le temps en plusieurs tours : tours comptés au chrono, score au cap
+
+**Pourquoi** : séance du 2026-11-20, Moteur + jambes S3 vendredi (« Pour le temps, 5 tours : 20 cal Bike, 20 Air Squats, 15 Box Step-Ups, 10 Burpees. Cap 25 min »). Le chrono ne comptait pas les tours, et au cap l'écran Résultats n'offrait qu'un temps final : « 25:00 » a été enregistré, et les 4 tours + 20 cal + 20 squats + 3 step-ups n'ont trouvé place que dans la note. Le compteur de tours et la saisie « où j'étais rendu » n'existaient que pour l'AMRAP (les metcons longs de S1 et S2) — ce n'était pas une régression, mais un format jamais couvert.
+
+- **Chrono** (`scripts/session/amrap_rounds.js`, `scripts/session/view.js`) : un « pour le temps » en plusieurs tours — « 5 tours », « 3 rounds », échelle « 21-15-9 » — compte les tours au toucher, comme un AMRAP : même banderole, mêmes temps de tour, même correction d'un toucher manqué. Un seul tour (benchmark, chipper), un EMOM ou un AMRAP ne changent pas.
+- **Résultats** (`scripts/session/results.js`) : sous le temps final, un choix « Fini » / « Cap atteint ».
+  - **Fini** : le temps final, comme avant ; `rounds` = tours prévus.
+  - **Cap atteint** : tours complétés et reps de chaque mouvement du tour en cours, mêmes pastilles que l'AMRAP. Score enregistré : « Cap 25:00 — 4 tours + 20 Cal Bike + 20 Air Squats + 3 Box Step-Ups », avec `rounds` et `capped`.
+  - Présélection : « Cap atteint » quand le temps noté touche le cap, ou quand le chrono a compté moins de tours que prévu.
+  - Repasser sur « Fini » rend le temps choisi intact : `setGuidedResult()` recopie une valeur dans tous les champs « result » de la carte, et le score au cap effaçait le sélecteur de temps.
+- **Correctif** : l'aperçu de l'AMRAP additionnait les reps des mouvements comme du texte (« +020… reps partielles ») : il lit maintenant des nombres.
+- **Garde-fous** (`dev/for_time_checks.js`) : tours prévus lus sur le texte, chrono armé sur `isRoundCountBlock`, « Fini / Cap atteint », score au cap, temps intact au retour sur « Fini ».
+- **Vérifié** sur le profil réel importé dans Chromium (iPhone) : séance S3 vendredi rejouée, 4 tours tapés, cap à 25:00, score et temps de tour enregistrés ; retour sur « Fini » → 25:00.
+- **Données** : champ `capped` ajouté à la ligne du metcon, purement additif (comme `skipped`) : aucune migration, un export antérieur reste importable.
+
 ## V5.4.8 — Vue PC : ajustée à sa cible, l'écran 16/9 en 1920 × 1080
 
 **Pourquoi** : la vue PC vise un écran d'ordinateur 16/9 (« paysage 1080p »). Les retouches de V5.4.6 avaient été vérifiées en 1366 × 768 et sur iPhone, pas en 1920 × 1080. Revue faite cette fois en 1920 × 1080 d'abord.

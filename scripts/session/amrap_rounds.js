@@ -48,6 +48,36 @@
     return isAmrapConfig(block.timer, block.text);
   }
 
+  // V5.4.9 — un « pour le temps » en plusieurs tours se compte aussi en tours.
+  // Séance du 2026-11-20 (« Pour le temps, 5 tours … Cap 25 min ») : le chrono
+  // ne comptait rien, et au cap l'athlète n'avait aucun moyen de noter où il
+  // était rendu — 4 tours + 20 cal + 20 squats + 3 step-ups, perdus dans la note.
+  // Tours prévus : « 5 tours », « 3 rounds », ou une échelle « 21-15-9 » (3).
+  function plannedRounds(text){
+    var t = clean(text);
+    var m = t.match(/(\d+)\s*(?:tours|rounds)\b/i);
+    if(m) return Number(m[1]) || 0;
+    var lad = t.match(/\b\d+(?:\s*[-–]\s*\d+){2,}\b/);
+    return lad ? lad[0].split(/[-–]/).length : 0;
+  }
+  function isForTimeText(text){
+    var t = clean(text);
+    if(/\bemom\b|\bamrap\b/i.test(t)) return false;
+    return typeof wodIsForTime === 'function' ? !!wodIsForTime(t) : /for time|pour le temps|\bcap\s*\d/i.test(t);
+  }
+  // Pour le temps ET au moins deux tours prévus : le chrono compte les tours.
+  function forTimeRounds(text){
+    return isForTimeText(text) ? (plannedRounds(text) >= 2 ? plannedRounds(text) : 0) : 0;
+  }
+  // Bloc dont le chrono compte des tours au toucher : AMRAP, ou pour le temps
+  // en plusieurs tours. Un EMOM n'en est jamais un.
+  function isRoundCountBlock(block){
+    if(!block || block.kind !== 'wod') return false;
+    if(isAmrapBlock(block)) return true;
+    if(/emom/i.test(clean(block.timer && (block.timer.baseLabel || block.timer.label)))) return false;
+    return forTimeRounds(block.text) > 0;
+  }
+
   function entry(key, duration){
     key = clean(key);
     if(!key) return null;
@@ -400,6 +430,9 @@
   window.CoachAmrapRounds = {
     keyFor: keyFor,
     isAmrapBlock: isAmrapBlock,
+    isRoundCountBlock: isRoundCountBlock,
+    plannedRounds: plannedRounds,
+    forTimeRounds: forTimeRounds,
     isAmrapConfig: isAmrapConfig,
     resetAll: resetAll,
     reset: reset,

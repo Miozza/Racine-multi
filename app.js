@@ -1,5 +1,5 @@
-// Racine V5.4.8 — vue PC ajustée à sa cible : écran 16/9, 1920 × 1080
-var APP_VERSION = "V5.4.8";
+// Racine V5.4.9 — pour le temps en plusieurs tours : tours comptés au chrono, score au cap
+var APP_VERSION = "V5.4.9";
 
 // Architecture stable
 // programs/*.js = plan prévu
