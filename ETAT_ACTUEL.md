@@ -1,8 +1,12 @@
-# ETAT ACTUEL — V5.4.8
+# ETAT ACTUEL — V5.4.9
 
-Version actuelle : V5.4.8
+Version actuelle : V5.4.9
 
 ## État courant
+
+### Pour le temps en plusieurs tours — compté au chrono, noté au cap
+
+Un metcon « pour le temps » en plusieurs tours (« 5 tours… Cap 25 min », 21-15-9) se compte maintenant comme un AMRAP : un toucher du chrono par tour fini, temps de chaque tour gardés. Dans Résultats, « Fini » garde le temps final ; « Cap atteint » note les tours complétés et les reps du tour en cours (« Cap 25:00 — 4 tours + 20 Cal Bike + 20 Air Squats + 3 Box Step-Ups »).
 
 ### Vue PC — ajustée à sa cible, l'écran 16/9 en 1920 × 1080
 

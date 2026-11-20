@@ -763,7 +763,8 @@ function renderGuidedSession(){
     // donc intacte (docs/UI_CONSTRAINTS.md) ; la place des splits vient des
     // cartes de mouvement, qui se replient en une ligne dès le premier round.
     // Tant qu'aucun round n'est tapé, la carte garde son allure d'origine.
-    var amrapKey=(window.CoachAmrapRounds && CoachAmrapRounds.isAmrapBlock(st))
+    // V5.4.9 — AMRAP, ou « pour le temps » en plusieurs tours : même compteur.
+    var amrapKey=(window.CoachAmrapRounds && (CoachAmrapRounds.isRoundCountBlock ? CoachAmrapRounds.isRoundCountBlock(st) : CoachAmrapRounds.isAmrapBlock(st)))
       ? CoachAmrapRounds.keyFor(st.title) : null;
     var amrapCount=amrapKey ? CoachAmrapRounds.count(amrapKey) : 0;
     // Sans pastille (cardio continu, intervalles, consigne libre), le bloc
@@ -805,7 +806,7 @@ function renderGuidedSession(){
             "<button class='guided-tbtn' id='guidedTimerPause'>Ⅱ</button>"+
             "<button class='guided-tbtn' id='guidedTimerReset'>↻</button>"+
           "</div>"+
-          "<div class='guided-timer-hint'>"+(amrapKey?"Démarrage 10s · touche le chrono pour ajouter un round":"Démarrage 10s · gros affichage lisible à distance")+"</div>"+
+          "<div class='guided-timer-hint'>"+(amrapKey?"Démarrage 10s · touche le chrono à chaque tour fini":"Démarrage 10s · gros affichage lisible à distance")+"</div>"+
           "</div>";
     if(text)html+="<div class='guided-wod-fulltext'>"+escHtml(text)+"</div>";
     if(st.loadHints)html+=st.loadHints.replace(/pc-wod/g,"guided-wod");

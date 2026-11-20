@@ -15,6 +15,10 @@
        Résultats ; le corriger là remplace le temps noté.
     5. Tous les WOD du programme actif « Moteur + jambes » qui disent « pour le
        temps » sont détectés.
+    6. Un « pour le temps » en plusieurs tours se compte en tours (séance du
+       2026-11-20 : « 5 tours, cap 25 min », rien n'était compté et rien ne
+       se notait au cap). Au cap, le score = tours + reps du tour en cours,
+       et le temps choisi revient intact si l'athlète repasse sur « Fini ».
 
   Usage :
     node dev/for_time_checks.js
@@ -81,6 +85,22 @@ const texts = Array.from(new Set([1,2,3,4,5].flatMap(w => ['lundi','mardi','jeud
   .filter(t => /[Pp]our le temps/.test(t));
 assert(texts.length >= 3, 'Moteur + jambes contient des WOD « pour le temps » (' + texts.length + ').');
 texts.forEach(t => assert(f(t), 'Moteur + jambes détecté : « ' + t.slice(0, 60) + ' »'));
+
+// ─── 6. Pour le temps en plusieurs tours ──────────────────────────────────
+const rCtx = {console}; rCtx.window = rCtx; rCtx.wodIsForTime = f; vm.createContext(rCtx);
+vm.runInContext(read('scripts/session/amrap_rounds.js'), rCtx, {filename:'amrap_rounds.js'});
+const AR = rCtx.CoachAmrapRounds;
+assert(AR.forTimeRounds('Pour le temps, 5 tours : 20 cal Bike, 20 Air Squats. Cap 25 min.') === 5, 'Tours prévus : « 5 tours » → 5.');
+assert(AR.forTimeRounds('For time 21-15-9 : thrusters, pull-ups.') === 3, 'Échelle 21-15-9 → 3 tours.');
+assert(AR.forTimeRounds('Pour le temps : 50 cal Bike.') === 0 && AR.forTimeRounds('Chipper pour le temps : 50 cal Row, 50 Air Squats. Cap 30 min.') === 0, 'Un seul tour (benchmark, chipper) : rien à compter.');
+assert(AR.forTimeRounds('EMOM 16 en 4 stations, une station par minute, 4 tours : 8 Burpees.') === 0 && AR.forTimeRounds('AMRAP 20 : 3 rounds de…') === 0, 'EMOM et AMRAP ne sont pas des « pour le temps ».');
+assert(AR.isRoundCountBlock({kind:'wod', text:'AMRAP 20 : 12 cal Row'}) && AR.isRoundCountBlock({kind:'wod', text:'Pour le temps, 5 tours : 20 cal Bike. Cap 25 min.'}) && !AR.isRoundCountBlock({kind:'wod', text:'Pour le temps : 50 cal Bike.'}), 'Le chrono compte les tours d\'un AMRAP et d\'un « pour le temps » en plusieurs tours.');
+const mjFri = mjP.getBlocks('vendredi', 3).filter(b => b.kind === 'wod')[0];
+assert(AR.forTimeRounds(mjFri.text) === 5, 'Moteur + jambes S3 vendredi : 5 tours comptés.');
+const view = read('scripts/session/view.js');
+assert(/CoachAmrapRounds\.isRoundCountBlock\(st\)/.test(view), 'La séance guidée arme le compteur de tours sur isRoundCountBlock.');
+assert(/data-capmode="cap">Cap atteint/.test(results) && /data-field="capped"/.test(results) && /'Cap'\+\(capSecTxt/.test(results), 'Résultats : « Fini / Cap atteint », score au cap = tours + reps.');
+assert(/guidedResultCache\[it\.key\]\.result = capStr/.test(results) && /forTimeClock/.test(results), 'Au cap, le score ne remplace pas le temps choisi (retour sur « Fini » intact).');
 
 if(errors.length){
   console.error('✗ for_time_checks — ' + errors.length + ' échec(s) :');
